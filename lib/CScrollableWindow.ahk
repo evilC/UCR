@@ -17,8 +17,13 @@ class CScrollableWindow extends CParentWindow
 	    hwnd := this.__Handle
 
 
-        rs := this.GetClientRect(hwnd)
-		this.gui_size := {w: rs.r - rs.l, h: rs.b - rs.t}
+        ;rs := this.GetClientRect(hwnd)
+		;this.gui_size := {w: rs.r - rs.l, h: rs.b - rs.t}
+   		;rs := {t: , r: , b: , l: }
+
+		;hwnd := this.parent.__Handle
+		wingetpos, x, y, w, h, ahk_id %hwnd%
+		this.gui_size := {w: w , h: h}
 
 	    ;work out position of client area relative to main window
 	    viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
@@ -65,6 +70,8 @@ class CScrollableWindow extends CParentWindow
 	    NumPut(GuiHeight, si, 16) ; nPage
 	    DllCall("SetScrollInfo", "uint", WinExist(), "uint", SB_VERT, "uint", &si, "int", 1)
 	    
+	    x := 0
+	    y := 0
 	    if (viewport.Left < 0 && viewport.Right < GuiWidth)
 	        x := Abs(viewport.Left) > GuiWidth-viewport.Right ? GuiWidth-viewport.Right : Abs(viewport.Left)
 	    if (viewport.Top < 0 && viewport.Bottom < GuiHeight)
@@ -73,15 +80,6 @@ class CScrollableWindow extends CParentWindow
 	        DllCall("ScrollWindow", "uint", WinExist(), "int", x, "int", y, "uint", 0, "uint", 0)
 
 	    return
-
-		For key, value in this.__Instances {
-			if (key == this.__Handle){
-				msgbox MAIN
-			}
-			p := this.GetParent(key)
-			tmp := this.GetClientRect(key).b
-			msgbox % tmp "'s parent is: " p
-		}
 	}
 
 	OnScroll(wParam, lParam, msg, hwnd)
