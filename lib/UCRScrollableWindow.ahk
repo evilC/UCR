@@ -109,7 +109,7 @@ class UCRScrollableWindow extends UCRWindow
 		
 		rect := this.GetClientRect(hwnd)
 		
-
+		new_pos := NumGet(si, 20) ; nPos
 		action := wParam & 0xFFFF
 		if (action = 0){ ; SB_LINEUP
 			;tooltip % "NP: " new_pos
@@ -123,7 +123,6 @@ class UCRScrollableWindow extends UCRWindow
 			;new_pos += NumGet(rect, 12, "int") - SCROLL_STEP
 			new_pos += rect.b - SCROLL_STEP
 		} else if (action = 5 || action = 4){ ; SB_THUMBTRACK || SB_THUMBPOSITION
-			;soundbeep
 			new_pos := wParam>>16
 		} else if (action = 6){ ; SB_TOP
 			new_pos := NumGet(si, 8, "int") ; nMin
