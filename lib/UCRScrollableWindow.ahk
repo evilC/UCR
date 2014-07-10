@@ -46,10 +46,12 @@ class UCRScrollableWindow extends UCRWindow
 				viewport.Bottom := child_edges.Bottom
 			}
 		}
+		; viewport width and height feed into sizing of child window to fit parent window
+		; it needs to know if scrollbars are showing
 		this.viewport_width := viewport.Right - viewport.Left
 		this.viewport_height := viewport.Bottom - viewport.Top
 		;viewport := {Top: 0 - this.scroll_status[1].nPos, Left: 0 - this.scroll_status[0].nPos, Right: 500, Bottom: 500}
-		tooltip % this.scroll_status[1].nPos
+		;tooltip % this.scroll_status[1].nPos
 		;this.viewport_width := 500
 		;this.viewport_height := 500
 
@@ -68,15 +70,31 @@ class UCRScrollableWindow extends UCRWindow
 		
 		; Update vertical scroll bar.
 		this.SetScrollInfo(hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
-		
+
+		;tooltip % "viewport " JSON.stringify(viewport) "`nscrollinfo - nPos: " this.scroll_status[1].nPos * -1 ", nPage: " this.scroll_status[1].nPage ", nMax: " this.scroll_status[1].nMax " seek: " this.scroll_status[1].nMax - this.scroll_status[1].nPos
+
+		; Handle move of client rect when window gets bigger and scrollbars are showing
 		x := 0
 		y := 0
+		; temp replacement of viewport var - decoupling this code from previous viewport calcs
+		viewport := {Top: this.scroll_status[1].nPos * -1, Left: this.scroll_status[0].nPos * -1, Right: this.scroll_status[0].nMax - this.scroll_status[1].nPos, Bottom: this.scroll_status[1].nMax - this.scroll_status[1].nPos}
 		if (viewport.Left < 0 && viewport.Right < GuiWidth){
-			x := Abs(viewport.Left) > GuiWidth-viewport.Right ? GuiWidth-viewport.Right : Abs(viewport.Left)
+			;x := Abs(viewport.Left) > GuiWidth-viewport.Right ? GuiWidth-viewport.Right : Abs(viewport.Left)
+			if (Abs(viewport.Left) > GuiWidth-viewport.Right){
+				x := GuiWidth-viewport.Right
+			} else {
+				x := Abs(viewport.Left)
+			}
 		}
 		if (viewport.Top < 0 && viewport.Bottom < GuiHeight){
-			y := Abs(viewport.Top) > GuiHeight-viewport.Bottom ? GuiHeight-viewport.Bottom : Abs(viewport.Top)
+			;y := Abs(viewport.Top) > GuiHeight-viewport.Bottom ? GuiHeight-viewport.Bottom : Abs(viewport.Top)
+			if (Abs(viewport.Top) > GuiHeight-viewport.Bottom){
+				y := GuiHeight-viewport.Bottom
+			} else {
+				y := Abs(viewport.Top)
+			}
 		}
+
 		if (x || y){
 			this.ScrollWindow(hwnd, x, y)
 		}

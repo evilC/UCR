@@ -1,5 +1,6 @@
 ; General helper functions for all UCR windows
-#include <CWindow>
+#include <CWindow> ; http://www.autohotkey.com/board/topic/88225-
+#include <JSON>	; http://ahkscript.org/boards/viewtopic.php?f=6&t=627
 
 Class UCRWindow extends CWindow {
 	__New(title := "", options := ""){
