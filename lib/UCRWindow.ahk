@@ -58,18 +58,15 @@ Class UCRWindow extends CWindow {
 	    VarSetCapacity(si, 28, 0)
 	    NumPut(28, si) ; cbSize
 	    NumPut(SIF_ALL, si, 4) ; fMask
-	    if (DllCall("GetScrollInfo", "uint", hwnd, "int", bar, "uint", &si)){
-			ret := {}
-			ret.cbSize := NumGet(si, 0, "uint") ; cbSize
-			ret.fMask := NumGet(si, 4, "uint") ; fMask
-			ret.nMin := NumGet(si, 8, "int") ; nMin
-			ret.nMax := NumGet(si, 12, "int") ; nMax
-			ret.nPage := NumGet(si, 16) ; nPage
-			ret.nPos := NumGet(si, 20) ; nPos
-			ret.nTrackPos := NumGet(si, 24) ; nTrackPos
-			return ret
-		} else {
-			return 0
-		}
+	    DllCall("GetScrollInfo", "uint", hwnd, "int", bar, "uint", &si)
+	    ret := {}
+	    ret.cbSize := NumGet(si, 0, "uint") ; cbSize
+	    ret.fMask := NumGet(si, 4, "uint") ; fMask
+	    ret.nMin := NumGet(si, 8, "int") ; nMin
+	    ret.nMax := NumGet(si, 12, "int") ; nMax
+	    ret.nPage := NumGet(si, 16) ; nPage
+	    ret.nPos := NumGet(si, 20) ; nPos
+	    ret.nTrackPos := NumGet(si, 24) ; nTrackPos
+	    return ret
 	}
 }
