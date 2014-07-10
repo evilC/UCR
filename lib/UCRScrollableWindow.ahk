@@ -60,21 +60,11 @@ class UCRScrollableWindow extends UCRWindow
 		
 		Gui, %hwnd%: +LastFound
 
-		; Initialize SCROLLINFO.
-		VarSetCapacity(si, 28, 0)
-		NumPut(28, si) ; cbSize
-		NumPut(SIF_RANGE | SIF_PAGE, si, 4) ; fMask
-		
 		; Update horizontal scroll bar.
-		NumPut(ScrollWidth, si, 12) ; nMax
-		NumPut(GuiWidth, si, 16) ; nPage
-		DllCall("SetScrollInfo", "uint", WinExist(), "uint", SB_HORZ, "uint", &si, "int", 1)
+		this.SetScrollInfo(hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth})
 		
 		; Update vertical scroll bar.
-		; NumPut(SIF_RANGE | SIF_PAGE | SIF_DISABLENOSCROLL, si, 4) ; fMask
-		NumPut(ScrollHeight, si, 12) ; nMax
-		NumPut(GuiHeight, si, 16) ; nPage
-		DllCall("SetScrollInfo", "uint", WinExist(), "uint", SB_VERT, "uint", &si, "int", 1)
+		this.SetScrollInfo(hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight})
 		
 		x := 0
 		y := 0
@@ -85,7 +75,7 @@ class UCRScrollableWindow extends UCRWindow
 			y := Abs(viewport.Top) > GuiHeight-viewport.Bottom ? GuiHeight-viewport.Bottom : Abs(viewport.Top)
 		}
 		if (x || y){
-			DllCall("ScrollWindow", "uint", WinExist(), "int", x, "int", y, "uint", 0, "uint", 0)
+			this.ScrollWindow(hwnd, x, y)
 		}
 		this.GetScrollStatus()
 		return
