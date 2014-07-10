@@ -2,6 +2,9 @@
 
 class CScrollableWindow extends CParentWindow
 {
+	viewport_width := 0
+	viewport_height := 0
+
 	__New(title := "", options := "")
 	{
 		OnMessage(0x115, "OnScroll") ; WM_VSCROLL
@@ -13,7 +16,6 @@ class CScrollableWindow extends CParentWindow
 	OnSize(){
 		global GUI_WIDTH
 	    static SIF_RANGE=0x1, SIF_PAGE=0x2, SIF_DISABLENOSCROLL=0x8, SB_HORZ=0, SB_VERT=1
-
 	    hwnd := this.__Handle
 
 
@@ -45,6 +47,8 @@ class CScrollableWindow extends CParentWindow
 	    		viewport.Bottom := cw.Bottom
 	    	}
 	    }
+	    this.viewport_width := viewport.Right - viewport.Left
+	    this.viewport_height := viewport.Bottom - viewport.Top
 	    ;viewport.Bottom += 20
 
 	    ScrollWidth := viewport.Right - viewport.Left

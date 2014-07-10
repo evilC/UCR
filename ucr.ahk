@@ -67,6 +67,7 @@ class UCRMainWindow extends CWindow {
 		;y := this.AllocateSpace(cw)
 		cw.Show("w300 X0 Y50")
 		this.scroll_window  := cw
+		this.scroll_window.OnSize()
 
 		this.OnSize()
 
@@ -90,30 +91,20 @@ class UCRMainWindow extends CWindow {
 		Critical
 		r := this.GetClientRect(this.__Handle)
 		r.t += 50
-		r.b -= (r.t + 22)
-		r.r -= (r.l + 22)
+		r.b -= r.t + 4
+		r.r -= r.l + 4
+
+		if (this.scroll_window.viewport_width > r.r){
+			r.r -= 16
+		}
+
+		if (this.scroll_window.viewport_height > r.b){
+			r.b -= 16
+		}
+
 		this.scroll_window.Show("X0 Y50 W" r.r " H" r.b)
 
-		hwnd := this.scroll_window.__Handle
-		wingetpos, x, y, w, h, ahk_id %hwnd%
-		if (w > r.r){
-			;tooltip yes
-
-			;r.r -= 12
-		} else {
-			;tooltip no
-		}
-
-		if (h > r.b){
-			;tooltip yes
-			;r.b -= 12
-		} else {
-			;tooltip no
-		}
-			
-
-		;this.scroll_window.Show("X0 Y50 W" r.r-r.l-26 " H" r.b-r.t-76)
-		;this.scroll_window.Show("X0 Y50 W" r.r " H" r.b)
+		;tooltip % "Inner: " this.scroll_window.viewport_width "x" this.scroll_window.viewport_height ", O: " r.r "x" r.b 
 	}
 
 	GetClientRect(hwnd){
