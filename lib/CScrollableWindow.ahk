@@ -31,7 +31,8 @@ class CScrollableWindow extends CParentWindow
 	    viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 
 	    For key, value in this.child_windows {
-	    	cw := this.child_windows[key].GetPos()
+	    	;cw := this.child_windows[key].GetPos()
+	    	cw := this.GetPos(this.child_windows[key].__Handle)
 	    	cw := this.AdjustToClientCoords(hwnd,cw)
 	    	
 	    	if (cw.Top < viewport.Top){
@@ -146,6 +147,22 @@ class CScrollableWindow extends CParentWindow
 	    NumPut(new_pos, si, 20, "int") ; nPos
 	    DllCall("SetScrollInfo", "uint", hwnd, "int", bar, "uint", &si, "int", 1)
 	}
+
+	GetPos(hwnd){
+		;hwnd := this.__Handle
+		Gui, %hwnd%: +LastFound
+		WinGetPos x, y, w, h
+		return {Top: y, Left: x, Right: x + w, Bottom: y + h}
+	}
+
+	GetSize(hwnd){
+		;hwnd := this.__Handle
+		Gui, %hwnd%: +LastFound
+		WinGetPos x, y, w, h
+		;msgbox % h
+		return {w: w, h: h}
+	}
+
 
 }
 

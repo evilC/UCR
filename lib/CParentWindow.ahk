@@ -63,7 +63,8 @@ class CParentWindow extends CWindow
 		For key, value in this.child_windows {
 			this.child_windows[key].Show("X0 Y" . this.panel_bottom)
 			;this.panel_bottom += this.GetClientRect(this.child_windows[key].__Handle).b
-			this.panel_bottom += this.child_windows[key].GetSize().h
+			;this.panel_bottom += this.child_windows[key].GetSize().h
+			this.panel_bottom += this.GetSize(this.child_windows[key].__Handle).h
 		}
 		this.OnSize()
 	}

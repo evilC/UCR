@@ -138,50 +138,6 @@ class UCRRuleList extends CScrollableWindow{
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-class MyMainWindow extends CScrollableWindow
-{
-	__New()
-	{
-		global GUI_WIDTH
-		this.handler := this
-
-		base.__New("Hello World", "+Resize")
-		;base.__New("Hello World", "+Resize +0x300000")
-
-		Menu, FileMenu, Add, E&xit, MenuHandler
-		Menu, HelpMenu, Add, &About, MenuHandler
-		Menu, PanelMenu, Add, &Add, AddPanel
-		Menu, MyMenuBar, Add, &File, :FileMenu  ; Attach the two sub-menus that were created above.
-		Menu, MyMenuBar, Add, &Panels, :PanelMenu  ; Attach the two sub-menus that were created above.
-		Menu, MyMenuBar, Add, &Help, :HelpMenu
-		Gui, Menu, MyMenuBar
-
-		this.Show("w" GUI_WIDTH " h240 X0 Y0")
-	}
-
-	OnClose(){
-		ExitApp
-	}
-
-	AddClicked(){
-		cw := this.AddChild("MyChildWindow")
-	}
-
-}
-
 Class MyChildWindow extends CChildWindow
 {
 	__New(parent, title, options){
