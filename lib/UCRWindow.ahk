@@ -6,6 +6,8 @@ Class UCRWindow extends CWindow {
 		base.__New(title, options)
 	}
 
+	; Wrapper for GetClientRect DllCall
+	; Gets "Client" (internal) area of a window
 	GetClientRect(hwnd){
 		Gui, %hwnd%: +LastFound
 		VarSetCapacity(rect, 16, 0)
@@ -14,6 +16,8 @@ Class UCRWindow extends CWindow {
         return {l: NumGet(rect, 0, "Int"), t: NumGet(rect, 4, "Int") , r: NumGet(rect, 8, "Int"), b: NumGet(rect, 12, "Int")}
 	}
 
+	; Wrapper for ScreenToClient DllCall
+	; Gets current offset of window due to scrolling
 	ScreenToClient(hwnd, x, y){
 		VarSetCapacity(pt, 16)
 		NumPut(x,pt,0)
@@ -25,9 +29,7 @@ Class UCRWindow extends CWindow {
 		return {x: x, y: y}
 	}
 
-	; Used by OnSize
-	; obj is an object returned by GetEdges
-	; ToDo: clean this up
+	; Adjust Edges
 	AdjustToClientCoords(hwnd, obj){
 		tmp := this.ScreenToClient(hwnd, 0, 0)
     	obj.Left += tmp.x
@@ -37,21 +39,21 @@ Class UCRWindow extends CWindow {
     	return obj
 	}
 
+	; Get Edges
 	GetEdges(hwnd){
-		;hwnd := this.__Handle
 		Gui, %hwnd%: +LastFound
 		WinGetPos x, y, w, h
 		return {Top: y, Left: x, Right: x + w, Bottom: y + h}
 	}
 
-	GetSize(hwnd){
-		;hwnd := this.__Handle
+	; Wrapper for WinGetPos
+	GetPos(hwnd){
 		Gui, %hwnd%: +LastFound
 		WinGetPos x, y, w, h
-		;msgbox % h
-		return {w: w, h: h}
+		return {x: x, y: y, w: w, h: h}
 	}
 
+	; Wrapper for GetScrollInfo DllCall
 	GetScrollInfo(hwnd, bar){
 		static SIF_ALL=0x17
 
@@ -73,6 +75,7 @@ Class UCRWindow extends CWindow {
 		}
 	}
 
+	; Wrapper for SetScrollInfo DllCall
 	SetScrollInfo(hwnd, bar, scrollinfo){
 		static SIF_ALL=0x17
 		VarSetCapacity(si, 28, 0)
@@ -86,6 +89,7 @@ Class UCRWindow extends CWindow {
 		return DllCall("SetScrollInfo", "uint", hwnd, "int", bar, "uint", &si, "int", 1)
 	}
 
+	; Wrapper for ScrollWindow DllCall
 	ScrollWindow(hwnd, x, y){
 		DllCall("ScrollWindow", "uint", hwnd, "int", x, "int", y, "uint", 0, "uint", 0)
 	}

@@ -54,8 +54,8 @@ class UCRScrollableWindow extends UCRWindow
 		ScrollWidth := viewport.Right - viewport.Left
 		ScrollHeight := viewport.Bottom - viewport.Top
 
-		GuiWidth := this.GetSize(hwnd).w
-		GuiHeight := this.GetSize(hwnd).h
+		GuiWidth := this.GetPos(hwnd).w
+		GuiHeight := this.GetPos(hwnd).h
 		
 		Gui, %hwnd%: +LastFound
 
@@ -172,9 +172,7 @@ class UCRScrollableWindow extends UCRWindow
 		this.panel_bottom := 0
 		For key, value in this.child_windows {
 			this.child_windows[key].Show("X0 Y" . this.panel_bottom)
-			;this.panel_bottom += this.GetClientRect(this.child_windows[key].__Handle).b
-			;this.panel_bottom += this.child_windows[key].GetSize().h
-			this.panel_bottom += this.GetSize(this.child_windows[key].__Handle).h
+			this.panel_bottom += this.GetPos(this.child_windows[key].__Handle).h
 		}
 		this.OnSize()
 	}
