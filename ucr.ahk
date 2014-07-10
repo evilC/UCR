@@ -51,7 +51,7 @@ class UCRMainWindow extends UCRWindow {
 		;this.AddClicked()
 		;this.AddClicked()
 		;this.AddClicked()
-		;this.AddClicked()
+		this.AddClicked()
 
 	}
 

@@ -28,56 +28,83 @@ class UCRScrollableWindow extends UCRWindow
 		hwnd := this.__Handle
 
 		;work out position and size of client area relative to main window
-		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
+		method := 1
+		if (method){
+			; Original method - check coordinates of client windows
+			viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
+			For key, value in this.child_windows {
+				child_edges := this.GetChildEdges(this.__Handle, this.child_windows[key].__Handle)
+				
+				if (child_edges.Top < viewport.Top){
+					viewport.Top := child_edges.Top
+				}
+				if (child_edges.Left < viewport.Left){
+					viewport.Left := child_edges.Left
+				}
+				if (child_edges.Right > viewport.Right){
+					viewport.Right := child_edges.Right
+				}
+				if (child_edges.Bottom > viewport.Bottom){
+					viewport.Bottom := child_edges.Bottom
+				}
+			}
+			this.viewport_width := viewport.Right - viewport.Left
+			this.viewport_height := viewport.Bottom - viewport.Top
 
-		For key, value in this.child_windows {
-			child_edges := this.GetChildEdges(this.__Handle, this.child_windows[key].__Handle)
+			viewport.Bottom += 20
+
+			ScrollWidth := viewport.Right - viewport.Left
+			ScrollHeight := viewport.Bottom - viewport.Top
+
+			; GuiHeight = size of client area
+			GuiWidth := this.GetPos(hwnd).w
+			GuiHeight := this.GetPos(hwnd).h
+
+			; Update horizontal scroll bar.
+			this.SetScrollInfo(hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
 			
-			if (child_edges.Top < viewport.Top){
-				viewport.Top := child_edges.Top
+			; Update vertical scroll bar.
+			this.SetScrollInfo(hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
+
+		} else {
+			; Alternate - add up heights of child windows
+			viewport := {Top: 0, Left: 0, Right: GUI_WIDTH, Bottom: 0}
+			For key, value in this.child_windows {
+				viewport.Bottom += this.GetPos(this.child_windows[key].__Handle).h
 			}
-			if (child_edges.Left < viewport.Left){
-				viewport.Left := child_edges.Left
-			}
-			if (child_edges.Right > viewport.Right){
-				viewport.Right := child_edges.Right
-			}
-			if (child_edges.Bottom > viewport.Bottom){
-				viewport.Bottom := child_edges.Bottom
-			}
+			viewport.Top -= this.scroll_status[1].nPos
+			viewport.Bottom -= this.scroll_status[1].nPos
+			viewport.Left -= this.scroll_status[0].nPos
+			viewport.Right -= this.scroll_status[0].nPos
+
+			this.viewport_width := viewport.Right - viewport.Left
+			this.viewport_height := viewport.Bottom - viewport.Top
+
+			viewport.Bottom += 20
+
+			ScrollWidth := viewport.Right - viewport.Left
+			ScrollHeight := viewport.Bottom - viewport.Top
+
+			; GuiHeight = size of client area
+			GuiWidth := this.GetPos(hwnd).w
+			GuiHeight := this.GetPos(hwnd).h
+
+			; Update horizontal scroll bar.
+			this.SetScrollInfo(hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
+			
+			; Update vertical scroll bar.
+			this.SetScrollInfo(hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
+
+			; temp replacement of viewport var - decoupling this code from previous viewport calcs
+			viewport := {Top: this.scroll_status[1].nPos * -1, Left: this.scroll_status[0].nPos * -1, Right: this.scroll_status[0].nMax - this.scroll_status[1].nPos, Bottom: this.scroll_status[1].nMax - this.scroll_status[1].nPos}
+
 		}
-		; viewport width and height feed into sizing of child window to fit parent window
-		; it needs to know if scrollbars are showing
-		this.viewport_width := viewport.Right - viewport.Left
-		this.viewport_height := viewport.Bottom - viewport.Top
-		;viewport := {Top: 0 - this.scroll_status[1].nPos, Left: 0 - this.scroll_status[0].nPos, Right: 500, Bottom: 500}
-		;tooltip % this.scroll_status[1].nPos
-		;this.viewport_width := 500
-		;this.viewport_height := 500
 
-		viewport.Bottom += 20
-
-		ScrollWidth := viewport.Right - viewport.Left
-		ScrollHeight := viewport.Bottom - viewport.Top
-
-		GuiWidth := this.GetPos(hwnd).w
-		GuiHeight := this.GetPos(hwnd).h
-		
-		Gui, %hwnd%: +LastFound
-
-		; Update horizontal scroll bar.
-		this.SetScrollInfo(hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
-		
-		; Update vertical scroll bar.
-		this.SetScrollInfo(hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
-
-		;tooltip % "viewport " JSON.stringify(viewport) "`nscrollinfo - nPos: " this.scroll_status[1].nPos * -1 ", nPage: " this.scroll_status[1].nPage ", nMax: " this.scroll_status[1].nMax " seek: " this.scroll_status[1].nMax - this.scroll_status[1].nPos
+		;tooltip % "viewport " JSON.stringify(viewport)
 
 		; Handle move of client rect when window gets bigger and scrollbars are showing
 		x := 0
 		y := 0
-		; temp replacement of viewport var - decoupling this code from previous viewport calcs
-		viewport := {Top: this.scroll_status[1].nPos * -1, Left: this.scroll_status[0].nPos * -1, Right: this.scroll_status[0].nMax - this.scroll_status[1].nPos, Bottom: this.scroll_status[1].nMax - this.scroll_status[1].nPos}
 		if (viewport.Left < 0 && viewport.Right < GuiWidth){
 			;x := Abs(viewport.Left) > GuiWidth-viewport.Right ? GuiWidth-viewport.Right : Abs(viewport.Left)
 			if (Abs(viewport.Left) > GuiWidth-viewport.Right){
