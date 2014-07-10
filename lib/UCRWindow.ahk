@@ -26,7 +26,7 @@ Class UCRWindow extends CWindow {
 	}
 
 	; Used by OnSize
-	; obj is an object returned by GetPos
+	; obj is an object returned by GetEdges
 	; ToDo: clean this up
 	AdjustToClientCoords(hwnd, obj){
 		tmp := this.ScreenToClient(hwnd, 0, 0)
@@ -37,7 +37,7 @@ Class UCRWindow extends CWindow {
     	return obj
 	}
 
-	GetPos(hwnd){
+	GetEdges(hwnd){
 		;hwnd := this.__Handle
 		Gui, %hwnd%: +LastFound
 		WinGetPos x, y, w, h

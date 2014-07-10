@@ -31,8 +31,7 @@ class UCRScrollableWindow extends UCRWindow
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 
 		For key, value in this.child_windows {
-			;cw := this.child_windows[key].GetPos()
-			cw := this.GetPos(this.child_windows[key].__Handle)
+			cw := this.GetEdges(this.child_windows[key].__Handle)
 			cw := this.AdjustToClientCoords(hwnd,cw)
 			
 			if (cw.Top < viewport.Top){
