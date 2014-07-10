@@ -8,6 +8,9 @@ class UCRScrollableWindow extends UCRWindow
 	viewport_width := 0
 	viewport_height := 0
 
+	top_position := 0
+	left_position := 0
+
 	__New(title := "", options := "")
 	{
 		OnMessage(0x115, "OnScroll") ; WM_VSCROLL
@@ -22,15 +25,6 @@ class UCRScrollableWindow extends UCRWindow
 		global GUI_WIDTH
 	    static SIF_RANGE=0x1, SIF_PAGE=0x2, SIF_DISABLENOSCROLL=0x8, SB_HORZ=0, SB_VERT=1
 	    hwnd := this.__Handle
-
-
-        ;rs := this.GetClientRect(hwnd)
-		;this.gui_size := {w: rs.r - rs.l, h: rs.b - rs.t}
-   		;rs := {t: , r: , b: , l: }
-
-		;hwnd := this.parent.__Handle
-		wingetpos, x, y, w, h, ahk_id %hwnd%
-		this.gui_size := {w: w , h: h}
 
 	    ;work out position of client area relative to main window
 	    viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
@@ -55,12 +49,13 @@ class UCRScrollableWindow extends UCRWindow
 	    }
 	    this.viewport_width := viewport.Right - viewport.Left
 	    this.viewport_height := viewport.Bottom - viewport.Top
-	    ;viewport.Bottom += 20
+	    viewport.Bottom += 20
 
 	    ScrollWidth := viewport.Right - viewport.Left
 	    ScrollHeight := viewport.Bottom - viewport.Top
-	    GuiWidth := this.gui_size.w
-	    GuiHeight := this.gui_size.h
+
+	    GuiWidth := this.GetSize(hwnd).w
+	    GuiHeight := this.GetSize(hwnd).h
 	    
 	    Gui, %hwnd%: +LastFound
 
@@ -188,6 +183,7 @@ class UCRScrollableWindow extends UCRWindow
 	AllocateSpace(window){
 		tmp := this.panel_bottom
 		this.panel_bottom += this.GetClientRect(window.__Handle).b + 2
+		tmp -= this.top_position
 		return tmp
 	}
 

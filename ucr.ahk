@@ -8,22 +8,12 @@
 #include <CCtrlLabel>
 
 GUI_WIDTH := 300
-;AFC_EntryPoint(MyMainWindow)
 AFC_EntryPoint(UCRMainWindow)
 ;GroupAdd, MyGui, % "ahk_id " . WinExist()
 GroupAdd, MyGui, % "ahk_id " . AFC_AppObj.__Handle
-;GroupAdd, MyGui, % AFC_AppObj.scroll_window.__Handle
-;AFC_EntryPoint(ModularUIPanel)
 
 return
 
-MenuHandler:
-	return
-
-!a::
-AddPanel:
-	AFC_AppObj.AddClicked()
-	return
 
 #IfWinActive ahk_group MyGui
 ~WheelUp::
@@ -43,31 +33,15 @@ class UCRMainWindow extends UCRWindow {
 		this.handler := this
 
 		base.__New("U C R", "+Resize")
-		;base.__New("Hello World", "+Resize +0x300000")
-
-		/*
-		Menu, FileMenu, Add, E&xit, MenuHandler
-		Menu, HelpMenu, Add, &About, MenuHandler
-		Menu, PanelMenu, Add, &Add, AddPanel
-		Menu, MyMenuBar, Add, &File, :FileMenu  ; Attach the two sub-menus that were created above.
-		Menu, MyMenuBar, Add, &Panels, :PanelMenu  ; Attach the two sub-menus that were created above.
-		Menu, MyMenuBar, Add, &Help, :HelpMenu
-		Gui, Menu, MyMenuBar
-		*/
 
 		new CCtrlButton(this, "Add Panel").OnEvent := this.AddClicked
 
 		this.Show("w" GUI_WIDTH " h240 X0 Y0")
 
-		;cw := new UCRRuleList(this, "", "-Border")
-		cw := new UCRRuleList(this, "", "")
-		hwnd := cw.__Handle
-		;this.child_windows[hwnd] := cw
-		;cw.Show()
+		this.scroll_window := new UCRRuleList(this, "", "")
+		hwnd := this.scroll_window.__Handle
 
-		;y := this.AllocateSpace(cw)
-		cw.Show("w300 X0 Y50")
-		this.scroll_window  := cw
+		this.scroll_window.Show("w300 X0 Y50")
 		this.scroll_window.OnSize()
 
 		this.OnSize()
@@ -83,7 +57,6 @@ class UCRMainWindow extends UCRWindow {
 	}
 
 	AddClicked(){
-		;cw := this.AddChild("UCRRule")
 		this.scroll_window.AddChild("UCRRule")
 		this.OnSize()
 	}
@@ -113,12 +86,8 @@ class UCRRuleList extends UCRScrollableWindow{
 	__New(parent)
 	{
 		global GUI_WIDTH
-		;this.handler := this
 
-		;base.__New("Hello World", "+Resize")
-		;base.__New("Hello World", "")
 		base.__New("Hello World", "-Border +Parent" parent.__Handle)
-		;base.__New("Hello World", "+Resize +0x300000")
 
 		this.Show("w" GUI_WIDTH " h240 X0 Y0")
 	}

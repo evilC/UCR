@@ -1,3 +1,4 @@
+; General helper functions for all UCR windows
 #include <CWindow>
 
 Class UCRWindow extends CWindow {
@@ -17,6 +18,29 @@ Class UCRWindow extends CWindow {
 		; ToDo: For OnScroll
 	}
 
+	ScreenToClient(hwnd, x, y){
+		VarSetCapacity(pt, 16)
+		NumPut(x,pt,0)
+		NumPut(y,pt,4)
+		DllCall("ScreenToClient", "uint", hwnd, "Ptr", &pt)
+		x := NumGet(pt, 0, "long")
+		y := NumGet(pt, 4, "long")
+		
+		return {x: x, y: y}
+	}
+
+	; Used by OnSize
+	; obj is an object returned by GetPos
+	; ToDo: clean this up
+	AdjustToClientCoords(hwnd, obj){
+		tmp := this.ScreenToClient(hwnd, 0, 0)
+    	obj.Left += tmp.x
+    	obj.Right += tmp.x
+    	obj.Top += tmp.y
+    	obj.Bottom += tmp.y
+    	return obj
+	}
+
 	GetPos(hwnd){
 		;hwnd := this.__Handle
 		Gui, %hwnd%: +LastFound
@@ -30,26 +54,6 @@ Class UCRWindow extends CWindow {
 		WinGetPos x, y, w, h
 		;msgbox % h
 		return {w: w, h: h}
-	}
-
-	ScreenToClient(hwnd, x, y){
-		VarSetCapacity(pt, 16)
-		NumPut(x,pt,0)
-		NumPut(y,pt,4)
-		DllCall("ScreenToClient", "uint", hwnd, "Ptr", &pt)
-		x := NumGet(pt, 0, "long")
-		y := NumGet(pt, 4, "long")
-		
-		return {x: x, y: y}
-	}
-
-	AdjustToClientCoords(hwnd, obj){
-		tmp := this.ScreenToClient(hwnd, 0, 0)
-    	obj.Left += tmp.x
-    	obj.Right += tmp.x
-    	obj.Top += tmp.y
-    	obj.Bottom += tmp.y
-    	return obj
 	}
 
 }
