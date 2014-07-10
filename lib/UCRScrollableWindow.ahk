@@ -25,7 +25,6 @@ class UCRScrollableWindow extends UCRWindow
 	OnSize(){
 		global GUI_WIDTH
 		static SIF_RANGE=0x1, SIF_PAGE=0x2, SIF_DISABLENOSCROLL=0x8, SB_HORZ=0, SB_VERT=1
-		static SIF_ALL=0x17, SCROLL_STEP=10
 		hwnd := this.__Handle
 
 		;work out position of client area relative to main window
@@ -94,50 +93,52 @@ class UCRScrollableWindow extends UCRWindow
 
 	OnScroll(wParam, lParam, msg, hwnd)
 	{
-		static SIF_ALL=0x17, SCROLL_STEP=10
+		static SCROLL_STEP=10
 
 		bar := msg=0x115 ; SB_HORZ=0, SB_VERT=1
 
 		this.GetScrollStatus()
 		
-		VarSetCapacity(si, 28, 0)
-		NumPut(28, si) ; cbSize
-		NumPut(SIF_ALL, si, 4) ; fMask
-		; ToDo: create GetScrollInfo function
-		if !DllCall("GetScrollInfo", "uint", hwnd, "int", bar, "uint", &si)
+		; If call returns no info, quit
+		if (this.scroll_status[bar] == 0){
 			return
+		}
 		
 		rect := this.GetClientRect(hwnd)
-		
-		new_pos := NumGet(si, 20) ; nPos
+		new_pos := this.scroll_status[bar].nPos
+
 		action := wParam & 0xFFFF
 		if (action = 0){ ; SB_LINEUP
 			;tooltip % "NP: " new_pos
 			new_pos -= SCROLL_STEP
 		} else if (action = 1){ ; SB_LINEDOWN
+			; Wheel down
 			new_pos += SCROLL_STEP
 		} else if (action = 2){ ; SB_PAGEUP
-			;new_pos -= NumGet(rect, 12, "int") - SCROLL_STEP
+			; Page Up ?
 			new_pos -= rect.b - SCROLL_STEP
 		} else if (action = 3){ ; SB_PAGEDOWN
-			;new_pos += NumGet(rect, 12, "int") - SCROLL_STEP
+			; Page Down ?
 			new_pos += rect.b - SCROLL_STEP
 		} else if (action = 5 || action = 4){ ; SB_THUMBTRACK || SB_THUMBPOSITION
-			new_pos := wParam>>16
+			; Drag handle
+			new_pos := wParam >> 16
 		} else if (action = 6){ ; SB_TOP
-			new_pos := NumGet(si, 8, "int") ; nMin
+			; Home?
+			new_pos := this.scroll_status[bar].nMin ; nMin
 		} else if (action = 7){ ; SB_BOTTOM
-			new_pos := NumGet(si, 12, "int") ; nMax
+			; End?
+			new_pos := this.scroll_status[bar].nMax ; nMax
 		} else {
 			return
 		}
 		
-		min := NumGet(si, 8, "int") ; nMin
-		max := NumGet(si, 12, "int") - NumGet(si, 16) ; nMax-nPage
+		min := this.scroll_status[bar].nMin ; nMin
+		max := this.scroll_status[bar].nMax - this.scroll_status[bar].nPage ; nMax-nPage
 		new_pos := new_pos > max ? max : new_pos
 		new_pos := new_pos < min ? min : new_pos
 		
-		old_pos := NumGet(si, 20, "int") ; nPos
+		old_pos := this.scroll_status[bar].nPos ; nPos
 		
 		x := y := 0
 		if bar = 0 ; SB_HORZ
@@ -146,11 +147,14 @@ class UCRScrollableWindow extends UCRWindow
 			y := old_pos-new_pos
 
 		; Scroll contents of window and invalidate uncovered area.
-		DllCall("ScrollWindow", "uint", hwnd, "int", x, "int", y, "uint", 0, "uint", 0)
+		this.ScrollWindow(hwnd, x, y)
 		
 		; Update scroll bar.
-		NumPut(new_pos, si, 20, "int") ; nPos
-		DllCall("SetScrollInfo", "uint", hwnd, "int", bar, "uint", &si, "int", 1)
+		tmp := this.scroll_status[bar]
+		tmp.nPos := new_pos
+
+		this.SetScrollInfo(hwnd, bar, tmp)
+		return
 	}
 
 	GetScrollStatus(){

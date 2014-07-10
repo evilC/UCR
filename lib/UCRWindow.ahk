@@ -72,4 +72,21 @@ Class UCRWindow extends CWindow {
 			return 0
 		}
 	}
+
+	SetScrollInfo(hwnd, bar, scrollinfo){
+		static SIF_ALL=0x17
+		VarSetCapacity(si, 28, 0)
+		NumPut(28, si) ; cbSize
+		NumPut(SIF_ALL, si, 4) ; fMask
+		NumPut(scrollinfo.nMin, si, 8) ; nMin
+		NumPut(scrollinfo.nMax, si, 12) ; nMax
+		NumPut(scrollinfo.nPage, si, 16) ; nPage
+		NumPut(scrollinfo.nPos, si, 20, "int") ; nPos
+		NumPut(scrollinfo.nTrackPos, si, 24) ; nTrackPos
+		return DllCall("SetScrollInfo", "uint", hwnd, "int", bar, "uint", &si, "int", 1)
+	}
+
+	ScrollWindow(hwnd, x, y){
+		DllCall("ScrollWindow", "uint", hwnd, "int", x, "int", y, "uint", 0, "uint", 0)
+	}
 }
