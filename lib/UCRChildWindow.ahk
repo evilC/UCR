@@ -1,6 +1,6 @@
 #include <CWindow>
 
-Class CChildWindow extends CWindow
+Class UCRChildWindow extends CWindow
 {
 	__New(parent, title, options)
 	{

@@ -1,7 +1,10 @@
-#include <CParentWindow>
+#include <UCRWindow>
 
-class CScrollableWindow extends CParentWindow
+class UCRScrollableWindow extends UCRWindow
 {
+	child_windows := []
+	panel_bottom := 0
+
 	viewport_width := 0
 	viewport_height := 0
 
@@ -10,6 +13,8 @@ class CScrollableWindow extends CParentWindow
 		OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 		OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 		base.__New(title, "+0x300000 " . options)
+		hwnd := this.__Handle
+		Gui, %hwnd%: +LastFound
 		return
 	}
 
@@ -96,11 +101,13 @@ class CScrollableWindow extends CParentWindow
 	    VarSetCapacity(si, 28, 0)
 	    NumPut(28, si) ; cbSize
 	    NumPut(SIF_ALL, si, 4) ; fMask
+	    ; ToDo: create GetScrollInfo function
 	    if !DllCall("GetScrollInfo", "uint", hwnd, "int", bar, "uint", &si)
 	        return
 	    
-	    VarSetCapacity(rect, 16)
-	    DllCall("GetClientRect", "uint", hwnd, "uint", &rect)
+	    ;VarSetCapacity(rect, 16)
+	    ;DllCall("GetClientRect", "uint", hwnd, "uint", &rect)
+	    rect := this.GetClientRect(hwnd)
 	    
 	    new_pos := NumGet(si, 20) ; nPos
 	    if(bar){
@@ -115,9 +122,11 @@ class CScrollableWindow extends CParentWindow
 	    else if action = 1 ; SB_LINEDOWN
 	        new_pos += SCROLL_STEP
 	    else if action = 2 ; SB_PAGEUP
-	        new_pos -= NumGet(rect, 12, "int") - SCROLL_STEP
+	        ;new_pos -= NumGet(rect, 12, "int") - SCROLL_STEP
+	        new_pos -= rect.b - SCROLL_STEP
 	    else if action = 3 ; SB_PAGEDOWN
-	        new_pos += NumGet(rect, 12, "int") - SCROLL_STEP
+	        ;new_pos += NumGet(rect, 12, "int") - SCROLL_STEP
+	        new_pos += rect.b - SCROLL_STEP
 	    else if (action = 5 || action = 4) ; SB_THUMBTRACK || SB_THUMBPOSITION
 	        new_pos := wParam>>16
 	    else if action = 6 ; SB_TOP
@@ -148,21 +157,39 @@ class CScrollableWindow extends CParentWindow
 	    DllCall("SetScrollInfo", "uint", hwnd, "int", bar, "uint", &si, "int", 1)
 	}
 
-	GetPos(hwnd){
-		;hwnd := this.__Handle
-		Gui, %hwnd%: +LastFound
-		WinGetPos x, y, w, h
-		return {Top: y, Left: x, Right: x + w, Bottom: y + h}
+	AddChild(type){
+		;base.__New("", "-Border +Parent" parent.__Handle)
+		cw := new %type%(this, "", "-Border")
+		hwnd := cw.__Handle
+		this.child_windows[hwnd] := cw
+		cw.Show()
+
+		y := this.AllocateSpace(cw)
+		cw.Show("w300 X0 Y" y)
+
+		this.OnSize()
+		return cw
 	}
 
-	GetSize(hwnd){
-		;hwnd := this.__Handle
-		Gui, %hwnd%: +LastFound
-		WinGetPos x, y, w, h
-		;msgbox % h
-		return {w: w, h: h}
-	}
+	RemoveChild(cw){
+		hwnd := cw.__Handle
+		this.child_windows.remove(hwnd,"")  ; The ,"" is VITAL, else remaining HWNDs in the array are decremented by one
 
+		this.panel_bottom := 0
+		For key, value in this.child_windows {
+			this.child_windows[key].Show("X0 Y" . this.panel_bottom)
+			;this.panel_bottom += this.GetClientRect(this.child_windows[key].__Handle).b
+			;this.panel_bottom += this.child_windows[key].GetSize().h
+			this.panel_bottom += this.GetSize(this.child_windows[key].__Handle).h
+		}
+		this.OnSize()
+	}
+	
+	AllocateSpace(window){
+		tmp := this.panel_bottom
+		this.panel_bottom += this.GetClientRect(window.__Handle).b + 2
+		return tmp
+	}
 
 }
 

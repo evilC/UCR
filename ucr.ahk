@@ -1,8 +1,9 @@
 #singleinstance force
 #maxhotkeysperinterval 9999
 ;#include <CWindow>
-#include <CScrollableWindow>
-#include <CChildWindow>
+#include <UCRWindow>
+#include <UCRScrollableWindow>
+#include <UCRChildWindow>
 #include <CCtrlButton>
 #include <CCtrlLabel>
 
@@ -35,7 +36,7 @@ AddPanel:
 return
 #IfWinActive
 
-class UCRMainWindow extends CWindow {
+class UCRMainWindow extends UCRWindow {
 	__New()
 	{
 		global GUI_WIDTH
@@ -82,8 +83,8 @@ class UCRMainWindow extends CWindow {
 	}
 
 	AddClicked(){
-		;cw := this.AddChild("MyChildWindow")
-		this.scroll_window.AddChild("MyChildWindow")
+		;cw := this.AddChild("UCRRule")
+		this.scroll_window.AddChild("UCRRule")
 		this.OnSize()
 	}
 
@@ -106,18 +107,9 @@ class UCRMainWindow extends CWindow {
 
 		;tooltip % "Inner: " this.scroll_window.viewport_width "x" this.scroll_window.viewport_height ", O: " r.r "x" r.b 
 	}
-
-	GetClientRect(hwnd){
-		Gui, %hwnd%: +LastFound
-		VarSetCapacity(rect, 16, 0)
-        DllCall("GetClientRect", "Ptr", hwnd, "Ptr", &rect)
-        ;return {w: NumGet(rect, 8, "Int"), h: NumGet(rect, 12, "Int")}
-        return {l: NumGet(rect, 0, "Int"), t: NumGet(rect, 4, "Int") , r: NumGet(rect, 8, "Int"), b: NumGet(rect, 12, "Int")}
-	}
-
 }
 
-class UCRRuleList extends CScrollableWindow{
+class UCRRuleList extends UCRScrollableWindow{
 	__New(parent)
 	{
 		global GUI_WIDTH
@@ -132,13 +124,13 @@ class UCRRuleList extends CScrollableWindow{
 	}
 
 	AddClicked(){
-		cw := this.AddChild("MyChildWindow")
+		cw := this.AddChild("UCRRule")
 	}
 
 
 }
 
-Class MyChildWindow extends CChildWindow
+Class UCRRule extends UCRChildWindow
 {
 	__New(parent, title, options){
 		base.__New(parent, title, options)
