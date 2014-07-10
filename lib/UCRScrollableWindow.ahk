@@ -8,9 +8,6 @@ class UCRScrollableWindow extends UCRWindow
 	viewport_width := 0
 	viewport_height := 0
 
-	top_position := 0
-	left_position := 0
-
 	__New(title := "", options := "")
 	{
 		OnMessage(0x115, "OnScroll") ; WM_VSCROLL
@@ -18,6 +15,8 @@ class UCRScrollableWindow extends UCRWindow
 		base.__New(title, "+0x300000 " . options)
 		hwnd := this.__Handle
 		Gui, %hwnd%: +LastFound
+
+		this.GetScrollStatus()
 		return
 	}
 
@@ -85,17 +84,7 @@ class UCRScrollableWindow extends UCRWindow
 	    if (x || y)
 	        DllCall("ScrollWindow", "uint", WinExist(), "int", x, "int", y, "uint", 0, "uint", 0)
 
-
-	    VarSetCapacity(si, 28, 0)
-	    NumPut(28, si) ; cbSize
-	    NumPut(SIF_ALL, si, 4) ; fMask
-	    ; ToDo: create GetScrollInfo function
-	    DllCall("GetScrollInfo", "uint", this.__Handle, "int", 1, "uint", &si)
-	    new_pos := NumGet(si, 20) ; nPos
-    	this.top_position := new_pos
-    	tooltip % "OnSize TP: " this.top_position	    
-
-
+	    this.GetScrollStatus()
 	    return
 	}
 
@@ -104,6 +93,8 @@ class UCRScrollableWindow extends UCRWindow
 	    static SIF_ALL=0x17, SCROLL_STEP=10
 
 	    bar := msg=0x115 ; SB_HORZ=0, SB_VERT=1
+
+		this.GetScrollStatus()
 	    
 	    VarSetCapacity(si, 28, 0)
 	    NumPut(28, si) ; cbSize
@@ -114,14 +105,6 @@ class UCRScrollableWindow extends UCRWindow
 	    
 	    rect := this.GetClientRect(hwnd)
 	    
-	    new_pos := NumGet(si, 20) ; nPos
-	    if(bar){
-	    	this.top_position := new_pos
-	    	tooltip % "OnScroll TP: " this.top_position
-	    } else {
-	    	this.left_position := new_pos
-	    }
-
 	    action := wParam & 0xFFFF
 	    if action = 0 ; SB_LINEUP
 	        new_pos -= SCROLL_STEP
@@ -163,6 +146,13 @@ class UCRScrollableWindow extends UCRWindow
 	    DllCall("SetScrollInfo", "uint", hwnd, "int", bar, "uint", &si, "int", 1)
 	}
 
+	GetScrollStatus(){
+		this.scroll_status := {}
+		this.scroll_status.x := this.GetScrollInfo(this.__Handle, 0)
+		this.scroll_status.y := this.GetScrollInfo(this.__Handle, 1)
+		;tooltip % "TP: " this.scroll_status.y.nPos
+	}
+
 	AddChild(type){
 		;base.__New("", "-Border +Parent" parent.__Handle)
 		cw := new %type%(this, "", "-Border")
@@ -170,8 +160,8 @@ class UCRScrollableWindow extends UCRWindow
 		this.child_windows[hwnd] := cw
 		cw.Show()
 
-		y := this.AllocateSpace(cw)
-		cw.Show("w300 X0 Y" y)
+		coords := this.AllocateSpace(cw)
+		cw.Show("w300 X" coords.x " Y" coords.y)
 
 		this.OnSize()
 		return cw
@@ -194,9 +184,11 @@ class UCRScrollableWindow extends UCRWindow
 	AllocateSpace(window){
 		tmp := this.panel_bottom
 		this.panel_bottom += this.GetClientRect(window.__Handle).b + 2
-		;tooltip % this.top_position
-		tmp -= this.top_position
-		return tmp
+
+		tmp -= this.scroll_status.y.nPos
+
+		ret := {x: 0 - this.scroll_status.x.nPos, y: tmp}
+		return ret
 	}
 
 }

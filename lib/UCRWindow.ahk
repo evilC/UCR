@@ -14,10 +14,6 @@ Class UCRWindow extends CWindow {
         return {l: NumGet(rect, 0, "Int"), t: NumGet(rect, 4, "Int") , r: NumGet(rect, 8, "Int"), b: NumGet(rect, 12, "Int")}
 	}
 
-	GetScrollInfo(){
-		; ToDo: For OnScroll
-	}
-
 	ScreenToClient(hwnd, x, y){
 		VarSetCapacity(pt, 16)
 		NumPut(x,pt,0)
@@ -56,4 +52,21 @@ Class UCRWindow extends CWindow {
 		return {w: w, h: h}
 	}
 
+	GetScrollInfo(hwnd, bar){
+		static SIF_ALL=0x17
+
+	    VarSetCapacity(si, 28, 0)
+	    NumPut(28, si) ; cbSize
+	    NumPut(SIF_ALL, si, 4) ; fMask
+	    DllCall("GetScrollInfo", "uint", hwnd, "int", bar, "uint", &si)
+	    ret := {}
+	    ret.cbSize := NumGet(si, 0, "uint") ; cbSize
+	    ret.fMask := NumGet(si, 4, "uint") ; fMask
+	    ret.nMin := NumGet(si, 8, "int") ; nMin
+	    ret.nMax := NumGet(si, 12, "int") ; nMax
+	    ret.nPage := NumGet(si, 16) ; nPage
+	    ret.nPos := NumGet(si, 20) ; nPos
+	    ret.nTrackPos := NumGet(si, 24) ; nTrackPos
+	    return ret
+	}
 }
