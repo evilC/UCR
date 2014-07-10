@@ -24,6 +24,7 @@ class UCRScrollableWindow extends UCRWindow
 	OnSize(){
 		global GUI_WIDTH
 	    static SIF_RANGE=0x1, SIF_PAGE=0x2, SIF_DISABLENOSCROLL=0x8, SB_HORZ=0, SB_VERT=1
+	    static SIF_ALL=0x17, SCROLL_STEP=10
 	    hwnd := this.__Handle
 
 	    ;work out position of client area relative to main window
@@ -84,6 +85,17 @@ class UCRScrollableWindow extends UCRWindow
 	    if (x || y)
 	        DllCall("ScrollWindow", "uint", WinExist(), "int", x, "int", y, "uint", 0, "uint", 0)
 
+
+	    VarSetCapacity(si, 28, 0)
+	    NumPut(28, si) ; cbSize
+	    NumPut(SIF_ALL, si, 4) ; fMask
+	    ; ToDo: create GetScrollInfo function
+	    DllCall("GetScrollInfo", "uint", this.__Handle, "int", 1, "uint", &si)
+	    new_pos := NumGet(si, 20) ; nPos
+    	this.top_position := new_pos
+    	tooltip % "OnSize TP: " this.top_position	    
+
+
 	    return
 	}
 
@@ -100,13 +112,12 @@ class UCRScrollableWindow extends UCRWindow
 	    if !DllCall("GetScrollInfo", "uint", hwnd, "int", bar, "uint", &si)
 	        return
 	    
-	    ;VarSetCapacity(rect, 16)
-	    ;DllCall("GetClientRect", "uint", hwnd, "uint", &rect)
 	    rect := this.GetClientRect(hwnd)
 	    
 	    new_pos := NumGet(si, 20) ; nPos
 	    if(bar){
 	    	this.top_position := new_pos
+	    	tooltip % "OnScroll TP: " this.top_position
 	    } else {
 	    	this.left_position := new_pos
 	    }
@@ -183,6 +194,7 @@ class UCRScrollableWindow extends UCRWindow
 	AllocateSpace(window){
 		tmp := this.panel_bottom
 		this.panel_bottom += this.GetClientRect(window.__Handle).b + 2
+		;tooltip % this.top_position
 		tmp -= this.top_position
 		return tmp
 	}

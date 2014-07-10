@@ -45,6 +45,13 @@ class UCRMainWindow extends UCRWindow {
 		this.scroll_window.OnSize()
 
 		this.OnSize()
+		this.AddClicked()
+		this.AddClicked()
+		this.AddClicked()
+		this.AddClicked()
+		this.AddClicked()
+		this.AddClicked()
+		this.AddClicked()
 
 	}
 
