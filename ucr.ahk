@@ -47,11 +47,11 @@ class UCRMainWindow extends UCRWindow {
 		this.OnSize()
 		this.AddClicked()
 		this.AddClicked()
-		this.AddClicked()
-		this.AddClicked()
-		this.AddClicked()
-		this.AddClicked()
-		this.AddClicked()
+		;this.AddClicked()
+		;this.AddClicked()
+		;this.AddClicked()
+		;this.AddClicked()
+		;this.AddClicked()
 
 	}
 

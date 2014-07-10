@@ -27,28 +27,32 @@ class UCRScrollableWindow extends UCRWindow
 		static SIF_RANGE=0x1, SIF_PAGE=0x2, SIF_DISABLENOSCROLL=0x8, SB_HORZ=0, SB_VERT=1
 		hwnd := this.__Handle
 
-		;work out position of client area relative to main window
+		;work out position and size of client area relative to main window
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 
 		For key, value in this.child_windows {
-			cw := this.GetEdges(this.child_windows[key].__Handle)
-			cw := this.AdjustToClientCoords(hwnd,cw)
+			child_edges := this.GetChildEdges(this.__Handle, this.child_windows[key].__Handle)
 			
-			if (cw.Top < viewport.Top){
-				viewport.Top := cw.Top
+			if (child_edges.Top < viewport.Top){
+				viewport.Top := child_edges.Top
 			}
-			if (cw.Left < viewport.Left){
-				viewport.Left := cw.Left
+			if (child_edges.Left < viewport.Left){
+				viewport.Left := child_edges.Left
 			}
-			if (cw.Right > viewport.Right){
-				viewport.Right := cw.Right
+			if (child_edges.Right > viewport.Right){
+				viewport.Right := child_edges.Right
 			}
-			if (cw.Bottom > viewport.Bottom){
-				viewport.Bottom := cw.Bottom
+			if (child_edges.Bottom > viewport.Bottom){
+				viewport.Bottom := child_edges.Bottom
 			}
 		}
 		this.viewport_width := viewport.Right - viewport.Left
 		this.viewport_height := viewport.Bottom - viewport.Top
+		;viewport := {Top: 0 - this.scroll_status[1].nPos, Left: 0 - this.scroll_status[0].nPos, Right: 500, Bottom: 500}
+		tooltip % this.scroll_status[1].nPos
+		;this.viewport_width := 500
+		;this.viewport_height := 500
+
 		viewport.Bottom += 20
 
 		ScrollWidth := viewport.Right - viewport.Left
@@ -60,10 +64,10 @@ class UCRScrollableWindow extends UCRWindow
 		Gui, %hwnd%: +LastFound
 
 		; Update horizontal scroll bar.
-		this.SetScrollInfo(hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth})
+		this.SetScrollInfo(hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
 		
 		; Update vertical scroll bar.
-		this.SetScrollInfo(hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight})
+		this.SetScrollInfo(hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
 		
 		x := 0
 		y := 0
@@ -83,6 +87,7 @@ class UCRScrollableWindow extends UCRWindow
 	OnScroll(wParam, lParam, msg, hwnd)
 	{
 		static SCROLL_STEP=10
+		static SIF_ALL=0x17
 
 		bar := msg=0x115 ; SB_HORZ=0, SB_VERT=1
 
@@ -141,6 +146,7 @@ class UCRScrollableWindow extends UCRWindow
 		; Update scroll bar.
 		tmp := this.scroll_status[bar]
 		tmp.nPos := new_pos
+		tmp.fMask := SIF_ALL
 
 		this.SetScrollInfo(hwnd, bar, tmp)
 		return

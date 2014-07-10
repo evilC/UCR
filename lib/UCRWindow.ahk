@@ -17,7 +17,7 @@ Class UCRWindow extends CWindow {
 	}
 
 	; Wrapper for ScreenToClient DllCall
-	; Gets current offset of window due to scrolling
+	; returns offset between screen and client coords
 	ScreenToClient(hwnd, x, y){
 		VarSetCapacity(pt, 16)
 		NumPut(x,pt,0)
@@ -29,9 +29,12 @@ Class UCRWindow extends CWindow {
 		return {x: x, y: y}
 	}
 
-	; Adjust Edges
+	; Convert passed Edge object from screen coords to client rect coords
 	AdjustToClientCoords(hwnd, obj){
+		; find offset for upper left corner of client rect
 		tmp := this.ScreenToClient(hwnd, 0, 0)
+		
+		; Offset passed Edge object
     	obj.Left += tmp.x
     	obj.Right += tmp.x
     	obj.Top += tmp.y
@@ -39,7 +42,15 @@ Class UCRWindow extends CWindow {
     	return obj
 	}
 
+	; Returns Edge coordinates of child (Relative to parent window - ie due to scrolling)
+	GetChildEdges(pHwnd, cHwnd){
+		cw := this.GetEdges(cHwnd)
+		cw := this.AdjustToClientCoords(pHwnd,cw)
+		return cw
+	}
+
 	; Get Edges
+	; Note: Coordinates are relative to the SCREEN
 	GetEdges(hwnd){
 		Gui, %hwnd%: +LastFound
 		WinGetPos x, y, w, h
@@ -77,15 +88,30 @@ Class UCRWindow extends CWindow {
 
 	; Wrapper for SetScrollInfo DllCall
 	SetScrollInfo(hwnd, bar, scrollinfo){
-		static SIF_ALL=0x17
+		;static SIF_ALL=0x17
+
 		VarSetCapacity(si, 28, 0)
 		NumPut(28, si) ; cbSize
-		NumPut(SIF_ALL, si, 4) ; fMask
-		NumPut(scrollinfo.nMin, si, 8) ; nMin
-		NumPut(scrollinfo.nMax, si, 12) ; nMax
-		NumPut(scrollinfo.nPage, si, 16) ; nPage
-		NumPut(scrollinfo.nPos, si, 20, "int") ; nPos
-		NumPut(scrollinfo.nTrackPos, si, 24) ; nTrackPos
+		
+
+		if (scrollinfo.fMask){
+			NumPut(scrollinfo.fMask, si, 4) ; fMask
+		}
+		if (scrollinfo.nMin){
+			NumPut(scrollinfo.nMin, si, 8) ; nMin
+		}
+		if (scrollinfo.nMax){
+			NumPut(scrollinfo.nMax, si, 12) ; nMax
+		}
+		if (scrollinfo.nPage){
+			NumPut(scrollinfo.nPage, si, 16) ; nPage
+		}
+		if (scrollinfo.nPos){
+			NumPut(scrollinfo.nPos, si, 20, "int") ; nPos
+		}
+		if (scrollinfo.nTrackPos){
+			NumPut(scrollinfo.nTrackPos, si, 24) ; nTrackPos
+		}
 		return DllCall("SetScrollInfo", "uint", hwnd, "int", bar, "uint", &si, "int", 1)
 	}
 
