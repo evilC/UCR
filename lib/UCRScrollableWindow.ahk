@@ -68,6 +68,8 @@ class UCRScrollableWindow extends UCRWindow
 
 		} else {
 			; Alternate - add up heights of child windows
+			; note this method works out size of client area by examining size of scrollbars.
+			; I think this will result in it using the LAST size of the client area, as we may be about to add/remove scrollbars
 			viewport := {Top: 0, Left: 0, Right: GUI_WIDTH, Bottom: 0}
 			For key, value in this.child_windows {
 				viewport.Bottom += this.GetPos(this.child_windows[key].__Handle).h
