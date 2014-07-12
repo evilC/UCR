@@ -45,13 +45,13 @@ class UCRMainWindow extends UCRWindow {
 		this.scroll_window.OnSize()
 
 		this.OnSize()
-		this.AddClicked()
-		this.AddClicked()
 		;this.AddClicked()
 		;this.AddClicked()
 		;this.AddClicked()
 		;this.AddClicked()
-		this.AddClicked()
+		;this.AddClicked()
+		;this.AddClicked()
+		;this.AddClicked()
 
 	}
 
@@ -72,21 +72,22 @@ class UCRMainWindow extends UCRWindow {
 		Critical
 		r := this.GetClientRect(this.__Handle)
 		r.t += 50
-		r.b -= r.t + 4
-		r.r -= r.l + 4
+		r.b -= r.t + 6
+		r.r -= r.l + 6
 
-		if (this.scroll_window.viewport_width > r.r){
+		ws := this.GetScrollBarVisibility(this.scroll_window.__Handle)
+
+		if (ws.x){
 			r.r -= 16
 		}
 
-		if (this.scroll_window.viewport_height > r.b){
+		if (ws.y){
 			r.b -= 16
 		}
 
 		this.scroll_window.Show("X0 Y50 W" r.r " H" r.b)
-
-		;tooltip % "Inner: " this.scroll_window.viewport_width "x" this.scroll_window.viewport_height ", O: " r.r "x" r.b 
 	}
+
 }
 
 class UCRRuleList extends UCRScrollableWindow{

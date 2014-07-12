@@ -120,4 +120,15 @@ Class UCRWindow extends CWindow {
 	ScrollWindow(hwnd, x, y){
 		DllCall("ScrollWindow", "uint", hwnd, "int", x, "int", y, "uint", 0, "uint", 0)
 	}
+
+	GetScrollBarVisibility(hwnd){
+		static WS_HSCROLL := 0x00100000
+		static WS_VSCROLL := 0x00200000
+
+		ret := DllCall("GetWindowLong", "uint", hwnd, "int", -16)
+		out := {}
+		out.x := (ret & WS_HSCROLL) > 0
+		out.y := (ret & WS_VSCROLL) > 0
+		return out
+	}
 }
