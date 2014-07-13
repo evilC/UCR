@@ -10,8 +10,11 @@ class UCRScrollableWindow extends UCRWindow
 	viewport_width := 0
 	viewport_height := 0
 
+	GUI_WIDTH := 300
+
 	__New(title := "", options := "")
 	{
+		this.parent := parent
 		OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 		OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 		base.__New(title, "+0x300000 " . options)
@@ -23,7 +26,6 @@ class UCRScrollableWindow extends UCRWindow
 	}
 
 	OnSize(){
-		global GUI_WIDTH
 		static SIF_RANGE=0x1, SIF_PAGE=0x2, SIF_DISABLENOSCROLL=0x8, SB_HORZ=0, SB_VERT=1
 		hwnd := this.__Handle
 
@@ -70,7 +72,7 @@ class UCRScrollableWindow extends UCRWindow
 			; Alternate - add up heights of child windows
 			; note this method works out size of client area by examining size of scrollbars.
 			; I think this will result in it using the LAST size of the client area, as we may be about to add/remove scrollbars
-			viewport := {Top: 0, Left: 0, Right: GUI_WIDTH, Bottom: 0}
+			viewport := {Top: 0, Left: 0, Right: this.GUI_WIDTH, Bottom: 0}
 			For key, value in this.child_windows {
 				viewport.Bottom += this.GetPos(this.child_windows[key].__Handle).h
 			}
@@ -212,7 +214,7 @@ class UCRScrollableWindow extends UCRWindow
 		cw.Show()
 
 		coords := this.AllocateSpace(cw)
-		cw.Show("w300 X" coords.x " Y" coords.y)
+		cw.Show("w" this.GUI_WIDTH " X" coords.x " Y" coords.y)
 
 		this.OnSize()
 		return cw

@@ -7,7 +7,6 @@
 #include <CCtrlButton>
 #include <CCtrlLabel>
 
-GUI_WIDTH := 300
 AFC_EntryPoint(UCRMainWindow)
 ;GroupAdd, MyGui, % "ahk_id " . WinExist()
 GroupAdd, MyGui, % "ahk_id " . AFC_AppObj.__Handle
@@ -27,21 +26,21 @@ return
 #IfWinActive
 
 class UCRMainWindow extends UCRWindow {
+	GUI_WIDTH := 600
 	__New()
 	{
-		global GUI_WIDTH
 		this.handler := this
 
 		base.__New("U C R", "+Resize")
 
 		new CCtrlButton(this, "Add Panel").OnEvent := this.AddClicked
 
-		this.Show("w" GUI_WIDTH " h240 X0 Y0")
+		this.Show("w" this.GUI_WIDTH " h240 X0 Y0")
 
-		this.scroll_window := new UCRRuleList(this, "", "")
+		this.scroll_window := new UCRRuleList(this)
 		hwnd := this.scroll_window.__Handle
 
-		this.scroll_window.Show("w300 X0 Y50")
+		this.scroll_window.Show("w" this.GUI_WIDTH " X0 Y50")
 		this.scroll_window.OnSize()
 
 		this.OnSize()
@@ -93,11 +92,10 @@ class UCRMainWindow extends UCRWindow {
 class UCRRuleList extends UCRScrollableWindow{
 	__New(parent)
 	{
-		global GUI_WIDTH
+		this.GUI_WIDTH := parent.GUI_WIDTH - 32
+		base.__New("Hello World", "-Border +Parent" parent.__Handle, parent)
 
-		base.__New("Hello World", "-Border +Parent" parent.__Handle)
-
-		this.Show("w" GUI_WIDTH " h240 X0 Y0")
+		this.Show("w" this.GUI_WIDTH " h240 X0 Y0")
 	}
 
 	AddClicked(){
