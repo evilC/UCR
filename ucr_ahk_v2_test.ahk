@@ -90,7 +90,9 @@ class ScrollingSubWindow extends Window {
 	}
 	
 	AddClicked(){
-		child := new ChildWindow(this)
+		; Add child window at top left of canvas
+		offset := this.GetWindowOffSet(this.Hwnd)	; Get offset due to position of scroll bars
+		child := new ChildWindow(this, {x: 0 + offset.x, y: 0 + offset.y})
 		this.ChildWindows[child.Hwnd] := child
 	}
 	
@@ -233,16 +235,27 @@ class ScrollingSubWindow extends Window {
 
 ; A Child Window Within the scrolling sub-window
 class ChildWindow extends Window {
-	__New(parent){
+	__New(parent, options := false){
 		this.parent := parent
+		if (!options){
+			options := {x:0, y: 0}
+		} else {
+			if (!options.x){
+				options.x := 0
+			}
+			if (!options.y){
+				options.y := 0
+			}
+		}
 		this.Gui := GuiCreate("Child","+Parent" . this.parent.Hwnd,this)
 		this.Gui.AddLabel("I am " . this.Gui.Hwnd)	;this.Gui.Hwnd
 		this.debug := this.Gui.AddLabel("debug: ", "w200")	;this.Gui.Hwnd
-		this.Gui.Show("x0 y0 w200 h50")
+		this.Gui.Show("x" . options.x . " y" . options.y . " w200 h50")
 		
 		this.Hwnd := this.Gui.Hwnd
 	}
 	
+	; Gets position of a child window relative to it's parent's RECT
 	GetClientPos(){
 		pos := this.GetPos(this.Hwnd)
 		offset := this.ScreenToClient(this.parent.Hwnd, x, y)
@@ -358,6 +371,11 @@ class Window {
 		return out
 	}
 
+	; Get the offset of the canvas of a window due to scrollbar position
+	GetWindowOffSet(hwnd){
+		return {x: this.GetScrollInfos(hwnd)[0].nPos * -1, y: this.GetScrollInfos(hwnd)[1].nPos * -1}
+	}
+	
 	SetDesc(str){
 		if (this.debug){
 			this.debug.Value := str
