@@ -384,7 +384,23 @@ class CWindow {
 
 	; Get the offset of the canvas of a window due to scrollbar position
 	GetWindowOffSet(hwnd){
-		return {x: this.GetScrollInfos(hwnd)[0].nPos * -1, y: this.GetScrollInfos(hwnd)[1].nPos * -1}
+		ret := {x: 0, y: 0}
+		info := this.GetScrollInfos(hwnd)
+		if (info[0] == 0){
+			; No x scroll bar
+			ret.x := 0
+		} else {
+			ret.x := info[0].nPos * -1
+		}
+		
+		if (info[1] == 0){
+			; No y scroll bar
+			ret.y := 0
+		} else {
+			ret.y := info[1].nPos * -1
+		}
+		
+		return ret
 	}
 	
 	SetDesc(str){
