@@ -14,13 +14,18 @@ OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 ~+WheelUp::
 ~+WheelDown::
     ; SB_LINEDOWN=1, SB_LINEUP=0, WM_HSCROLL=0x114, WM_VSCROLL=0x115
-    MainWindow.OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, MainWindow.ScrollableSubWindow.Hwnd)
+	; Pass 0 to Onscroll's hwnd param
+    OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
 return
 #IfWinActive
 
-OnScroll(wParam, lParam, msg, hwnd){
+OnScroll(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
-	MainWindow.ScrollableSubWindow.OnScroll(wParam, lParam, msg, hwnd)
+	if (!hwnd){
+		; No Hwnd - Mouse wheel used. Find Hwnd of what is under the cursor
+		MouseGetPos(tmp,tmp,tmp,hwnd,2)
+	}
+	MainWindow.OnScroll(wParam, lParam, msg, hwnd)
 }
 
 class CMainWindow extends CWindow {
@@ -33,23 +38,28 @@ class CMainWindow extends CWindow {
 		this.Gui.Show("x0 y0 w600 h500")
 		this.Hwnd := this.Gui.Hwnd
 		
-		; Set up child GUIs
-		this.ScrollableSubWindow := new CScrollingSubWindow(this)
-		this.ScrollableSubWindow.OnSize()
+		; Set up child GUI Canvas
+		this.ChildCanvas := new CScrollingSubWindow(this)
+		this.ChildCanvas.OnSize()
+		
+		; Set up "Task Bar" for Child GUIs
+		this.TaskBar := new CScrollingSubWindow(this)
+		this.TaskBar.OnSize()
+		
 		
 		this.OnSize()
 		GroupAdd("MyGui", "ahk_id " . this.Hwnd)
-
+		
 	}
 
 	AddClicked(){
-		this.ScrollableSubWindow.AddClicked()
+		this.ChildCanvas.AddClicked()
 	}
 	
 	OnSize(){
 		; Size Scrollable Child Window
 		;Critical
-
+		
 		; Lots of hard wired values - would like to eliminate these!
 		r := this.GetClientRect(this.Hwnd)
 		r.b -= 50	; How far down from the top of the main gui does the child window start?
@@ -58,26 +68,44 @@ class CMainWindow extends CWindow {
 		r.r -= r.l + 6
 
 		; Client rect seems to not include scroll bars - check if they are showing and subtract accordingly
-		sbv := this.GetScrollBarVisibility(this.ScrollableSubWindow.Hwnd)
-		if (sbv.x){
-			r.r -= 16
+		cc := {r: r.r, b: r.b}
+		cc_sbv := this.GetScrollBarVisibility(this.ChildCanvas.Hwnd)
+		if (cc_sbv.x){
+			cc.r -= 16
 		}
 
-		if (sbv.y){
-			r.b -= 16
+		if (cc_sbv.y){
+			cc.b -= 16
 		}
 		
-		this.ScrollableSubWindow.Gui.Show("x0 y50 w" . r.r . " h" . r.b)
+		tb := {r: r.r, b: r.b}
+		tb_sbv := this.GetScrollBarVisibility(this.TaskBar.Hwnd)
+		if (tb_sbv.x){
+			tb.r -= 16
+		}
+
+		if (tb_sbv.y){
+			tb.b -= 16
+		}
+		
+		this.ChildCanvas.Gui.Show("x0 y50 w" . cc.r - 200 . " h" . cc.b)
+		
+		this.TaskBar.Gui.Show("x" . tb.r - 180 " y50 w180 h" . tb.b)
 	}
 	
 	OnScroll(wParam, lParam, msg, hwnd){
-		this.ScrollableSubWindow.OnScroll(wParam, lParam, msg, hwnd)
+		if (hwnd == this.TaskBar.Hwnd){
+			this.TaskBar.OnScroll(wParam, lParam, msg, hwnd)
+		} else {
+			this.ChildCanvas.OnScroll(wParam, lParam, msg, hwnd)
+		}
 	}
 }
 
 class CScrollingSubWindow extends CWindow {
-	__New(parent){
+	__New(parent, options := 0){
 		this.parent := parent
+		this.options := options
 		this.ChildWindows := []
 
 		this.Gui := GuiCreate("","-Border 0x300000 Parent" . this.parent.Hwnd, this)
@@ -98,6 +126,22 @@ class CScrollingSubWindow extends CWindow {
 	ChildClosed(hwnd){
 		this.ChildWindows.RemoveAt(hwnd)
 		this.OnSize()
+	}
+	
+	ChildMinimized(hwnd){
+		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
+		this.ChildWindows[hwnd].Gui.Minimize()
+		
+		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows[hwnd]
+		this.ChildWindows.RemoveAt(hwnd)
+	}
+	
+	ChildMaximized(hwnd){
+		this.ChildWindows[hwnd] := this.parent.TaskBar.ChildWindows[hwnd]
+		this.parent.TaskBar.ChildWindows.RemoveAt(hwnd)
+		
+		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.Hwnd)
+
 	}
 	
 	OnSize(){
@@ -241,6 +285,7 @@ class CScrollingSubWindow extends CWindow {
 class CChildWindow extends CWindow {
 	__New(parent, options := false){
 		this.parent := parent
+		
 		if (!options){
 			options := {x:0, y: 0}
 		} else {
@@ -261,9 +306,17 @@ class CChildWindow extends CWindow {
 		this.Gui := GuiCreate("Child","+Parent" . this.parent.Hwnd,this)
 		this.Gui.AddLabel("I am " . this.Gui.Hwnd)	;this.Gui.Hwnd
 		this.debug := this.Gui.AddLabel("debug: ", "w200")	;this.Gui.Hwnd
-		this.Gui.Show("x" . options.x . " y" . options.y . " w200 h50")
+		this.Gui.Show("x" . options.x . " y" . options.y . " w300 h100")
 		
 		this.Hwnd := this.Gui.Hwnd
+	}
+	
+	OnSize(){
+		if (WinGetMinMax("ahk_id " . this.Hwnd) == -1){
+			this.parent.ChildMinimized(this.Hwnd)
+		} else {
+			this.parent.ChildMaximized(this.Hwnd)
+		}
 	}
 	
 	; Gets position of a child window relative to it's parent's RECT
