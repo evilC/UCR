@@ -1,3 +1,6 @@
+; Autohotkey V2 code!!
+; Uses Fincs "Proposed New GUI API for AutoHotkey v2": http://ahkscript.org/boards/viewtopic.php?f=37&t=2998
+
 #SingleInstance Force
 
 MainWindow := new MainWindow()
@@ -45,7 +48,7 @@ class MainWindow extends Window {
 	
 	OnSize(){
 		; Size Scrollable Child Window
-		Critical
+		;Critical
 
 		; Lots of hard wired values - would like to eliminate these!
 		r := this.GetClientRect(this.Hwnd)
