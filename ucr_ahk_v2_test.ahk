@@ -2,6 +2,7 @@
 ; Uses Fincs "Proposed New GUI API for AutoHotkey v2": http://ahkscript.org/boards/viewtopic.php?f=37&t=2998
 
 #SingleInstance Force
+#MaxHotkeysPerInterval 9999
 
 MainWindow := new CMainWindow()
 
@@ -95,9 +96,9 @@ class CMainWindow extends CWindow {
 	
 	OnScroll(wParam, lParam, msg, hwnd){
 		if (hwnd == this.TaskBar.Hwnd){
-			this.TaskBar.OnScroll(wParam, lParam, msg, hwnd)
+			this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Hwnd)
 		} else {
-			this.ChildCanvas.OnScroll(wParam, lParam, msg, hwnd)
+			this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Hwnd)
 		}
 	}
 }
@@ -150,6 +151,10 @@ class CScrollingSubWindow extends CWindow {
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 		ctr := 0
 		For key, value in this.ChildWindows {
+			if (!this.ChildWindows[key]){
+				; ToDo: Why do I need this?
+				continue
+			}
 			pos := this.ChildWindows[key].GetClientPos()
 			bot := pos.y + pos.h
 			if (pos.y < viewport.Top){
