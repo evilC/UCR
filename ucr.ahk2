@@ -106,14 +106,20 @@ class ScrollingSubWindow extends Window {
 		For key, value in this.ChildWindows {
 			pos := this.ChildWindows[key].GetClientPos()
 			bot := pos.y + pos.h
+			if (pos.y < viewport.Top){
+				viewport.Top := pos.y
+			}
+			if (pos.x < viewport.Left){
+				viewport.Left := pos.x
+			}
 			if (bot > viewport.Bottom){
 				viewport.Bottom := bot
 			}
-			
 			right := pos.x + pos.w
 			if (right > viewport.Right){
 				viewport.Right := right
 			}
+			
 			this.ChildWindows[key].SetDesc("b: " bot ", y: " pos.y ", h: " pos.h)
 			ctr++
 		}
@@ -123,12 +129,6 @@ class ScrollingSubWindow extends Window {
 			; Update vertical scroll bar.
 			this.SetScrollInfo(this.Hwnd, SB_VERT, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
 			return
-		}
-		if (scroll_status && scroll_status[0]){
-			viewport.Top -= scroll_status[1].nPos
-			viewport.Bottom -= scroll_status[1].nPos
-			viewport.Left -= scroll_status[0].nPos
-			viewport.Right -= scroll_status[0].nPos
 		}
 		
 		ScrollWidth := viewport.Right - viewport.Left
@@ -146,6 +146,18 @@ class ScrollingSubWindow extends Window {
 
 		; Update vertical scroll bar.
 		this.SetScrollInfo(this.Hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
+		
+		; If being window gets bigger while child items are clipped, drag the child items into view
+		if (viewport.Left < 0 && viewport.Right < GuiWidth){
+			x := Abs(viewport.Left) > GuiWidth-viewport.Right ? GuiWidth-viewport.Right : Abs(viewport.Left)
+		}
+		if (viewport.Top < 0 && viewport.Bottom < GuiHeight){
+			y := Abs(viewport.Top) > GuiHeight-viewport.Bottom ? GuiHeight-viewport.Bottom : Abs(viewport.Top)
+		}
+		if (x || y){
+			this.ScrollWindow(this.Hwnd, x, y)
+		}
+
 
 	}
 
