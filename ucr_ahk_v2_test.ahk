@@ -91,8 +91,7 @@ class ScrollingSubWindow extends Window {
 	
 	AddClicked(){
 		; Add child window at top left of canvas
-		offset := this.GetWindowOffSet(this.Hwnd)	; Get offset due to position of scroll bars
-		child := new ChildWindow(this, {x: 0 + offset.x, y: 0 + offset.y})
+		child := new ChildWindow(this, {x: 0, y: 0 })
 		this.ChildWindows[child.Hwnd] := child
 	}
 	
@@ -234,6 +233,11 @@ class ScrollingSubWindow extends Window {
 }
 
 ; A Child Window Within the scrolling sub-window
+; parent = parent CLASS
+; options = options to pass
+; (Currently only supports x and y)
+; Note that X and Y are RELATIVE TO THE CANVAS
+; Eg if the window is scrolled half way down, adding at 0, 0 inserts it out of view at the top left corner!
 class ChildWindow extends Window {
 	__New(parent, options := false){
 		this.parent := parent
@@ -247,6 +251,13 @@ class ChildWindow extends Window {
 				options.y := 0
 			}
 		}
+		
+		; Adjust coordinates to cater for current position of parent's scrollbar.
+		offset := this.GetWindowOffSet(this.parent.Hwnd)	; Get offset due to position of scroll bars
+		options.x += offset.x
+		options.y += offset.y
+		
+		; Create the GUI
 		this.Gui := GuiCreate("Child","+Parent" . this.parent.Hwnd,this)
 		this.Gui.AddLabel("I am " . this.Gui.Hwnd)	;this.Gui.Hwnd
 		this.debug := this.Gui.AddLabel("debug: ", "w200")	;this.Gui.Hwnd
