@@ -102,8 +102,6 @@ class ScrollingSubWindow extends Window {
 	OnSize(){
 		static SIF_RANGE := 0x1, SIF_PAGE := 0x2, SIF_DISABLENOSCROLL := 0x8, SB_HORZ := 0, SB_VERT := 1
 		
-		scroll_status := this.GetScrollInfos(this.Hwnd)
-
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 		ctr := 0
 		For key, value in this.ChildWindows {
