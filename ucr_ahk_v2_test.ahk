@@ -40,11 +40,11 @@ class CMainWindow extends CWindow {
 		this.Hwnd := this.Gui.Hwnd
 		
 		; Set up child GUI Canvas
-		this.ChildCanvas := new CScrollingSubWindow(this)
+		this.ChildCanvas := new CScrollingSubWindow(this, {name: "canvas"})
 		this.ChildCanvas.OnSize()
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CScrollingSubWindow(this)
+		this.TaskBar := new CScrollingSubWindow(this, {name: "taskbar"})
 		this.TaskBar.OnSize()
 		
 		
@@ -95,11 +95,20 @@ class CMainWindow extends CWindow {
 	}
 	
 	OnScroll(wParam, lParam, msg, hwnd){
+		; Is the current hwnd the TaskBar?
 		if (hwnd == this.TaskBar.Hwnd){
 			this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Hwnd)
-		} else {
-			this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Hwnd)
+			return
 		}
+		; Is the current hwnd a child of the TaskBar?
+		For key, value in this.TaskBar.ChildWindows {
+			if (hwnd == key){
+				this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Hwnd)
+				return
+			}
+		}
+		; Default route for scroll is ChildCanvas
+		this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Hwnd)
 	}
 }
 
