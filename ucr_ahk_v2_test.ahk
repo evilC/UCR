@@ -3,7 +3,7 @@
 
 #SingleInstance Force
 
-MainWindow := new MainWindow()
+MainWindow := new CMainWindow()
 
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x115, "OnScroll") ; WM_VSCROLL
@@ -23,7 +23,7 @@ OnScroll(wParam, lParam, msg, hwnd){
 	MainWindow.ScrollableSubWindow.OnScroll(wParam, lParam, msg, hwnd)
 }
 
-class MainWindow extends Window {
+class CMainWindow extends CWindow {
 	
 	__New(){
 		this.Gui := GuiCreate("Outer Parent","Resize",this)
@@ -34,7 +34,7 @@ class MainWindow extends Window {
 		this.Hwnd := this.Gui.Hwnd
 		
 		; Set up child GUIs
-		this.ScrollableSubWindow := new ScrollingSubWindow(this)
+		this.ScrollableSubWindow := new CScrollingSubWindow(this)
 		this.ScrollableSubWindow.OnSize()
 		
 		this.OnSize()
@@ -75,7 +75,7 @@ class MainWindow extends Window {
 	}
 }
 
-class ScrollingSubWindow extends Window {
+class CScrollingSubWindow extends CWindow {
 	__New(parent){
 		this.parent := parent
 		this.ChildWindows := []
@@ -91,7 +91,7 @@ class ScrollingSubWindow extends Window {
 	
 	AddClicked(){
 		; Add child window at top left of canvas
-		child := new ChildWindow(this, {x: 0, y: 0 })
+		child := new CChildWindow(this, {x: 0, y: 0 })
 		this.ChildWindows[child.Hwnd] := child
 	}
 	
@@ -238,7 +238,7 @@ class ScrollingSubWindow extends Window {
 ; (Currently only supports x and y)
 ; Note that X and Y are RELATIVE TO THE CANVAS
 ; Eg if the window is scrolled half way down, adding at 0, 0 inserts it out of view at the top left corner!
-class ChildWindow extends Window {
+class CChildWindow extends CWindow {
 	__New(parent, options := false){
 		this.parent := parent
 		if (!options){
@@ -281,7 +281,7 @@ class ChildWindow extends Window {
 }
 
 ; Helper functions
-class Window {
+class CWindow {
 	; Wrapper for WinGetPos
 	GetPos(hwnd){
 		WinGetPos(x, y, w, h, "ahk_id " hwnd)
