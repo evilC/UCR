@@ -101,12 +101,19 @@ class CMainWindow extends CWindow {
 			return
 		}
 		; Is the current hwnd a child of the TaskBar?
-		For key, value in this.TaskBar.ChildWindows {
-			if (hwnd == key){
+		h := hwnd
+		Loop {
+			h := this.GetParent(h)
+			if (h == this.TaskBar.Hwnd){
 				this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Hwnd)
 				return
 			}
+			if (!h){
+				break
+			}
+
 		}
+
 		; Default route for scroll is ChildCanvas
 		this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Hwnd)
 	}
@@ -139,19 +146,20 @@ class CScrollingSubWindow extends CWindow {
 	}
 	
 	ChildMinimized(hwnd){
+		; ChildCanvas -> TaskBar
 		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
 		this.ChildWindows[hwnd].Gui.Minimize()
 		
-		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows[hwnd]
-		this.ChildWindows.RemoveAt(hwnd)
+		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
+		this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
 	}
 	
 	ChildMaximized(hwnd){
-		this.ChildWindows[hwnd] := this.parent.TaskBar.ChildWindows[hwnd]
-		this.parent.TaskBar.ChildWindows.RemoveAt(hwnd)
+		; TaskBar -> ChildCanvas
+		this.parent.ChildCanvas.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
 		
-		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.Hwnd)
-
+		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
+		this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
 	}
 	
 	OnSize(){
@@ -468,6 +476,11 @@ class CWindow {
 		}
 		
 		return ret
+	}
+	
+	; Wrapper for GetParent DllCall
+	GetParent(hwnd){
+		return DllCall("GetParent", "Ptr", hwnd)
 	}
 	
 	SetDesc(str){
