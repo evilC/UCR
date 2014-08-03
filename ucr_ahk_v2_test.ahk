@@ -488,6 +488,7 @@ Class CTaskBarItem extends CWindow {
 		cw.IsMinimized := 1
 
 		this.Gui.BgColor := "0xEE0000"
+		this.parent.parent.ChildCanvas.Onsize()
 	}
 	
 	TaskMaximized(){
@@ -497,6 +498,7 @@ Class CTaskBarItem extends CWindow {
 		cw.Gui.Restore()
 		this.Gui.BgColor := "0x00EE00"
 		cw.IsMinimized := 0
+		this.parent.parent.ChildCanvas.Onsize()
 	}
 	
 	TaskBarItemClicked(){
