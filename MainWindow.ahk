@@ -38,9 +38,14 @@ WindowMove(wParam, lParam, msg, hwnd := 0){
 	}
 }
 
-; Detect click on TaskBar item
+; Detect clicks
 ClickHandler(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
+	; Click on ChildCanvas item = bring to front
+	if(MainWindow.ChildCanvas.ChildWindows[hwnd]){
+		WinMoveTop("ahk_id " . hwnd)
+	}
+	; Click on TaskBar Item = maximize / minimize
 	if (MainWindow.TaskBar.ChildWindows[hwnd]){
 		MainWindow.TaskBar.ChildWindows[hwnd].TaskBarItemClicked()
 	}
