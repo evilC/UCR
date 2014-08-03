@@ -78,11 +78,11 @@ class CMainWindow extends CWindow {
 		this.Hwnd := this.Gui.Hwnd
 		
 		; Set up child GUI Canvas
-		this.ChildCanvas := new CChildCanvasWindow(this, {name: "canvas"})
+		this.ChildCanvas := new CChildCanvasWindow(this, {name: "canvas", x: 200, y: 50})
 		this.ChildCanvas.OnSize()
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar", ChildCanvas: this.ChildCanvas})
+		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar", ChildCanvas: this.ChildCanvas, x: 0, y: 50})
 		this.TaskBar.OnSize()
 		
 		
@@ -92,7 +92,7 @@ class CMainWindow extends CWindow {
 	}
 
 	AddClicked(){
-		child := new CChildWindow(this.ChildCanvas, {x: 0, y: 0 })
+		child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0 })
 		this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		this.ChildCanvas.OnSize()
 
@@ -107,8 +107,6 @@ class CMainWindow extends CWindow {
 	
 	OnSize(){
 		; Size Scrollable Child Window
-		;Critical
-		
 		; Lots of hard wired values - would like to eliminate these!
 		r := this.GetClientRect(this.Hwnd)
 		r.b -= 50	; How far down from the top of the main gui does the child window start?
@@ -167,11 +165,43 @@ class CMainWindow extends CWindow {
 	}
 }
 
-; The ChildCanvas
+; The ChildCanvas Window - Child windows sit on this
 class CChildCanvasWindow extends CScrollingWindow {
 	ChildMinimized(hwnd){
 		this.parent.TaskBar.ChildWindows[this.ChildWindows[hwnd].TaskHwnd].TaskMinimized(hwnd)
 		this.OnSize()
 	}
+	
+	ChildClosed(hwnd){
+		For key, value in this.parent.TaskBar.ChildWindows {
+			if (key == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
+				; Remove TaskBar entry from TaskBarOrder
+				Loop this.parent.TaskBar.TaskBarOrder.Length() {
+					if(this.parent.TaskBar.TaskBarOrder[A_Index] == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
+						this.parent.TaskBar.TaskBarOrder.RemoveAt(A_Index)
+						break
+					}
+				}
+				this.parent.TaskBar.ChildWindows[key].Gui.Destroy()
+				this.parent.TaskBar.ChildWindows.Remove(key)
+				this.parent.TaskBar.Pack()
+				return
+			}
+		}
+		this.ChildWindows.Remove(hwnd)
+		this.OnSize()
+	}
 }
 
+; A window that resides in the ChildCanvas window
+class CChildCanvasSubWindow extends CChildWindow {
+	OnClose(){
+		this.parent.ChildClosed(this.Hwnd)
+	}
+	
+	OnSize(){
+		if (WinGetMinMax("ahk_id " . this.Hwnd) == -1){
+			this.parent.ChildMinimized(this.Hwnd)
+		}
+	}
+}

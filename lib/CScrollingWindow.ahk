@@ -1,59 +1,25 @@
+; A scrollable window class
 class CScrollingWindow extends CWindow {
 	Bottom := 0
 	Right := 0
 	__New(parent, options := 0){
 		this.parent := parent
-		if (options){
+		if (!options){
+			this.options := {x: 0, y: 0}
+		} else {
 			this.options := options
+			if (!options.x){
+				this.options.x := 0
+			}
+			if (!options.y){
+				this.options.y := 0
+			}
 		}
 		this.ChildWindows := []
 
 		this.Gui := GuiCreate("","-Border 0x300000 Parent" . this.parent.Hwnd, this)
-		this.Gui.Show("x0 y50 w10 h10")
+		this.Gui.Show("x" . this.options.x . " y" . this.options.y . " w10 h10")
 		this.Hwnd := this.Gui.Hwnd
-		
-		;OnMessage(0x115, OnScroll()) ; WM_VSCROLL
-		;OnMessage(0x114, OnScroll()) ; WM_HSCROLL
-
-	}
-	
-	/*
-	AddClicked(){
-		; Add child window at top left of canvas
-		child := new CChildWindow(this, {x: this.Bottom, y: this.Right })
-		this.Bottom += 30
-		this.Right += 30
-		
-		g := this.GetClientRect(this.Hwnd)
-		if (this.Bottom > g.b){
-			this.Bottom := 0
-		}
-		if (this.Right > g.r){
-			this.Right := 0
-		}
-		this.ChildWindows[child.Hwnd] := child
-		this.OnSize()
-	}
-	*/
-	
-	ChildClosed(hwnd){
-		For key, value in this.parent.TaskBar.ChildWindows {
-			if (key == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
-				; Remove TaskBar entry from TaskBarOrder
-				Loop this.parent.TaskBar.TaskBarOrder.Length() {
-					if(this.parent.TaskBar.TaskBarOrder[A_Index] == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
-						this.parent.TaskBar.TaskBarOrder.RemoveAt(A_Index)
-						break
-					}
-				}
-				this.parent.TaskBar.ChildWindows[key].Gui.Destroy()
-				this.parent.TaskBar.ChildWindows.Remove(key)
-				this.parent.TaskBar.Pack()
-				return
-			}
-		}
-		this.ChildWindows.Remove(hwnd)
-		this.OnSize()
 	}
 	
 	OnSize(){
@@ -63,10 +29,6 @@ class CScrollingWindow extends CWindow {
 		ctr := 0
 		For key, value in this.ChildWindows {
 			if (this.ChildWindows[key].IsMinimized){
-				continue
-			}
-			if (!this.ChildWindows[key]){
-				; ToDo: Why do I need this?
 				continue
 			}
 			pos := this.ChildWindows[key].GetClientPos()
