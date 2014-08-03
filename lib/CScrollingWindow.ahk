@@ -3,7 +3,9 @@ class CScrollingWindow extends CWindow {
 	Right := 0
 	__New(parent, options := 0){
 		this.parent := parent
-		this.options := options
+		if (options){
+			this.options := options
+		}
 		this.ChildWindows := []
 
 		this.Gui := GuiCreate("","-Border 0x300000 Parent" . this.parent.Hwnd, this)

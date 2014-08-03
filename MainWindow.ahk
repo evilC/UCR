@@ -4,7 +4,7 @@
 #include <CWindow>
 #include <CChildWindow>
 #include <CScrollingWindow>
-#include <CTaskBarItem>
+#include <CTaskBar>
 
 #SingleInstance Force
 #MaxHotkeysPerInterval 9999
@@ -82,7 +82,7 @@ class CMainWindow extends CWindow {
 		this.ChildCanvas.OnSize()
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar"})
+		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar", ChildCanvas: this.ChildCanvas})
 		this.TaskBar.OnSize()
 		
 		
@@ -96,7 +96,7 @@ class CMainWindow extends CWindow {
 		this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		this.ChildCanvas.OnSize()
 
-		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd })
+		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, ChildCanvas: this.ChildCanvas })
 		this.TaskBar.ChildWindows[task.Hwnd] := task
 		this.TaskBar.TaskBarOrder.Push(task.Hwnd)
 		
@@ -164,46 +164,6 @@ class CMainWindow extends CWindow {
 
 		; Default route for scroll is ChildCanvas
 		this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Hwnd)
-	}
-}
-
-; The TaskBar
-class CTaskBarWindow extends CScrollingWindow {
-	TaskBarOrder := []
-	ChildMaximized(hwnd){
-		this.ChildWindows[this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd].TaskMaximized()
-		
-		this.parent.ChildCanvas.OnSize()
-	}
-	
-	Sort(hwnd := 0){
-		static Bottom := 0
-		;Critical
-		if (hwnd){
-			WinMove("ahk_id " . hwnd,"", 0, Bottom)
-			Bottom += 30
-		} else {
-			Bottom := 0
-			For key, value in this.ChildWindows {
-				WinMove("ahk_id " . key,"", 0, Bottom)
-				Bottom += 30
-			}
-		}
-		this.OnSize()
-	}
-	
-	ChildClosed(hwnd){
-		base.ChildClosed(hwnd)
-		this.Sort()
-	}
-	
-	Pack(){
-		offset := this.GetWindowOffSet(this.Hwnd)
-		Bottom := 0 + offset.y
-		Loop this.TaskBarOrder.Length(){
-			WinMove("ahk_id " . this.TaskBarOrder[A_Index],"", 0, Bottom)
-			Bottom += 30
-		}
 	}
 }
 

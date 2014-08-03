@@ -1,3 +1,53 @@
+; The TaskBar
+class CTaskBarWindow extends CScrollingWindow {
+	__New(parent, options := 0){
+		
+		if (!options.ChildCanvas){
+			msgbox("ERROR: No Child Canvas specified for TaskBarItem")
+			ExitApp
+		}
+		base.__New(parent, options)
+
+	}
+
+	TaskBarOrder := []
+	ChildMaximized(hwnd){
+		this.ChildWindows[this.options.ChildCanvas.ChildWindows[hwnd].TaskHwnd].TaskMaximized()
+		
+		this.options.ChildCanvas.OnSize()
+	}
+	
+	Sort(hwnd := 0){
+		static Bottom := 0
+		;Critical
+		if (hwnd){
+			WinMove("ahk_id " . hwnd,"", 0, Bottom)
+			Bottom += 30
+		} else {
+			Bottom := 0
+			For key, value in this.ChildWindows {
+				WinMove("ahk_id " . key,"", 0, Bottom)
+				Bottom += 30
+			}
+		}
+		this.OnSize()
+	}
+	
+	ChildClosed(hwnd){
+		base.ChildClosed(hwnd)
+		this.Sort()
+	}
+	
+	Pack(){
+		offset := this.GetWindowOffSet(this.Hwnd)
+		Bottom := 0 + offset.y
+		Loop this.TaskBarOrder.Length(){
+			WinMove("ahk_id " . this.TaskBarOrder[A_Index],"", 0, Bottom)
+			Bottom += 30
+		}
+	}
+}
+
 Class CTaskBarItem extends CWindow {
 	__New(parent, options := false){
 		this.parent := parent
@@ -31,7 +81,8 @@ Class CTaskBarItem extends CWindow {
 		cw.IsMinimized := 1
 
 		this.Gui.BgColor := "0xEE0000"
-		this.parent.parent.ChildCanvas.Onsize()
+		;this.parent.parent.ChildCanvas.Onsize()
+		this.options.ChildCanvas.Onsize()
 	}
 	
 	TaskMaximized(){
@@ -41,7 +92,7 @@ Class CTaskBarItem extends CWindow {
 		cw.Gui.Restore()
 		this.Gui.BgColor := "0x00EE00"
 		cw.IsMinimized := 0
-		this.parent.parent.ChildCanvas.Onsize()
+		this.options.ChildCanvas.Onsize()
 	}
 	
 	TaskBarItemClicked(){
@@ -54,6 +105,6 @@ Class CTaskBarItem extends CWindow {
 	}
 	
 	GetChildWindow(){
-		return this.parent.parent.ChildCanvas.ChildWindows[this.options.MainHwnd]
+		return this.options.ChildCanvas.ChildWindows[this.options.MainHwnd]
 	}
 }
