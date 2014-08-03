@@ -89,9 +89,9 @@ class CMainWindow extends CWindow {
 			tb.b -= 16
 		}
 		
-		this.ChildCanvas.Gui.Show("x0 y50 w" . cc.r - 200 . " h" . cc.b)
+		this.ChildCanvas.Gui.Show("x200 y50 w" . cc.r - 200 . " h" . cc.b)
 		
-		this.TaskBar.Gui.Show("x" . tb.r - 180 " y50 w180 h" . tb.b)
+		this.TaskBar.Gui.Show("x0 y50 w180 h" . tb.b)
 	}
 	
 	OnScroll(wParam, lParam, msg, hwnd){
@@ -152,6 +152,8 @@ class CScrollingSubWindow extends CWindow {
 		
 		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
 		this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
+		this.parent.TaskBar.OnSize()
+		this.OnSize()
 	}
 	
 	ChildMaximized(hwnd){
@@ -160,6 +162,8 @@ class CScrollingSubWindow extends CWindow {
 		
 		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
 		this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
+		this.parent.ChildCanvas.OnSize()
+		this.OnSize()
 	}
 	
 	OnSize(){
