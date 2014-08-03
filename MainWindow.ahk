@@ -187,10 +187,11 @@ class CChildCanvasWindow extends CScrollingWindow {
 				this.parent.TaskBar.ChildWindows[key].Gui.Destroy()
 				this.parent.TaskBar.ChildWindows.Remove(key)
 				this.parent.TaskBar.Pack()
-				return
+				break
 			}
 		}
 		this.ChildWindows.Remove(hwnd)
+
 		this.OnSize()
 	}
 }
