@@ -67,9 +67,9 @@ Class CTaskBarItem extends CWindow {
 		options.y += offset.y
 		
 		; Create the GUI
-		this.Gui := GuiCreate("Child","-Border +Parent" . this.parent.Hwnd,this)
-		this.Gui.AddLabel("I am " . this.options.MainHwnd)	;this.Gui.Hwnd
-		this.Gui.BgColor := "0x00EE00"
+		this.Gui := GuiCreate(this.options.title ,"-Border +Parent" . this.parent.Hwnd,this)
+		this.Gui.AddLabel(this.options.title)	;this.Gui.Hwnd
+		this.TaskMaximized()
 		this.Gui.Show("x" . options.x . " y" . options.y . " w150 h25")
 		
 		this.Hwnd := this.Gui.Hwnd

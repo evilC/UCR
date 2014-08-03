@@ -92,17 +92,19 @@ class CMainWindow extends CWindow {
 	}
 
 	AddClicked(){
-		child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0 })
+		static WinNum := 1
+		child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0, title: "Child " . WinNum })
 		this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		this.ChildCanvas.OnSize()
 
-		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, ChildCanvas: this.ChildCanvas })
+		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, ChildCanvas: this.ChildCanvas, title: "Child " . WinNum })
 		this.TaskBar.ChildWindows[task.Hwnd] := task
 		this.TaskBar.TaskBarOrder.Push(task.Hwnd)
 		
 		this.ChildCanvas.ChildWindows[child.Hwnd].TaskHwnd := task.hwnd
 		this.TaskBar.OnSize()
 
+		WinNum++
 	}
 	
 	OnSize(){
@@ -195,6 +197,11 @@ class CChildCanvasWindow extends CScrollingWindow {
 
 ; A window that resides in the ChildCanvas window
 class CChildCanvasSubWindow extends CChildWindow {
+	__New(parent, options){
+		base.__New(parent, options)
+		this.Gui.AddLabel("I am " . this.Gui.Hwnd)	;this.Gui.Hwnd
+	}
+	
 	OnClose(){
 		this.parent.ChildClosed(this.Hwnd)
 	}

@@ -25,6 +25,8 @@ class CScrollingWindow extends CWindow {
 	OnSize(){
 		static SIF_RANGE := 0x1, SIF_PAGE := 0x2, SIF_DISABLENOSCROLL := 0x8, SB_HORZ := 0, SB_VERT := 1
 		
+		; ToDo: Check if window contains any controls, and include those in the viewport calcs.
+		
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 		ctr := 0
 		For key, value in this.ChildWindows {
