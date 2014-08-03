@@ -29,8 +29,8 @@ OnScroll(wParam, lParam, msg, hwnd := 0){
 	MainWindow.OnScroll(wParam, lParam, msg, hwnd)
 }
 
+; The Main Window
 class CMainWindow extends CWindow {
-	
 	__New(){
 		this.Gui := GuiCreate("Outer Parent","Resize",this)
 		this.Gui.AddButton("Add","gAddClicked")
@@ -40,11 +40,11 @@ class CMainWindow extends CWindow {
 		this.Hwnd := this.Gui.Hwnd
 		
 		; Set up child GUI Canvas
-		this.ChildCanvas := new CScrollingSubWindow(this, {name: "canvas"})
+		this.ChildCanvas := new CChildCanvasWindow(this, {name: "canvas"})
 		this.ChildCanvas.OnSize()
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CScrollingSubWindow(this, {name: "taskbar"})
+		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar"})
 		this.TaskBar.OnSize()
 		
 		
@@ -119,6 +119,34 @@ class CMainWindow extends CWindow {
 	}
 }
 
+; The TaskBar
+class CTaskBarWindow extends CScrollingSubWindow {
+	ChildMaximized(hwnd){
+		; TaskBar -> ChildCanvas
+		this.parent.ChildCanvas.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
+		
+		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
+		this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
+		this.parent.ChildCanvas.OnSize()
+		this.OnSize()
+	}
+}
+
+; The ChildCanvas
+class CChildCanvasWindow extends CScrollingSubWindow {
+	ChildMinimized(hwnd){
+		; ChildCanvas -> TaskBar
+		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
+		this.ChildWindows[hwnd].Gui.Minimize()
+		
+		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
+		this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
+		this.parent.TaskBar.OnSize()
+		this.OnSize()
+	}
+}
+
+; Classes below here are intended to be fairly implementation-agnostic
 class CScrollingSubWindow extends CWindow {
 	__New(parent, options := 0){
 		this.parent := parent
@@ -142,27 +170,6 @@ class CScrollingSubWindow extends CWindow {
 	
 	ChildClosed(hwnd){
 		this.ChildWindows.RemoveAt(hwnd)
-		this.OnSize()
-	}
-	
-	ChildMinimized(hwnd){
-		; ChildCanvas -> TaskBar
-		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
-		this.ChildWindows[hwnd].Gui.Minimize()
-		
-		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
-		this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
-		this.parent.TaskBar.OnSize()
-		this.OnSize()
-	}
-	
-	ChildMaximized(hwnd){
-		; TaskBar -> ChildCanvas
-		this.parent.ChildCanvas.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
-		
-		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
-		this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
-		this.parent.ChildCanvas.OnSize()
 		this.OnSize()
 	}
 	
