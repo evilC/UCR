@@ -1,73 +1,22 @@
-; General helper functions for all UCR windows
-#include <CWindow> ; http://www.autohotkey.com/board/topic/88225-
-#include <JSON>	; http://ahkscript.org/boards/viewtopic.php?f=6&t=627
-
-Class UCRWindow extends CWindow {
-	__New(title := "", options := ""){
-		base.__New(title, options)
+; Helper functions
+class CWindow {
+	; Wrapper for WinGetPos
+	GetPos(hwnd){
+		WinGetPos(x, y, w, h, "ahk_id " hwnd)
+		return {x: x, y: y, w: w, h: h}
 	}
-
+	
 	; Wrapper for GetClientRect DllCall
 	; Gets "Client" (internal) area of a window
 	GetClientRect(hwnd){
-		Gui, %hwnd%: +LastFound
 		VarSetCapacity(rect, 16, 0)
         DllCall("GetClientRect", "Ptr", hwnd, "Ptr", &rect)
-        ;return {w: NumGet(rect, 8, "Int"), h: NumGet(rect, 12, "Int")}
         return {l: NumGet(rect, 0, "Int"), t: NumGet(rect, 4, "Int") , r: NumGet(rect, 8, "Int"), b: NumGet(rect, 12, "Int")}
 	}
-
-	; Wrapper for ScreenToClient DllCall
-	; returns offset between screen and client coords
-	ScreenToClient(hwnd, x, y){
-		VarSetCapacity(pt, 16)
-		NumPut(x,pt,0)
-		NumPut(y,pt,4)
-		DllCall("ScreenToClient", "uint", hwnd, "Ptr", &pt)
-		x := NumGet(pt, 0, "long")
-		y := NumGet(pt, 4, "long")
-		
-		return {x: x, y: y}
-	}
-
-	; Convert passed Edge object from screen coords to client rect coords
-	AdjustToClientCoords(hwnd, obj){
-		; find offset for upper left corner of client rect
-		tmp := this.ScreenToClient(hwnd, 0, 0)
-		
-		; Offset passed Edge object
-    	obj.Left += tmp.x
-    	obj.Right += tmp.x
-    	obj.Top += tmp.y
-    	obj.Bottom += tmp.y
-    	return obj
-	}
-
-	; Returns Edge coordinates of child (Relative to parent window - ie due to scrolling)
-	GetChildEdges(pHwnd, cHwnd){
-		cw := this.GetEdges(cHwnd)
-		cw := this.AdjustToClientCoords(pHwnd,cw)
-		return cw
-	}
-
-	; Get Edges
-	; Note: Coordinates are relative to the SCREEN
-	GetEdges(hwnd){
-		Gui, %hwnd%: +LastFound
-		WinGetPos x, y, w, h
-		return {Top: y, Left: x, Right: x + w, Bottom: y + h}
-	}
-
-	; Wrapper for WinGetPos
-	GetPos(hwnd){
-		Gui, %hwnd%: +LastFound
-		WinGetPos x, y, w, h
-		return {x: x, y: y, w: w, h: h}
-	}
-
+	
 	; Wrapper for GetScrollInfo DllCall
 	GetScrollInfo(hwnd, bar){
-		static SIF_ALL=0x17
+		static SIF_ALL := 0x17
 
 	    VarSetCapacity(si, 28, 0)
 	    NumPut(28, si) ; cbSize
@@ -86,11 +35,17 @@ Class UCRWindow extends CWindow {
 			return 0
 		}
 	}
+	
+	GetScrollInfos(hwnd){
+		ret := []
+		ret[0] := this.GetScrollInfo(hwnd, 0)
+		ret[1] := this.GetScrollInfo(hwnd, 1)
+		return ret
+	}
+
 
 	; Wrapper for SetScrollInfo DllCall
 	SetScrollInfo(hwnd, bar, scrollinfo){
-		;static SIF_ALL=0x17
-
 		VarSetCapacity(si, 28, 0)
 		NumPut(28, si) ; cbSize
 		
@@ -121,6 +76,19 @@ Class UCRWindow extends CWindow {
 		DllCall("ScrollWindow", "uint", hwnd, "int", x, "int", y, "uint", 0, "uint", 0)
 	}
 
+	; Wrapper for ScreenToClient DllCall
+	; returns offset between screen and client coords
+	ScreenToClient(hwnd, x, y){
+		VarSetCapacity(pt, 16)
+		NumPut(x,pt,0)
+		NumPut(y,pt,4)
+		DllCall("ScreenToClient", "uint", hwnd, "Ptr", &pt)
+		x := NumGet(pt, 0, "long")
+		y := NumGet(pt, 4, "long")
+		
+		return {x: x, y: y}
+	}
+
 	GetScrollBarVisibility(hwnd){
 		static WS_HSCROLL := 0x00100000
 		static WS_VSCROLL := 0x00200000
@@ -130,5 +98,40 @@ Class UCRWindow extends CWindow {
 		out.x := (ret & WS_HSCROLL) > 0
 		out.y := (ret & WS_VSCROLL) > 0
 		return out
+	}
+
+	; Get the offset of the canvas of a window due to scrollbar position
+	GetWindowOffSet(hwnd){
+		ret := {x: 0, y: 0}
+		info := this.GetScrollInfos(hwnd)
+		if (info[0] == 0){
+			; No x scroll bar
+			ret.x := 0
+		} else {
+			ret.x := info[0].nPos * -1
+		}
+		
+		if (info[1] == 0){
+			; No y scroll bar
+			ret.y := 0
+		} else {
+			ret.y := info[1].nPos * -1
+		}
+		
+		return ret
+	}
+	
+	; Wrapper for GetParent DllCall
+	GetParent(hwnd){
+		return DllCall("GetParent", "Ptr", hwnd)
+	}
+	
+	; Gets position of a child window relative to it's parent's RECT
+	GetClientPos(){
+		pos := this.GetPos(this.Hwnd)
+		offset := this.ScreenToClient(this.parent.Hwnd, x, y)
+		pos.x += offset.x
+		pos.y += offset.y
+		return pos
 	}
 }
