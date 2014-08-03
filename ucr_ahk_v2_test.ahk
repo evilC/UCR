@@ -6,9 +6,12 @@
 
 MainWindow := new CMainWindow()
 
+
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 OnMessage(0x114, "OnScroll") ; WM_HSCROLL
+OnMessage(0x112,"PreMinimize")
+
 #IfWinActive ahk_group MyGui
 ~WheelUp::
 ~WheelDown::
@@ -19,6 +22,17 @@ OnMessage(0x114, "OnScroll") ; WM_HSCROLL
     OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
 return
 #IfWinActive
+
+; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
+PreMinimize(wParam, lParam, msg, hwnd := 0){
+	global MainWindow
+	if (wParam == 0xF020){
+		;Minimize
+		if (MainWindow.ChildCanvas.ChildWindows[hwnd]){
+			MainWindow.ChildCanvas.ChildWindows[hwnd].Gui.Hide()
+		}
+	}
+}
 
 OnScroll(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
@@ -122,32 +136,64 @@ class CMainWindow extends CWindow {
 ; The TaskBar
 class CTaskBarWindow extends CScrollingSubWindow {
 	ChildMaximized(hwnd){
+		Critical
 		; TaskBar -> ChildCanvas
 		this.parent.ChildCanvas.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
 		
 		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
 		this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
+		
+		this.RevertSystemMenu(hwnd)
+		
 		this.parent.ChildCanvas.OnSize()
+		this.Sort()
+	}
+	
+	Sort(hwnd := 0){
+		static Bottom := 0
+		Critical
+		if (hwnd){
+			WinMove("ahk_id " . hwnd,"", 0, Bottom)
+			Bottom += 30
+		} else {
+			Bottom := 0
+			For key, value in this.ChildWindows {
+				WinMove("ahk_id " . key,"", 0, Bottom)
+				Bottom += 30
+			}
+		}
 		this.OnSize()
+	}
+	
+	ChildClosed(hwnd){
+		base.ChildClosed(hwnd)
+		this.Sort()
 	}
 }
 
 ; The ChildCanvas
 class CChildCanvasWindow extends CScrollingSubWindow {
 	ChildMinimized(hwnd){
+		Critical
 		; ChildCanvas -> TaskBar
+		this.ChildWindows[hwnd].Gui.Hide()
 		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
 		this.ChildWindows[hwnd].Gui.Minimize()
 		
+		this.DisableWindowMoving(hwnd)
+
 		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
 		this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
-		this.parent.TaskBar.OnSize()
+
+		this.parent.TaskBar.Sort(hwnd)
 		this.OnSize()
 	}
 }
 
 ; Classes below here are intended to be fairly implementation-agnostic
 class CScrollingSubWindow extends CWindow {
+	Bottom := 0
+	Right := 0
 	__New(parent, options := 0){
 		this.parent := parent
 		this.options := options
@@ -164,12 +210,23 @@ class CScrollingSubWindow extends CWindow {
 	
 	AddClicked(){
 		; Add child window at top left of canvas
-		child := new CChildWindow(this, {x: 0, y: 0 })
+		child := new CChildWindow(this, {x: this.Bottom, y: this.Right })
+		this.Bottom += 30
+		this.Right += 30
+		
+		g := this.GetClientRect(this.Hwnd)
+		if (this.Bottom > g.b){
+			this.Bottom := 0
+		}
+		if (this.Right > g.r){
+			this.Right := 0
+		}
 		this.ChildWindows[child.Hwnd] := child
+		this.OnSize()
 	}
 	
 	ChildClosed(hwnd){
-		this.ChildWindows.RemoveAt(hwnd)
+		this.ChildWindows.Remove(hwnd)
 		this.OnSize()
 	}
 	
@@ -500,4 +557,120 @@ class CWindow {
 		}
 	}
 
+	; Huba's Window System Menu Manipulator Library - http://www.autohotkey.com/board/topic/17759-
+	GetSystemMenu(ByRef hWnd, Revert := False)  ; Get system menu handle
+	{
+	  hWnd := hWnd ? hWnd : WinExist("A")  ; Active window handle
+	  Return DllCall("GetSystemMenu", "UInt", hWnd, "UInt", Revert)
+	}
+
+	DrawMenuBar(hWnd)  ; Internal function: this is needed to apply menu changes
+	{
+	  Return DllCall("DrawMenuBar", "UInt", hWnd)
+	}
+
+	RevertSystemMenu(hWnd := "")  ; Restores all removed menu items
+	{
+	  Return this.DrawMenuBar(this.GetSystemMenu(hWnd, True))  ; Revert system menu
+	}
+
+
+	RemoveMenu(hWnd, Position, Flags := 0)  ; MF_BYCOMMAND = 0x0000
+	{
+	  DllCall("RemoveMenu", "UInt", this.GetSystemMenu(hWnd), "UInt", Position, "UInt", Flags)
+	  Return this.DrawMenuBar(hWnd)
+	}
+
+	DeleteWindowResizing(hWnd := "") {
+	  Return this.RemoveMenu(hWnd, 0xF000)  ; SC_SIZE = 0xF000
+	}
+
+	DeleteWindowMoving(hWnd := "") {
+	  Return this.RemoveMenu(hWnd, 0xF010)  ; SC_MOVE = 0xF010
+	}
+
+	DeleteWindowMinimizing(hWnd := "") {
+	  Return this.RemoveMenu(hWnd, 0xF020)  ; SC_MINIMIZE = 0xF020
+	}
+
+	DeleteWindowMaximizing(hWnd := "") {
+	  Return this.RemoveMenu(hWnd, 0xF030)  ; SC_MAXIMIZE = 0xF030
+	}
+
+	DeleteWindowArranging(hWnd := "") {
+	  Return this.RemoveMenu(hWnd, 0xF110)  ; SC_ARRANGE = 0xF110
+	}
+
+	DeleteWindowRestoring(hWnd := "") {
+	  Return this.RemoveMenu(hWnd, 0xF120)  ; SC_RESTORE = 0xF120
+	}
+
+	DeleteWindowClosing(hWnd := "") {
+	  Return this.RemoveMenu(hWnd, 0xF060)  ; SC_CLOSE = 0xF060
+	}
+
+	DeleteWindowMenuSeparator(hWnd := "") {  ; Removes the line above Close menuitem
+	  Return this.RemoveMenu(hWnd, 0)
+	}
+
+
+	EnableMenuItem(hWnd, SystemCommand, EnableFlag)
+	{
+	  DllCall("EnableMenuItem", "UInt", this.GetSystemMenu(hWnd), "UInt", SystemCommand, "UInt", EnableFlag)  ; MF_BYCOMMAND = 0
+	  Return this.DrawMenuBar(hWnd)
+	}
+
+
+	DisableWindowResizing(hWnd := "") {
+	  Return this.DeleteWindowResizing()  ; Disabling has no effect, use delete instead
+	}
+
+	DisableWindowMoving(hWnd := "") {
+	  Return this.DeleteWindowMoving(hWnd)
+	}
+
+	DisableWindowMinimizing(hWnd := "") {
+	  Return this.DeleteWindowMinimizing()
+	}
+
+	DisableWindowMaximizing(hWnd := "") {
+	  Return this.DeleteWindowMaximizing()
+	}
+
+	DisableWindowArranging(hWnd := "") {
+	  Return this.DeleteWindowArranging()
+	}
+
+	DisableWindowRestoring(hWnd := "") {
+	  Return this.DeleteWindowRestoring()
+	}
+
+	DisableWindowClosing(hWnd := "") {
+	  Return this.EnableMenuItem(hWnd, 0xF060, 1)  ; MF_GRAYED = 0x0001
+	}
+
+
+	EnableWindowResizing(hWnd := "") {
+	  Return this.EnableMenuItem(hWnd, 0xF000, 0)  ; MF_ENABLED = 0x0000
+	}
+
+	EnableWindowMoving(hWnd := "") {
+	  Return this.EnableMenuItem(hWnd, 0xF010, 0)
+	}
+
+	EnableWindowMinimizing(hWnd := "") {
+	  Return this.EnableMenuItem(hWnd, 0xF020, 0)
+	}
+
+	EnableWindowMaximizing(hWnd := "") {
+	  Return this.EnableMenuItem(hWnd, 0xF030, 0)
+	}
+
+	EnableWindowArranging(hWnd := "") {
+	  Return this.EnableMenuItem(hWnd, 0xF110, 0)
+	}
+
+	EnableWindowRestoring(hWnd := "") {
+	  Return this.EnableMenuItem(hWnd, 0xF120, 0)
+	}
 }
