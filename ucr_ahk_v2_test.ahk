@@ -193,7 +193,8 @@ class CTaskBarWindow extends CScrollingSubWindow {
 	}
 	
 	Pack(){
-		Bottom := 0
+		offset := this.GetWindowOffSet(this.Hwnd)
+		Bottom := 0 + offset.y
 		Loop this.TaskBarOrder.Length(){
 			WinMove("ahk_id " . this.TaskBarOrder[A_Index],"", 0, Bottom)
 			Bottom += 30
