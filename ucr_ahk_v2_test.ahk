@@ -58,7 +58,6 @@ class CMainWindow extends CWindow {
 	__New(){
 		this.Gui := GuiCreate("Outer Parent","Resize",this)
 		this.Gui.AddButton("Add","gAddClicked")
-		this.debug := this.Gui.AddLabel("debug: ","w500")
 		
 		this.Gui.Show("x0 y0 w600 h500")
 		this.Hwnd := this.Gui.Hwnd
@@ -312,7 +311,6 @@ class CScrollingSubWindow extends CWindow {
 				viewport.Right := right
 			}
 			
-			this.ChildWindows[key].SetDesc("b: " bot ", y: " pos.y ", h: " pos.h)
 			ctr++
 		}
 		if (!ctr){
@@ -330,8 +328,6 @@ class CScrollingSubWindow extends CWindow {
 		g := this.GetClientRect(this.Hwnd)
 		GuiWidth := g.r
 		GuiHeight := g.b
-
-		this.parent.SetDesc("SUB_GUI DEBUG: Lowest Widget Bottom: " . viewport.Bottom . ", GuiHeight: " . GuiHeight)
 
 		; Update horizontal scroll bar.
 		this.SetScrollInfo(this.Hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
@@ -453,7 +449,6 @@ class CChildWindow extends CWindow {
 		; Create the GUI
 		this.Gui := GuiCreate("Child","+Parent" . this.parent.Hwnd,this)
 		this.Gui.AddLabel("I am " . this.Gui.Hwnd)	;this.Gui.Hwnd
-		this.debug := this.Gui.AddLabel("debug: ", "w200")	;this.Gui.Hwnd
 		this.Gui.Show("x" . options.x . " y" . options.y . " w300 h100")
 		
 		this.Hwnd := this.Gui.Hwnd
@@ -650,12 +645,6 @@ class CWindow {
 	; Wrapper for GetParent DllCall
 	GetParent(hwnd){
 		return DllCall("GetParent", "Ptr", hwnd)
-	}
-	
-	SetDesc(str){
-		if (this.debug){
-			this.debug.Value := str
-		}
 	}
 	
 	; Gets position of a child window relative to it's parent's RECT
