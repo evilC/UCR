@@ -90,6 +90,7 @@ Class CTaskBarItem extends CWindow {
 		
 		;this.parent.ChildMaximized(this.options.MainHwnd)
 		cw.Gui.Restore()
+		WinMoveTop("ahk_id " . cw.Hwnd)
 		this.Gui.BgColor := "0x00EE00"
 		cw.IsMinimized := 0
 		this.options.ChildCanvas.Onsize()

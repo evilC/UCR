@@ -95,6 +95,7 @@ class CMainWindow extends CWindow {
 		static WinNum := 1
 		child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0, title: "Child " . WinNum })
 		this.ChildCanvas.ChildWindows[child.Hwnd] := child
+		WinMoveTop("ahk_id " . child.Hwnd)
 		this.ChildCanvas.OnSize()
 
 		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, ChildCanvas: this.ChildCanvas, title: "Child " . WinNum })
@@ -192,6 +193,7 @@ class CChildCanvasWindow extends CScrollingWindow {
 		}
 		this.ChildWindows.Remove(hwnd)
 
+		this.parent.TaskBar.OnSize()
 		this.OnSize()
 	}
 }
