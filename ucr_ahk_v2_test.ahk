@@ -156,18 +156,9 @@ class CMainWindow extends CWindow {
 class CTaskBarWindow extends CScrollingSubWindow {
 	TaskBarOrder := []
 	ChildMaximized(hwnd){
-		;Critical
-		; TaskBar -> ChildCanvas
-		;this.parent.ChildCanvas.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
-		
-		;this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
-		;this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
-		
-		;this.RevertSystemMenu(hwnd)
-		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Restore()
+		this.ChildWindows[this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd].TaskMaximized()
 		
 		this.parent.ChildCanvas.OnSize()
-		;this.Sort()
 	}
 	
 	Sort(hwnd := 0){
@@ -204,23 +195,6 @@ class CTaskBarWindow extends CScrollingSubWindow {
 ; The ChildCanvas
 class CChildCanvasWindow extends CScrollingSubWindow {
 	ChildMinimized(hwnd){
-		;Critical
-		; ChildCanvas -> TaskBar
-		;this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
-		;this.ChildWindows[hwnd].Gui.Minimize()
-		
-		;this.DisableWindowMoving(hwnd)
-
-		;this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
-		;this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
-
-		;this.parent.TaskBar.Sort(hwnd)
-		;this.parent.ChildCan.ChildWindows[hwnd]
-		;this.ChildWindows[hwnd].TaskHwnd
-		
-		;this.ChildWindows[hwnd].Gui.Hide()
-		;this.ChildWindows[hwnd].IsMinimized := 1
-
 		this.parent.TaskBar.ChildWindows[this.ChildWindows[hwnd].TaskHwnd].TaskMinimized(hwnd)
 		this.OnSize()
 	}
@@ -497,25 +471,34 @@ Class CTaskBarItem extends CWindow {
 		this.Hwnd := this.Gui.Hwnd
 	}
 	
-	TaskMinimized(hwnd){
-		this.parent.parent.ChildCanvas.ChildWindows[hwnd].Gui.Hide()
-		this.parent.parent.ChildCanvas.ChildWindows[hwnd].IsMinimized := 1
+	TaskMinimized(){
+		cw := this.GetChildWindow()
+		cw.Gui.Hide()
+		cw.IsMinimized := 1
 
 		this.Gui.BgColor := "0xEE0000"
 	}
 	
 	TaskMaximized(){
+		cw := this.GetChildWindow()
 		
+		;this.parent.ChildMaximized(this.options.MainHwnd)
+		cw.Gui.Restore()
+		this.Gui.BgColor := "0x00EE00"
+		cw.IsMinimized := 0
 	}
 	
 	TaskBarItemClicked(){
-		if (this.parent.parent.ChildCanvas.ChildWindows[this.options.MainHwnd].IsMinimized){
-			this.parent.ChildMaximized(this.options.MainHwnd)
-			this.Gui.BgColor := "0x00EE00"
-			this.parent.parent.ChildCanvas.ChildWindows[this.options.MainHwnd].IsMinimized := 0
+		cw := this.GetChildWindow()
+		if (cw.IsMinimized){
+			this.TaskMaximized()
 		} else {
-			this.TaskMinimized(this.options.MainHwnd)
+			this.TaskMinimized()
 		}
+	}
+	
+	GetChildWindow(){
+		return this.parent.parent.ChildCanvas.ChildWindows[this.options.MainHwnd]
 	}
 }
 
