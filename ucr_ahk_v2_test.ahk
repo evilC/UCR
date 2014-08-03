@@ -12,6 +12,8 @@ OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 ;OnMessage(0x112,"PreMinimize")
 OnMessage(0x202, "ClickHandler")	; 0x202 = WM_LBUTTONUP. WM_LBUTTONDOWN seems to fire twice ?!
+OnMessage(0x46, "WindowMove")
+
 
 #IfWinActive ahk_group MyGui
 ~WheelUp::
@@ -24,6 +26,15 @@ OnMessage(0x202, "ClickHandler")	; 0x202 = WM_LBUTTONUP. WM_LBUTTONDOWN seems to
 return
 #IfWinActive
 
+; Detect drag of child windows and update scrollbars accordingly
+WindowMove(wParam, lParam, msg, hwnd := 0){
+	global MainWindow
+	if (MainWindow.ChildCanvas.ChildWindows[hwnd]){
+		MainWindow.ChildCanvas.OnSize()
+	}
+}
+
+; Detect click on TaskBar item
 ClickHandler(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
 	if (MainWindow.TaskBar.ChildWindows[hwnd]){
