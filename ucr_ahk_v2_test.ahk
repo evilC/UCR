@@ -10,7 +10,8 @@ MainWindow := new CMainWindow()
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 OnMessage(0x114, "OnScroll") ; WM_HSCROLL
-OnMessage(0x112,"PreMinimize")
+;OnMessage(0x112,"PreMinimize")
+OnMessage(0x202, "ClickHandler")	; 0x202 = WM_LBUTTONUP. WM_LBUTTONDOWN seems to fire twice ?!
 
 #IfWinActive ahk_group MyGui
 ~WheelUp::
@@ -23,6 +24,14 @@ OnMessage(0x112,"PreMinimize")
 return
 #IfWinActive
 
+ClickHandler(wParam, lParam, msg, hwnd := 0){
+	global MainWindow
+	if (MainWindow.TaskBar.ChildWindows[hwnd]){
+		MainWindow.TaskBar.ChildWindows[hwnd].TaskBarItemClicked()
+	}
+}
+
+/*
 ; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
 PreMinimize(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
@@ -33,6 +42,7 @@ PreMinimize(wParam, lParam, msg, hwnd := 0){
 		}
 	}
 }
+*/
 
 OnScroll(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
@@ -68,7 +78,17 @@ class CMainWindow extends CWindow {
 	}
 
 	AddClicked(){
-		this.ChildCanvas.AddClicked()
+		child := new CChildWindow(this.ChildCanvas, {x: 0, y: 0 })
+		this.ChildCanvas.ChildWindows[child.Hwnd] := child
+		this.ChildCanvas.OnSize()
+
+		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd })
+		this.TaskBar.ChildWindows[task.Hwnd] := task
+		this.TaskBar.TaskBarOrder.Push(task.Hwnd)
+		
+		this.ChildCanvas.ChildWindows[child.Hwnd].TaskHwnd := task.hwnd
+		this.TaskBar.OnSize()
+
 	}
 	
 	OnSize(){
@@ -135,23 +155,25 @@ class CMainWindow extends CWindow {
 
 ; The TaskBar
 class CTaskBarWindow extends CScrollingSubWindow {
+	TaskBarOrder := []
 	ChildMaximized(hwnd){
-		Critical
+		;Critical
 		; TaskBar -> ChildCanvas
-		this.parent.ChildCanvas.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
+		;this.parent.ChildCanvas.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
 		
-		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
-		this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
+		;this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.ChildCanvas.Hwnd)
+		;this.parent.ChildCanvas.ChildWindows[hwnd].parent := this.parent.ChildCanvas
 		
-		this.RevertSystemMenu(hwnd)
+		;this.RevertSystemMenu(hwnd)
+		this.parent.ChildCanvas.ChildWindows[hwnd].Gui.Restore()
 		
 		this.parent.ChildCanvas.OnSize()
-		this.Sort()
+		;this.Sort()
 	}
 	
 	Sort(hwnd := 0){
 		static Bottom := 0
-		Critical
+		;Critical
 		if (hwnd){
 			WinMove("ahk_id " . hwnd,"", 0, Bottom)
 			Bottom += 30
@@ -169,28 +191,41 @@ class CTaskBarWindow extends CScrollingSubWindow {
 		base.ChildClosed(hwnd)
 		this.Sort()
 	}
+	
+	Pack(){
+		Bottom := 0
+		Loop this.TaskBarOrder.Length(){
+			WinMove("ahk_id " . this.TaskBarOrder[A_Index],"", 0, Bottom)
+			Bottom += 30
+		}
+	}
 }
 
 ; The ChildCanvas
 class CChildCanvasWindow extends CScrollingSubWindow {
 	ChildMinimized(hwnd){
-		Critical
+		;Critical
 		; ChildCanvas -> TaskBar
-		this.ChildWindows[hwnd].Gui.Hide()
-		this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
-		this.ChildWindows[hwnd].Gui.Minimize()
+		;this.ChildWindows[hwnd].Gui.Options("+Parent" . this.parent.TaskBar.Hwnd)
+		;this.ChildWindows[hwnd].Gui.Minimize()
 		
-		this.DisableWindowMoving(hwnd)
+		;this.DisableWindowMoving(hwnd)
 
-		this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
-		this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
+		;this.parent.TaskBar.ChildWindows[hwnd] := this.ChildWindows.Remove(hwnd)
+		;this.parent.TaskBar.ChildWindows[hwnd].parent := this.parent.TaskBar
 
-		this.parent.TaskBar.Sort(hwnd)
+		;this.parent.TaskBar.Sort(hwnd)
+		;this.parent.ChildCan.ChildWindows[hwnd]
+		;this.ChildWindows[hwnd].TaskHwnd
+		
+		;this.ChildWindows[hwnd].Gui.Hide()
+		;this.ChildWindows[hwnd].IsMinimized := 1
+
+		this.parent.TaskBar.ChildWindows[this.ChildWindows[hwnd].TaskHwnd].TaskMinimized(hwnd)
 		this.OnSize()
 	}
 }
 
-; Classes below here are intended to be fairly implementation-agnostic
 class CScrollingSubWindow extends CWindow {
 	Bottom := 0
 	Right := 0
@@ -208,6 +243,7 @@ class CScrollingSubWindow extends CWindow {
 
 	}
 	
+	/*
 	AddClicked(){
 		; Add child window at top left of canvas
 		child := new CChildWindow(this, {x: this.Bottom, y: this.Right })
@@ -224,8 +260,24 @@ class CScrollingSubWindow extends CWindow {
 		this.ChildWindows[child.Hwnd] := child
 		this.OnSize()
 	}
+	*/
 	
 	ChildClosed(hwnd){
+		For key, value in this.parent.TaskBar.ChildWindows {
+			if (key == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
+				; Remove TaskBar entry from TaskBarOrder
+				Loop this.parent.TaskBar.TaskBarOrder.Length() {
+					if(this.parent.TaskBar.TaskBarOrder[A_Index] == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
+						this.parent.TaskBar.TaskBarOrder.RemoveAt(A_Index)
+						break
+					}
+				}
+				this.parent.TaskBar.ChildWindows[key].Gui.Destroy()
+				this.parent.TaskBar.ChildWindows.Remove(key)
+				this.parent.TaskBar.Pack()
+				return
+			}
+		}
 		this.ChildWindows.Remove(hwnd)
 		this.OnSize()
 	}
@@ -236,6 +288,9 @@ class CScrollingSubWindow extends CWindow {
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 		ctr := 0
 		For key, value in this.ChildWindows {
+			if (this.ChildWindows[key].IsMinimized){
+				continue
+			}
 			if (!this.ChildWindows[key]){
 				; ToDo: Why do I need this?
 				continue
@@ -373,6 +428,8 @@ class CScrollingSubWindow extends CWindow {
 ; Note that X and Y are RELATIVE TO THE CANVAS
 ; Eg if the window is scrolled half way down, adding at 0, 0 inserts it out of view at the top left corner!
 class CChildWindow extends CWindow {
+	IsMinimized := 0
+	
 	__New(parent, options := false){
 		this.parent := parent
 		
@@ -402,24 +459,67 @@ class CChildWindow extends CWindow {
 	}
 	
 	OnSize(){
+		
 		if (WinGetMinMax("ahk_id " . this.Hwnd) == -1){
 			this.parent.ChildMinimized(this.Hwnd)
-		} else {
+		}
+		/* else {
 			this.parent.ChildMaximized(this.Hwnd)
 		}
-	}
-	
-	; Gets position of a child window relative to it's parent's RECT
-	GetClientPos(){
-		pos := this.GetPos(this.Hwnd)
-		offset := this.ScreenToClient(this.parent.Hwnd, x, y)
-		pos.x += offset.x
-		pos.y += offset.y
-		return pos
+		*/
 	}
 	
 	OnClose(){
 		this.parent.ChildClosed(this.Hwnd)
+	}
+}
+
+Class CTaskBarItem extends CWindow {
+	__New(parent, options := false){
+		this.parent := parent
+		
+		if (options){
+			this.options := options
+		} else {
+			options := {}
+		}
+		
+		options.x := 0
+		options.y := this.parent.TaskBarOrder.Length() * 30
+		
+		; Adjust coordinates to cater for current position of parent's scrollbar.
+		offset := this.GetWindowOffSet(this.parent.Hwnd)	; Get offset due to position of scroll bars
+		options.x += offset.x
+		options.y += offset.y
+		
+		; Create the GUI
+		this.Gui := GuiCreate("Child","-Border +Parent" . this.parent.Hwnd,this)
+		this.Gui.AddLabel("I am " . this.options.MainHwnd)	;this.Gui.Hwnd
+		this.Gui.BgColor := "0x00EE00"
+		this.Gui.Show("x" . options.x . " y" . options.y . " w150 h25")
+		
+		this.Hwnd := this.Gui.Hwnd
+	}
+	
+	TaskMinimized(hwnd){
+		this.parent.parent.ChildCanvas.ChildWindows[hwnd].Gui.Hide()
+		this.parent.parent.ChildCanvas.ChildWindows[hwnd].IsMinimized := 1
+
+		this.Gui.BgColor := "0xEE0000"
+	}
+	
+	TaskMaximized(){
+		
+	}
+	
+	TaskBarItemClicked(){
+		if (this.parent.parent.ChildCanvas.ChildWindows[this.options.MainHwnd].IsMinimized){
+			this.parent.ChildMaximized(this.options.MainHwnd)
+			this.Gui.BgColor := "0x00EE00"
+			this.parent.parent.ChildCanvas.ChildWindows[this.options.MainHwnd].IsMinimized := 0
+		} else {
+			this.TaskMinimized(this.options.MainHwnd)
+		}
 	}
 }
 
@@ -556,121 +656,13 @@ class CWindow {
 			this.debug.Value := str
 		}
 	}
-
-	; Huba's Window System Menu Manipulator Library - http://www.autohotkey.com/board/topic/17759-
-	GetSystemMenu(ByRef hWnd, Revert := False)  ; Get system menu handle
-	{
-	  hWnd := hWnd ? hWnd : WinExist("A")  ; Active window handle
-	  Return DllCall("GetSystemMenu", "UInt", hWnd, "UInt", Revert)
-	}
-
-	DrawMenuBar(hWnd)  ; Internal function: this is needed to apply menu changes
-	{
-	  Return DllCall("DrawMenuBar", "UInt", hWnd)
-	}
-
-	RevertSystemMenu(hWnd := "")  ; Restores all removed menu items
-	{
-	  Return this.DrawMenuBar(this.GetSystemMenu(hWnd, True))  ; Revert system menu
-	}
-
-
-	RemoveMenu(hWnd, Position, Flags := 0)  ; MF_BYCOMMAND = 0x0000
-	{
-	  DllCall("RemoveMenu", "UInt", this.GetSystemMenu(hWnd), "UInt", Position, "UInt", Flags)
-	  Return this.DrawMenuBar(hWnd)
-	}
-
-	DeleteWindowResizing(hWnd := "") {
-	  Return this.RemoveMenu(hWnd, 0xF000)  ; SC_SIZE = 0xF000
-	}
-
-	DeleteWindowMoving(hWnd := "") {
-	  Return this.RemoveMenu(hWnd, 0xF010)  ; SC_MOVE = 0xF010
-	}
-
-	DeleteWindowMinimizing(hWnd := "") {
-	  Return this.RemoveMenu(hWnd, 0xF020)  ; SC_MINIMIZE = 0xF020
-	}
-
-	DeleteWindowMaximizing(hWnd := "") {
-	  Return this.RemoveMenu(hWnd, 0xF030)  ; SC_MAXIMIZE = 0xF030
-	}
-
-	DeleteWindowArranging(hWnd := "") {
-	  Return this.RemoveMenu(hWnd, 0xF110)  ; SC_ARRANGE = 0xF110
-	}
-
-	DeleteWindowRestoring(hWnd := "") {
-	  Return this.RemoveMenu(hWnd, 0xF120)  ; SC_RESTORE = 0xF120
-	}
-
-	DeleteWindowClosing(hWnd := "") {
-	  Return this.RemoveMenu(hWnd, 0xF060)  ; SC_CLOSE = 0xF060
-	}
-
-	DeleteWindowMenuSeparator(hWnd := "") {  ; Removes the line above Close menuitem
-	  Return this.RemoveMenu(hWnd, 0)
-	}
-
-
-	EnableMenuItem(hWnd, SystemCommand, EnableFlag)
-	{
-	  DllCall("EnableMenuItem", "UInt", this.GetSystemMenu(hWnd), "UInt", SystemCommand, "UInt", EnableFlag)  ; MF_BYCOMMAND = 0
-	  Return this.DrawMenuBar(hWnd)
-	}
-
-
-	DisableWindowResizing(hWnd := "") {
-	  Return this.DeleteWindowResizing()  ; Disabling has no effect, use delete instead
-	}
-
-	DisableWindowMoving(hWnd := "") {
-	  Return this.DeleteWindowMoving(hWnd)
-	}
-
-	DisableWindowMinimizing(hWnd := "") {
-	  Return this.DeleteWindowMinimizing()
-	}
-
-	DisableWindowMaximizing(hWnd := "") {
-	  Return this.DeleteWindowMaximizing()
-	}
-
-	DisableWindowArranging(hWnd := "") {
-	  Return this.DeleteWindowArranging()
-	}
-
-	DisableWindowRestoring(hWnd := "") {
-	  Return this.DeleteWindowRestoring()
-	}
-
-	DisableWindowClosing(hWnd := "") {
-	  Return this.EnableMenuItem(hWnd, 0xF060, 1)  ; MF_GRAYED = 0x0001
-	}
-
-
-	EnableWindowResizing(hWnd := "") {
-	  Return this.EnableMenuItem(hWnd, 0xF000, 0)  ; MF_ENABLED = 0x0000
-	}
-
-	EnableWindowMoving(hWnd := "") {
-	  Return this.EnableMenuItem(hWnd, 0xF010, 0)
-	}
-
-	EnableWindowMinimizing(hWnd := "") {
-	  Return this.EnableMenuItem(hWnd, 0xF020, 0)
-	}
-
-	EnableWindowMaximizing(hWnd := "") {
-	  Return this.EnableMenuItem(hWnd, 0xF030, 0)
-	}
-
-	EnableWindowArranging(hWnd := "") {
-	  Return this.EnableMenuItem(hWnd, 0xF110, 0)
-	}
-
-	EnableWindowRestoring(hWnd := "") {
-	  Return this.EnableMenuItem(hWnd, 0xF120, 0)
+	
+	; Gets position of a child window relative to it's parent's RECT
+	GetClientPos(){
+		pos := this.GetPos(this.Hwnd)
+		offset := this.ScreenToClient(this.parent.Hwnd, x, y)
+		pos.x += offset.x
+		pos.y += offset.y
+		return pos
 	}
 }
