@@ -27,8 +27,11 @@ class CScrollingWindow extends CWindow {
 		
 		; ToDo: Check if window contains any controls, and include those in the viewport calcs.
 
+		/*
 		; Do not allow scrollbars to appear if windows dragged such that they clip the left or top edge.
 		; Strange behavior ensues if this is allowed.
+		
+		; This code BREAKS placement of windows when canvas is scrolled.
 		info := this.GetScrollInfos(this.Hwnd)
 		if (info[0]){
 			scx := info[0].nPos * -1
@@ -40,7 +43,7 @@ class CScrollingWindow extends CWindow {
 		} else {
 			scy := 0
 		}
-
+		*/
 
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 		ctr := 0
@@ -50,10 +53,12 @@ class CScrollingWindow extends CWindow {
 			}
 			pos := this.ChildWindows[key].GetClientPos()
 			bot := pos.y + pos.h
-			if (pos.y < viewport.Top && viewport.Right < scy){
+			;if (pos.y < viewport.Top && viewport.Right < scy){
+			if (pos.y < viewport.Top){
 				viewport.Top := pos.y
 			}
-			if (pos.x < viewport.Left && viewport.Left < scx){
+			;if (pos.x < viewport.Left && viewport.Left < scx){
+			if (pos.x < viewport.Left){
 				viewport.Left := pos.x
 			}
 			if (bot > viewport.Bottom){
