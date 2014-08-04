@@ -15,7 +15,7 @@ MainWindow := new CMainWindow()
 OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 ;OnMessage(0x112,"PreMinimize")
-OnMessage(0x202, "ClickHandler")	; 0x202 = WM_LBUTTONUP. WM_LBUTTONDOWN seems to fire twice ?!
+OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 OnMessage(0x46, "WindowMove")
 
 
@@ -48,6 +48,7 @@ ClickHandler(wParam, lParam, msg, hwnd := 0){
 	; Click on TaskBar Item = maximize / minimize
 	if (MainWindow.TaskBar.ChildWindows[hwnd]){
 		MainWindow.TaskBar.ChildWindows[hwnd].TaskBarItemClicked()
+		return 0	; This line is IMPORTANT! It stops the message being processed further.
 	}
 }
 
