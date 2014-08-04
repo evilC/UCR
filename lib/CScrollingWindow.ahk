@@ -50,11 +50,14 @@ class CScrollingWindow extends CWindow {
 			}
 			; Get Window Position
 			pos := this.ChildWindows[key].GetClientPos()
+			; Adjust coordinates due to scrollbar position
+			pos.x += scx
+			pos.y += scy
 			; Expand viewport if Child window falls outside
-			if (pos.y < viewport.Top && pos.y < scy){ ; Dont expand if window dragged off the Top of canvas
+			if (pos.y < viewport.Top && pos.y > 0){ ; Dont expand if window dragged off the Top of canvas
 				viewport.Top := pos.y
 			}
-			if (pos.x < viewport.Left && pos.x < scx){ ; Dont expand if window dragged off the Left of canvas
+			if (pos.x < viewport.Left && pos.x > 0){ ; Dont expand if window dragged off the Left of canvas
 				viewport.Left := pos.x
 			}
 			bot := pos.y + pos.h
@@ -91,6 +94,11 @@ class CScrollingWindow extends CWindow {
 
 		; Update vertical scroll bar.
 		this.SetScrollInfo(this.Hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
+		
+		viewport.Left -= scx
+		viewport.Right -= scx
+		viewport.Top -= scy
+		viewport.Bottom -=scy
 		
 		; If window is sized up while child items are clipped, drag the child items into view
 		if (viewport.Left < 0 && viewport.Right < GuiWidth){

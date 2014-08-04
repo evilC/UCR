@@ -14,7 +14,7 @@ MainWindow := new CMainWindow()
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 OnMessage(0x114, "OnScroll") ; WM_HSCROLL
-;OnMessage(0x112,"PreMinimize")
+OnMessage(0x112,"PreMinimize")
 OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 OnMessage(0x46, "WindowMove")
 
@@ -52,8 +52,8 @@ ClickHandler(wParam, lParam, msg, hwnd := 0){
 	}
 }
 
-/*
 ; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
+; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation
 PreMinimize(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
 	if (wParam == 0xF020){
@@ -63,7 +63,6 @@ PreMinimize(wParam, lParam, msg, hwnd := 0){
 		}
 	}
 }
-*/
 
 OnScroll(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
