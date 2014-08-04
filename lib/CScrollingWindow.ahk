@@ -50,14 +50,11 @@ class CScrollingWindow extends CWindow {
 			}
 			; Get Window Position
 			pos := this.ChildWindows[key].GetClientPos()
-			; Adjust coordinates due to scrollbar position
-			pos.x += scx
-			pos.y += scy
 			; Expand viewport if Child window falls outside
-			if (pos.y < viewport.Top && pos.y > 0){ ; Dont expand if window dragged off the Top of canvas
+			if (pos.y < viewport.Top && pos.y < scy){ ; Dont expand if window dragged off the Top of canvas
 				viewport.Top := pos.y
 			}
-			if (pos.x < viewport.Left && pos.x > 0){ ; Dont expand if window dragged off the Left of canvas
+			if (pos.x < viewport.Left && pos.x < scx){ ; Dont expand if window dragged off the Left of canvas
 				viewport.Left := pos.x
 			}
 			bot := pos.y + pos.h
