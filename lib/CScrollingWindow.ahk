@@ -27,40 +27,40 @@ class CScrollingWindow extends CWindow {
 		
 		; ToDo: Check if window contains any controls, and include those in the viewport calcs.
 
-		/*
 		; Do not allow scrollbars to appear if windows dragged such that they clip the left or top edge.
 		; Strange behavior ensues if this is allowed.
-		
-		; This code BREAKS placement of windows when canvas is scrolled.
 		info := this.GetScrollInfos(this.Hwnd)
 		if (info[0]){
-			scx := info[0].nPos * -1
+			scx := info[0].nPos
 		} else {
 			scx := 0
 		}
 		if (info[1]){
-			scy := info[1].nPos * -1
+			scy := info[1].nPos
 		} else {
 			scy := 0
 		}
-		*/
 
+		; Work out where the edges of the child windows lie
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 		ctr := 0
 		For key, value in this.ChildWindows {
 			if (this.ChildWindows[key].IsMinimized){
 				continue
 			}
+			; Get Window Position
 			pos := this.ChildWindows[key].GetClientPos()
-			bot := pos.y + pos.h
-			;if (pos.y < viewport.Top && viewport.Right < scy){
-			if (pos.y < viewport.Top){
+			; Adjust coordinates due to scrollbar position
+			pos.x += scx
+			pos.y += scy
+			; Expand viewport if Child window falls outside
+			if (pos.y < viewport.Top && pos.y > 0){ ; Dont expand if window dragged off the Top of canvas
 				viewport.Top := pos.y
 			}
-			;if (pos.x < viewport.Left && viewport.Left < scx){
-			if (pos.x < viewport.Left){
+			if (pos.x < viewport.Left && pos.x > 0){ ; Dont expand if window dragged off the Left of canvas
 				viewport.Left := pos.x
 			}
+			bot := pos.y + pos.h
 			if (bot > viewport.Bottom){
 				viewport.Bottom := bot
 			}
@@ -70,7 +70,9 @@ class CScrollingWindow extends CWindow {
 			}
 			ctr++
 		}
+		
 		if (!ctr){
+			; If no Child windows present, set scroll bars off.
 			; Update horizontal scroll bar.
 			this.SetScrollInfo(this.Hwnd, SB_HORZ, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
 			; Update vertical scroll bar.
@@ -78,6 +80,7 @@ class CScrollingWindow extends CWindow {
 			return
 		}
 		
+		; Configure scroll bars due to canvas size
 		ScrollWidth := viewport.Right - viewport.Left
 		ScrollHeight := viewport.Bottom - viewport.Top
 
@@ -92,7 +95,7 @@ class CScrollingWindow extends CWindow {
 		; Update vertical scroll bar.
 		this.SetScrollInfo(this.Hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
 		
-		; If being window gets bigger while child items are clipped, drag the child items into view
+		; If window is sized up while child items are clipped, drag the child items into view
 		if (viewport.Left < 0 && viewport.Right < GuiWidth){
 			x := Abs(viewport.Left) > GuiWidth-viewport.Right ? GuiWidth-viewport.Right : Abs(viewport.Left)
 		}
