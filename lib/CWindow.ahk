@@ -6,22 +6,6 @@ class CWindow {
 			options .= " +Parent" . this.parent.Hwnd
 		}
 		this.Gui := GuiCreate(title,options,this)
-		
-		/*
-		if(!IsObject(parent)){
-			parent := 0
-		}
-		this._Parent := parent
-		
-		if(!IsObject(options)){
-			;options := {x: 0, y: 0, w: 200, h:100}
-			options := {}
-		}
-		if !ObjHasKey(options, "x"){
-			options.x := 0
-		}
-		this._Options := options
-		*/
 	}
 	
 	__Get(aName){

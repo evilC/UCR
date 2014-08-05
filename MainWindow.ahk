@@ -103,7 +103,10 @@ class CMainWindow extends CWindow {
 		WinMoveTop("ahk_id " . child.Hwnd)
 		this.ChildCanvas.OnSize()
 
-		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, title: "Child " . WinNum })
+		;task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, title: "Child " . WinNum })
+		task := new CTaskBarItem("Child " . WinNum, "-Border", this.TaskBar, child.Hwnd)
+		;options.x := 0
+		;options.y := this.parent.TaskBarOrder.Length() * 30
 		this.TaskBar.ChildWindows[task.Hwnd] := task
 		this.TaskBar.TaskBarOrder.Push(task.Hwnd)
 		

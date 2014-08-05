@@ -50,29 +50,18 @@ class CTaskBarWindow extends CScrollingWindow {
 }
 
 Class CTaskBarItem extends CWindow {
-	__New(parent, options := false){
-		this.parent := parent
-		
-		if (options){
-			this.options := options
-		} else {
-			options := {}
-		}
-		
-		options.x := 0
-		options.y := this.parent.TaskBarOrder.Length() * 30
-		
+	__New(title := "", options := "", parent := 0, mainhwnd := 0){
+		this._MainHwnd := mainhwnd
+		base.__New(title, options, parent)
+
+
 		; Adjust coordinates to cater for current position of parent's scrollbar.
-		offset := this.GetWindowOffSet(this.parent.Hwnd)	; Get offset due to position of scroll bars
-		options.x += offset.x
-		options.y += offset.y
+		coords := this.GetWindowOffSet(this.parent.Hwnd)	; Get offset due to position of scroll bars
+		coords.y += this.parent.TaskBarOrder.Length() * 30
 		
-		; Create the GUI
-		;this.Gui := GuiCreate(this.options.title ,"-Border +Parent" . this.parent.Hwnd,this)
-		base.__New("", "-Border", parent)
-		this.Gui.AddLabel(this.options.title)
+		this.Gui.AddLabel(title)
 		this.TaskMaximized()
-		this.Gui.Show("x" . options.x . " y" . options.y . " w150 h25")
+		this.Gui.Show("x" . coords.x . " y" . coords.y . " w150 h25")
 		
 	}
 	
@@ -107,6 +96,6 @@ Class CTaskBarItem extends CWindow {
 	}
 	
 	GetChildWindow(){
-		return this.parent._ChildCanvas.ChildWindows[this.options.MainHwnd]
+		return this.parent._ChildCanvas.ChildWindows[this._MainHwnd]
 	}
 }
