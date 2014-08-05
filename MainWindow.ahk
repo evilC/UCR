@@ -98,7 +98,9 @@ class CMainWindow extends CWindow {
 
 	AddClicked(){
 		static WinNum := 1
-		child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0, title: "Child " . WinNum })
+		;child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0, title: "Child " . WinNum })
+		child := new CChildCanvasSubWindow("Child " . WinNum, "", this.ChildCanvas)
+		child.Gui.Show("x0 y0 w200 h50")
 		this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		WinMoveTop("ahk_id " . child.Hwnd)
 		this.ChildCanvas.OnSize()
@@ -208,8 +210,8 @@ class CChildCanvasWindow extends CScrollingWindow {
 
 ; A window that resides in the ChildCanvas window
 class CChildCanvasSubWindow extends CChildWindow {
-	__New(parent, options){
-		base.__New(parent, options)
+	__New(title := "", options := "", parent := 0){
+		base.__New(title, options, parent)
 		this.Gui.AddLabel("I am " . this.Hwnd)
 	}
 	
