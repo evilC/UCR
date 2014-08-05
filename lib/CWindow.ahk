@@ -1,7 +1,10 @@
 ; Helper functions
 class CWindow {
-	/*
-	__New(parent := 0, options := 0){
+	__New(title := "", options := "", parent := 0){
+		this.Gui := GuiCreate(title,options,this)
+		this.parent := parent
+		
+		/*
 		if(!IsObject(parent)){
 			parent := 0
 		}
@@ -15,8 +18,8 @@ class CWindow {
 			options.x := 0
 		}
 		this._Options := options
+		*/
 	}
-*/
 	
 	__Get(aName){
 		; IMPORTANT! SINGLE equals sign (=) is a CASE INSENSITIVE comparison!

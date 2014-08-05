@@ -9,7 +9,7 @@
 #SingleInstance Force
 #MaxHotkeysPerInterval 9999
 
-MainWindow := new CMainWindow()
+MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x115, "OnScroll") ; WM_VSCROLL
@@ -75,8 +75,9 @@ OnScroll(wParam, lParam, msg, hwnd := 0){
 
 ; The Main Window
 class CMainWindow extends CWindow {
-	__New(){
-		this.Gui := GuiCreate("Outer Parent","Resize",this)
+	__New(title, options := 0, parent := 0){
+		;this.Gui := GuiCreate(title,options,this)
+		base.__New(title, options)
 		this.Gui.AddButton("Add","gAddClicked")
 		
 		this.Gui.Show("x0 y0 w600 h500")
