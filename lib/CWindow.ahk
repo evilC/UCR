@@ -5,20 +5,52 @@ class CWindow {
 		if (this.parent){
 			options .= " +Parent" . this.parent.Hwnd
 		}
-		this.Gui := GuiCreate(title,options,this)
+		this._Gui := GuiCreate(title,options,this)
 	}
 	
 	__Get(aName){
 		; IMPORTANT! SINGLE equals sign (=) is a CASE INSENSITIVE comparison!
 		if (aName = "hwnd" && IsObject(this.Gui)){
 			return this.Gui.Hwnd
+		} else if (aName = "gui"){
+			return this._Gui
 		}
-		/* else if (aName = "options"){
+		/* 
+		else if (aName = "options"){
 			return this._Options
 		}
 		*/
 	}
-
+	
+	; Like Gui.Show, but relative to the viewport (ie 0,0 is top left of canvas, not top left of current view)
+	; Also uses assoc array (ie {x: 0, y: 0} instead of a string
+	ShowRelative(options := 0){
+		if (!options){
+			options := {x: 0, y: 0, w: 200, h: 50}
+		}
+		if (this.Parent){
+			offset := this.GetWindowOffSet(this.Parent.Hwnd)
+			tooltip("Parent: " this.Parent.Hwnd ", offset: " offset.y)
+		} else {
+			offset := {x: 0, y: 0}
+		}
+		str := ""
+		ctr := 0
+		For key, value in options {
+			if (key = "x"){
+				value += offset.x
+			} else if (key = "y"){
+				value += offset.y
+			}
+			if (ctr){
+				str .= " "
+			}
+			str .= key . value
+			ctr++
+		}
+		this._Gui.Show(str)
+	}
+	
 	; Wrapper for WinGetPos
 	GetPos(hwnd){
 		WinGetPos(x, y, w, h, "ahk_id " hwnd)

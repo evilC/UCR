@@ -56,12 +56,14 @@ Class CTaskBarItem extends CWindow {
 
 
 		; Adjust coordinates to cater for current position of parent's scrollbar.
-		coords := this.GetWindowOffSet(this.parent.Hwnd)	; Get offset due to position of scroll bars
-		coords.y += this.parent.TaskBarOrder.Length() * 30
+		;coords := this.GetWindowOffSet(this.parent.Hwnd)	; Get offset due to position of scroll bars
+		;coords.y += this.parent.TaskBarOrder.Length() * 30
+		coords := {x: 0, y: this.parent.TaskBarOrder.Length() * 30 }
 		
 		this.Gui.AddLabel(title)
 		this.TaskMaximized()
-		this.Gui.Show("x" . coords.x . " y" . coords.y . " w150 h25")
+		;this.Gui.Show("x" . coords.x . " y" . coords.y . " w150 h25")
+		this.ShowRelative({x: coords.x, y: coords.y, w:150, h:25})
 		
 	}
 	

@@ -80,7 +80,7 @@ class CMainWindow extends CWindow {
 		base.__New(title, options)
 		this.Gui.AddButton("Add","gAddClicked")
 		
-		this.Gui.Show("x0 y0 w600 h500")
+		this.ShowRelative({x:0, y:0, w:600, h:500})
 		
 		; Set up child GUI Canvas
 		this.ChildCanvas := new CChildCanvasWindow("", "x200 y50", this)
@@ -100,7 +100,7 @@ class CMainWindow extends CWindow {
 		static WinNum := 1
 		;child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0, title: "Child " . WinNum })
 		child := new CChildCanvasSubWindow("Child " . WinNum, "", this.ChildCanvas)
-		child.Gui.Show("x0 y0 w200 h50")
+		child.ShowRelative({x:0, y:0, w:200, h:50})
 		this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		WinMoveTop("ahk_id " . child.Hwnd)
 		this.ChildCanvas.OnSize()
@@ -148,9 +148,9 @@ class CMainWindow extends CWindow {
 			tb.b -= 16
 		}
 		
-		this.ChildCanvas.Gui.Show("x200 y50 w" . cc.r - 200 . " h" . cc.b)
+		this.ChildCanvas.ShowRelative({x:200, y:50, w: cc.r - 200, h: cc.b})
 		
-		this.TaskBar.Gui.Show("x0 y50 w180 h" . tb.b)
+		this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})
 	}
 	
 	OnScroll(wParam, lParam, msg, hwnd){
