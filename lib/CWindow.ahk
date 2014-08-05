@@ -1,5 +1,12 @@
 ; Helper functions
 class CWindow {
+
+	__Get(aName){
+		if (aName == "Hwnd" && IsObject(this.Gui)){
+			return this.Gui.Hwnd
+		}
+	}
+
 	; Wrapper for WinGetPos
 	GetPos(hwnd){
 		WinGetPos(x, y, w, h, "ahk_id " hwnd)

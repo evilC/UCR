@@ -80,7 +80,6 @@ class CMainWindow extends CWindow {
 		this.Gui.AddButton("Add","gAddClicked")
 		
 		this.Gui.Show("x0 y0 w600 h500")
-		this.Hwnd := this.Gui.Hwnd
 		
 		; Set up child GUI Canvas
 		this.ChildCanvas := new CChildCanvasWindow(this, {name: "canvas", x: 200, y: 50})
@@ -207,7 +206,7 @@ class CChildCanvasWindow extends CScrollingWindow {
 class CChildCanvasSubWindow extends CChildWindow {
 	__New(parent, options){
 		base.__New(parent, options)
-		this.Gui.AddLabel("I am " . this.Gui.Hwnd)	;this.Gui.Hwnd
+		this.Gui.AddLabel("I am " . this.Hwnd)
 	}
 	
 	OnClose(){

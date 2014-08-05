@@ -29,9 +29,8 @@ class CChildWindow extends CWindow {
 		
 		; Create the GUI
 		this.Gui := GuiCreate(this.options.title ,"+Parent" . this.parent.Hwnd,this)
-		;this.Gui.AddLabel("I am " . this.Gui.Hwnd)	;this.Gui.Hwnd
+		;this.Gui.AddLabel("I am " . this.Hwnd)
 		this.Gui.Show("x" . this.options.x . " y" . this.options.y . " w300 h100")
 		
-		this.Hwnd := this.Gui.Hwnd
 	}
 }

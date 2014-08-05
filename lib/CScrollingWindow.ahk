@@ -19,7 +19,6 @@ class CScrollingWindow extends CWindow {
 
 		this.Gui := GuiCreate("","-Border 0x300000 Parent" . this.parent.Hwnd, this)
 		this.Gui.Show("x" . this.options.x . " y" . this.options.y . " w10 h10")
-		this.Hwnd := this.Gui.Hwnd
 	}
 	
 	OnSize(){
