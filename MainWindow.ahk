@@ -83,11 +83,11 @@ class CMainWindow extends CWindow {
 		this.Gui.Show("x0 y0 w600 h500")
 		
 		; Set up child GUI Canvas
-		this.ChildCanvas := new CChildCanvasWindow(this, {name: "canvas", x: 200, y: 50})
+		this.ChildCanvas := new CChildCanvasWindow("", "x200 y50", this)
 		this.ChildCanvas.OnSize()
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar", x: 0, y: 50}, this.ChildCanvas)
+		this.TaskBar := new CTaskBarWindow("", "x0 y50", this, this.ChildCanvas)
 		this.TaskBar.OnSize()
 		
 		

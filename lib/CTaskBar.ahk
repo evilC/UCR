@@ -1,13 +1,13 @@
 ; The TaskBar
 class CTaskBarWindow extends CScrollingWindow {
-	__New(parent, options := 0, childcanvas := 0){
+	__New(title := "", options := "", parent := 0, childcanvas := 0){
 		
 		if (!childcanvas){
 			msgbox("ERROR: No Child Canvas specified for TaskBarItem")
 			ExitApp
 		}
 		this._ChildCanvas := childcanvas
-		base.__New(parent, options)
+		base.__New(title, options, parent)
 
 	}
 
@@ -68,7 +68,8 @@ Class CTaskBarItem extends CWindow {
 		options.y += offset.y
 		
 		; Create the GUI
-		this.Gui := GuiCreate(this.options.title ,"-Border +Parent" . this.parent.Hwnd,this)
+		;this.Gui := GuiCreate(this.options.title ,"-Border +Parent" . this.parent.Hwnd,this)
+		base.__New("", "-Border", parent)
 		this.Gui.AddLabel(this.options.title)
 		this.TaskMaximized()
 		this.Gui.Show("x" . options.x . " y" . options.y . " w150 h25")

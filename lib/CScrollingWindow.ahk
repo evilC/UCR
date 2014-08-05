@@ -2,7 +2,7 @@
 class CScrollingWindow extends CWindow {
 	Bottom := 0
 	Right := 0
-	__New(parent, options := 0){
+	__New(title := "", options := "", parent := 0){
 		this.ChildWindows := []
 		/*
 		this.parent := parent
