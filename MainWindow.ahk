@@ -86,7 +86,7 @@ class CMainWindow extends CWindow {
 		this.ChildCanvas.OnSize()
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar", ChildCanvas: this.ChildCanvas, x: 0, y: 50})
+		this.TaskBar := new CTaskBarWindow(this, {name: "taskbar", x: 0, y: 50}, this.ChildCanvas)
 		this.TaskBar.OnSize()
 		
 		
@@ -102,7 +102,7 @@ class CMainWindow extends CWindow {
 		WinMoveTop("ahk_id " . child.Hwnd)
 		this.ChildCanvas.OnSize()
 
-		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, ChildCanvas: this.ChildCanvas, title: "Child " . WinNum })
+		task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, title: "Child " . WinNum })
 		this.TaskBar.ChildWindows[task.Hwnd] := task
 		this.TaskBar.TaskBarOrder.Push(task.Hwnd)
 		

@@ -1,10 +1,32 @@
 ; Helper functions
 class CWindow {
-
+	/*
+	__New(parent := 0, options := 0){
+		if(!IsObject(parent)){
+			parent := 0
+		}
+		this._Parent := parent
+		
+		if(!IsObject(options)){
+			;options := {x: 0, y: 0, w: 200, h:100}
+			options := {}
+		}
+		if !ObjHasKey(options, "x"){
+			options.x := 0
+		}
+		this._Options := options
+	}
+*/
+	
 	__Get(aName){
-		if (aName == "Hwnd" && IsObject(this.Gui)){
+		; IMPORTANT! SINGLE equals sign (=) is a CASE INSENSITIVE comparison!
+		if (aName = "hwnd" && IsObject(this.Gui)){
 			return this.Gui.Hwnd
 		}
+		/* else if (aName = "options"){
+			return this._Options
+		}
+		*/
 	}
 
 	; Wrapper for WinGetPos
