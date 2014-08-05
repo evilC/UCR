@@ -30,7 +30,6 @@ class CWindow {
 		}
 		if (this.Parent){
 			offset := this.GetWindowOffSet(this.Parent.Hwnd)
-			tooltip("Parent: " this.Parent.Hwnd ", offset: " offset.y)
 		} else {
 			offset := {x: 0, y: 0}
 		}

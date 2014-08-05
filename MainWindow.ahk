@@ -76,7 +76,6 @@ OnScroll(wParam, lParam, msg, hwnd := 0){
 ; The Main Window
 class CMainWindow extends CWindow {
 	__New(title, options := 0, parent := 0){
-		;this.Gui := GuiCreate(title,options,this)
 		base.__New(title, options)
 		this.Gui.AddButton("Add","gAddClicked")
 		
@@ -98,17 +97,14 @@ class CMainWindow extends CWindow {
 
 	AddClicked(){
 		static WinNum := 1
-		;child := new CChildCanvasSubWindow(this.ChildCanvas, {x: 0, y: 0, title: "Child " . WinNum })
 		child := new CChildCanvasSubWindow("Child " . WinNum, "", this.ChildCanvas)
 		child.ShowRelative({x:0, y:0, w:200, h:50})
 		this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		WinMoveTop("ahk_id " . child.Hwnd)
 		this.ChildCanvas.OnSize()
 
-		;task := new CTaskBarItem(this.TaskBar, {MainHwnd: child.Hwnd, title: "Child " . WinNum })
 		task := new CTaskBarItem("Child " . WinNum, "-Border", this.TaskBar, child.Hwnd)
-		;options.x := 0
-		;options.y := this.parent.TaskBarOrder.Length() * 30
+
 		this.TaskBar.ChildWindows[task.Hwnd] := task
 		this.TaskBar.TaskBarOrder.Push(task.Hwnd)
 		

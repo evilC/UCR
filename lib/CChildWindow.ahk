@@ -9,9 +9,5 @@ class CChildWindow extends CWindow {
 	
 	__New(title := "", options := false, parent := 0){
 		base.__New(title, options, parent)
-		;this.Gui.AddLabel("I am " . this.Hwnd)
-		;this.Gui.Show("x" . this.options.x . " y" . this.options.y . " w300 h100")
-		;this.Gui.Show()
-		
 	}
 }
