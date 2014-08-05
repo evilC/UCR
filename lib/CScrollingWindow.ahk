@@ -3,6 +3,8 @@ class CScrollingWindow extends CWindow {
 	Bottom := 0
 	Right := 0
 	__New(parent, options := 0){
+		this.ChildWindows := []
+		/*
 		this.parent := parent
 		if (!options){
 			this.options := {x: 0, y: 0}
@@ -15,10 +17,11 @@ class CScrollingWindow extends CWindow {
 				this.options.y := 0
 			}
 		}
-		this.ChildWindows := []
-
-		this.Gui := GuiCreate("","-Border 0x300000 Parent" . this.parent.Hwnd, this)
-		this.Gui.Show("x" . this.options.x . " y" . this.options.y . " w10 h10")
+		*/
+		;this.Gui := GuiCreate("","-Border 0x300000 Parent" . this.parent.Hwnd, this)
+		base.__New("", "-Border 0x300000", parent)
+		;this.Gui.Show("x" . this.options.x . " y" . this.options.y . " w10 h10")
+		this.Gui.Show()
 	}
 	
 	OnSize(){

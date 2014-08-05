@@ -1,8 +1,11 @@
 ; Helper functions
 class CWindow {
-	__New(title := "", options := "", parent := 0){
-		this.Gui := GuiCreate(title,options,this)
+	__New(title := "", options := "x0 y0 w200 h50", parent := 0){
 		this.parent := parent
+		if (this.parent){
+			options .= " +Parent" . this.parent.Hwnd
+		}
+		this.Gui := GuiCreate(title,options,this)
 		
 		/*
 		if(!IsObject(parent)){
