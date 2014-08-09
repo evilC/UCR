@@ -4,17 +4,11 @@ class CTaskBarWindow extends CScrollingWindow {
 	TaskIndex := []			; Lookup from the Hwnd of the TaskBar item to the Object it represents
 	; ToDo: Allow these to be set via parameter
 	TaskHeight := 25
-	TaskWidth := 180
+	TaskWidth := 155 ; Needs to be ~25 px less than width of window
 	TaskGap := 5
 
 	__New(title := "", options := "", parent := 0){
-		
-		if (!childcanvas){
-			msgbox("ERROR: No Child Canvas specified for TaskBarItem")
-			ExitApp
-		}
 		base.__New(title, options, parent)
-
 	}
 
 	AddTask(title, options, window_obj){
