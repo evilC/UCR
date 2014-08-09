@@ -1,3 +1,9 @@
+class CChildWindow extends CWindow {
+	__New(title := "", options := false, parent := 0){
+		base.__New(title, options, parent)
+	}
+}
+/*
 ; A Child Window Within the scrolling sub-window
 ; parent = parent CLASS
 ; options = options to pass
@@ -11,3 +17,4 @@ class CChildWindow extends CWindow {
 		base.__New(title, options, parent)
 	}
 }
+*/

@@ -1,3 +1,100 @@
+class CScrollingWindow extends CWindow {
+	__New(title := "", options := "", parent := 0){
+		base.__New(title, options . " 0x300000", parent)
+	}
+	
+	OnSize(){
+		static SIF_RANGE := 0x1, SIF_PAGE := 0x2, SIF_DISABLENOSCROLL := 0x8, SB_HORZ := 0, SB_VERT := 1
+		
+		; ToDo: Check if window contains any controls, and include those in the viewport calcs.
+
+		; Do not allow scrollbars to appear if windows dragged such that they clip the left or top edge.
+		; Strange behavior ensues if this is allowed.
+		info := this.GetScrollInfos(this.Gui.Hwnd)
+		if (info[0]){
+			scx := info[0].nPos
+		} else {
+			scx := 0
+		}
+		if (info[1]){
+			scy := info[1].nPos
+		} else {
+			scy := 0
+		}
+
+		; Work out where the edges of the child windows lie
+		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
+		ctr := 0
+		For key, value in this.ChildWindows {
+			if (this.ChildWindows[key].WindowStatus.IsMinimized){
+				continue
+			}
+			; Get Window Position
+			pos := this.ChildWindows[key].GetClientPos()
+			; Adjust coordinates due to scrollbar position
+			pos.x += scx
+			pos.y += scy
+			; Expand viewport if Child window falls outside
+			if (pos.y < viewport.Top && pos.y > 0){ ; Dont expand if window dragged off the Top of canvas
+				viewport.Top := pos.y
+			}
+			if (pos.x < viewport.Left && pos.x > 0){ ; Dont expand if window dragged off the Left of canvas
+				viewport.Left := pos.x
+			}
+			bot := pos.y + pos.h
+			if (bot > viewport.Bottom){
+				viewport.Bottom := bot
+			}
+			right := pos.x + pos.w
+			if (right > viewport.Right){
+				viewport.Right := right
+			}
+			ctr++
+		}
+		
+		if (!ctr){
+			; If no Child windows present, set scroll bars off.
+			; Update horizontal scroll bar.
+			this.SetScrollInfo(this.Gui.Hwnd, SB_HORZ, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
+			; Update vertical scroll bar.
+			this.SetScrollInfo(this.Gui.Hwnd, SB_VERT, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
+			return
+		}
+		
+		; Configure scroll bars due to canvas size
+		ScrollWidth := viewport.Right - viewport.Left
+		ScrollHeight := viewport.Bottom - viewport.Top
+
+		; GuiHeight = size of client area
+		g := this.GetClientRect(this.Gui.Hwnd)
+		GuiWidth := g.r
+		GuiHeight := g.b
+
+		; Update horizontal scroll bar.
+		this.SetScrollInfo(this.Gui.Hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
+
+		; Update vertical scroll bar.
+		this.SetScrollInfo(this.Gui.Hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
+		
+		viewport.Left -= scx
+		viewport.Right -= scx
+		viewport.Top -= scy
+		viewport.Bottom -=scy
+		
+		; If window is sized up while child items are clipped, drag the child items into view
+		if (viewport.Left < 0 && viewport.Right < GuiWidth){
+			x := Abs(viewport.Left) > GuiWidth-viewport.Right ? GuiWidth-viewport.Right : Abs(viewport.Left)
+		}
+		if (viewport.Top < 0 && viewport.Bottom < GuiHeight){
+			y := Abs(viewport.Top) > GuiHeight-viewport.Bottom ? GuiHeight-viewport.Bottom : Abs(viewport.Top)
+		}
+		if (x || y){
+			this.ScrollWindow(this.Gui.Hwnd, x, y)
+		}
+		base.OnSize()
+	}
+}
+/*
 ; A scrollable window class
 class CScrollingWindow extends CWindow {
 	Bottom := 0
@@ -167,3 +264,4 @@ class CScrollingWindow extends CWindow {
 	}
 
 }
+*/

@@ -1,3 +1,4 @@
+/*
 ; The TaskBar
 class CTaskBarWindow extends CScrollingWindow {
 	__New(title := "", options := "", parent := 0, childcanvas := 0){
@@ -77,3 +78,4 @@ Class CTaskBarItem extends CWindow {
 		return this.parent._ChildCanvas.ChildWindows[this._MainHwnd]
 	}
 }
+*/

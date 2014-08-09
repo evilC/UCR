@@ -1,25 +1,47 @@
 ; Helper functions
 class CWindow {
+	;IsMinimized := 0
+	WindowStatus := { IsMinimized: 0 }
 	__New(title := "", options := "", parent := 0){
-		this.parent := parent
-		if (this.parent){
-			options .= " +Parent" . this.parent.Hwnd
+		this.Parent := parent
+		this.ChildWindows := []
+		if (this.Parent){
+			options .= " +Parent" . this.Parent.Gui.Hwnd
 		}
-		this._Gui := GuiCreate(title,options,this)
+		this.Gui := GuiCreate(title, options, this)
+		if (this.Parent){
+			this.Parent.ChildWindows[this.Gui.Hwnd] := this
+		}
 	}
 	
+	/*
 	__Get(aName){
 		; IMPORTANT! SINGLE equals sign (=) is a CASE INSENSITIVE comparison!
 		if (aName = "hwnd" && IsObject(this.Gui)){
 			return this.Gui.Hwnd
 		} else if (aName = "gui"){
-			return this._Gui
+			return this.Gui
 		}
-		/* 
-		else if (aName = "options"){
-			return this._Options
+		;else if (aName = "options"){
+		;	return this._Options
+		;}
+	}
+	*/
+	
+	; Define interface
+	ChildMinimized(hwnd){
+		
+	}
+	
+	OnSize(){
+		if (WinGetMinMax("ahk_id " . this.Gui.Hwnd) == -1){
+			this.WindowStatus.IsMinimzed := 1
+			if (this.Parent){
+				this.Parent.ChildMinimized(this.Gui.Hwnd)
+			}
+		} else {
+			this.WindowStatus.IsMinimized := 0
 		}
-		*/
 	}
 	
 	; Like Gui.Show, but relative to the viewport (ie 0,0 is top left of canvas, not top left of current view)
@@ -29,7 +51,7 @@ class CWindow {
 			options := {x: 0, y: 0, w: 200, h: 50}
 		}
 		if (this.Parent){
-			offset := this.GetWindowOffSet(this.Parent.Hwnd)
+			offset := this.GetWindowOffSet(this.Parent.Gui.Hwnd)
 		} else {
 			offset := {x: 0, y: 0}
 		}
@@ -47,7 +69,7 @@ class CWindow {
 			str .= key . value
 			ctr++
 		}
-		this._Gui.Show(str)
+		this.Gui.Show(str)
 	}
 	
 	; Wrapper for WinGetPos
@@ -178,8 +200,8 @@ class CWindow {
 	
 	; Gets position of a child window relative to it's parent's RECT
 	GetClientPos(){
-		pos := this.GetPos(this.Hwnd)
-		offset := this.ScreenToClient(this.parent.Hwnd, x, y)
+		pos := this.GetPos(this.Gui.Hwnd)
+		offset := this.ScreenToClient(this.Parent.Gui.Hwnd, x, y)
 		pos.x += offset.x
 		pos.y += offset.y
 		return pos

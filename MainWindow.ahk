@@ -11,14 +11,16 @@
 
 MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
+/*
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x115, "OnScroll") ; WM_VSCROLL
 OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 OnMessage(0x112,"PreMinimize")
 OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 OnMessage(0x46, "WindowMove")
+*/
 
-
+/*
 #IfWinActive ahk_group MyGui
 ~WheelUp::
 ~WheelDown::
@@ -29,7 +31,9 @@ OnMessage(0x46, "WindowMove")
     OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
 return
 #IfWinActive
+*/
 
+/*
 ; Detect drag of child windows and update scrollbars accordingly
 WindowMove(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
@@ -37,7 +41,9 @@ WindowMove(wParam, lParam, msg, hwnd := 0){
 		MainWindow.ChildCanvas.OnSize()
 	}
 }
+*/
 
+/*
 ; Detect clicks
 ClickHandler(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
@@ -51,7 +57,9 @@ ClickHandler(wParam, lParam, msg, hwnd := 0){
 		return 0	; This line is IMPORTANT! It stops the message being processed further.
 	}
 }
+*/
 
+/*
 ; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
 ; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation
 PreMinimize(wParam, lParam, msg, hwnd := 0){
@@ -63,7 +71,9 @@ PreMinimize(wParam, lParam, msg, hwnd := 0){
 		}
 	}
 }
+*/
 
+/*
 OnScroll(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
 	if (!hwnd){
@@ -72,7 +82,78 @@ OnScroll(wParam, lParam, msg, hwnd := 0){
 	}
 	MainWindow.OnScroll(wParam, lParam, msg, hwnd)
 }
+*/
 
+class CMainWindow extends CWindow {
+	__New(title := "", options := "", parent := 0){
+		base.__New(title, options, parent)
+		this.ShowRelative({x: 0, y: 0, w:600, h: 400})
+		
+		this.Gui.AddButton("Add","gAddClicked")
+		
+		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this)
+		;this.ChildCanvas.ShowRelative({x: 0, y: 50, h: 10, w: 10})
+		this.Onsize()
+		this.ChildCanvas.OnSize()
+	}
+	
+	OnSize(){
+		; Size Scrollable Child Window
+		; Lots of hard wired values - would like to eliminate these!
+		r := this.GetClientRect(this.Gui.Hwnd)
+		r.b -= 50	; How far down from the top of the main gui does the child window start?
+		; Subtract border widths
+		r.b -= r.t + 6
+		r.r -= r.l + 6
+
+		; Client rect seems to not include scroll bars - check if they are showing and subtract accordingly
+		cc := {r: r.r, b: r.b}
+		cc_sbv := this.GetScrollBarVisibility(this.ChildCanvas.Gui.Hwnd)
+		if (cc_sbv.x){
+			cc.r -= 16
+		}
+
+		if (cc_sbv.y){
+			cc.b -= 16
+		}
+		
+		/*
+		tb := {r: r.r, b: r.b}
+		tb_sbv := this.GetScrollBarVisibility(this.TaskBar.Gui.Hwnd)
+		if (tb_sbv.x){
+			tb.r -= 16
+		}
+
+		if (tb_sbv.y){
+			tb.b -= 16
+		}
+		*/
+		this.ChildCanvas.ShowRelative({x:200, y:50, w: cc.r - 200, h: cc.b})
+		
+		;this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})
+	}
+
+	AddClicked(){
+		static WinNum := 1
+		child := new CChildCanvasSubWindow("Child " . WinNum, "", this.ChildCanvas)
+		child.ShowRelative({x:0, y:0, w:200, h:50})
+		;this.ChildCanvas.ChildWindows[child.Hwnd] := child
+		WinMoveTop("ahk_id " . child.Gui.Hwnd)
+		this.ChildCanvas.OnSize()
+
+		;task := new CTaskBarItem("Child " . WinNum, "-Border", this.TaskBar, child.Hwnd)
+
+		;this.TaskBar.ChildWindows[task.Hwnd] := task
+		;this.TaskBar.TaskBarOrder.Push(task.Hwnd)
+		
+		;this.ChildCanvas.ChildWindows[child.Hwnd].TaskHwnd := task.hwnd
+		;this.TaskBar.OnSize()
+
+		WinNum++
+	}
+
+}
+/*
 ; The Main Window
 class CMainWindow extends CWindow {
 	__New(title, options := 0, parent := 0){
@@ -173,7 +254,12 @@ class CMainWindow extends CWindow {
 		this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Hwnd)
 	}
 }
+*/
 
+class CChildCanvasWindow extends CScrollingWindow {
+
+}
+/*
 ; The ChildCanvas Window - Child windows sit on this
 class CChildCanvasWindow extends CScrollingWindow {
 	ChildMinimized(hwnd){
@@ -203,7 +289,15 @@ class CChildCanvasWindow extends CScrollingWindow {
 		this.OnSize()
 	}
 }
+*/
 
+class CChildCanvasSubWindow extends CChildWindow {
+	__New(title := "", options := "", parent := 0){
+		base.__New(title, options, parent)
+		this.Gui.AddLabel("I am " . this.Gui.Hwnd)
+	}
+}
+/*
 ; A window that resides in the ChildCanvas window
 class CChildCanvasSubWindow extends CChildWindow {
 	__New(title := "", options := "", parent := 0){
@@ -221,3 +315,4 @@ class CChildCanvasSubWindow extends CChildWindow {
 		}
 	}
 }
+*/
