@@ -3,10 +3,10 @@ class CScrollingWindow extends CWindow {
 		base.__New(title, options . " 0x300000", parent)
 	}
 	
-	OnSize(gui := 0, eventInfo := 0, width := 0, height := 0){
+	OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){
 		static SIF_RANGE := 0x1, SIF_PAGE := 0x2, SIF_DISABLENOSCROLL := 0x8, SB_HORZ := 0, SB_VERT := 1
 
-		base.OnSize(gui, eventInfo, width, height)
+		base.OnReSize(gui, eventInfo, width, height)
 
 		; ToDo: Check if window contains any controls, and include those in the viewport calcs.
 

@@ -98,15 +98,16 @@ class CMainWindow extends CWindow {
 		; Set up "Task Bar" for Child GUIs
 		this.TaskBar := new CTaskBarWindow("", "-Border", this, this.ChildCanvas)
 		; x0 y50
-		this.TaskBar.OnSize()
+		this.TaskBar.OnReSize()
 
-		this.Onsize()
-		this.ChildCanvas.OnSize()
+		this.OnResize()
+		this.ChildCanvas.OnReSize()
 
 	}
 	
-	OnSize(gui := 0, eventInfo := 0, width := 0, height := 0){
-		base.OnSize(gui, eventInfo, width, height)
+	;OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){
+	OnReSize(){
+		base.OnReSize()
 		; Size Scrollable Child Window
 		; Lots of hard wired values - would like to eliminate these!
 		r := this.GetClientRect(this.Gui.Hwnd)
@@ -144,19 +145,20 @@ class CMainWindow extends CWindow {
 		static WinNum := 1
 		title := "Child " . WinNum
 		child := new CChildCanvasSubWindow(title, "", this.ChildCanvas)
-		child.ShowRelative({x:0, y:0, w:200, h:50})
+		child.ShowRelative({x: WinNum * 10, y: WinNum * 10, w:200, h:50})
 		;this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		WinMoveTop("ahk_id " . child.Gui.Hwnd)
-		this.ChildCanvas.OnSize()
+		this.ChildCanvas.OnReSize()
 
 		this.TaskBar.AddTask(title, "-Border", child)
+		this.OnResize()
 		;task := new CTaskBarItem("Child " . WinNum, "-Border", this.TaskBar, child.Hwnd)
 
 		;this.TaskBar.ChildWindows[task.Hwnd] := task
 		;this.TaskBar.TaskBarOrder.Push(task.Hwnd)
 		
 		;this.ChildCanvas.ChildWindows[child.Hwnd].TaskHwnd := task.hwnd
-		;this.TaskBar.OnSize()
+		this.TaskBar.OnReSize()
 
 		WinNum++
 	}

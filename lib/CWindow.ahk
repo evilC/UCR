@@ -1,6 +1,6 @@
 ; Helper functions
 class CWindow {
-	WindowStatus := { IsMinimized: 0, IsMaximized: 0 }
+	WindowStatus := { IsMinimized: 0, IsMaximized: 0, Width: 0, Height: 0 }
 	ChildWindows := []
 	
 	__New(title := "", options := "", parent := 0){
@@ -41,7 +41,7 @@ class CWindow {
 		
 	}
 
-	OnMinimize(){
+	OnMinimize(width, height){
 		this.WindowStatus.IsMinimized := 1
 		this.WindowStatus.IsMaximized := 0
 		if (this.Parent){
@@ -49,7 +49,10 @@ class CWindow {
 		}
 	}
 	
-	OnMaximize(){
+	OnMaximize(width, height){
+		if (!this.WindowStatus.IsMaximized && !this.WindowStatus.IsMinimized){
+			this.OnResize()
+		}
 		this.WindowStatus.IsMinimized := 0
 		this.WindowStatus.IsMaximized := 1
 		if (this.Parent){
@@ -57,12 +60,21 @@ class CWindow {
 		}
 	}
 	
-	OnRestore(){
+	OnRestore(width, height){
+		if (this.WindowStatus.IsMaximized){
+			this.OnResize()
+		}
 		this.WindowStatus.IsMinimized := 0
 		this.WindowStatus.IsMaximized := 0
 		if (this.Parent){
 			this.Parent.ChildRestored(this.Gui.Hwnd)
 		}
+	}
+	
+	; OnResize is different from OnSize in that it should only trigger when the dimensions actually changed, or the shape of the contents changed.
+	; This should not include minimze / restore
+	OnResize(){
+		; Dimensions have physically changed
 	}
 	
 	; eventinfo = http://msdn.microsoft.com/en-gb/library/windows/desktop/ms632646(v=vs.85).aspx
@@ -71,19 +83,24 @@ class CWindow {
 			; Event 0x0 - The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
 			if (this.WindowStatus.IsMinimized || this.WindowStatus.IsMaximized){
 				; Restore
-				this.OnRestore()
+				this.OnRestore(width, height)
 			} else {
-				; Size
+				if ( (width && this.WindowStatus.Width != width) || (height && this.WindowStatus.Height != height) ){
+					; Dimensions have changed (Or new window)
+					this.WindowStatus.Width := width
+					this.WindowStatus.Height := height
+					this.OnResize()
+				}
 			}
 		} else if (eventinfo == 0x1){
 			; Event 0x1 - The window has been minimized.
 			if (!this.WindowStatus.IsMinimized){
-				this.OnMinimize()
+				this.OnMinimize(width, height)
 			}
 		} else if(eventinfo == 0x2){
 			; Event 0x2 - The window has been maximized.
 			if (!this.WindowStatus.IsMaximized){
-				this.OnMaximize()
+				this.OnMaximize(width, height)
 			}
 		}
 	}
