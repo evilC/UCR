@@ -1,3 +1,50 @@
+; The TaskBar
+class CTaskBarWindow extends CScrollingWindow {
+	TaskBarOrder := []
+	TaskIndex := []			; Lookup from the Hwnd of the TaskBar item to the Object it represents
+	; ToDo: Allow these to be set via parameter
+	TaskHeight := 25
+	TaskWidth := 180
+	TaskGap := 5
+
+	__New(title := "", options := "", parent := 0){
+		
+		if (!childcanvas){
+			msgbox("ERROR: No Child Canvas specified for TaskBarItem")
+			ExitApp
+		}
+		base.__New(title, options, parent)
+
+	}
+
+	AddTask(title, options, window_obj){
+		task := new CTaskBarItem(title, options, this)
+		this.TaskBarOrder.Push(task.Gui.Hwnd)
+		this.TaskIndex[task.Gui.Hwnd] := window_obj
+		tasknum := this.TaskBarOrder.Length - 1
+		task.ShowRelative({x: 0, y: (tasknum * this.TaskHeight) + (tasknum * this.TaskGap), w: this.TaskWidth, h: this.TaskHeight})
+	}
+	
+	TaskClicked(hwnd){
+		if (this.TaskIndex[hwnd].WindowStatus.IsMinimized){
+			this.RestoreTask(hwnd)
+		} else {
+			this.MinimizeTask(hwnd)			
+		}
+	}
+	
+	RestoreTask(hwnd){
+		this.TaskIndex[hwnd].Gui.Restore()
+	}
+	
+	MinimizeTask(hwnd){
+		this.TaskIndex[hwnd].Gui.Hide()
+		this.TaskIndex[hwnd].Gui.Minimize()
+		this.TaskIndex[hwnd].Gui.Hide()
+	}
+	
+}
+
 /*
 ; The TaskBar
 class CTaskBarWindow extends CScrollingWindow {
@@ -29,7 +76,27 @@ class CTaskBarWindow extends CScrollingWindow {
 		}
 	}
 }
+*/
 
+Class CTaskBarItem extends CWindow {
+	__New(title := "", options := "", parent := 0){
+		;this._MainHwnd := mainhwnd
+		base.__New(title, options, parent)
+
+		this.Gui.AddLabel(title)
+		;this.TaskMaximized()
+
+		;this.ShowRelative({x: coords.x, y: coords.y, w:150, h:25})
+	}
+	
+	/*
+	TaskClicked(){
+		
+	}
+	*/
+}
+
+/*
 Class CTaskBarItem extends CWindow {
 	__New(title := "", options := "", parent := 0, mainhwnd := 0){
 		this._MainHwnd := mainhwnd

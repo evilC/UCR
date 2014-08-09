@@ -11,14 +11,14 @@
 
 MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
-/*
+
 ; Is it possible to move this inside the class somehow?
-OnMessage(0x115, "OnScroll") ; WM_VSCROLL
-OnMessage(0x114, "OnScroll") ; WM_HSCROLL
+;OnMessage(0x115, "OnScroll") ; WM_VSCROLL
+;OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 OnMessage(0x112,"PreMinimize")
 OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
-OnMessage(0x46, "WindowMove")
-*/
+;OnMessage(0x46, "WindowMove")
+
 
 /*
 #IfWinActive ahk_group MyGui
@@ -43,7 +43,6 @@ WindowMove(wParam, lParam, msg, hwnd := 0){
 }
 */
 
-/*
 ; Detect clicks
 ClickHandler(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
@@ -53,13 +52,14 @@ ClickHandler(wParam, lParam, msg, hwnd := 0){
 	}
 	; Click on TaskBar Item = maximize / minimize
 	if (MainWindow.TaskBar.ChildWindows[hwnd]){
-		MainWindow.TaskBar.ChildWindows[hwnd].TaskBarItemClicked()
+		;MainWindow.TaskBar.ChildWindows[hwnd].TaskBarItemClicked()
+		;MainWindow.TaskBar.ChildWindows[hwnd].TaskClicked()
+		MainWindow.TaskBar.TaskClicked(hwnd)
 		return 0	; This line is IMPORTANT! It stops the message being processed further.
 	}
 }
-*/
 
-/*
+
 ; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
 ; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation
 PreMinimize(wParam, lParam, msg, hwnd := 0){
@@ -71,7 +71,7 @@ PreMinimize(wParam, lParam, msg, hwnd := 0){
 		}
 	}
 }
-*/
+
 
 /*
 OnScroll(wParam, lParam, msg, hwnd := 0){
@@ -91,13 +91,22 @@ class CMainWindow extends CWindow {
 		
 		this.Gui.AddButton("Add","gAddClicked")
 		
+		; Set up child GUI Canvas
 		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this)
 		;this.ChildCanvas.ShowRelative({x: 0, y: 50, h: 10, w: 10})
+		
+		; Set up "Task Bar" for Child GUIs
+		this.TaskBar := new CTaskBarWindow("", "-Border", this, this.ChildCanvas)
+		; x0 y50
+		this.TaskBar.OnSize()
+
 		this.Onsize()
 		this.ChildCanvas.OnSize()
+
 	}
 	
-	OnSize(){
+	OnSize(gui := 0, eventInfo := 0, width := 0, height := 0){
+		base.OnSize(gui, eventInfo, width, height)
 		; Size Scrollable Child Window
 		; Lots of hard wired values - would like to eliminate these!
 		r := this.GetClientRect(this.Gui.Hwnd)
@@ -117,7 +126,6 @@ class CMainWindow extends CWindow {
 			cc.b -= 16
 		}
 		
-		/*
 		tb := {r: r.r, b: r.b}
 		tb_sbv := this.GetScrollBarVisibility(this.TaskBar.Gui.Hwnd)
 		if (tb_sbv.x){
@@ -127,20 +135,21 @@ class CMainWindow extends CWindow {
 		if (tb_sbv.y){
 			tb.b -= 16
 		}
-		*/
 		this.ChildCanvas.ShowRelative({x:200, y:50, w: cc.r - 200, h: cc.b})
 		
-		;this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})
+		this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})		
 	}
 
 	AddClicked(){
 		static WinNum := 1
-		child := new CChildCanvasSubWindow("Child " . WinNum, "", this.ChildCanvas)
+		title := "Child " . WinNum
+		child := new CChildCanvasSubWindow(title, "", this.ChildCanvas)
 		child.ShowRelative({x:0, y:0, w:200, h:50})
 		;this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		WinMoveTop("ahk_id " . child.Gui.Hwnd)
 		this.ChildCanvas.OnSize()
 
+		this.TaskBar.AddTask(title, "-Border", child)
 		;task := new CTaskBarItem("Child " . WinNum, "-Border", this.TaskBar, child.Hwnd)
 
 		;this.TaskBar.ChildWindows[task.Hwnd] := task
@@ -257,7 +266,9 @@ class CMainWindow extends CWindow {
 */
 
 class CChildCanvasWindow extends CScrollingWindow {
-
+	ChildMinimized(hwnd){
+		this.ChildWindows[hwnd].Gui.Hide()
+	}
 }
 /*
 ; The ChildCanvas Window - Child windows sit on this

@@ -1,10 +1,10 @@
 ; Helper functions
 class CWindow {
-	;IsMinimized := 0
 	WindowStatus := { IsMinimized: 0 }
+	ChildWindows := []
+	
 	__New(title := "", options := "", parent := 0){
 		this.Parent := parent
-		this.ChildWindows := []
 		if (this.Parent){
 			options .= " +Parent" . this.Parent.Gui.Hwnd
 		}
@@ -33,14 +33,14 @@ class CWindow {
 		
 	}
 	
-	OnSize(){
-		if (WinGetMinMax("ahk_id " . this.Gui.Hwnd) == -1){
-			this.WindowStatus.IsMinimzed := 1
+	OnSize(gui := 0, eventInfo := 0, width := 0, height := 0){
+		if (eventinfo == 0x0){
+			this.WindowStatus.IsMinimized := 0
+		} else if (eventinfo == 0x1){
+			this.WindowStatus.IsMinimized := 1
 			if (this.Parent){
 				this.Parent.ChildMinimized(this.Gui.Hwnd)
 			}
-		} else {
-			this.WindowStatus.IsMinimized := 0
 		}
 	}
 	
