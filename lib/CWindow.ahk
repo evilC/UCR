@@ -1,6 +1,6 @@
 ; Helper functions
 class CWindow {
-	WindowStatus := { IsMinimized: 0 }
+	WindowStatus := { IsMinimized: 0, IsMaximized: 0 }
 	ChildWindows := []
 	
 	__New(title := "", options := "", parent := 0){
@@ -32,14 +32,58 @@ class CWindow {
 	ChildMinimized(hwnd){
 		
 	}
+
+	ChildMaximized(hwnd){
+		
+	}
+
+	ChildRestored(hwnd){
+		
+	}
+
+	OnMinimize(){
+		this.WindowStatus.IsMinimized := 1
+		this.WindowStatus.IsMaximized := 0
+		if (this.Parent){
+			this.Parent.ChildMinimized(this.Gui.Hwnd)
+		}
+	}
 	
+	OnMaximize(){
+		this.WindowStatus.IsMinimized := 0
+		this.WindowStatus.IsMaximized := 1
+		if (this.Parent){
+			this.Parent.ChildMaximized(this.Gui.Hwnd)
+		}
+	}
+	
+	OnRestore(){
+		this.WindowStatus.IsMinimized := 0
+		this.WindowStatus.IsMaximized := 0
+		if (this.Parent){
+			this.Parent.ChildRestored(this.Gui.Hwnd)
+		}
+	}
+	
+	; eventinfo = http://msdn.microsoft.com/en-gb/library/windows/desktop/ms632646(v=vs.85).aspx
 	OnSize(gui := 0, eventInfo := 0, width := 0, height := 0){
 		if (eventinfo == 0x0){
-			this.WindowStatus.IsMinimized := 0
+			; Event 0x0 - The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
+			if (this.WindowStatus.IsMinimized || this.WindowStatus.IsMaximized){
+				; Restore
+				this.OnRestore()
+			} else {
+				; Size
+			}
 		} else if (eventinfo == 0x1){
-			this.WindowStatus.IsMinimized := 1
-			if (this.Parent){
-				this.Parent.ChildMinimized(this.Gui.Hwnd)
+			; Event 0x1 - The window has been minimized.
+			if (!this.WindowStatus.IsMinimized){
+				this.OnMinimize()
+			}
+		} else if(eventinfo == 0x2){
+			; Event 0x2 - The window has been maximized.
+			if (!this.WindowStatus.IsMaximized){
+				this.OnMaximize()
 			}
 		}
 	}

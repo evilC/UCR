@@ -267,7 +267,8 @@ class CMainWindow extends CWindow {
 
 class CChildCanvasWindow extends CScrollingWindow {
 	ChildMinimized(hwnd){
-		this.ChildWindows[hwnd].Gui.Hide()
+		this.parent.Taskbar.TaskMinimized(hwnd)
+		;this.ChildWindows[hwnd].Gui.Hide()
 	}
 }
 /*

@@ -1,7 +1,8 @@
 ; The TaskBar
 class CTaskBarWindow extends CScrollingWindow {
 	TaskBarOrder := []
-	TaskIndex := []			; Lookup from the Hwnd of the TaskBar item to the Object it represents
+	TaskHwndToObj := []			; Lookup from the Hwnd of the TaskBar item to the Object it represents
+	ObjHwndToTask := []
 	; ToDo: Allow these to be set via parameter
 	TaskHeight := 25
 	TaskWidth := 155 ; Needs to be ~25 px less than width of window
@@ -13,30 +14,49 @@ class CTaskBarWindow extends CScrollingWindow {
 
 	AddTask(title, options, window_obj){
 		task := new CTaskBarItem(title, options, this)
+		
+		; Give tasks a sense of Order
 		this.TaskBarOrder.Push(task.Gui.Hwnd)
-		this.TaskIndex[task.Gui.Hwnd] := window_obj
+		
+		; Create lookup tables
+		this.TaskHwndToObj[task.Gui.Hwnd] := window_obj
+		this.ObjHwndToTask[window_obj.Gui.Hwnd] := task
+		
+		; Show position
 		tasknum := this.TaskBarOrder.Length - 1
 		task.ShowRelative({x: 0, y: (tasknum * this.TaskHeight) + (tasknum * this.TaskGap), w: this.TaskWidth, h: this.TaskHeight})
 	}
 	
 	TaskClicked(hwnd){
-		if (this.TaskIndex[hwnd].WindowStatus.IsMinimized){
+		if (this.TaskHwndToObj[hwnd].WindowStatus.IsMinimized){
 			this.RestoreTask(hwnd)
 		} else {
 			this.MinimizeTask(hwnd)			
 		}
 	}
 	
+	; Task Hwnd was clicked - restore the Hwnd that it represents
 	RestoreTask(hwnd){
-		this.TaskIndex[hwnd].Gui.Restore()
+		this.TaskHwndToObj[hwnd].Gui.Restore()
 	}
 	
+	; Task Hwnd was clicked - minimize the Hwnd that it represents
 	MinimizeTask(hwnd){
-		this.TaskIndex[hwnd].Gui.Hide()
-		this.TaskIndex[hwnd].Gui.Minimize()
-		this.TaskIndex[hwnd].Gui.Hide()
+		this.TaskHwndToObj[hwnd].Gui.Hide()
+		this.TaskHwndToObj[hwnd].Gui.Minimize()
+		this.TaskHwndToObj[hwnd].Gui.Hide()
 	}
 	
+	; Child Hwnd was clicked
+	; Call RestoreTask with the TaskBar item's hwnd
+	TaskRestored(hwnd){
+		this.RestoreTask(this.ObjHwndToTask[hwnd].Gui.Hwnd)
+	}
+	
+	; Call MinimizeTask with the TaskBar item's hwnd
+	TaskMinimized(hwnd){
+		this.MinimizeTask(this.ObjHwndToTask[hwnd].Gui.Hwnd)
+	}
 }
 
 /*
