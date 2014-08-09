@@ -24,6 +24,7 @@ class CTaskBarWindow extends CScrollingWindow {
 		
 		; Show position
 		tasknum := this.TaskBarOrder.Length - 1
+		this.RestoreTask(task.Gui.Hwnd)
 		task.ShowRelative({x: 0, y: (tasknum * this.TaskHeight) + (tasknum * this.TaskGap), w: this.TaskWidth, h: this.TaskHeight})
 	}
 	
@@ -38,6 +39,7 @@ class CTaskBarWindow extends CScrollingWindow {
 	; Task Hwnd was clicked - restore the Hwnd that it represents
 	RestoreTask(hwnd){
 		this.TaskHwndToObj[hwnd].Gui.Restore()
+		this.ChildWindows[hwnd].Gui.BgColor := "0x00EE00"
 	}
 	
 	; Task Hwnd was clicked - minimize the Hwnd that it represents
@@ -45,6 +47,7 @@ class CTaskBarWindow extends CScrollingWindow {
 		this.TaskHwndToObj[hwnd].Gui.Hide()
 		this.TaskHwndToObj[hwnd].Gui.Minimize()
 		this.TaskHwndToObj[hwnd].Gui.Hide()
+		this.ChildWindows[hwnd].Gui.BgColor := "0xEE0000"
 	}
 	
 	; Child Hwnd was clicked
