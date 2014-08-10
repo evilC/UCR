@@ -16,19 +16,6 @@ OnMessage(0x112,"PreMinimize")
 OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 OnMessage(0x46, "WindowMove")
 
-
-#IfWinActive ahk_group _MainWindow
-~WheelUp::
-~WheelDown::
-~+WheelUp::
-~+WheelDown::
-    ; SB_LINEDOWN=1, SB_LINEUP=0, WM_HSCROLL=0x114, WM_VSCROLL=0x115
-	; Pass 0 to Onscroll's hwnd param
-    ;OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
-    _MessageHandler(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
-return
-#IfWinActive
-
 ; Detect drag of child windows and update scrollbars accordingly
 WindowMove(wParam, lParam, msg, hwnd := 0){
 	global MainWindow

@@ -1,15 +1,12 @@
 #include <CWindow>
 
-;OnMessage(0x115, "OnScroll") ; WM_VSCROLL
-;OnMessage(0x114, "OnScroll") ; WM_HSCROLL
-
-OnMessage(0x115, "_MessageHandler") ; WM_VSCROLL
-OnMessage(0x114, "_MessageHandler") ; WM_HSCROLL
-
 ; A scrollable window class
 class CScrollingWindow extends CWindow {
 	__New(title := "", options := "", parent := 0, ext_options := 0){
+		global _MainWindow
+		static hooks_added := 0
 		base.__New(title, options . " 0x300000", parent)
+
 		if (IsObject(ext_options)){
 			if (ext_options.ScrollTrap){
 				if (ext_options.ScrollDefault){
@@ -17,12 +14,37 @@ class CScrollingWindow extends CWindow {
 				} else {
 					def := 0
 				}
-				;this.RegisterMessage(0x115, this.OnScroll, def)
+				this.RegisterMessage(0x114, this, "OnScroll", def)
 				this.RegisterMessage(0x115, this, "OnScroll", def)
 			}
 		}
+		
+		if (!hooks_added){
+			hooks_added := 1
+			hotkey, IfWinActive, ahk_group _MainWindow
+			hotkey, ~WheelUp, _WheelHandler
+			hotkey, ~WheelDown, _WheelHandler
+			hotkey, ~+WheelUp, _WheelHandler
+			hotkey, ~+WheelDown, _WheelHandler
+			hotkey, IfWinActive
+
+			OnMessage(0x115, "_MessageHandler") ; WM_VSCROLL
+			OnMessage(0x114, "_MessageHandler") ; WM_HSCROLL
+			if (0){
+				_WheelHandler:
+					_MessageHandler(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
+					return
+			}
+		}
+		
 	}
 	
+	_WheelHandler(){
+		_WheelHandler:
+			msgbox("HERE")
+			return
+	}
+
 	/*
 	MessageHandler(wParam, lParam, msg, hwnd){
 		base.MessageHandler(wParam, lParam, msg, hwnd)

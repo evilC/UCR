@@ -16,6 +16,7 @@ class CWindow {
 	
 	__New(title := "", options := "", parent := 0, ext_options := 0){
 		global _MainWindow
+		
 		this.Parent := parent
 		if (this.Parent){
 			options .= " +Parent" . this.Parent.Gui.Hwnd
