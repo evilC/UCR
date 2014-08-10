@@ -1,4 +1,7 @@
 ; The TaskBar
+#include <CScrollingWindow>
+#include <CWindow>
+
 class CTaskBarWindow extends CScrollingWindow {
 	TaskBarOrder := []
 	TaskHwndToObj := []			; Lookup from the Hwnd of the TaskBar item to the Object it represents

@@ -11,10 +11,7 @@
 
 MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
-
 ; Is it possible to move this inside the class somehow?
-OnMessage(0x115, "OnScroll") ; WM_VSCROLL
-OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 OnMessage(0x112,"PreMinimize")
 OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 OnMessage(0x46, "WindowMove")
@@ -27,7 +24,7 @@ OnMessage(0x46, "WindowMove")
 ~+WheelDown::
     ; SB_LINEDOWN=1, SB_LINEUP=0, WM_HSCROLL=0x114, WM_VSCROLL=0x115
 	; Pass 0 to Onscroll's hwnd param
-    OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
+    ;OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
 return
 #IfWinActive
 
@@ -68,16 +65,6 @@ PreMinimize(wParam, lParam, msg, hwnd := 0){
 	}
 }
 
-
-OnScroll(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	if (!hwnd){
-		; No Hwnd - Mouse wheel used. Find Hwnd of what is under the cursor
-		MouseGetPos(tmp,tmp,tmp,hwnd,2)
-	}
-	MainWindow.OnScroll(wParam, lParam, msg, hwnd)
-}
-
 class CMainWindow extends CWindow {
 	__New(title := "", options := "", parent := 0){
 		base.__New(title, options, parent)
@@ -86,7 +73,7 @@ class CMainWindow extends CWindow {
 		this.Gui.AddButton("Add","gAddClicked")
 		
 		; Set up child GUI Canvas
-		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this)
+		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 1 })
 		;this.ChildCanvas.ShowRelative({x: 0, y: 50, h: 10, w: 10})
 		
 		; Set up "Task Bar" for Child GUIs
@@ -98,6 +85,10 @@ class CMainWindow extends CWindow {
 		this.ChildCanvas.OnReSize()
 
 		GroupAdd("MyGui", "ahk_id " . this.Gui.Hwnd)
+	}
+
+	MessageHandler(wParam, lParam, msg, hwnd){
+		base.MessageHandler(wParam, lParam, msg, hwnd)
 	}
 	
 	;OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){

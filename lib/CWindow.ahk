@@ -1,9 +1,20 @@
 ; Helper functions
+_MessageHandler(wParam, lParam, msg, hwnd := 0){
+	global _MainWindow
+	if (!hwnd){
+		; No Hwnd - Mouse wheel used. Find Hwnd of what is under the cursor
+		MouseGetPos(tmp,tmp,tmp,hwnd,2)
+	}
+	_MainWindow.MessageHandler(wParam, lParam, msg, hwnd)
+}
+
 class CWindow {
 	WindowStatus := { IsMinimized: 0, IsMaximized: 0, Width: 0, Height: 0 }
 	ChildWindows := []
+	MessageLookup := []
 	
-	__New(title := "", options := "", parent := 0){
+	__New(title := "", options := "", parent := 0, ext_options := 0){
+		global _MainWindow
 		this.Parent := parent
 		if (this.Parent){
 			options .= " +Parent" . this.Parent.Gui.Hwnd
@@ -11,7 +22,26 @@ class CWindow {
 		this.Gui := GuiCreate(title, options, this)
 		if (this.Parent){
 			this.Parent.ChildWindows[this.Gui.Hwnd] := this
+			this._MainWindow := Parent._MainWindow
+		} else {
+			_MainWindow := this
+			this._MainWindow := this
 		}
+	}
+	
+	; "this" should always be the MainWindow
+	MessageHandler(wParam, lParam, msg, hwnd){
+		if (IsObject(this.MessageLookup[msg])){
+			o := this._MainWindow.MessageLookup[msg]
+			o["obj"][this._MainWindow.MessageLookup[msg].method](wParam, lParam, msg, hwnd)
+		}
+	}
+	
+	RegisterMessage(msg, obj, method, def){
+		if (!IsObject(this._MainWindow.MessageLookup[msg])){
+			;this.MessageLookup[msg] := []
+		}
+		this._MainWindow.MessageLookup[msg] := {obj: obj, method: method, def: def}
 	}
 	
 	/*

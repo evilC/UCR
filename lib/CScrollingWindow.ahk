@@ -1,8 +1,37 @@
+#include <CWindow>
+
+;OnMessage(0x115, "OnScroll") ; WM_VSCROLL
+;OnMessage(0x114, "OnScroll") ; WM_HSCROLL
+
+OnMessage(0x115, "_MessageHandler") ; WM_VSCROLL
+OnMessage(0x114, "_MessageHandler") ; WM_HSCROLL
+
 ; A scrollable window class
 class CScrollingWindow extends CWindow {
-	__New(title := "", options := "", parent := 0){
+	__New(title := "", options := "", parent := 0, ext_options := 0){
 		base.__New(title, options . " 0x300000", parent)
+		if (IsObject(ext_options)){
+			if (ext_options.ScrollTrap){
+				if (ext_options.ScrollDefault){
+					def := 1
+				} else {
+					def := 0
+				}
+				;this.RegisterMessage(0x115, this.OnScroll, def)
+				this.RegisterMessage(0x115, this, "OnScroll", def)
+			}
+		}
 	}
+	
+	/*
+	MessageHandler(wParam, lParam, msg, hwnd){
+		base.MessageHandler(wParam, lParam, msg, hwnd)
+		if (msg == 0x114 || msg == 0x115){
+			soundbeep
+			this.OnScroll(wParam, lParam, msg, hwnd)
+		}
+	}
+	*/
 	
 	OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){
 		static SIF_RANGE := 0x1, SIF_PAGE := 0x2, SIF_DISABLENOSCROLL := 0x8, SB_HORZ := 0, SB_VERT := 1
