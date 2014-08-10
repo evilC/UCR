@@ -70,7 +70,18 @@ class CWindow {
 			this.Parent.ChildRestored(this.Gui.Hwnd)
 		}
 	}
+
+	OnClose(){
+		if(this.Parent){
+			this.Parent.ChildClosed(this.Gui.Hwnd)
+		}
+	}
 	
+	ChildClosed(hwnd){
+		this.ChildWindows.Remove(hwnd)
+		this.OnReSize()
+	}
+
 	; OnResize is different from OnSize in that it should only trigger when the dimensions actually changed, or the shape of the contents changed.
 	; This should not include minimze / restore
 	OnResize(){
@@ -266,15 +277,5 @@ class CWindow {
 		pos.x += offset.x
 		pos.y += offset.y
 		return pos
-	}
-	
-	OnClose(){
-		if(this.Parent){
-			this.Parent.ChildClosed(this.Gui.Hwnd)
-		}
-	}
-	
-	ChildClosed(hwnd){
-		this.ChildWindows.Remove(hwnd)
 	}
 }

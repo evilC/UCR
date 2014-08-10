@@ -25,7 +25,7 @@ class CTaskBarWindow extends CScrollingWindow {
 		; Show position
 		tasknum := this.TaskBarOrder.Length - 1
 		this.RestoreTask(task.Gui.Hwnd)
-		task.ShowRelative({x: 0, y: (tasknum * this.TaskHeight) + (tasknum * this.TaskGap), w: this.TaskWidth, h: this.TaskHeight})
+		task.ShowRelative({x: 0, y: this.GetTaskY(tasknum), w: this.TaskWidth, h: this.TaskHeight})
 	}
 	
 	TaskClicked(hwnd){
@@ -67,7 +67,8 @@ class CTaskBarWindow extends CScrollingWindow {
 		;this.ObjHwndToTask[hwnd].OnClose()
 		task_hwnd := this.ObjHwndToTask[obj_hwnd].Gui.Hwnd
 		task_obj := this.ObjHwndToTask[obj_hwnd]
-		Loop task_obj.Parent.TaskBarOrder.Length {
+		len := task_obj.Parent.TaskBarOrder.Length
+		Loop  len {
 			if (task_obj.Parent.TaskBarOrder[A_Index] == task_hwnd){
 				task_obj.Parent.TaskBarOrder.RemoveAt(A_Index)
 				break
@@ -78,108 +79,41 @@ class CTaskBarWindow extends CScrollingWindow {
 		
 		task_obj.OnClose()
 		task_obj.Gui.Destroy()
-	}
-	
-}
-
-/*
-; The TaskBar
-class CTaskBarWindow extends CScrollingWindow {
-	__New(title := "", options := "", parent := 0, childcanvas := 0){
 		
-		if (!childcanvas){
-			msgbox("ERROR: No Child Canvas specified for TaskBarItem")
-			ExitApp
+		; If item was removed from anywhere else but end, re-pack the boxes.
+		if (len != A_Index){
+			; Pass A_Index to Pack() to only re-order items below the one we just deleted
+			this.Pack(A_Index)
 		}
-		this._ChildCanvas := childcanvas
-		base.__New(title, options, parent)
-
 	}
 
-	TaskBarOrder := []
-	ChildMaximized(hwnd){
-		this.ChildWindows[this._ChildCanvas.ChildWindows[hwnd].TaskHwnd].TaskMaximized()
-		
-		this._ChildCanvas.OnSize()
-	}
-
-	Pack(){
-		offset := this.GetWindowOffSet(this.Hwnd)
+	; Re-Order TaskBar items (eg due to deletion)
+	Pack(start := 1){
+		offset := this.GetWindowOffSet(this.Gui.Hwnd)
 		Bottom := 0 + offset.y
-		Loop this.TaskBarOrder.Length(){
+		Loop this.TaskBarOrder.Length {
+			if (A_Index < start){
+				; Skip packing items before optional start parameter.
+				; Allows accelerating pack by only packing guis after the deleted item
+				continue
+			}
 			;WinMove("ahk_id " . this.TaskBarOrder[A_Index],"", 0, Bottom)
-			this.ChildWindows[this.TaskBarOrder[A_Index]].ShowRelative({x: 0, y: Bottom})
+			;this.ChildWindows[this.TaskBarOrder[A_Index]].ShowRelative({x: 0, y: Bottom})
+			this.ChildWindows[this.TaskBarOrder[A_Index]].ShowRelative({x: 0, y: this.GetTaskY(A_Index - 1)})
 			Bottom += 30
 		}
 	}
+	
+	GetTaskY(tasknum){
+		return (tasknum * this.TaskHeight) + (tasknum * this.TaskGap)
+	}
 }
-*/
 
 Class CTaskBarItem extends CWindow {
 	__New(title := "", options := "", parent := 0){
-		;this._MainHwnd := mainhwnd
 		base.__New(title, options, parent)
 
 		this.Gui.AddLabel(title)
-		;this.TaskMaximized()
-
-		;this.ShowRelative({x: coords.x, y: coords.y, w:150, h:25})
 	}
 	
-	/*
-	TaskClicked(){
-		
-	}
-	*/
 }
-
-/*
-Class CTaskBarItem extends CWindow {
-	__New(title := "", options := "", parent := 0, mainhwnd := 0){
-		this._MainHwnd := mainhwnd
-		base.__New(title, options, parent)
-
-
-		; Adjust coordinates to cater for current position of parent's scrollbar.
-		coords := {x: 0, y: this.parent.TaskBarOrder.Length() * 30 }
-		
-		this.Gui.AddLabel(title)
-		this.TaskMaximized()
-
-		this.ShowRelative({x: coords.x, y: coords.y, w:150, h:25})
-		
-	}
-	
-	TaskMinimized(){
-		cw := this.GetChildWindow()
-		cw.Gui.Hide()
-		cw.IsMinimized := 1
-
-		this.Gui.BgColor := "0xEE0000"
-		this.parent._ChildCanvas.Onsize()
-	}
-	
-	TaskMaximized(){
-		cw := this.GetChildWindow()
-		
-		cw.Gui.Restore()
-		WinMoveTop("ahk_id " . cw.Hwnd)
-		this.Gui.BgColor := "0x00EE00"
-		cw.IsMinimized := 0
-		this.parent._ChildCanvas.Onsize()
-	}
-	
-	TaskBarItemClicked(){
-		cw := this.GetChildWindow()
-		if (cw.IsMinimized){
-			this.TaskMaximized()
-		} else {
-			this.TaskMinimized()
-		}
-	}
-	
-	GetChildWindow(){
-		return this.parent._ChildCanvas.ChildWindows[this._MainHwnd]
-	}
-}
-*/
