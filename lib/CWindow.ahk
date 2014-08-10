@@ -267,4 +267,14 @@ class CWindow {
 		pos.y += offset.y
 		return pos
 	}
+	
+	OnClose(){
+		if(this.Parent){
+			this.Parent.ChildClosed(this.Gui.Hwnd)
+		}
+	}
+	
+	ChildClosed(hwnd){
+		this.ChildWindows.Remove(hwnd)
+	}
 }

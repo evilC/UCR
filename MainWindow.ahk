@@ -293,6 +293,10 @@ class CChildCanvasWindow extends CScrollingWindow {
 		this.parent.Taskbar.TaskMinimized(hwnd)
 		;this.ChildWindows[hwnd].Gui.Hide()
 	}
+	
+	ChildClosed(hwnd){
+		this.parent.Taskbar.CloseTask(hwnd)
+	}
 }
 /*
 ; The ChildCanvas Window - Child windows sit on this

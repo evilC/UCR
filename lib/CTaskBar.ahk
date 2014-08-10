@@ -60,6 +60,26 @@ class CTaskBarWindow extends CScrollingWindow {
 	TaskMinimized(hwnd){
 		this.MinimizeTask(this.ObjHwndToTask[hwnd].Gui.Hwnd)
 	}
+	
+	; Hwnd is the Object's hwnd!, not the tasks!
+	CloseTask(obj_hwnd){
+		;this.Gui.Destroy(this.ObjHwndToTask[hwnd].Gui.Hwnd)
+		;this.ObjHwndToTask[hwnd].OnClose()
+		task_hwnd := this.ObjHwndToTask[obj_hwnd].Gui.Hwnd
+		task_obj := this.ObjHwndToTask[obj_hwnd]
+		Loop task_obj.Parent.TaskBarOrder.Length {
+			if (task_obj.Parent.TaskBarOrder[A_Index] == task_hwnd){
+				task_obj.Parent.TaskBarOrder.RemoveAt(A_Index)
+				break
+			}
+		}
+		this.TaskHwndToObj.Remove(task_hwnd)
+		this.ObjHwndToTask.Remove(obj_hwnd)
+		
+		task_obj.OnClose()
+		task_obj.Gui.Destroy()
+	}
+	
 }
 
 /*
