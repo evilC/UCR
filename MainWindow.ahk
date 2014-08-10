@@ -13,14 +13,13 @@ MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
 
 ; Is it possible to move this inside the class somehow?
-;OnMessage(0x115, "OnScroll") ; WM_VSCROLL
-;OnMessage(0x114, "OnScroll") ; WM_HSCROLL
+OnMessage(0x115, "OnScroll") ; WM_VSCROLL
+OnMessage(0x114, "OnScroll") ; WM_HSCROLL
 OnMessage(0x112,"PreMinimize")
 OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 ;OnMessage(0x46, "WindowMove")
 
 
-/*
 #IfWinActive ahk_group MyGui
 ~WheelUp::
 ~WheelDown::
@@ -31,7 +30,6 @@ OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
     OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
 return
 #IfWinActive
-*/
 
 /*
 ; Detect drag of child windows and update scrollbars accordingly
@@ -73,7 +71,6 @@ PreMinimize(wParam, lParam, msg, hwnd := 0){
 }
 
 
-/*
 OnScroll(wParam, lParam, msg, hwnd := 0){
 	global MainWindow
 	if (!hwnd){
@@ -82,7 +79,6 @@ OnScroll(wParam, lParam, msg, hwnd := 0){
 	}
 	MainWindow.OnScroll(wParam, lParam, msg, hwnd)
 }
-*/
 
 class CMainWindow extends CWindow {
 	__New(title := "", options := "", parent := 0){
@@ -103,6 +99,7 @@ class CMainWindow extends CWindow {
 		this.OnResize()
 		this.ChildCanvas.OnReSize()
 
+		GroupAdd("MyGui", "ahk_id " . this.Gui.Hwnd)
 	}
 	
 	;OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){
@@ -141,6 +138,30 @@ class CMainWindow extends CWindow {
 		this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})		
 	}
 
+	OnScroll(wParam, lParam, msg, hwnd){
+		; Is the current hwnd the TaskBar?
+		if (hwnd == this.TaskBar.Gui.Hwnd){
+			this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Gui.Hwnd)
+			return
+		}
+		; Is the current hwnd a child of the TaskBar?
+		h := hwnd
+		Loop {
+			h := this.GetParent(h)
+			if (h == this.TaskBar.Gui.Hwnd){
+				this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Gui.Hwnd)
+				return
+			}
+			if (!h){
+				break
+			}
+
+		}
+
+		; Default route for scroll is ChildCanvas
+		this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Gui.Hwnd)
+	}
+	
 	AddClicked(){
 		static WinNum := 1
 		title := "Child " . WinNum

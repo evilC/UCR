@@ -94,7 +94,74 @@ class CScrollingWindow extends CWindow {
 			this.ScrollWindow(this.Gui.Hwnd, x, y)
 		}
 	}
-	
+
+	OnScroll(wParam, lParam, msg, hwnd){
+		static SCROLL_STEP := 10
+		static SIF_ALL := 0x17
+
+		bar := msg - 0x114 ; SB_HORZ=0, SB_VERT=1
+
+		scroll_status := this.GetScrollInfos(this.Gui.Hwnd)
+		
+		; If call returns no info, quit
+		if (scroll_status[bar] == 0){
+			return
+		}
+		
+		rect := this.GetClientRect(hwnd)
+		new_pos := scroll_status[bar].nPos
+
+		action := wParam & 0xFFFF
+		if (action = 0){ ; SB_LINEUP
+			;tooltip % "NP: " new_pos
+			new_pos -= SCROLL_STEP
+		} else if (action = 1){ ; SB_LINEDOWN
+			; Wheel down
+			new_pos += SCROLL_STEP
+		} else if (action = 2){ ; SB_PAGEUP
+			; Page Up ?
+			new_pos -= rect.b - SCROLL_STEP
+		} else if (action = 3){ ; SB_PAGEDOWN
+			; Page Down ?
+			new_pos += rect.b - SCROLL_STEP
+		} else if (action = 5 || action = 4){ ; SB_THUMBTRACK || SB_THUMBPOSITION
+			; Drag handle
+			new_pos := wParam >> 16
+		} else if (action = 6){ ; SB_TOP
+			; Home?
+			new_pos := scroll_status[bar].nMin ; nMin
+		} else if (action = 7){ ; SB_BOTTOM
+			; End?
+			new_pos := scroll_status[bar].nMax ; nMax
+		} else {
+			return
+		}
+		
+		min := scroll_status[bar].nMin ; nMin
+		max := scroll_status[bar].nMax - scroll_status[bar].nPage ; nMax-nPage
+		new_pos := new_pos > max ? max : new_pos
+		new_pos := new_pos < min ? min : new_pos
+		
+		old_pos := scroll_status[bar].nPos ; nPos
+		
+		x := y := 0
+		if bar = 0 ; SB_HORZ
+			x := old_pos-new_pos
+		else
+			y := old_pos-new_pos
+
+		; Scroll contents of window and invalidate uncovered area.
+		this.ScrollWindow(hwnd, x, y)
+		
+		; Update scroll bar.
+		tmp := scroll_status[bar]
+		tmp.nPos := new_pos
+		tmp.fMask := SIF_ALL
+
+		this.SetScrollInfo(hwnd, bar, tmp)
+		return
+	}
+
 }
 /*
 ; A scrollable window class
