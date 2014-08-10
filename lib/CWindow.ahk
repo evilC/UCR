@@ -4,6 +4,7 @@ _MessageHandler(wParam, lParam, msg, hwnd := 0){
 	if (!hwnd){
 		; No Hwnd - Mouse wheel used. Find Hwnd of what is under the cursor
 		MouseGetPos(tmp,tmp,tmp,hwnd,2)
+		hwnd += 0	; convert to decimal - same as if hwnd was passed normally
 	}
 	_MainWindow.MessageHandler(wParam, lParam, msg, hwnd)
 }
@@ -26,22 +27,53 @@ class CWindow {
 		} else {
 			_MainWindow := this
 			this._MainWindow := this
+			GroupAdd("_MainWindow", "ahk_id " . this.Gui.Hwnd)
 		}
 	}
 	
 	; "this" should always be the MainWindow
 	MessageHandler(wParam, lParam, msg, hwnd){
 		if (IsObject(this.MessageLookup[msg])){
-			o := this._MainWindow.MessageLookup[msg]
-			o["obj"][this._MainWindow.MessageLookup[msg].method](wParam, lParam, msg, hwnd)
+			found := 0
+			h := hwnd
+			While (h){
+				For key, value in this.MessageLookup[msg] {
+					if (key == h){
+						o := this._MainWindow.MessageLookup[msg][h]
+						hwnd := h
+						found := 1
+						h:= 0
+						break
+					}
+				}
+				if (h){
+					; Repeat check with parent of this Hwnd, until no more parents found
+					h := this.GetParent(h)
+				}
+			}
+			
+			if (!found){
+				; Use default if not found
+				if (IsObject(this._MainWindow.MessageLookup[msg]["default"])){
+					o := this._MainWindow.MessageLookup[msg]["default"]
+					hwnd := o.obj.Gui.Hwnd
+					found := 1
+				}
+			}
+			if (found){
+				o["obj"][o.method](wParam, lParam, msg, hwnd)
+			}
 		}
 	}
 	
 	RegisterMessage(msg, obj, method, def){
 		if (!IsObject(this._MainWindow.MessageLookup[msg])){
-			;this.MessageLookup[msg] := []
+			this._MainWindow.MessageLookup[msg] := {}
 		}
-		this._MainWindow.MessageLookup[msg] := {obj: obj, method: method, def: def}
+		this._MainWindow.MessageLookup[msg][obj.Gui.Hwnd] := {obj: obj, method: method}
+		if (def){
+			this._MainWindow.MessageLookup[msg]["default"] := {obj: obj, method: method}
+		}
 	}
 	
 	/*

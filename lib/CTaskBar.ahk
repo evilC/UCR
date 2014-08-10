@@ -11,8 +11,8 @@ class CTaskBarWindow extends CScrollingWindow {
 	TaskWidth := 155 ; Needs to be ~25 px less than width of window
 	TaskGap := 5
 
-	__New(title := "", options := "", parent := 0){
-		base.__New(title, options, parent)
+	__New(title := "", options := "", parent := 0, ext_options := 0){
+		base.__New(title, options, parent, ext_options)
 	}
 
 	AddTask(title, options, window_obj){

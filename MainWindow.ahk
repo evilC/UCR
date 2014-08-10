@@ -17,7 +17,7 @@ OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 OnMessage(0x46, "WindowMove")
 
 
-#IfWinActive ahk_group MyGui
+#IfWinActive ahk_group _MainWindow
 ~WheelUp::
 ~WheelDown::
 ~+WheelUp::
@@ -25,6 +25,7 @@ OnMessage(0x46, "WindowMove")
     ; SB_LINEDOWN=1, SB_LINEUP=0, WM_HSCROLL=0x114, WM_VSCROLL=0x115
 	; Pass 0 to Onscroll's hwnd param
     ;OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
+    _MessageHandler(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
 return
 #IfWinActive
 
@@ -74,23 +75,17 @@ class CMainWindow extends CWindow {
 		
 		; Set up child GUI Canvas
 		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 1 })
-		;this.ChildCanvas.ShowRelative({x: 0, y: 50, h: 10, w: 10})
+		this.ChildCanvas.name := "ChildCanvas"
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CTaskBarWindow("", "-Border", this, this.ChildCanvas)
-		; x0 y50
+		this.TaskBar := new CTaskBarWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 0 })
 		this.TaskBar.OnReSize()
 
 		this.OnResize()
 		this.ChildCanvas.OnReSize()
 
-		GroupAdd("MyGui", "ahk_id " . this.Gui.Hwnd)
 	}
 
-	MessageHandler(wParam, lParam, msg, hwnd){
-		base.MessageHandler(wParam, lParam, msg, hwnd)
-	}
-	
 	;OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){
 	OnReSize(){
 		base.OnReSize()
