@@ -1,4 +1,8 @@
 ; The TaskBar
+; ToDo:
+; When a Child window is destroyed, Pack() is called on the TaskBar to re-order taskbar items.
+; This re-order takes time, and delays the child window from being removed from view
+
 #include <CScrollingWindow>
 #include <CWindow>
 
@@ -113,8 +117,8 @@ class CTaskBarWindow extends CScrollingWindow {
 }
 
 Class CTaskBarItem extends CWindow {
-	__New(title := "", options := "", parent := 0){
-		base.__New(title, options, parent)
+	__New(title := "", options := "", parent := 0, ext_options := 0){
+		base.__New(title, options, parent, ext_options)
 
 		this.Gui.AddLabel(title)
 	}

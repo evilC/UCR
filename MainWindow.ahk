@@ -19,11 +19,11 @@ class CMainWindow extends CWindow {
 		this.Gui.AddButton("Add","gAddClicked")
 		
 		; Set up child GUI Canvas
-		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 1 })
+		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 1, name: "ChildCanvas" })
 		this.ChildCanvas.name := "ChildCanvas"
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CTaskBarWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 0 })
+		this.TaskBar := new CTaskBarWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 0, name: "TaskBar" })
 		this.TaskBar.OnReSize()
 
 		this.OnResize()
@@ -68,16 +68,16 @@ class CMainWindow extends CWindow {
 	}
 
 	AddClicked(){
-		static WinNum := 1
+		static WinNum := 0
 		title := "Child " . WinNum
-		child := new CChildCanvasSubWindow(title, "", this.ChildCanvas)
+		child := new CChildCanvasSubWindow(title, "", this.ChildCanvas, {name: title})
 		child.ShowRelative({x: WinNum * 10, y: WinNum * 10, w:200, h:50})
 		WinMoveTop("ahk_id " . child.Gui.Hwnd)
-		this.ChildCanvas.OnReSize()
+		;this.ChildCanvas.OnReSize()
 
 		this.TaskBar.AddTask(title, "-Border", child)
-		this.OnResize()
-		this.TaskBar.OnReSize()
+		;this.OnResize()
+		;this.TaskBar.OnReSize()
 
 		WinNum++
 	}

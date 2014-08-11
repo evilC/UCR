@@ -5,7 +5,7 @@ class CScrollingWindow extends CWindow {
 	__New(title := "", options := "", parent := 0, ext_options := 0){
 		global _MainWindow
 		static hooks_added := 0
-		base.__New(title, options . " 0x300000", parent)
+		base.__New(title, options . " 0x300000", parent, ext_options)
 
 		if (IsObject(ext_options)){
 			if (ext_options.ScrollTrap){

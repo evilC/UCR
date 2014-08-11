@@ -10,7 +10,7 @@ _MessageHandler(wParam, lParam, msg, hwnd := 0){
 }
 
 class CWindow {
-	WindowStatus := { IsMinimized: 0, IsMaximized: 0, Width: 0, Height: 0, x: 0, y: 0 }
+	WindowStatus := { IsMinimized: 0, IsMaximized: 0, Width: 0, Height: 0, x: -1, y: -1 }
 	ChildWindows := []
 	MessageLookup := []
 	
@@ -22,12 +22,18 @@ class CWindow {
 			options .= " +Parent" . this.Parent.Gui.Hwnd
 		}
 		this.Gui := GuiCreate(title, options, this)
+		if (ext_options && ext_options.name){
+			this.name := ext_options.name
+		} else {
+			this.name := this.Gui.Hwnd
+		}
 		if (this.Parent){
 			; This is a Child window
 			this.Parent.ChildWindows[this.Gui.Hwnd] := this
 			this._MainWindow := Parent._MainWindow
 			this._MainWindow.RegisterMessage(0x201, this, "WindowClicked", 0)
-			this._MainWindow.RegisterMessage(0x46, this, "WindowMoved", 0)
+			;this._MainWindow.RegisterMessage(0x46, this, "WindowMoved", 0)
+			this._MainWindow.RegisterMessage(0x47, this, "WindowMoved", 0)
 			this._MainWindow.RegisterMessage(0x112, this, "PreMinimize", 0)
 		} else {
 			; This is the main window
@@ -142,6 +148,7 @@ class CWindow {
 	}
 
 	OnClose(){
+		this.Gui.Destroy()
 		if(this.Parent){
 			this.Parent.ChildClosed(this.Gui.Hwnd)
 		}
@@ -175,11 +182,14 @@ class CWindow {
 		if (this.WindowStatus.x != ret.x || this.WindowStatus.y != ret.y){
 			moved := 1
 		}
-		this.WindowStatus.x := ret.x
-		this.WindowStatus.y := ret.y
-		if (moved){
+		SWP_NOSIZE := ret.flags && 0x1
+		SWP_NOMOVE := ret.flags && 0x2
+		if ( moved && (SWP_NOSIZE || SWP_NOMOVE )){
+			this.WindowStatus.x := ret.x
+			this.WindowStatus.y := ret.y
 			this.Parent.OnResize()
 		}
+		return 0
 	}
 	
 	; OnResize is different from OnSize in that it should only trigger when the dimensions actually changed, or the shape of the contents changed.
@@ -394,11 +404,14 @@ class CWindow {
 		return pos
 	}
 	
+	; Retreives x, y from a WINDOWPOS structure
+	; http://msdn.microsoft.com/en-gb/library/windows/desktop/ms632612(v=vs.85).aspx
 	DecodeWindowPos(lParam){
 		ret := {}
 		ret.x := NumGet(lParam, 8, "int")
 		ret.y := NumGet(lParam, 12, "int")
-		ret := this.RelativeToAbsoluteCoords(ret)
+		ret.flags := NumGet(lParam, 20, "uint")
+		;ret := this.RelativeToAbsoluteCoords(ret)
 		return ret
 	}
 }
