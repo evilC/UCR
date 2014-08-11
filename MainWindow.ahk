@@ -11,21 +11,6 @@
 
 MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
-; Is it possible to move this inside the class somehow?
-OnMessage(0x112,"PreMinimize")
-
-; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
-; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation
-PreMinimize(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	if (wParam == 0xF020){
-		;Minimize
-		if (MainWindow.ChildCanvas.ChildWindows[hwnd]){
-			MainWindow.ChildCanvas.ChildWindows[hwnd].Gui.Hide()
-		}
-	}
-}
-
 class CMainWindow extends CWindow {
 	__New(title := "", options := "", parent := 0){
 		base.__New(title, options, parent)
@@ -46,7 +31,7 @@ class CMainWindow extends CWindow {
 
 	}
 
-	;OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){
+	;When Main window is resize, resize sub-windows accordingly
 	OnReSize(){
 		base.OnReSize()
 		; Size Scrollable Child Window
@@ -82,47 +67,16 @@ class CMainWindow extends CWindow {
 		this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})		
 	}
 
-	OnScroll(wParam, lParam, msg, hwnd){
-		; Is the current hwnd the TaskBar?
-		if (hwnd == this.TaskBar.Gui.Hwnd){
-			this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Gui.Hwnd)
-			return
-		}
-		; Is the current hwnd a child of the TaskBar?
-		h := hwnd
-		Loop {
-			h := this.GetParent(h)
-			if (h == this.TaskBar.Gui.Hwnd){
-				this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Gui.Hwnd)
-				return
-			}
-			if (!h){
-				break
-			}
-
-		}
-
-		; Default route for scroll is ChildCanvas
-		this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Gui.Hwnd)
-	}
-	
 	AddClicked(){
 		static WinNum := 1
 		title := "Child " . WinNum
 		child := new CChildCanvasSubWindow(title, "", this.ChildCanvas)
 		child.ShowRelative({x: WinNum * 10, y: WinNum * 10, w:200, h:50})
-		;this.ChildCanvas.ChildWindows[child.Hwnd] := child
 		WinMoveTop("ahk_id " . child.Gui.Hwnd)
 		this.ChildCanvas.OnReSize()
 
 		this.TaskBar.AddTask(title, "-Border", child)
 		this.OnResize()
-		;task := new CTaskBarItem("Child " . WinNum, "-Border", this.TaskBar, child.Hwnd)
-
-		;this.TaskBar.ChildWindows[task.Hwnd] := task
-		;this.TaskBar.TaskBarOrder.Push(task.Hwnd)
-		
-		;this.ChildCanvas.ChildWindows[child.Hwnd].TaskHwnd := task.hwnd
 		this.TaskBar.OnReSize()
 
 		WinNum++

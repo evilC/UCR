@@ -28,6 +28,7 @@ class CWindow {
 			this._MainWindow := Parent._MainWindow
 			this._MainWindow.RegisterMessage(0x201, this, "WindowClicked", 0)
 			this._MainWindow.RegisterMessage(0x46, this, "WindowMoved", 0)
+			this._MainWindow.RegisterMessage(0x112, this, "PreMinimize", 0)
 		} else {
 			; This is the main window
 			_MainWindow := this
@@ -151,6 +152,17 @@ class CWindow {
 		this.OnReSize()
 	}
 
+	; When minimize button of a child window is clicked, hide it before minimze animation so the minimize is instant.
+	; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation
+	PreMinimize(wParam, lParam, msg, hwnd := 0){
+		if (wParam == 0xF020 && this.Parent){
+			;Minimize
+			if (this.Parent.ChildWindows[hwnd]){
+				this.Parent.ChildWindows[hwnd].Gui.Hide()
+			}
+		}
+	}
+	
 	WindowClicked(){
 		WinMoveTop("ahk_id " . this.Gui.Hwnd)
 	}
