@@ -33,6 +33,7 @@ class CTaskBarWindow extends CScrollingWindow {
 		tasknum := this.TaskBarOrder.Length - 1
 		this.RestoreTask(task.Gui.Hwnd)
 		task.ShowRelative({x: 0, y: this.GetTaskY(tasknum), w: this.TaskWidth, h: this.TaskHeight})
+		return task
 	}
 	
 	TaskClicked(hwnd){

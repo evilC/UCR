@@ -37,12 +37,6 @@ class CScrollingWindow extends CWindow {
 		
 	}
 	
-	_WheelHandler(){
-		_WheelHandler:
-			msgbox("HERE")
-			return
-	}
-
 	/*
 	MessageHandler(wParam, lParam, msg, hwnd){
 		base.MessageHandler(wParam, lParam, msg, hwnd)
