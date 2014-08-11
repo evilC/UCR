@@ -28,8 +28,6 @@ class CScrollingWindow extends CWindow {
 			hotkey, ~+WheelDown, _WheelHandler
 			hotkey, IfWinActive
 
-			OnMessage(0x115, "_MessageHandler") ; WM_VSCROLL
-			OnMessage(0x114, "_MessageHandler") ; WM_HSCROLL
 			if (0){
 				_WheelHandler:
 					_MessageHandler(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)

@@ -119,4 +119,7 @@ Class CTaskBarItem extends CWindow {
 		this.Gui.AddLabel(title)
 	}
 	
+	WindowClicked(){
+		this.Parent.TaskClicked(this.Gui.hwnd)
+	}
 }

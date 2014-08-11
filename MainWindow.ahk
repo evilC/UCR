@@ -13,7 +13,6 @@ MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x112,"PreMinimize")
-OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
 OnMessage(0x46, "WindowMove")
 
 ; Detect drag of child windows and update scrollbars accordingly
@@ -23,23 +22,6 @@ WindowMove(wParam, lParam, msg, hwnd := 0){
 		MainWindow.ChildCanvas.OnReSize()
 	}
 }
-
-; Detect clicks
-ClickHandler(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	; Click on ChildCanvas item = bring to front
-	if(MainWindow.ChildCanvas.ChildWindows[hwnd]){
-		WinMoveTop("ahk_id " . hwnd)
-	}
-	; Click on TaskBar Item = maximize / minimize
-	if (MainWindow.TaskBar.ChildWindows[hwnd]){
-		;MainWindow.TaskBar.ChildWindows[hwnd].TaskBarItemClicked()
-		;MainWindow.TaskBar.ChildWindows[hwnd].TaskClicked()
-		MainWindow.TaskBar.TaskClicked(hwnd)
-		return 0	; This line is IMPORTANT! It stops the message being processed further.
-	}
-}
-
 
 ; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
 ; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation

@@ -23,9 +23,12 @@ class CWindow {
 		}
 		this.Gui := GuiCreate(title, options, this)
 		if (this.Parent){
+			; This is a Child window
 			this.Parent.ChildWindows[this.Gui.Hwnd] := this
 			this._MainWindow := Parent._MainWindow
+			this._MainWindow.RegisterMessage(0x201, this, "WindowClicked", 0)
 		} else {
+			; This is the main window
 			_MainWindow := this
 			this._MainWindow := this
 			GroupAdd("_MainWindow", "ahk_id " . this.Gui.Hwnd)
@@ -71,6 +74,8 @@ class CWindow {
 		if (!IsObject(this._MainWindow.MessageLookup[msg])){
 			this._MainWindow.MessageLookup[msg] := {}
 		}
+		OnMessage(msg, "_MessageHandler")
+
 		this._MainWindow.MessageLookup[msg][obj.Gui.Hwnd] := {obj: obj, method: method}
 		if (def){
 			this._MainWindow.MessageLookup[msg]["default"] := {obj: obj, method: method}
@@ -145,6 +150,10 @@ class CWindow {
 		this.OnReSize()
 	}
 
+	WindowClicked(){
+		WinMoveTop("ahk_id " . this.Gui.Hwnd)
+	}
+	
 	; OnResize is different from OnSize in that it should only trigger when the dimensions actually changed, or the shape of the contents changed.
 	; This should not include minimze / restore
 	OnResize(){
