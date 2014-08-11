@@ -98,7 +98,6 @@ class CTaskBarWindow extends CScrollingWindow {
 
 	; Re-Order TaskBar items (eg due to deletion)
 	Pack(start := 1){
-		tooltip(start)
 		offset := this.GetWindowOffSet(this.Gui.Hwnd)
 		Bottom := 0 + offset.y
 		Loop this.TaskBarOrder.Length {
