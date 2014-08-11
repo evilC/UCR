@@ -13,15 +13,6 @@ MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
 ; Is it possible to move this inside the class somehow?
 OnMessage(0x112,"PreMinimize")
-OnMessage(0x46, "WindowMove")
-
-; Detect drag of child windows and update scrollbars accordingly
-WindowMove(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	if (MainWindow.ChildCanvas.ChildWindows[hwnd]){
-		MainWindow.ChildCanvas.OnReSize()
-	}
-}
 
 ; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
 ; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation

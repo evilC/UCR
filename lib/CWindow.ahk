@@ -10,7 +10,7 @@ _MessageHandler(wParam, lParam, msg, hwnd := 0){
 }
 
 class CWindow {
-	WindowStatus := { IsMinimized: 0, IsMaximized: 0, Width: 0, Height: 0 }
+	WindowStatus := { IsMinimized: 0, IsMaximized: 0, Width: 0, Height: 0, x: 0, y: 0 }
 	ChildWindows := []
 	MessageLookup := []
 	
@@ -27,6 +27,7 @@ class CWindow {
 			this.Parent.ChildWindows[this.Gui.Hwnd] := this
 			this._MainWindow := Parent._MainWindow
 			this._MainWindow.RegisterMessage(0x201, this, "WindowClicked", 0)
+			this._MainWindow.RegisterMessage(0x46, this, "WindowMoved", 0)
 		} else {
 			; This is the main window
 			_MainWindow := this
@@ -152,6 +153,21 @@ class CWindow {
 
 	WindowClicked(){
 		WinMoveTop("ahk_id " . this.Gui.Hwnd)
+	}
+	
+	; Detect Child Windows moving inside a parent window
+	; Also keeps WindowStatus.x and .y updated with Absolute coords
+	WindowMoved(wParam, lParam, msg, hwnd){
+		ret := this.DecodeWindowPos(lParam)
+		moved := 0
+		if (this.WindowStatus.x != ret.x || this.WindowStatus.y != ret.y){
+			moved := 1
+		}
+		this.WindowStatus.x := ret.x
+		this.WindowStatus.y := ret.y
+		if (moved){
+			this.Parent.OnResize()
+		}
 	}
 	
 	; OnResize is different from OnSize in that it should only trigger when the dimensions actually changed, or the shape of the contents changed.
@@ -337,6 +353,21 @@ class CWindow {
 		return ret
 	}
 	
+	; Converts coords of child from Relative (0,0 is top left of Viewport) to Absolute (0,0 is top left of Canvas)
+	RelativeToAbsoluteCoords(coords){
+		if (this.Parent){
+			info := this.GetScrollInfos(this.Parent.Gui.Hwnd)
+			if (info[0] != 0){
+				coords.x += info[0].nPos
+			}
+			
+			if (info[1] != 0){
+				coords.y += info[1].nPos
+			}
+		}
+		return coords
+	}
+	
 	; Wrapper for GetParent DllCall
 	GetParent(hwnd){
 		return DllCall("GetParent", "Ptr", hwnd)
@@ -349,5 +380,13 @@ class CWindow {
 		pos.x += offset.x
 		pos.y += offset.y
 		return pos
+	}
+	
+	DecodeWindowPos(lParam){
+		ret := {}
+		ret.x := NumGet(lParam, 8, "int")
+		ret.y := NumGet(lParam, 12, "int")
+		ret := this.RelativeToAbsoluteCoords(ret)
+		return ret
 	}
 }
