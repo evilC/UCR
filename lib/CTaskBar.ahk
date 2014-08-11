@@ -75,7 +75,9 @@ class CTaskBarWindow extends CScrollingWindow {
 		task_hwnd := this.ObjHwndToTask[obj_hwnd].Gui.Hwnd
 		task_obj := this.ObjHwndToTask[obj_hwnd]
 		len := task_obj.Parent.TaskBarOrder.Length
+		pos := 0
 		Loop  len {
+			pos := A_Index
 			if (task_obj.Parent.TaskBarOrder[A_Index] == task_hwnd){
 				task_obj.Parent.TaskBarOrder.RemoveAt(A_Index)
 				break
@@ -88,14 +90,15 @@ class CTaskBarWindow extends CScrollingWindow {
 		task_obj.Gui.Destroy()
 		
 		; If item was removed from anywhere else but end, re-pack the boxes.
-		if (len != A_Index){
+		if (len != pos){
 			; Pass A_Index to Pack() to only re-order items below the one we just deleted
-			this.Pack(A_Index)
+			this.Pack(pos)
 		}
 	}
 
 	; Re-Order TaskBar items (eg due to deletion)
 	Pack(start := 1){
+		tooltip(start)
 		offset := this.GetWindowOffSet(this.Gui.Hwnd)
 		Bottom := 0 + offset.y
 		Loop this.TaskBarOrder.Length {

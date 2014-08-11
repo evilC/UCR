@@ -148,7 +148,6 @@ class CWindow {
 	}
 
 	OnClose(){
-		this.Gui.Destroy()
 		if(this.Parent){
 			this.Parent.ChildClosed(this.Gui.Hwnd)
 		}
