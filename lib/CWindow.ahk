@@ -413,4 +413,17 @@ class CWindow {
 		;ret := this.RelativeToAbsoluteCoords(ret)
 		return ret
 	}
+	
+	; Wrappers for DeferWindowPos DllCall (Used for moving multiple windows together)
+	BeginDeferWindowPos(num := 1){
+		return DllCall("BeginDeferWindowPos", "int", num)
+	}
+	
+	DeferWindowPos(HDWP, hwnd, x, y, w, h, flags := 0){
+		return DllCall("DeferWindowPos", "Ptr", HDWP, "Ptr", hwnd, "Ptr", , "int", x, "int", y, "int", w, "int", h, "uint", flags)
+	}
+	
+	EndDeferWindowPos(HDWP){
+		DllCall("EndDeferWindowPos", "Ptr", HDWP)
+	}
 }

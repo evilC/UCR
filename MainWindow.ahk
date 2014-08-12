@@ -8,6 +8,7 @@
 
 #SingleInstance Force
 #MaxHotkeysPerInterval 9999
+SetWinDelay, 10
 
 MainWindow := new CMainWindow("Outer Parent", "+Resize")
 

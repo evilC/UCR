@@ -99,8 +99,9 @@ class CTaskBarWindow extends CScrollingWindow {
 
 	; Re-Order TaskBar items (eg due to deletion)
 	Pack(start := 1){
+		static fudge_factor := 5	; ToDo: Why does DeferWindowPos seem to subtract 5?
+		HDWP := this.BeginDeferWindowPos()
 		offset := this.GetWindowOffSet(this.Gui.Hwnd)
-		Bottom := 0 + offset.y
 		Loop this.TaskBarOrder.Length {
 			if (A_Index < start){
 				; Skip packing items before optional start parameter.
@@ -109,9 +110,12 @@ class CTaskBarWindow extends CScrollingWindow {
 			}
 			;WinMove("ahk_id " . this.TaskBarOrder[A_Index],"", 0, Bottom)
 			;this.ChildWindows[this.TaskBarOrder[A_Index]].ShowRelative({x: 0, y: Bottom})
-			this.ChildWindows[this.TaskBarOrder[A_Index]].ShowRelative({x: 0, y: this.GetTaskY(A_Index - 1)})
-			Bottom += 30
+			;this.ChildWindows[this.TaskBarOrder[A_Index]].ShowRelative({x: 0, y: this.GetTaskY(A_Index - 1)})
+			WinGetPos(x, y, w, h, "ahk_id " . this.ChildWindows[this.TaskBarOrder[1]].Gui.Hwnd) ; ToDo: Should not need this - why are tasks not this.TaskHeight high?
+
+			HDWP := this.DeferWindowPos(HDWP, this.ChildWindows[this.TaskBarOrder[A_Index]].Gui.Hwnd, 0 + offset.x, this.GetTaskY(A_Index - 1) + offset.y, w, h)
 		}
+		this.EndDeferWindowPos(HDWP)
 	}
 	
 	GetTaskY(tasknum){
