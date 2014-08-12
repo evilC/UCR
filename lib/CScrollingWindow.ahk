@@ -1,20 +1,62 @@
+#include <CWindow>
+
 ; A scrollable window class
 class CScrollingWindow extends CWindow {
-	Bottom := 0
-	Right := 0
-	__New(title := "", options := "", parent := 0){
-		this.ChildWindows := []
-		base.__New("", "-Border 0x300000", parent)
+	__New(title := "", options := "", parent := 0, ext_options := 0){
+		global _MainWindow
+		static hooks_added := 0
+		base.__New(title, options . " 0x300000", parent, ext_options)
+
+		if (IsObject(ext_options)){
+			if (ext_options.ScrollTrap){
+				if (ext_options.ScrollDefault){
+					def := 1
+				} else {
+					def := 0
+				}
+				this.RegisterMessage(0x114, this, "OnScroll", def)
+				this.RegisterMessage(0x115, this, "OnScroll", def)
+			}
+		}
+		
+		if (!hooks_added){
+			hooks_added := 1
+			hotkey, IfWinActive, ahk_group _MainWindow
+			hotkey, ~WheelUp, _WheelHandler
+			hotkey, ~WheelDown, _WheelHandler
+			hotkey, ~+WheelUp, _WheelHandler
+			hotkey, ~+WheelDown, _WheelHandler
+			hotkey, IfWinActive
+
+			if (0){
+				_WheelHandler:
+					_MessageHandler(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
+					return
+			}
+		}
+		
 	}
 	
-	OnSize(){
+	/*
+	MessageHandler(wParam, lParam, msg, hwnd){
+		base.MessageHandler(wParam, lParam, msg, hwnd)
+		if (msg == 0x114 || msg == 0x115){
+			soundbeep
+			this.OnScroll(wParam, lParam, msg, hwnd)
+		}
+	}
+	*/
+	
+	OnReSize(gui := 0, eventInfo := 0, width := 0, height := 0){
 		static SIF_RANGE := 0x1, SIF_PAGE := 0x2, SIF_DISABLENOSCROLL := 0x8, SB_HORZ := 0, SB_VERT := 1
-		
+
+		base.OnReSize(gui, eventInfo, width, height)
+
 		; ToDo: Check if window contains any controls, and include those in the viewport calcs.
 
 		; Do not allow scrollbars to appear if windows dragged such that they clip the left or top edge.
 		; Strange behavior ensues if this is allowed.
-		info := this.GetScrollInfos(this.Hwnd)
+		info := this.GetScrollInfos(this.Gui.Hwnd)
 		if (info[0]){
 			scx := info[0].nPos
 		} else {
@@ -30,7 +72,7 @@ class CScrollingWindow extends CWindow {
 		viewport := {Top: 0, Left: 0, Right: 0, Bottom: 0}
 		ctr := 0
 		For key, value in this.ChildWindows {
-			if (this.ChildWindows[key].IsMinimized){
+			if (this.ChildWindows[key].WindowStatus.IsMinimized){
 				continue
 			}
 			; Get Window Position
@@ -59,9 +101,9 @@ class CScrollingWindow extends CWindow {
 		if (!ctr){
 			; If no Child windows present, set scroll bars off.
 			; Update horizontal scroll bar.
-			this.SetScrollInfo(this.Hwnd, SB_HORZ, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
+			this.SetScrollInfo(this.Gui.Hwnd, SB_HORZ, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
 			; Update vertical scroll bar.
-			this.SetScrollInfo(this.Hwnd, SB_VERT, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
+			this.SetScrollInfo(this.Gui.Hwnd, SB_VERT, {nMax: 0, nPage: 0, fMask: SIF_RANGE | SIF_PAGE })
 			return
 		}
 		
@@ -70,15 +112,15 @@ class CScrollingWindow extends CWindow {
 		ScrollHeight := viewport.Bottom - viewport.Top
 
 		; GuiHeight = size of client area
-		g := this.GetClientRect(this.Hwnd)
+		g := this.GetClientRect(this.Gui.Hwnd)
 		GuiWidth := g.r
 		GuiHeight := g.b
 
 		; Update horizontal scroll bar.
-		this.SetScrollInfo(this.Hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
+		this.SetScrollInfo(this.Gui.Hwnd, SB_HORZ, {nMax: ScrollWidth, nPage: GuiWidth, fMask: SIF_RANGE | SIF_PAGE })
 
 		; Update vertical scroll bar.
-		this.SetScrollInfo(this.Hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
+		this.SetScrollInfo(this.Gui.Hwnd, SB_VERT, {nMax: ScrollHeight, nPage: GuiHeight, fMask: SIF_RANGE | SIF_PAGE })
 		
 		viewport.Left -= scx
 		viewport.Right -= scx
@@ -93,10 +135,8 @@ class CScrollingWindow extends CWindow {
 			y := Abs(viewport.Top) > GuiHeight-viewport.Bottom ? GuiHeight-viewport.Bottom : Abs(viewport.Top)
 		}
 		if (x || y){
-			this.ScrollWindow(this.Hwnd, x, y)
+			this.ScrollWindow(this.Gui.Hwnd, x, y)
 		}
-
-
 	}
 
 	OnScroll(wParam, lParam, msg, hwnd){
@@ -105,7 +145,7 @@ class CScrollingWindow extends CWindow {
 
 		bar := msg - 0x114 ; SB_HORZ=0, SB_VERT=1
 
-		scroll_status := this.GetScrollInfos(this.Hwnd)
+		scroll_status := this.GetScrollInfos(this.Gui.Hwnd)
 		
 		; If call returns no info, quit
 		if (scroll_status[bar] == 0){

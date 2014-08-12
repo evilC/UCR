@@ -8,116 +8,36 @@
 
 #SingleInstance Force
 #MaxHotkeysPerInterval 9999
+SetWinDelay, 10
 
 MainWindow := new CMainWindow("Outer Parent", "+Resize")
 
-; Is it possible to move this inside the class somehow?
-OnMessage(0x115, "OnScroll") ; WM_VSCROLL
-OnMessage(0x114, "OnScroll") ; WM_HSCROLL
-OnMessage(0x112,"PreMinimize")
-OnMessage(0x201, "ClickHandler")	; 0x202 = WM_LBUTTONUP. 0x201 = WM_LBUTTONDOWN
-OnMessage(0x46, "WindowMove")
-
-
-#IfWinActive ahk_group MyGui
-~WheelUp::
-~WheelDown::
-~+WheelUp::
-~+WheelDown::
-    ; SB_LINEDOWN=1, SB_LINEUP=0, WM_HSCROLL=0x114, WM_VSCROLL=0x115
-	; Pass 0 to Onscroll's hwnd param
-    OnScroll(InStr(A_ThisHotkey,"Down") ? 1 : 0, 0, GetKeyState("Shift") ? 0x114 : 0x115, 0)
-return
-#IfWinActive
-
-; Detect drag of child windows and update scrollbars accordingly
-WindowMove(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	if (MainWindow.ChildCanvas.ChildWindows[hwnd]){
-		MainWindow.ChildCanvas.OnSize()
-	}
-}
-
-; Detect clicks
-ClickHandler(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	; Click on ChildCanvas item = bring to front
-	if(MainWindow.ChildCanvas.ChildWindows[hwnd]){
-		WinMoveTop("ahk_id " . hwnd)
-	}
-	; Click on TaskBar Item = maximize / minimize
-	if (MainWindow.TaskBar.ChildWindows[hwnd]){
-		MainWindow.TaskBar.ChildWindows[hwnd].TaskBarItemClicked()
-		return 0	; This line is IMPORTANT! It stops the message being processed further.
-	}
-}
-
-; When we are about to minimize a window to the task bar, hide it first so the minimize is instant.
-; This does not actually handle the minimize at all, just speeds it up by cutting out the minimize animation
-PreMinimize(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	if (wParam == 0xF020){
-		;Minimize
-		if (MainWindow.ChildCanvas.ChildWindows[hwnd]){
-			MainWindow.ChildCanvas.ChildWindows[hwnd].Gui.Hide()
-		}
-	}
-}
-
-OnScroll(wParam, lParam, msg, hwnd := 0){
-	global MainWindow
-	if (!hwnd){
-		; No Hwnd - Mouse wheel used. Find Hwnd of what is under the cursor
-		MouseGetPos(tmp,tmp,tmp,hwnd,2)
-	}
-	MainWindow.OnScroll(wParam, lParam, msg, hwnd)
-}
-
-; The Main Window
 class CMainWindow extends CWindow {
-	__New(title, options := 0, parent := 0){
-		base.__New(title, options)
+	__New(title := "", options := "", parent := 0){
+		base.__New(title, options, parent)
+		this.ShowRelative({x: 0, y: 0, w:600, h: 400})
+		
 		this.Gui.AddButton("Add","gAddClicked")
 		
-		this.ShowRelative({x:0, y:0, w:600, h:500})
-		
 		; Set up child GUI Canvas
-		this.ChildCanvas := new CChildCanvasWindow("", "x200 y50", this)
-		this.ChildCanvas.OnSize()
+		this.ChildCanvas := new CChildCanvasWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 1, name: "ChildCanvas" })
+		this.ChildCanvas.name := "ChildCanvas"
 		
 		; Set up "Task Bar" for Child GUIs
-		this.TaskBar := new CTaskBarWindow("", "x0 y50", this, this.ChildCanvas)
-		this.TaskBar.OnSize()
-		
-		
-		this.OnSize()
-		GroupAdd("MyGui", "ahk_id " . this.Hwnd)
-		
+		this.TaskBar := new CTaskBarWindow("", "-Border", this, {ScrollTrap: 1, ScrollDefault: 0, name: "TaskBar" })
+		this.TaskBar.OnReSize()
+
+		this.OnResize()
+		this.ChildCanvas.OnReSize()
+
 	}
 
-	AddClicked(){
-		static WinNum := 1
-		child := new CChildCanvasSubWindow("Child " . WinNum, "", this.ChildCanvas)
-		child.ShowRelative({x:0, y:0, w:200, h:50})
-		this.ChildCanvas.ChildWindows[child.Hwnd] := child
-		WinMoveTop("ahk_id " . child.Hwnd)
-		this.ChildCanvas.OnSize()
-
-		task := new CTaskBarItem("Child " . WinNum, "-Border", this.TaskBar, child.Hwnd)
-
-		this.TaskBar.ChildWindows[task.Hwnd] := task
-		this.TaskBar.TaskBarOrder.Push(task.Hwnd)
-		
-		this.ChildCanvas.ChildWindows[child.Hwnd].TaskHwnd := task.hwnd
-		this.TaskBar.OnSize()
-
-		WinNum++
-	}
-	
-	OnSize(){
+	;When Main window is resize, resize sub-windows accordingly
+	OnReSize(){
+		base.OnReSize()
 		; Size Scrollable Child Window
 		; Lots of hard wired values - would like to eliminate these!
-		r := this.GetClientRect(this.Hwnd)
+		r := this.GetClientRect(this.Gui.Hwnd)
 		r.b -= 50	; How far down from the top of the main gui does the child window start?
 		; Subtract border widths
 		r.b -= r.t + 6
@@ -125,7 +45,7 @@ class CMainWindow extends CWindow {
 
 		; Client rect seems to not include scroll bars - check if they are showing and subtract accordingly
 		cc := {r: r.r, b: r.b}
-		cc_sbv := this.GetScrollBarVisibility(this.ChildCanvas.Hwnd)
+		cc_sbv := this.GetScrollBarVisibility(this.ChildCanvas.Gui.Hwnd)
 		if (cc_sbv.x){
 			cc.r -= 16
 		}
@@ -135,7 +55,7 @@ class CMainWindow extends CWindow {
 		}
 		
 		tb := {r: r.r, b: r.b}
-		tb_sbv := this.GetScrollBarVisibility(this.TaskBar.Hwnd)
+		tb_sbv := this.GetScrollBarVisibility(this.TaskBar.Gui.Hwnd)
 		if (tb_sbv.x){
 			tb.r -= 16
 		}
@@ -143,81 +63,44 @@ class CMainWindow extends CWindow {
 		if (tb_sbv.y){
 			tb.b -= 16
 		}
-		
 		this.ChildCanvas.ShowRelative({x:200, y:50, w: cc.r - 200, h: cc.b})
 		
-		this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})
+		this.TaskBar.ShowRelative({x: 0, y: 50, w: 180, h: tb.b})		
 	}
-	
-	OnScroll(wParam, lParam, msg, hwnd){
-		; Is the current hwnd the TaskBar?
-		if (hwnd == this.TaskBar.Hwnd){
-			this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Hwnd)
-			return
-		}
-		; Is the current hwnd a child of the TaskBar?
-		h := hwnd
-		Loop {
-			h := this.GetParent(h)
-			if (h == this.TaskBar.Hwnd){
-				this.TaskBar.OnScroll(wParam, lParam, msg, this.TaskBar.Hwnd)
-				return
-			}
-			if (!h){
-				break
-			}
 
-		}
+	AddClicked(){
+		static WinNum := 0
+		title := "Child " . WinNum
+		child := new CChildCanvasSubWindow(title, "", this.ChildCanvas, {name: title})
+		child.ShowRelative({x: WinNum * 10, y: WinNum * 10, w:200, h:50})
+		WinMoveTop("ahk_id " . child.Gui.Hwnd)
+		;this.ChildCanvas.OnReSize()
 
-		; Default route for scroll is ChildCanvas
-		this.ChildCanvas.OnScroll(wParam, lParam, msg, this.ChildCanvas.Hwnd)
+		this.TaskBar.AddTask(title, "-Border", child)
+		;this.OnResize()
+		;this.TaskBar.OnReSize()
+
+		WinNum++
 	}
+
 }
 
-; The ChildCanvas Window - Child windows sit on this
 class CChildCanvasWindow extends CScrollingWindow {
 	ChildMinimized(hwnd){
-		this.parent.TaskBar.ChildWindows[this.ChildWindows[hwnd].TaskHwnd].TaskMinimized(hwnd)
-		this.OnSize()
+		base.ChildMinimized(hwnd)
+		this.parent.Taskbar.TaskMinimized(hwnd)
+		;this.ChildWindows[hwnd].Gui.Hide()
 	}
 	
 	ChildClosed(hwnd){
-		For key, value in this.parent.TaskBar.ChildWindows {
-			if (key == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
-				; Remove TaskBar entry from TaskBarOrder
-				Loop this.parent.TaskBar.TaskBarOrder.Length() {
-					if(this.parent.TaskBar.TaskBarOrder[A_Index] == this.parent.ChildCanvas.ChildWindows[hwnd].TaskHwnd){
-						this.parent.TaskBar.TaskBarOrder.RemoveAt(A_Index)
-						break
-					}
-				}
-				this.parent.TaskBar.ChildWindows[key].Gui.Destroy()
-				this.parent.TaskBar.ChildWindows.Remove(key)
-				this.parent.TaskBar.Pack()
-				break
-			}
-		}
-		this.ChildWindows.Remove(hwnd)
-
-		this.parent.TaskBar.OnSize()
-		this.OnSize()
+		base.ChildClosed(hwnd)
+		this.parent.Taskbar.CloseTask(hwnd)
 	}
 }
 
-; A window that resides in the ChildCanvas window
 class CChildCanvasSubWindow extends CChildWindow {
 	__New(title := "", options := "", parent := 0){
 		base.__New(title, options, parent)
-		this.Gui.AddLabel("I am " . this.Hwnd)
-	}
-	
-	OnClose(){
-		this.parent.ChildClosed(this.Hwnd)
-	}
-	
-	OnSize(){
-		if (WinGetMinMax("ahk_id " . this.Hwnd) == -1){
-			this.parent.ChildMinimized(this.Hwnd)
-		}
+		this.Gui.AddLabel("I am " . this.Gui.Hwnd)
 	}
 }
