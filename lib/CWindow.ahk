@@ -122,6 +122,7 @@ class CWindow {
 		this.WindowStatus.IsMaximized := 0
 		if (this.Parent){
 			this.Parent.ChildMinimized(this.Gui.Hwnd)
+			this.Parent.OnReSize()
 		}
 	}
 	
@@ -133,6 +134,7 @@ class CWindow {
 		this.WindowStatus.IsMaximized := 1
 		if (this.Parent){
 			this.Parent.ChildMaximized(this.Gui.Hwnd)
+			this.Parent.OnReSize()
 		}
 	}
 	
@@ -144,6 +146,7 @@ class CWindow {
 		this.WindowStatus.IsMaximized := 0
 		if (this.Parent){
 			this.Parent.ChildRestored(this.Gui.Hwnd)
+			this.Parent.OnReSize()
 		}
 	}
 

@@ -58,11 +58,13 @@ class CTaskBarWindow extends CScrollingWindow {
 		this.ChildWindows[hwnd].Gui.BgColor := "0xEE0000"
 	}
 	
+	/*
 	; Child Hwnd was clicked
 	; Call RestoreTask with the TaskBar item's hwnd
 	TaskRestored(hwnd){
 		this.RestoreTask(this.ObjHwndToTask[hwnd].Gui.Hwnd)
 	}
+	*/
 	
 	; Call MinimizeTask with the TaskBar item's hwnd
 	TaskMinimized(hwnd){
