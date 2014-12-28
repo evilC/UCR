@@ -11,11 +11,24 @@ A Plugin is a piece of AHK code that the user loads into the Host Application in
 Each Plugin presents it's own GUI within the Host GUI, from where the user can configure settings for the plugin and inputs / outputs (eg which keys it is triggered by and which keys it sends)   
 Plugins are designed to be easily writable by users, and easily shared between them.   
 
-##Architecture
+##Planned Features
+* Inputs: Joystick, Mouse, Keyboard, maybe other devices (TrackIR etc).
+* Outputs: Joystick (virtual only), Mouse, Keyboard
+* Joystick input / output caps:   
+8 Axes, 4 POVs, 32+ Buttons per stick, 16 Sticks   
+Input Via DirectInput calls?   
+* 16 Sticks, accessed via same ID that AHK would use   
+Use WinMM to enumerate IDs, match to GUIDs?   
+* Dynamic include at run-time of Plugins
+* Each plugin has own GUI, with settings + options.
+* Profile support (Profile is a set of plugins configured in certain way)
+* Per-application profiles?
+* Global settings in Host App - global hotkeys eg to change profile.
+* Useful built-in libraries such as accurate timers, math functions for axis manipulation (eg invert, deadzone etc).
+
 
 
 ##Roadmap
-Hurdles that need to be crossed.
 * Window Manager for Host Application?   
 Test code written for AHK v2, maybe over-complicated?   
 Just display one plugin at a time?   
