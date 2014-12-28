@@ -1,5 +1,10 @@
 #Design Document for UCR - Universal Control Remapper
 
+##Goal
+UCR is intended as a one-size-fits-all replacement for my ADHD library.   
+It is intended to merge the functionality of UJR, Fire Control etc into one app.   
+It could be thought of as similar to the remapping software that comes with gaming mice, but working with all devices.
+
 ##Overview
 UCR from the user's perspective shall consist of two main components:
 
