@@ -9,7 +9,7 @@ It could be thought of as similar to the remapping software that comes with gami
 UCR from the user's perspective shall consist of two main components:
 
 ######Host Application ("Host")
-The Host application is file (ideally an Executable, possibly an .ahk) that the user runs and is presented with a GUI.   
+The Host application is a file (ideally an Executable, possibly an .ahk) that the user runs and is presented with a GUI.   
 
 ######Plugins
 A Plugin is a piece of AHK code that the user loads into the Host Application in order to perform some specific function - eg convert a key from normal momentary operation to a toggle, or launch a certain application when you hit a certain key.   
