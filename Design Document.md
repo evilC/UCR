@@ -1,5 +1,6 @@
 #Design Document for UCR - Universal Control Remapper
 
+##Overview
 UCR from the user's perspective shall consist of two main components:
 
 ######Host Application ("Host")
@@ -10,15 +11,16 @@ A Plugin is a piece of AHK code that the user loads into the Host Application in
 Each Plugin presents it's own GUI within the Host GUI, from where the user can configure settings for the plugin and inputs / outputs (eg which keys it is triggered by and which keys it sends)   
 Plugins are designed to be easily writable by users, and easily shared between them.   
 
+##Architecture
 
-#Dev notes.
 
-Roadmap to UCR:
-* Window Manager?   
+##Roadmap
+Hurdles that need to be crossed.
+* Window Manager for Host Application?   
 Test code written for AHK v2, maybe over-complicated?   
 Just display one plugin at a time?   
 C application as parent, handle windowing with C libs?
-* Dynamic Includes   
+* Dynamic Includes (Plugin System)   
 AutoHotkey.dll?   
 DynaRun?   
 * Full stick support   
