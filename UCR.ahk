@@ -12,6 +12,11 @@ Master Application
 
 #SingleInstance, force
 
+#include Plugins.ahk
+
+UCR := new UCR()
+return
+
 Class UCR {
 	Plugins := []	; Array containing plugin objects
 
@@ -21,17 +26,21 @@ Class UCR {
 		; Load plugins
 		Loop % _UCR_Plugins.MaxIndex() {
 			cls := _UCR_Plugins[A_Index]
-			this.Plugins.Insert(new %cls%(this))
+			this.LoadPlugin(_UCR_Plugins[A_Index])
 		}
 	}
 
 	; Adds a plugin - likely called before class instantiated, so beware "this"!
-	AddPlugin(name){
+	RegisterPlugin(name){
 		global _UCR_Plugins
 		if (!_UCR_Plugins.MaxIndex()){
 			_UCR_Plugins := []
 		}
 		_UCR_Plugins.Insert(name)
+	}
+
+	LoadPlugin(name){
+		this.Plugins.Insert(new %name%(this))
 	}
 
 	; Handle hotkey binding etc
@@ -64,6 +73,40 @@ Class UCR {
 
 	}
 
+	Class GuiControl {
+		Value := ""
+		__New(parent, ControlType, guinum := 1, Options := "", Text := "") {
+			static
+			local cb
+
+			this.parent := parent
+
+			if (!ControlType) {
+				return 0
+			}
+
+			Gui, Add, % ControlType,% this.vLabel() " g_UCR_gLabel_Router " " hwndctrlHwnd ", % Text
+			this.Hwnd := ctrlHwnd
+			Gui, Add, Edit, v_MyEdit
+		}
+
+		vLabel(){
+			return "v" this.Addr()
+		}
+
+		Addr(){
+			return "#" Object(this)
+		}
+
+		OnChange(){
+			GuiControlGet, OutputVar, , % this.Hwnd
+			this.Value := OutputVar
+			this.parent.OnChange()
+		}
+
+
+	}
+
 	; Base class to derive from for Plugins
 	Class Plugin {
 		__New(parent){
@@ -73,6 +116,9 @@ Class UCR {
 
 }
 
-#include Plugins.ahk
-UCR := new UCR()
+_UCR_gLabel_Router:
+	Object(SubStr(A_GuiControl,2)).OnChange()
+	return
 
+GuiClose:
+	ExitApp

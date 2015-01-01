@@ -7,13 +7,18 @@ evilc@evilc.com
 Example plugin(s)
 */
 
-UCR.AddPlugin("Test")
+UCR.RegisterPlugin("Test")
 
 Class Test extends UCR.Plugin {
 	__New(parent){
+		static
 		base.__New(parent)
 		this.h1 := new this.parent.Hotkey(this)
 		this.h1.Add("~a",this.test)
+		Gui, New
+		;Gui, Add, Edit,% "v#" Object(this) " g_UCR_GLabel_Router "
+		this.ed := new UCR.GuiControl(this, "Edit", "", "")
+		Gui, Show
 	}
 
 	Test(){
@@ -22,5 +27,10 @@ Class Test extends UCR.Plugin {
 
 	DownEvent(){
 
+	}
+
+	OnChange(){
+		;msgbox here
+		Tooltip % this.ed.Value
 	}
 }
