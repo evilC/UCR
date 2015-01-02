@@ -43,7 +43,7 @@ Class UCR extends CWindow {
 
 		Gui, % this.GuiCmd("Add"), ListView, r20 w700 , Name|On/Off
 
-		this.Show("w" this.MAIN_WIDTH + 10 " h" this.MAIN_HEIGHT + 10)
+		this.Show("w" this.MAIN_WIDTH + 10 " h" this.MAIN_HEIGHT + 10, "U C R - Universal Control Remapper")
 	}
 
 	; Adds a plugin - likely called before class instantiated, so beware "this"!
