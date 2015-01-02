@@ -65,8 +65,8 @@ return
 Class UCR extends CWindow {
 	Plugins := []	; Array containing plugin objects
 
-	MAIN_WIDTH := 200
-	MAIN_HEIGHT := 200
+	MAIN_WIDTH := 640
+	MAIN_HEIGHT := 480
 	;PLUGIN_WIDTH := 600
 
 	__New(){
@@ -86,8 +86,9 @@ Class UCR extends CWindow {
 		base.CreateGui()
 		Gui, % this.GuiCmd("Add"), Text, ,Hotkeys
 
-		Gui, % this.GuiCmd("Add"), ListView, % "r20 w" this.MAIN_WIDTH " h" this.MAIN_HEIGHT, Name|On/Off
+		Gui, % this.GuiCmd("Add"), ListView, % "r20 w" this.MAIN_WIDTH " h" this.MAIN_HEIGHT, Name|App (ahk_class)|On/Off
 		LV_ModifyCol(1, 100)
+		LV_ModifyCol(2, 100)
 
 		this.Show("w" this.MAIN_WIDTH + 10 " h" this.MAIN_HEIGHT + 10, "U C R - Universal Control Remapper")
 	}
@@ -106,12 +107,28 @@ Class UCR extends CWindow {
 	}
 
 	OnChange(){
-		;soundbeep
 		Gui, % this.GuiDefault()
 		LV_Delete()
-		for i, hotkey in this.GetHotkeys() {
-			LV_Add(,hotkey.Name, hotkey["Off?"] ? hotkey["Off?"] : "On")
+		;for i, hotkey in this.GetHotkeys() {
+		;	LV_Add(,hotkey.Name, hotkey["Off?"] ? hotkey["Off?"] : "On")
+		;}
+		; Query xHotkey for hotkey list
+		for name, obj in xHotkey.hk {
+			; Process global variant
+			if (isObject(obj.gvariant)){
+				LV_Add(, (obj.gvariant.hasTilde ? "~" : "") name, "global", (obj.gvariant.enabled ? "On" : "Off") )
+			}
+			; Process per-app variants
+			Loop % obj.variants.MaxIndex(){
+				LV_Add(, (obj.variants[A_Index].hasTilde ? "~" : "") name
+					, substr(obj.variants[A_Index].base.WinTitle,11)
+					, (obj.variants[A_Index].enabled ? "On" : "Off") )
+			}
 		}
+	}
+	
+	BuildHKLine(){
+	
 	}
 
 	; GetHotkeys - pull the HotkeyList into an Array, so we can show current hotkeys in memory (for debugging purposes)
@@ -181,6 +198,7 @@ Class UCR extends CWindow {
 		CallbackDown := ""
 		CallbackUp := ""
 		CallbackContext := ""
+		Modifiers := ["~", "*", "$", "!", "^", "+", "#"]
 
 		__New(parent){
 			this.parent := parent
@@ -192,18 +210,24 @@ Class UCR extends CWindow {
 			if (this.CurrentKey){
 				this.Remove()
 			}
-			if (GetKeyName(key)){
-				this.CallbackContext := context
-				this.CallbackDown := callback_down
-				this.CallbackUp := callback_up
-				xHotkey("~" key, this.Bind(this.DownEvent,this), 1)
-				xHotkey("~" key " up", this.Bind(this.UpEvent,this), 1)
-				this.CurrentKey := key
-				return 1
-			} else {
-				this.Remove()
-				return 0
+			; Check that the hotkey is not just modifiers
+			if (this.StripModifiers(key)){
+				try {
+					;xHotkey.IfWinActive("ahk_class Notepad")
+					xHotkey("~" key, this.Bind(this.DownEvent,this), 1)
+					xHotkey("~" key " up", this.Bind(this.UpEvent,this), 1)
+					
+					; try worked - continue
+					this.CallbackContext := context
+					this.CallbackDown := callback_down
+					this.CallbackUp := callback_up
+					this.CurrentKey := key
+					return 1
+				} catch {
+					
+				}
 			}
+			return 0
 		}
 
 		Remove(){
@@ -216,6 +240,26 @@ Class UCR extends CWindow {
 			} else {
 				return 0
 			}
+		}
+		
+		StripModifiers(str){
+			Loop {
+				if (!str){
+					break
+				}
+				found := 0
+				Loop % this.Modifiers.MaxIndex(){
+					if (SubStr(str,1,1) = this.Modifiers[A_Index]){
+						StringTrimLeft, str, str, 1
+						found := 1
+						break
+					}
+				}
+				if (!found){
+					break
+				}
+			}
+			return str
 		}
 
 		; Trap down events so we can keep internal tabs on state etc
