@@ -24,17 +24,19 @@ Class Test extends UCR.Plugin {
 		this.OnChange()
 	}
 
-	Test(){
+	DownEvent(){
 		soundbeep
+		Tooltip % this.h1.CurrentKey " Down"
 	}
 
-	DownEvent(){
-
+	UpEvent(){
+		soundbeep
+		Tooltip % this.h1.CurrentKey " Up"
 	}
 
 	OnChange(){
-		Tooltip % this.ed.Value
-		this.h1.Add(this.ed.Value,this.test)
+		;Tooltip % this.ed.Value
+		this.h1.Add(this.ed.Value, this.DownEvent, this.UpEvent, this)
 		base.OnChange()
 	}
 }

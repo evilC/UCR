@@ -132,17 +132,27 @@ Class UCR extends CWindow {
 	; Handle hotkey binding etc
 	Class Hotkey {
 		CurrentKey := ""
+		State := 0
+		CallbackDown := ""
+		CallbackUp := ""
+		CallbackContext := ""
 
 		__New(parent){
 			this.parent := parent
 		}
 
-		Add(key,callback)){
+		; IMPORTANT! Be sure to pass the correct context to Add. Context alters the "scope" which is passed when a callback is called
+		; If you pass "this.Fire" to callback_down, be sure to pass "this" to context.
+		Add(key, callback_down, callback_up, context*) {
 			if (this.CurrentKey){
 				this.Remove()
 			}
 			if (GetKeyName(key)){
-				xHotkey("~" key,this.Bind(callback,this.parent),1)
+				this.CallbackContext := context
+				this.CallbackDown := callback_down
+				this.CallbackUp := callback_up
+				xHotkey("~" key, this.Bind(this.DownEvent,this), 1)
+				xHotkey("~" key " up", this.Bind(this.UpEvent,this), 1)
 				this.CurrentKey := key
 				return 1
 			} else {
@@ -154,10 +164,35 @@ Class UCR extends CWindow {
 		Remove(){
 			if (this.CurrentKey){
 				xHotkey("~" this.CurrentKey,,0)
+				xHotkey("~" this.CurrentKey " up",,0)
 				this.CurrentKey := ""
+				this.State := 0
 				return 1
 			} else {
 				return 0
+			}
+		}
+
+		; Trap down events so we can keep internal tabs on state etc
+		DownEvent(){
+			; Suppress "Key repeat" down events - if key held normally, down event repeatedly fired.
+			if (this.State == 0){
+				this.State := 1
+				if (this.CallbackDown){
+					; Call Callback function with specified context
+					fn := this.Bind(this.CallbackDown, this.CallbackContext*)
+					%fn%()
+				}
+			}
+		}
+
+		UpEvent(){
+			if (this.State == 1){
+				this.State := 0
+				if (this.CallbackUp){
+					fn := this.Bind(this.CallbackUp, this.CallbackContext*)
+					%fn%()
+				}
 			}
 		}
 
