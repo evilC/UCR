@@ -63,6 +63,7 @@ UCR := new UCR()
 return
 
 Class UCR extends CWindow {
+	desc := "main"	; debugging object label
 	Plugins := []	; Array containing plugin objects
 
 	MAIN_WIDTH := 640
@@ -193,6 +194,7 @@ Class UCR extends CWindow {
 
 	; Add or remove a binding
 	Class Hotkey extends UCRCommon {
+		desc := "hotkey"
 		CurrentKey := ""
 		CurrentApp := ""
 		State := 0
@@ -221,8 +223,8 @@ Class UCR extends CWindow {
 					this.CurrentApp := ""
 				}
 				try {
-					xHotkey("~" key, this.Bind(this.DownEvent,this), 1)
-					xHotkey("~" key " up", this.Bind(this.UpEvent,this), 1)
+					xHotkey(key, this.Bind(this.DownEvent,this), 1)
+					xHotkey(key " up", this.Bind(this.UpEvent,this), 1)
 					
 					; try worked - continue
 					this.CallbackContext := context
@@ -245,8 +247,8 @@ Class UCR extends CWindow {
 					xHotkey.IfWinActive()
 				}
 				Try {
-					xHotkey("~" this.CurrentKey,,0)
-					xHotkey("~" this.CurrentKey " up",,0)
+					xHotkey(this.CurrentKey,,0)
+					xHotkey(this.CurrentKey " up",,0)
 				} catch {
 					
 				}
@@ -307,9 +309,12 @@ Class UCR extends CWindow {
 	}
 
 	Class GuiControl extends CGuiItem {
+		desc := "control"
 		Value := ""
-		__New(parent, ControlType, Options := "", Text := "") {
+		name := "ctrl"
+		__New(parent, ControlType, Options := "", Text := "", name := "") {
 			this.parent := parent
+			this.name := name
 
 			if (!ControlType,Text) {
 				return 0
@@ -340,8 +345,6 @@ Class UCR extends CWindow {
 			this.Value := OutputVar
 			this.parent.OnChange()
 		}
-
-
 	}
 
 	; Base class to derive from for Plugins
@@ -357,7 +360,6 @@ Class UCR extends CWindow {
 			this.parent.OnChange()
 		}
 	}
-
 }
 
 ; Functionality common to all window types
