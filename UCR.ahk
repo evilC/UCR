@@ -320,6 +320,7 @@ Class UCR extends CWindow {
 				return 0
 			}
 			this.CreateControl(ControlType, Options, Text)
+			this.Value := Text
 		}
 
 		CreateControl(ControlType, Options, Text){

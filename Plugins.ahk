@@ -10,6 +10,7 @@ Example plugin(s)
 UCR.RegisterPlugin("Test")
 
 Class Test extends UCR.Plugin {
+	cls := ""
 	desc := "plugin"
 	__New(parent){
 		base.__New(parent)
@@ -25,7 +26,8 @@ Class Test extends UCR.Plugin {
 		new UCR.GuiControl(this, "Text", "xm ym", "Key")
 		this.Input := new UCR.GuiControl(this, "Edit", "w" WIDTH - 60 " x80 yp-3 Section" )
 		new UCR.GuiControl(this, "Text", "xm", "ahk_class")
-		this.App := new UCR.GuiControl(this, "Edit" , "w" WIDTH - 60 " xs yp-3")
+		this.App := new UCR.GuiControl(this, "Edit" , "w" WIDTH - 60 " xs yp-3", this.cls)
+		
 		new UCR.GuiControl(this, "Text", "xm w" WIDTH " Center", "Modifiers")
 		
 		this.PassThru := new UCR.GuiControl(this, "CheckBox", "x20 yp+30 section")
@@ -82,4 +84,5 @@ Class Test extends UCR.Plugin {
 UCR.RegisterPlugin("TestB")
 
 Class TestB extends Test {
+	cls := "Notepad"
 }
