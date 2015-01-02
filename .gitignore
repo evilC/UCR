@@ -5,4 +5,4 @@
 *.scc
 *.png
 *.bak
-*.tmp.ahk
+*.tmp.*

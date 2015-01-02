@@ -62,7 +62,6 @@ Class UCR extends CWindow {
 
 	OnChange(){
 		;soundbeep
-		ahk_hk := ""
 		Gui, % this.GuiDefault()
 		LV_Delete()
 		for i, hotkey in this.GetHotkeys() {
