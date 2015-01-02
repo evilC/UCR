@@ -20,9 +20,9 @@ return
 Class UCR extends CWindow {
 	Plugins := []	; Array containing plugin objects
 
-	MAIN_WIDTH := 800
-	MAIN_HEIGHT := 600
-	PLUGIN_WIDTH := 600
+	MAIN_WIDTH := 200
+	MAIN_HEIGHT := 200
+	;PLUGIN_WIDTH := 600
 
 	__New(){
 		global _UCR_Plugins	; Array of plugin class names
@@ -41,7 +41,8 @@ Class UCR extends CWindow {
 		base.CreateGui()
 		Gui, % this.GuiCmd("Add"), Text, ,Hotkeys
 
-		Gui, % this.GuiCmd("Add"), ListView, r20 w700 , Name|On/Off
+		Gui, % this.GuiCmd("Add"), ListView, % "r20 w" this.MAIN_WIDTH " h" this.MAIN_HEIGHT, Name|On/Off
+		LV_ModifyCol(1, 100)
 
 		this.Show("w" this.MAIN_WIDTH + 10 " h" this.MAIN_HEIGHT + 10, "U C R - Universal Control Remapper")
 	}
@@ -62,9 +63,9 @@ Class UCR extends CWindow {
 	OnChange(){
 		;soundbeep
 		ahk_hk := ""
+		Gui, % this.GuiDefault()
+		LV_Delete()
 		for i, hotkey in this.GetHotkeys() {
-			Gui, % this.GuiDefault()
-			LV_Delete()
 			LV_Add(,hotkey.Name, hotkey["Off?"] ? hotkey["Off?"] : "On")
 		}
 	}
@@ -131,12 +132,34 @@ Class UCR extends CWindow {
 
 	; Handle hotkey binding etc
 	Class Hotkey {
+		CurrentKey := ""
+
 		__New(parent){
 			this.parent := parent
 		}
 
 		Add(key,callback)){
-			xHotkey(key,this.Bind(callback,this.parent),1)
+			if (this.CurrentKey){
+				this.Remove()
+			}
+			if (GetKeyName(key)){
+				xHotkey("~" key,this.Bind(callback,this.parent),1)
+				this.CurrentKey := key
+				return 1
+			} else {
+				this.Remove()
+				return 0
+			}
+		}
+
+		Remove(){
+			if (this.CurrentKey){
+				xHotkey("~" this.CurrentKey,,0)
+				this.CurrentKey := ""
+				return 1
+			} else {
+				return 0
+			}
 		}
 
 		Bind(fn, args*) {
