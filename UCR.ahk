@@ -4,7 +4,7 @@ UCR - Universal Control Remapper
 Proof of concept for class-based hotkeys and class-based plugins.
 evilc@evilc.com
 
-Uses xHotkey instead of the normal AHK Hotkey command.
+Uses xHotkey library instead of the normal AHK Hotkey command.
 https://github.com/Lexikos/xHotkey.ahk
 
 Master Application
@@ -194,6 +194,7 @@ Class UCR extends CWindow {
 	; Add or remove a binding
 	Class Hotkey extends UCRCommon {
 		CurrentKey := ""
+		CurrentApp := ""
 		State := 0
 		CallbackDown := ""
 		CallbackUp := ""
@@ -206,14 +207,20 @@ Class UCR extends CWindow {
 
 		; IMPORTANT! Be sure to pass the correct context to Add. Context alters the "scope" which is passed when a callback is called
 		; If you pass "this.Fire" to callback_down, be sure to pass "this" to context.
-		Add(key, callback_down, callback_up, context*) {
+		Add(key, app := "", callback_down := "", callback_up := "", context*) {
 			if (this.CurrentKey){
 				this.Remove()
 			}
 			; Check that the hotkey is not just modifiers
 			if (this.StripModifiers(key)){
+				if (app){
+					xHotkey.IfWinActive("ahk_class " app)
+					this.CurrentApp := app
+				} else {
+					xHotkey.IfWinActive()
+					this.CurrentApp := ""
+				}
 				try {
-					;xHotkey.IfWinActive("ahk_class Notepad")
 					xHotkey("~" key, this.Bind(this.DownEvent,this), 1)
 					xHotkey("~" key " up", this.Bind(this.UpEvent,this), 1)
 					
@@ -224,7 +231,7 @@ Class UCR extends CWindow {
 					this.CurrentKey := key
 					return 1
 				} catch {
-					
+					this.Remove()
 				}
 			}
 			return 0
@@ -232,14 +239,27 @@ Class UCR extends CWindow {
 
 		Remove(){
 			if (this.CurrentKey){
-				xHotkey("~" this.CurrentKey,,0)
-				xHotkey("~" this.CurrentKey " up",,0)
+				if (this.CurrentApp){
+					xHotkey.IfWinActive("ahk_class " this.CurrentApp)
+				} else {
+					xHotkey.IfWinActive()
+				}
+				Try {
+					xHotkey("~" this.CurrentKey,,0)
+					xHotkey("~" this.CurrentKey " up",,0)
+				} catch {
+					
+				}
 				this.CurrentKey := ""
 				this.State := 0
-				return 1
-			} else {
-				return 0
 			}
+			if (this.CurrentApp){
+				this.CurrentApp := ""
+			}
+			this.Status := 0
+			this.CallbackDown := ""
+			this.CallbackUp := ""
+			this.CallbackContext := ""
 		}
 		
 		StripModifiers(str){
@@ -267,7 +287,7 @@ Class UCR extends CWindow {
 			; Suppress "Key repeat" down events - if key held normally, down event repeatedly fired.
 			if (this.State == 0){
 				this.State := 1
-				if (this.CallbackDown){
+				if (IsObject(this.CallbackDown)){
 					; Call Callback function with specified context
 					fn := this.Bind(this.CallbackDown, this.CallbackContext*)
 					%fn%()
@@ -278,7 +298,7 @@ Class UCR extends CWindow {
 		UpEvent(){
 			if (this.State == 1){
 				this.State := 0
-				if (this.CallbackUp){
+				if (IsObject(this.CallbackUp)){
 					fn := this.Bind(this.CallbackUp, this.CallbackContext*)
 					%fn%()
 				}
@@ -294,12 +314,12 @@ Class UCR extends CWindow {
 			if (!ControlType,Text) {
 				return 0
 			}
-			this.CreateControl(ControlType,Text)
+			this.CreateControl(ControlType, Options, Text)
 		}
 
-		CreateControl(ControlType){
+		CreateControl(ControlType, Options, Text){
 			static
-			Gui, % this.GuiCmd("Add"), % ControlType,% this.vLabel() " g_UCR_gLabel_Router " " hwndctrlHwnd ", % Text
+			Gui, % this.GuiCmd("Add"), % ControlType,% this.vLabel() " g_UCR_gLabel_Router " " hwndctrlHwnd " Options, % Text
 			this.Hwnd := ctrlHwnd
 		}
 

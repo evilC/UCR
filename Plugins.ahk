@@ -19,7 +19,10 @@ Class Test extends UCR.Plugin {
 		base.CreateGui()
 
 		this.h1 := new this.parent.Hotkey(this)
-		this.ed := new UCR.GuiControl(this, "Edit")
+		new UCR.GuiControl(this, "Text", "xm ym", "Key")
+		this.Input := new UCR.GuiControl(this, "Edit", "x80 yp-3 Section")
+		new UCR.GuiControl(this, "Text", "xm", "ahk_class")
+		this.App := new UCR.GuiControl(this, "Edit" , "xs yp-3")
 		this.Show()
 		this.OnChange()
 	}
@@ -35,8 +38,8 @@ Class Test extends UCR.Plugin {
 	}
 
 	OnChange(){
-		;Tooltip % this.ed.Value
-		this.h1.Add(this.ed.Value, this.DownEvent, this.UpEvent, this)
+		Tooltip % this.App.Value
+		this.h1.Add(this.Input.Value, this.App.Value, this.DownEvent, this.UpEvent, this)
 		base.OnChange()
 	}
 }
