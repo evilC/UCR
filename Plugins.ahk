@@ -20,9 +20,9 @@ Class Test extends UCR.Plugin {
 
 		this.h1 := new this.parent.Hotkey(this)
 		this.h1.Add("~a",this.test)
-		this.ed := new UCR.GuiControl(this, "Edit", "", "")
+		this.ed := new UCR.GuiControl(this, "Edit")
 		this.Show()
-
+		this.OnChange()
 	}
 
 	Test(){
@@ -35,5 +35,6 @@ Class Test extends UCR.Plugin {
 
 	OnChange(){
 		Tooltip % this.ed.Value
+		base.OnChange()
 	}
 }
