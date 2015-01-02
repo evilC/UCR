@@ -8,6 +8,51 @@ Uses xHotkey instead of the normal AHK Hotkey command.
 https://github.com/Lexikos/xHotkey.ahk
 
 Master Application
+
+ToDo:
+* Normalize names / locations of classes etc.
+  Naming convention? _ Prefix for "internal"?
+
+* Hotkey Gui Control - Edit box / bind button(s)
+
+* Hotkey authority from main class.
+  Convenient way for main class to instruct a plugin to disable / re-enable hotkeys
+
+* Profile system
+  Instruct Plugins to "Load" / "Save"
+  Save global settings
+  INI / XML etc
+
+* Joystick / vJoy intergration
+  Endless loop / timer for polling input axes / emulating joystick button up events?
+
+* Hotkey detection ("Binding") system.
+  Current Input based systems lacking.
+
+* Windows API / DirectInput library?
+  
+* Installer / dependency manager
+  ASPDM?
+
+* QuickBind system
+
+* Global Hotkeys / Swap profile via popup or OSD etc
+
+* Nesting / Grouping Plugins?
+  One plugin with 4 axes = 4x 1 axis plugins nested?
+
+* Window management
+  Emulated taskbar to select plugin
+  Fixed size UI?
+
+* Chaining output?
+  eg Key with shift states also with Toggle?
+
+* Plugin inter-communication?
+  Shift states etc - couldn't all be nested?
+
+* Help / Tooltip system
+
 */
 
 #SingleInstance, force
