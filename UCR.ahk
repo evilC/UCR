@@ -129,8 +129,8 @@ Class UCR extends CWindow {
 	}
 
 
-	; Handle hotkey binding etc
-	Class Hotkey {
+	; Add or remove a binding
+	Class Hotkey extends UCRCommon {
 		CurrentKey := ""
 		State := 0
 		CallbackDown := ""
@@ -195,25 +195,6 @@ Class UCR extends CWindow {
 				}
 			}
 		}
-
-		Bind(fn, args*) {
-		    return new this.BoundFunc(fn, args*)
-		}
-
-		class BoundFunc {
-		    __New(fn, args*) {
-		        this.fn := IsObject(fn) ? fn : Func(fn)
-		        this.args := args
-		    }
-		    __Call(callee) {
-		        if (callee = "") {
-		            fn := this.fn
-		            return %fn%(this.args*)
-		        }
-		    }
-		}
-
-
 	}
 
 	Class GuiControl extends CGuiItem {
@@ -301,7 +282,7 @@ Class CWindow extends CGuiItem {
 }
 
 ; Functionality common to all things that have a GUI presence
-Class CGuiItem {
+Class CGuiItem extends UCRCommon {
 	__New(parent){
 		if (!parent){
 			; Root class
@@ -310,6 +291,27 @@ Class CGuiItem {
 			this.parent := parent
 		}
 		this.CreateGui()
+	}
+}
+
+; Common functions for all UCR classes
+Class UCRCommon {
+	; "Function Binding" methods for changing the context / scope of a call to a class method
+	Bind(fn, args*) {
+	    return new this.BoundFunc(fn, args*)
+	}
+
+	class BoundFunc {
+	    __New(fn, args*) {
+	        this.fn := IsObject(fn) ? fn : Func(fn)
+	        this.args := args
+	    }
+	    __Call(callee) {
+	        if (callee = "") {
+	            fn := this.fn
+	            return %fn%(this.args*)
+	        }
+	    }
 	}
 }
 
