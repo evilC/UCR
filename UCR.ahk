@@ -127,10 +127,6 @@ Class UCR extends CWindow {
 			}
 		}
 	}
-	
-	BuildHKLine(){
-	
-	}
 
 	; GetHotkeys - pull the HotkeyList into an Array, so we can show current hotkeys in memory (for debugging purposes)
 	; From http://ahkscript.org/boards/viewtopic.php?p=31849#p31849
@@ -194,6 +190,7 @@ Class UCR extends CWindow {
 
 	; Add or remove a binding
 	Class Hotkey extends UCRCommon {
+		keyup_enabled := 1
 		desc := "hotkey"
 		CurrentKey := ""
 		CurrentApp := ""
@@ -224,7 +221,9 @@ Class UCR extends CWindow {
 				}
 				try {
 					xHotkey(key, this.Bind(this.DownEvent,this), 1)
-					xHotkey(key " up", this.Bind(this.UpEvent,this), 1)
+					if (this.keyup_enabled){
+						xHotkey(key " up", this.Bind(this.UpEvent,this), 1)
+					}
 					
 					; try worked - continue
 					this.CallbackContext := context
@@ -248,7 +247,9 @@ Class UCR extends CWindow {
 				}
 				Try {
 					xHotkey(this.CurrentKey,,0)
-					xHotkey(this.CurrentKey " up",,0)
+					if (this.keyup_enabled){
+						xHotkey(this.CurrentKey " up",,0)
+					}
 				} catch {
 					
 				}
@@ -287,7 +288,7 @@ Class UCR extends CWindow {
 		; Trap down events so we can keep internal tabs on state etc
 		DownEvent(){
 			; Suppress "Key repeat" down events - if key held normally, down event repeatedly fired.
-			if (this.State == 0){
+			if (this.State == 0 || !this.keyup_enabled){
 				this.State := 1
 				if (IsObject(this.CallbackDown)){
 					; Call Callback function with specified context
