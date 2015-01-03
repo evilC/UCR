@@ -3,18 +3,18 @@
 USE_XHOTKEY := 1
 
 LastHotkey := ""
+LastApp := ""
 
 WIDTH := 350
 HEIGHT := 550
 Gui, Add, Text, % "w" WIDTH " center", xHotkey.hk
 Gui, Add, ListView, % "vHKList w200 h200 w" WIDTH, Name|App (ahk_class)|On/Off
-LV_ModifyCol(1, 80)
-LV_ModifyCol(2, 140)
+LV_ModifyCol(1, 100)
+LV_ModifyCol(2, 180)
 Gui, Add, Text, % "w" WIDTH " center", Debug Log
-Gui, Add, ListView, % "vDebugLog xm w200 h200 w" WIDTH, Action|Hotkey|App
-LV_ModifyCol(1, 80)
-LV_ModifyCol(2, 100)
-LV_ModifyCol(3, 140)
+Gui, Add, ListView, % "vDebugLog xm w200 h200 w" WIDTH, Hotkey|App (ahk_class)|Action
+LV_ModifyCol(1, 100)
+LV_ModifyCol(2, 180)
 Gui, Add, Text, xm w50 h20, Hotkey: 
 Gui, Add, Edit, gOptionChanged vHotkeyBox w100 xp+60 yp-3
 
@@ -51,33 +51,68 @@ return
 OptionChanged:
 	Gui, Submit, NoHide
 	prefix := BuildPrefixes()
+	if (AppBox){
+		this_app := Appbox
+	} else {
+		this_app := "Global"
+	}
+		
+	if (LastApp){
+		last_app := LastApp
+	} else {
+		last_app := "Global"
+	}
+		
 	; Remove old hotkey
 	if (LastHotkey){
 		Gui, ListView, DebugLog
 		if (USE_XHOTKEY){
+			if (LastApp){
+				xHotkey.IfWinActive("ahk_class " LastApp)
+			} else {
+				xHotkey.IfWinActive()
+			}
 			xHotkey(LastHotkey,, 0)
 		} else {
+			if (LastApp){
+				Hotkey, IfWinActive ahk_class %LastApp%
+			} else {
+				Hotkey, IfWinActive
+			}
 			Hotkey, % LastHotkey,, Off
 		}
-		LV_ADD(,"Removing",LastHotkey,"Global")
+		LV_ADD(, LastHotkey, last_app, "Removing")
 		LastHotkey := ""
 	}
 	; Add new hotkey
-	hk := StrLower(GetKeyName(HotkeyBox))
-	if (hk){
+	if (HotkeyBox){
 		Gui, ListView, DebugLog
-		hk := prefix hk
+		hk := prefix HotkeyBox
+
 		if (USE_XHOTKEY){
+			if (AppBox){
+				xHotkey.IfWinActive("ahk_class " AppBox)
+			} else {
+				xHotkey.IfWinActive()
+			}
 			try {
 				xHotkey(hk, "Test", 1)
-				LV_ADD(,"Adding",hk,"Global")
+				LV_ADD(, hk, this_app, "Adding")
 				LastHotkey := hk
+				LastApp := Appbox
 			} catch {
-				LV_ADD(,"Ignoring",HotkeyBox,"Global")
+				LV_ADD(, HotkeyBox, this_app, "Ignoring")
 			}
 		} else {
+			if (AppBox){
+				Hotkey, IfWinActive ahk_class %AppBox%
+			} else {
+				Hotkey, IfWinActive
+			}
 			Hotkey, % hk, Test, On
-			LV_ADD(,"Adding",hk,"Global")
+			LastHotkey := hk			
+			LastApp := Appbox
+			LV_ADD(, hk, this_app, "Adding")
 		}
 	}
 	; Update hotkey debug listview
