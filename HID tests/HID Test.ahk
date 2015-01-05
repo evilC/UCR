@@ -5,7 +5,6 @@
 ;Intercept WM_INPUT
 OnMessage(0x00FF, "InputMsg")
 
-
 joysticks := {}
 
 GUI_WIDTH := 600
@@ -16,6 +15,18 @@ Gui, Add, ListView, % "vlvSticks gOptionChanged AltSubmit w" GUI_WIDTH " h200", 
 LV_ModifyCol(1, 200)
 LV_ModifyCol(2, 100)
 LV_ModifyCol(3, 100)
+
+Gui, Add, ListView, % "vlvEvents w" GUI_WIDTH " h200 xm yp+" (GUI_HEIGHT / 2) + 20, Device|Subdevice|Input Type|New Value
+LV_ModifyCol(1, 100)
+LV_ModifyCol(2, 200)
+LV_ModifyCol(3, 100)
+
+Gui, Add, Checkbox, xm Section Checked vHideMouseWheel gOptionChanged, Don't Log Mouse Wheel
+Gui, Add, Checkbox, ys Section Checked vHideLeftMouse gOptionChanged , Don't Log Left Mouse
+Gui, Add, Checkbox, ys Section CheckevHideRightMouse gOptionChanged, Don't Log Right Mouse
+Gui, Add, Checkbox, ys Section vHideStickAxes gOptionChanged, Ignore Stick Axes
+
+Gui, ListView, lvSticks
 
 ;Get count
 iCount := AHKHID_GetDevCount()
@@ -49,7 +60,8 @@ Loop %iCount% {
     }
 
 }
-Gui, Show, % "w" GUI_WIDTH + 20 " h" GUI_HEIGHT + 20
+
+Gui, Show, % "w" GUI_WIDTH + 20 " h" GUI_HEIGHT + 50
 
 
 ;Keep handle
@@ -98,12 +110,12 @@ OptionChanged:
 	} else {
 		StickID := ""
 	}
-	
+	Gui, ListView, lvEvents
 	return
 
 ; converts to hex, pads to 4 digits, chops off 0x
-ToHex(dec){
-	return Substr(Convert2Hex(dec,4),3)
+ToHex(dec, padding := 4){
+	return Substr(Convert2Hex(dec,padding),3)
 }
 
 InputMsg(wParam, lParam) {
@@ -113,10 +125,103 @@ InputMsg(wParam, lParam) {
     If (r = -1)
         OutputDebug %ErrorLevel%
     If (r = RIM_TYPEMOUSE) {
-		if (AHKHID_GetInputInfo(lParam, II_MSE_BUTTONFLAGS) ){
-			; mouse input
+		; Filter mouse movement
+		flags := AHKHID_GetInputInfo(lParam, II_MSE_BUTTONFLAGS)
+		if (flags){
+			; IMPORTANT NOTE!
+			; EVENT COULD CONTAIN MORE THAN ONE BUTTON CHANGE!!!
+			;Get flags and add to listbox
+			s := ""
+			If (flags & RI_MOUSE_LEFT_BUTTON_DOWN)
+				if (!HideLeftMouse){
+					LV_ADD(,"Mouse", "", "Left Button", "Down")
+				}
+			If (flags & RI_MOUSE_LEFT_BUTTON_UP)
+				if (!HideLeftMouse){
+					LV_ADD(,"Mouse", "", "Left Button", "Up")
+				}
+			If (flags & RI_MOUSE_RIGHT_BUTTON_DOWN)
+				if (!HideRightMouse){
+					LV_ADD(,"Mouse", "", "Right Button", "Down")
+				}
+			If (flags & RI_MOUSE_RIGHT_BUTTON_UP)
+				if (!HideRightMouse){
+					LV_ADD(,"Mouse", "", "Right Button", "Up")
+				}
+			If (flags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
+				LV_ADD(,"Mouse", "", "Middle Button", "Down")
+			If (flags & RI_MOUSE_MIDDLE_BUTTON_UP)
+				LV_ADD(,"Mouse", "", "Middle Button", "Up")
+			If (flags & RI_MOUSE_BUTTON_4_DOWN)
+				LV_ADD(,"Mouse", "", "XButton1", "Down")
+			If (flags & RI_MOUSE_BUTTON_4_UP)
+				LV_ADD(,"Mouse", "", "XButton1", "Up")
+			If (flags & RI_MOUSE_BUTTON_5_DOWN)
+				LV_ADD(,"Mouse", "", "XButton2", "Down")
+			If (flags & RI_MOUSE_BUTTON_5_UP)
+				LV_ADD(,"Mouse", "", "XButton2", "Up")
+			If (flags & RI_MOUSE_WHEEL)
+				if (!HideMouseWheel){
+					LV_ADD(,"Mouse", "", "Wheel", Round(AHKHID_GetInputInfo(lParam, II_MSE_BUTTONDATA) / 120))
+				}
+			
+			SetToolTip(s)
 		}
     } Else If (r = RIM_TYPEKEYBOARD) {
+		vk := AHKHID_GetInputInfo(lParam, II_KBD_VKEY)
+		keyname := GetKeyName("vk" ToHex(vk,2))
+		flags := AHKHID_GetInputInfo(lParam, II_KBD_FLAGS)
+		makecode := AHKHID_GetInputInfo(lParam, II_KBD_MAKECODE)
+		s := ""
+		if (vk == 17) {
+			; Control
+			if (flags < 2){
+				; LControl
+				s := "Left "
+			} else {
+				; RControl
+				s := "Right "
+				flags -= 2
+			
+			}
+			; One of the control keys
+			;if ()
+			;SoundBeep
+		} else if (vk == 18) {
+			; Alt
+			if (flags < 2){
+				; LAlt
+				s := "Left "
+			} else {
+				; RAlt
+				s := "Right "
+				flags -= 3	; RALT REPORTS DIFFERENTLY!
+			
+			}
+		} else if (vk == 16){
+			; Shift
+			if (makecode == 42){
+				; LShift
+				s := "Left "
+			} else {
+				; RShift
+				s := "Right "
+			}
+		} else if (vk == 91 || vk == 92) {
+			; Windows key
+			flags -= 2
+			if (makecode == 91){
+				; LWin
+				s := "Left "
+			} else {
+				; RWin
+				s := "Right "
+			}
+		}
+		s .= keyname
+		
+		;SetToolTip("Keyboard: " kn " " ev)
+		LV_ADD(,"Keyboard", "", s, (flags ? "Up" : "Down") )
 		; keyboard input
     } Else If (r = RIM_TYPEHID) {
 		; Other - joysticks etc
@@ -126,7 +231,8 @@ InputMsg(wParam, lParam) {
 		name := AHKHID_GetDevName(h,1)
 		; If stick is the one selected
 		if (name == StickID){
-			SetToolTip("Stick Changed")
+			;SetToolTip("Stick Changed")
+			LV_ADD(,"Joystick", "")
 		}
     }
 }
