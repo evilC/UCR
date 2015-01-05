@@ -14,14 +14,14 @@ GUI_HEIGHT := 400
 
 Gui, +Resize -MaximizeBox -MinimizeBox +LastFound
 Gui, Add, ListView, % "vlvSticks gOptionChanged AltSubmit w" GUI_WIDTH " h200", Device|VID (Hex)|PID (Hex)|Usage Page|Usage|Unique Name
-LV_ModifyCol(1, 200)
+LV_ModifyCol(1, 150)
 LV_ModifyCol(2, 100)
 LV_ModifyCol(3, 100)
 
 Gui, Add, ListView, % "vlvEvents w" GUI_WIDTH " h200 xm yp+" (GUI_HEIGHT / 2) + 20, Device|Subdevice|Input Type|New Value
-LV_ModifyCol(1, 100)
-LV_ModifyCol(2, 200)
-LV_ModifyCol(3, 100)
+LV_ModifyCol(1, 60)
+LV_ModifyCol(2, 150)
+LV_ModifyCol(3, 80)
 
 Gui, Add, Checkbox, xm Section Checked vHideMouseWheel gOptionChanged, Don't Log Mouse Wheel
 Gui, Add, Checkbox, ys Section Checked vHideLeftMouse gOptionChanged , Don't Log Left Mouse
@@ -241,11 +241,15 @@ InputMsg(wParam, lParam) {
 		; Stick Input ==============
 		; reference material: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
 		h := AHKHID_GetInputInfo(lParam, II_DEVHANDLE )
-		r := AHKHID_GetInputData(lParam, uData)
 		name := AHKHID_GetDevName(h,1)
 		if (name == StickID){
+			r := AHKHID_GetInputData(lParam, uData)
 			waslogged := 1
-			LV_ADD(,"Joystick", Bin2Hex(&uData, r))
+			; Why does this not work?? Neet to pull RIDI_PREPARSEDDATA
+			d := AHKHID_GetPreParsedData(h, uData)
+			
+			; Add to log
+			LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
 		}
     }
 	
@@ -321,4 +325,38 @@ Bin2Hex(addr,len) {
     DllCall(&fun, ptr, &hex, ptr, addr, "UInt", len, "CDecl")
     VarSetCapacity(hex, -1) ; update StrLen
     Return hex
+}
+
+AHKHID_GetPreParsedData(InputHandle, ByRef uData) {
+    ;Get raw data size                                           RIDI_PREPARSEDDATA
+    r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", 0, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+    If (r = -1) Or ErrorLevel {
+        ErrorLevel = GetRawInputData call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
+        Return -1
+    }
+    
+    ;Prep var
+    VarSetCapacity(uRawInput, iSize)
+    
+    ;Get raw data                                                RIDI_PREPARSEDDATA
+    r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", &uRawInput, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+    If (r = -1) Or ErrorLevel {
+        ErrorLevel = GetRawInputData call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
+        Return -1
+    } Else If (r <> iSize) {
+        ErrorLevel = GetRawInputData did not return the correct size.`nSize returned: %r%`nSize allocated: %iSize%
+        Return -1
+    }
+    
+    ;Get the size of each HID input and the number of them
+    iSize   := NumGet(uRawInput, 8 + A_PtrSize * 2 + 0, "UInt") ;ID_HID_SIZE
+    iCount  := NumGet(uRawInput, 8 + A_PtrSize * 2 + 4, "UInt") ;ID_HID_COUNT
+    
+    ;Allocate memory
+    VarSetCapacity(uData, iSize * iCount)
+    
+    ;Copy bytes
+    DllCall("RtlMoveMemory", UInt, &uData, UInt, &uRawInput + 8 + A_PtrSize * 2 + 8, UInt, iSize * iCount)
+    
+    Return (iSize * iCount)
 }
