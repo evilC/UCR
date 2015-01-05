@@ -2,6 +2,8 @@
 #include <AHKHID>
 #SingleInstance force
 
+RIDI_PREPARSEDDATA := 0x20000005	; WinUser.h
+
 ;Intercept WM_INPUT
 OnMessage(0x00FF, "InputMsg")
 
@@ -55,7 +57,7 @@ Loop %iCount% {
 
 		if (human_name){
 			LV_ADD(,human_name, _VendorID " (" vid ")", _ProductID  " (" pid ")", _UsagePage, _Usage, _Name)
-			joysticks[_Name] := {human_name: human_name, page: _UsagePage, usage: _Usage, vid: _VendorID , pid: _ProductID}
+			joysticks[_Name] := {enabled: 1, human_name: human_name, page: _UsagePage, usage: _Usage, vid: _VendorID , pid: _ProductID}
 		}
 
     }
@@ -237,14 +239,13 @@ InputMsg(wParam, lParam) {
 		LV_ADD(,"Keyboard", "", s, (flags ? "Up" : "Down") )
     } Else If (r = RIM_TYPEHID) {
 		; Stick Input ==============
+		; reference material: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
 		h := AHKHID_GetInputInfo(lParam, II_DEVHANDLE )
 		r := AHKHID_GetInputData(lParam, uData)
-		vid := AHKHID_GetDevInfo(h, DI_HID_VENDORID, True)
 		name := AHKHID_GetDevName(h,1)
-		; If stick is the one selected
 		if (name == StickID){
-			LV_ADD(,"Joystick", Bin2Hex(&uData, r))
 			waslogged := 1
+			LV_ADD(,"Joystick", Bin2Hex(&uData, r))
 		}
     }
 	
