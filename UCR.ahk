@@ -220,9 +220,9 @@ Class UCR extends CWindow {
 					this.CurrentApp := ""
 				}
 				try {
-					xHotkey(key, this.Bind(this.DownEvent,this), 1)
+					xHotkey(key, bind(this.DownEvent,this), 1)
 					if (this.keyup_enabled){
-						xHotkey(key " up", this.Bind(this.UpEvent,this), 1)
+						xHotkey(key " up", bind(this.UpEvent,this), 1)
 					}
 					
 					; try worked - continue
@@ -292,7 +292,7 @@ Class UCR extends CWindow {
 				this.State := 1
 				if (IsObject(this.CallbackDown)){
 					; Call Callback function with specified context
-					fn := this.Bind(this.CallbackDown, this.CallbackContext*)
+					fn := bind(this.CallbackDown, this.CallbackContext*)
 					%fn%()
 				}
 			}
@@ -302,7 +302,7 @@ Class UCR extends CWindow {
 			if (this.State == 1){
 				this.State := 0
 				if (IsObject(this.CallbackUp)){
-					fn := this.Bind(this.CallbackUp, this.CallbackContext*)
+					fn := bind(this.CallbackUp, this.CallbackContext*)
 					%fn%()
 				}
 			}
@@ -326,7 +326,9 @@ Class UCR extends CWindow {
 
 		CreateControl(ControlType, Options, Text){
 			static
-			Gui, % this.GuiCmd("Add"), % ControlType,% this.vLabel() " g_UCR_gLabel_Router " " hwndctrlHwnd " Options, % Text
+			Gui, % this.GuiCmd("Add"), % ControlType,% this.vLabel() " hwndctrlHwnd " Options, % Text
+			fn := bind(this.OnChange, this)  ; Bind parameters to a function.
+			GuiControl +g, %ctrlHwnd%, %fn%
 			this.Hwnd := ctrlHwnd
 		}
 
@@ -347,6 +349,11 @@ Class UCR extends CWindow {
 			this.Value := OutputVar
 			this.parent.OnChange()
 		}
+		
+		Test(s:="") {
+			MsgBox Test`n%s%
+		}
+
 	}
 
 	; Base class to derive from for Plugins
@@ -409,30 +416,27 @@ Class CGuiItem extends UCRCommon {
 
 ; Common functions for all UCR classes
 Class UCRCommon {
-	; "Function Binding" methods for changing the context / scope of a call to a class method
-	Bind(fn, args*) {
-	    return new this.BoundFunc(fn, args*)
-	}
 
-	class BoundFunc {
-	    __New(fn, args*) {
-	        this.fn := IsObject(fn) ? fn : Func(fn)
-	        this.args := args
-	    }
-	    __Call(callee) {
-	        if (callee = "") {
-	            fn := this.fn
-	            return %fn%(this.args*)
-	        }
-	    }
-	}
 }
 
-; All gLabels route through here
-; gLabel names are memory addresses that route to the object that handles them
-_UCR_gLabel_Router:
-	Object(SubStr(A_GuiControl,2)).OnChange()
-	return
+; "Function Binding" methods for changing the context / scope of a call to a class method
+bind(fn, args*) {  ; bind v1.1
+	try bound := fn.bind(args*)  ; Func.Bind() not yet implemented.
+	return bound ? bound : new BoundFunc(fn, args*)
+}
 
+class BoundFunc {
+	__New(fn, args*) {
+		this.fn := IsObject(fn) ? fn : Func(fn)
+		this.args := args
+	}
+	__Call(callee) {
+		if (callee = "" || callee = "call" || IsObject(callee)) {  ; IsObject allows use as a method.
+			fn := this.fn
+			return %fn%(this.args*)
+		}
+	}
+}
+	
 GuiClose:
 	ExitApp
