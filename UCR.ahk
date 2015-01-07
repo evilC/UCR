@@ -61,6 +61,7 @@ ToDo:
 #include Plugins.ahk
 #include Lib\Common.ahk
 #include Lib\Base Classes.ahk
+#include Lib\Message Handler.ahk
 
 UCR := new UCR()
 return
@@ -84,7 +85,7 @@ Class UCR extends _UCR_C_Window {
 			cls := _UCR_Plugins[A_Index]
 			this.LoadPlugin(_UCR_Plugins[A_Index])
 		}
-		
+		this.MessageHandler := new _UCR_C_MessageHandler(this)
 		this.RawInputRegister()
 	}
 
@@ -102,18 +103,13 @@ Class UCR extends _UCR_C_Window {
 
 	RawInputRegister(){
 		global RIDEV_INPUTSINK
-		;OnMessage(0x00FF, "_UCR_MessageHandler")
-		this.RegisterMessage(0x00FF, "InputHandler")
+		this.MessageHandler.RegisterMessage(0x00FF, "InputHandler")
 		AHKHID_AddRegister(2)
 		AHKHID_AddRegister(1,2,this.hwnd,RIDEV_INPUTSINK)	; Mouse
 		AHKHID_AddRegister(1,6,this.hwnd,RIDEV_INPUTSINK)	; Keyboard
 		AHKHID_Register()
 		Return
 
-	}
-	
-	Call(){
-		msgbox here
 	}
 	
 	InputHandler(wParam, lParam, msg, hwnd){
@@ -155,7 +151,7 @@ Class UCR extends _UCR_C_Window {
 				}
 				If (flags & RI_MOUSE_MIDDLE_BUTTON_DOWN){
 					;LV_ADD(,"Mouse", "", "Middle Button", "Down")
-
+					soundbeep
 				}
 				If (flags & RI_MOUSE_MIDDLE_BUTTON_UP){
 					;LV_ADD(,"Mouse", "", "Middle Button", "Up")
@@ -247,23 +243,6 @@ Class UCR extends _UCR_C_Window {
 				; Add to log
 				;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
 			}
-		}
-	}
-	
-	; Registers a Message for callbacks
-	RegisterMessage(msg, callback){
-		;this.MessageTable[msg] := bind(callback, context)
-		this.MessageTable[msg] := callback
-		OnMessage(msg, "_UCR_MessageHandler")
-	}
-	
-	; Routes incoming windows messages
-	MessageHandler(wParam, lParam, msg, hwnd){
-		fn := this.MessageTable[msg]
-		if (fn){
-		;if (IsObject(fn)){
-			;%fn%(wParam, lParam, msg, hwnd)
-			this[fn](wParam, lParam, msg, hwnd)
 		}
 	}
 	
@@ -530,8 +509,6 @@ Class UCR extends _UCR_C_Window {
 	}
 
 }
-
-#include Lib\Message Handler.ahk
 
 GuiClose:
 	ExitApp

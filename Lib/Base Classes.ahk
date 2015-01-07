@@ -45,18 +45,22 @@ Class _UCR_C_Window extends _UCR_C_GuiItem {
 ; Functionality common to all things that have a GUI presence
 Class _UCR_C_GuiItem extends _UCR_C_Common {
 	__New(parent){
-		if (!parent){
-			; Root class
-			this.parent := this
-		} else {
-			this.parent := parent
-		}
+		base.__New(parent)
 		this.CreateGui()
 	}
 }
 
 ; Common functions for all UCR classes
 Class _UCR_C_Common {
+	__New(parent){
+		if (!parent){
+			; Root class
+			this.parent := this
+		} else {
+			this.parent := parent
+		}
+	}
+	
 	; converts to hex, pads to 4 digits, chops off 0x
 	ToHex(dec, padding := 4){
 		return Substr(this.Convert2Hex(dec,padding),3)
