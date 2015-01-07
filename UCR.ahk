@@ -93,14 +93,26 @@ Class UCR extends _UCR_C_Window {
 
 	CreateGui(){
 		static
+		local LVHotkeys, LVInputEvents
 		base.CreateGui()
+		
+		/*
 		Gui, % this.GuiCmd("Add"), Text, ,Hotkeys
-
-		Gui, % this.GuiCmd("Add"), ListView, % "r20 w" this.MAIN_WIDTH " h" this.MAIN_HEIGHT, Name|App (ahk_class)|On/Off
+		Gui, % this.GuiCmd("Add"), ListView, % "hwndLVHotkeys r20 w" this.MAIN_WIDTH - 10 " h" (this.MAIN_HEIGHT / 2) - 10, Name|App (ahk_class)|On/Off
+		this.LVHotkeys := LVHotkeys
 		LV_ModifyCol(1, 100)
 		LV_ModifyCol(2, 100)
+		*/
+
+		Gui, % this.GuiCmd("Add"), Text, ,Input Events
+		Gui, % this.GuiCmd("Add"), ListView, % "hwndLVInputEvents r20 w" this.MAIN_WIDTH - 10 " h" this.MAIN_HEIGHT - 20, Name|Type|New Value
+		this.LVInputEvents := LVInputEvents
+		LV_ModifyCol(1, 100)
+		LV_ModifyCol(2, 100)
+		LV_ModifyCol(3, 100)
 
 		this.Show("w" this.MAIN_WIDTH + 10 " h" this.MAIN_HEIGHT + 10, "U C R - Universal Control Remapper")
+		Gui, % this.GuiCmd("Default")
 	}
 
 	RawInputRegister(){
@@ -128,8 +140,11 @@ Class UCR extends _UCR_C_Window {
 	}
 
 	OnChange(){
-		Gui, % this.GuiDefault()
-		LV_Delete()
+		/*
+		Global hotkeys
+		;Gui, % this.GuiDefault()
+		Gui, % this.GuiCmd("Listview"), % this.LVHotkeys
+		;LV_Delete()
 		;for i, hotkey in this.GetHotkeys() {
 		;	LV_Add(,hotkey.Name, hotkey["Off?"] ? hotkey["Off?"] : "On")
 		;}
@@ -146,6 +161,8 @@ Class UCR extends _UCR_C_Window {
 					, (obj.variants[A_Index].enabled ? "On" : "Off") )
 			}
 		}
+		Gui, % this.GuiCmd("Listview"), % this.LVInputEvents
+		*/
 	}
 
 	; GetHotkeys - pull the HotkeyList into an Array, so we can show current hotkeys in memory (for debugging purposes)
@@ -380,3 +397,4 @@ Class UCR extends _UCR_C_Window {
 
 GuiClose:
 	ExitApp
+	
