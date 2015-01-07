@@ -9,7 +9,7 @@ Example plugin(s)
 
 UCR.RegisterPlugin("Test")
 
-Class Test extends UCR.Plugin {
+Class Test extends UCR_Plugin {
 	cls := ""
 	desc := "plugin"
 	__New(parent){
