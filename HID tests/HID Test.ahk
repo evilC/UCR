@@ -245,10 +245,16 @@ InputMsg(wParam, lParam) {
 		if (name == StickID){
 			r := AHKHID_GetInputData(lParam, uData)
 			waslogged := 1
-			; Why does this not work?? Neet to pull RIDI_PREPARSEDDATA
-			d := AHKHID_GetPreParsedData(h, uData)
+			pPreparsedData := AHKHID_GetPreParsedData(h, uData)
+
+			; Decode preparsed data. Step 3, code block #2 @ http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
+			;HidP_GetCaps(pPreparsedData, &Caps)
+			;VarSetCapacity(Caps, 100)
+			ret := DllCall("Hid\HidP_GetCaps", "Uint", pPreparsedData, "Ptr", &Caps)
+			msgbox % "EL: " ErrorLevel "`nRet: " ret
 			
 			; Add to log
+			;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
 			LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
 		}
 	}
@@ -329,7 +335,8 @@ Bin2Hex(addr,len) {
 
 AHKHID_GetPreParsedData(InputHandle, ByRef uData) {
 	;Get raw data size                                           RIDI_PREPARSEDDATA
-	r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", 0, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+	;r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", 0, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+	r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", 0, "UInt*", iSize)
 	If (r = -1) Or ErrorLevel {
 		ErrorLevel = GetRawInputData call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
 		Return -1
@@ -339,7 +346,8 @@ AHKHID_GetPreParsedData(InputHandle, ByRef uData) {
 	VarSetCapacity(uRawInput, iSize)
 	
 	;Get raw data                                                RIDI_PREPARSEDDATA
-	r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", &uRawInput, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+	;r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", &uRawInput, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+	r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", &uRawInput, "UInt*", iSize)
 	If (r = -1) Or ErrorLevel {
 		ErrorLevel = GetRawInputData call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
 		Return -1
