@@ -20,9 +20,10 @@ Class Test extends UCR_Plugin {
 		static
 		base.CreateGui()
 
-		WIDTH := 250
+		WIDTH := 300
 		HEIGHT := 160
 		this.h1 := new this.parent.Hotkey(this)
+		/*
 		new UCR.GuiControl(this, "Text", "xm ym", "Key")
 		this.Input := new UCR.GuiControl(this, "Edit", "w" WIDTH - 60 " x80 yp-3 Section" )
 		new UCR.GuiControl(this, "Text", "xm", "ahk_class")
@@ -47,8 +48,9 @@ Class Test extends UCR_Plugin {
 		new UCR.GuiControl(this, "Text", "yp+20", "^ Ctrl", "Ctrl")
 		new UCR.GuiControl(this, "Text", "yp+20", "+ Shift", "Shift")
 		new UCR.GuiControl(this, "Text", "yp+20", "# Win")
+		*/
 		
-		this.Show("w" WIDTH + 30 " h" HEIGHT + 10)
+		this.Show("w" WIDTH + 20 " h" HEIGHT + 10)
 		this.OnChange()
 	}
 	

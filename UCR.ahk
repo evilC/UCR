@@ -138,7 +138,7 @@ Class UCR extends _UCR_C_Window {
 		this.Plugins.Insert(new %name%(this))
 	}
 
-	OnChange(){
+	OnChange(name := ""){
 		Gui, % this.Hwnd ":Default"
 		Gui, Listview, % this.LVHotkeys
 		LV_Delete()
@@ -216,7 +216,34 @@ Class UCR extends _UCR_C_Window {
 		return hotkeys
 	}
 
+	Class Hotkey extends _UCR_C_Window {
+		CreateGui(){
+			Gui, New, % "hwndGuiHwnd -Border +Parent" this.parent.hwnd
+			this.hwnd := GuiHwnd
+			Gui, % this.GuiCmd("Add"), Edit, Disabled Section x0 w150 y2
+			this.PassThru := new this.root.GuiControl(this, "Checkbox", "x160 y0 h2", "Pass`nThru", "PassThru")
+			this.Wild := new this.root.GuiControl(this, "Checkbox", "x210 y0 h25", "Wild", "Wild")
+			this.BtnBind := new this.root.GuiControl(this, "Button", "x260 y0 h25", "Bind", "Bind")
+			this.Show()
+		}
+		
+		Show(options := "", title := ""){
+			Gui, % this.GuiCmd("Show"), x5 y5 w300 h25
+		}
 
+		OnChange(name := ""){
+			if (name == "Bind"){
+				; bind button pressed
+				soundbeep
+			} else if (name == "PassThru"){
+
+			} else if (name == "Wild"){
+				
+			}
+		}
+	}
+
+	/*
 	; Add or remove a binding
 	Class Hotkey extends _UCR_C_Common {
 		keyup_enabled := 1
@@ -337,7 +364,8 @@ Class UCR extends _UCR_C_Window {
 			}
 		}
 	}
-
+	*/
+	
 	Class GuiControl extends _UCR_C_GuiItem {
 		desc := "control"
 		Value := ""
@@ -346,7 +374,7 @@ Class UCR extends _UCR_C_Window {
 			this.parent := parent
 			this.name := name
 
-			if (!ControlType,Text) {
+			if (!ControlType) {
 				return 0
 			}
 			this.CreateControl(ControlType, Options, Text)
@@ -368,7 +396,7 @@ Class UCR extends _UCR_C_Window {
 		vLabel(){
 			return "v" this.Addr()
 		}
-
+		
 		Addr(){
 			return "#" Object(this)
 		}
@@ -376,7 +404,7 @@ Class UCR extends _UCR_C_Window {
 		OnChange(){
 			GuiControlGet, OutputVar, , % this.Hwnd
 			this.Value := OutputVar
-			this.parent.OnChange()
+			this.parent.OnChange(this.name)
 		}
 		
 		Test(s:="") {

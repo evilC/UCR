@@ -4,7 +4,7 @@ Class UCR_Plugin Extends _UCR_C_Window {
 		base.__New(parent)
 	}
 
-	OnChange(){
+	OnChange(name := ""){
 		; Extend this class to receive change events from GUI items
 
 		; Fire parent's OnChange event, so it can trickle up to root
@@ -56,8 +56,10 @@ Class _UCR_C_Common {
 		if (!parent){
 			; Root class
 			this.parent := this
+			this.root := this
 		} else {
 			this.parent := parent
+			this.root := this.parent.root
 		}
 	}
 	
