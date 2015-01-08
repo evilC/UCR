@@ -29,7 +29,7 @@ ToDo:
 * Hotkey detection ("Binding") system.
   Current Input based systems lacking.
 
-* Windows API / DirectInput library?
+* Complete RawInput device reading
   
 * Installer / dependency manager
   ASPDM?
