@@ -89,6 +89,7 @@ Class UCR extends _UCR_C_Window {
 		this.MessageHandler := new _UCR_C_MessageHandler(this)
 		this.InputHandler := new _UCR_C_InputHandler(this)
 		this.RawInputRegister()
+		this.InputHandler.RegisterKey("a", {ctrl: 0, shift: 0, alt: 0, win: 0}, "")
 	}
 
 	CreateGui(){
@@ -154,29 +155,6 @@ Class UCR extends _UCR_C_Window {
 					, (obj.variants[A_Index].enabled ? "On" : "Off") )
 			}
 		}
-		/*
-		Global hotkeys
-		;Gui, % this.GuiDefault()
-		Gui, % this.GuiCmd("Listview"), % this.LVHotkeys
-		;LV_Delete()
-		;for i, hotkey in this.GetHotkeys() {
-		;	LV_Add(,hotkey.Name, hotkey["Off?"] ? hotkey["Off?"] : "On")
-		;}
-		; Query xHotkey for hotkey list
-		for name, obj in xHotkey.hk {
-			; Process global variant
-			if (isObject(obj.gvariant)){
-				LV_Add(, (obj.gvariant.hasTilde ? "~" : "") name, "global", (obj.gvariant.enabled ? "On" : "Off") )
-			}
-			; Process per-app variants
-			Loop % obj.variants.MaxIndex(){
-				LV_Add(, (obj.variants[A_Index].hasTilde ? "~" : "") name
-					, substr(obj.variants[A_Index].base.WinTitle,11)
-					, (obj.variants[A_Index].enabled ? "On" : "Off") )
-			}
-		}
-		Gui, % this.GuiCmd("Listview"), % this.LVInputEvents
-		*/
 	}
 
 	; GetHotkeys - pull the HotkeyList into an Array, so we can show current hotkeys in memory (for debugging purposes)

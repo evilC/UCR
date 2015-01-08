@@ -30,8 +30,21 @@ Class _UCR_C_InputHandler extends _UCR_C_Common {
 	}
 
 	; Registers a hotkey for a callback
-	RegisterHotkey(keyobj, callback){
-		; keyobj := {key: "a", ctrl: 1}
+	RegisterKey(key, modifiers, app){
+		if (!this._RegisteredCallbacks[key].MaxIndex()){
+			this._RegisteredCallbacks[key] := []
+		}
+		this._RegisteredCallbacks[key].Insert({modifiers: modifiers, app: app})
+	}
+	
+	CheckRegisteredCallbacks(keyobj){
+		if (this.BindMode){
+			; Bind Mode - fire on up event for all keys
+		}
+		if (this._RegisteredCallbacks[keyobj.key].MaxIndex()){
+			; Check for any matching combinations for this key
+			Tooltip % keyobj.key ":" this._StateKeyboard[keyobj.key]
+		}
 	}
 	
 	ProcessMessage(wParam, lParam, msg, hwnd){
@@ -139,6 +152,8 @@ Class _UCR_C_InputHandler extends _UCR_C_Common {
 			s .= keyname
 			flags := !flags
 			this.StateKeyboard[s] := flags
+			WinGetClass, app, A
+			this.CheckRegisteredCallbacks({key: s, flag: flags, app: app, modfiers: {} })
 		} Else If (r = RIM_TYPEHID) {
 			; Stick Input ==============
 			; reference material: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
@@ -153,5 +168,4 @@ Class _UCR_C_InputHandler extends _UCR_C_Common {
 			}
 		}
 	}
-
 }
