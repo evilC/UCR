@@ -21,7 +21,8 @@ Class _UCR_C_InputHandler extends _UCR_C_Common {
 			; Filter out repeats
 			if (this._StateKeyboard[key] != value){
 				this._StateKeyboard[key] := value
-				Gui, % this.GuiCmd("ListView"), % this.parent.LVInputEvents
+				Gui, % this.parent.Hwnd ":Default"
+				Gui, ListView, % this.parent.LVInputEvents
 				LV_Add(, key, "Keyboard", this._StateKeyboard[key] ? "Down" : "Up")
 			}
 			return value	; do not set StateKeyboard 

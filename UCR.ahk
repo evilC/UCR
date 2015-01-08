@@ -96,16 +96,14 @@ Class UCR extends _UCR_C_Window {
 		local LVHotkeys, LVInputEvents
 		base.CreateGui()
 		
-		/*
 		Gui, % this.GuiCmd("Add"), Text, ,Hotkeys
-		Gui, % this.GuiCmd("Add"), ListView, % "hwndLVHotkeys r20 w" this.MAIN_WIDTH - 10 " h" (this.MAIN_HEIGHT / 2) - 10, Name|App (ahk_class)|On/Off
+		Gui, % this.GuiCmd("Add"), ListView, % "hwndLVHotkeys r20 w" this.MAIN_WIDTH - 10 " h" (this.MAIN_HEIGHT / 2) - 20, Name|App (ahk_class)|On/Off
 		this.LVHotkeys := LVHotkeys
 		LV_ModifyCol(1, 100)
 		LV_ModifyCol(2, 100)
-		*/
 
 		Gui, % this.GuiCmd("Add"), Text, ,Input Events
-		Gui, % this.GuiCmd("Add"), ListView, % "hwndLVInputEvents r20 w" this.MAIN_WIDTH - 10 " h" this.MAIN_HEIGHT - 20, Name|Type|New Value
+		Gui, % this.GuiCmd("Add"), ListView, % "hwndLVInputEvents r20 w" this.MAIN_WIDTH - 10 " h" (this.MAIN_HEIGHT / 2) - 20, Name|Type|New Value
 		this.LVInputEvents := LVInputEvents
 		LV_ModifyCol(1, 100)
 		LV_ModifyCol(2, 100)
@@ -140,6 +138,22 @@ Class UCR extends _UCR_C_Window {
 	}
 
 	OnChange(){
+		Gui, % this.Hwnd ":Default"
+		Gui, Listview, % this.LVHotkeys
+		LV_Delete()
+		; Query xHotkey for hotkey list
+		for name, obj in xHotkey.hk {
+			; Process global variant
+			if (isObject(obj.gvariant)){
+				LV_Add(, (obj.gvariant.hasTilde ? "~" : "") name, "global", (obj.gvariant.enabled ? "On" : "Off") )
+			}
+			; Process per-app variants
+			Loop % obj.variants.MaxIndex(){
+				LV_Add(, (obj.variants[A_Index].hasTilde ? "~" : "") name
+					, substr(obj.variants[A_Index].base.WinTitle,11)
+					, (obj.variants[A_Index].enabled ? "On" : "Off") )
+			}
+		}
 		/*
 		Global hotkeys
 		;Gui, % this.GuiDefault()
