@@ -252,8 +252,9 @@ InputMsg(wParam, lParam) {
 			; HID_CAPS: http://msdn.microsoft.com/en-us/library/windows/hardware/ff539697(v=vs.85).aspx
 			; 16 16-bit numbers - should be 256 size?
 			;VarSetCapacity(Caps, 256)
-			ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "Ptr", &Caps)
-			msgbox % "EL: " ErrorLevel "`nRet: " ret
+			;ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "Ptr", &Caps)
+			ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "UInt*", Caps)
+			msgbox % "EL: " ErrorLevel "`nRet: " ret "`nCaps: " Caps
 
 			;returns -1072627711
 			
