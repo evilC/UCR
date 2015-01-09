@@ -1,6 +1,8 @@
-Class _UCR_C_InputHandler extends _UCR_C_Common {
+Class _UCR_C_InputHandler extends _UCR_C_Window {
 	_StateKeyboard := {}
 	_RegisteredCallbacks := {}
+	BindMode := 0
+	BindCallback := ""
 	
 	__New(parent){
 		base.__New(parent)
@@ -29,6 +31,19 @@ Class _UCR_C_InputHandler extends _UCR_C_Common {
 		}
 	}
 
+	; An InputHandler's GUI is the pop-up binding instructions
+	CreateGui(){
+		; override default base
+		prompt := "Please press the desired key combination.`n`n"
+		prompt .= "Supports most keyboard keys and all mouse buttons. Also Ctrl, Alt, Shift, Win as modifiers or individual keys.`n"
+		;prompt .= "Joystick buttons are also supported, but currently not with modifiers.`n"
+		prompt .= "`nHit Escape to cancel."
+		prompt .= "`nHold Escape to clear a binding."
+		Gui, New, % "HwndGuiHwnd -Border +AlwaysOnTop"
+		this.hwnd := GuiHwnd
+		Gui, % this.hwnd ":Add", Text, % "Center" , % prompt		
+	}
+	
 	; Registers a hotkey for a callback
 	RegisterKey(key, modifiers, app){
 		if (!this._RegisteredCallbacks[key].MaxIndex()){
@@ -39,12 +54,25 @@ Class _UCR_C_InputHandler extends _UCR_C_Common {
 	
 	CheckRegisteredCallbacks(keyobj){
 		if (this.BindMode){
+			if (!keyobj.event){
+				this.BindMode := 0
+				Gui, % this.hwnd ":Hide"
+				this.BindCallback.InputBound(keyobj)
+			}
 			; Bind Mode - fire on up event for all keys
 		}
 		if (this._RegisteredCallbacks[keyobj.key].MaxIndex()){
 			; Check for any matching combinations for this key
-			Tooltip % keyobj.key ":" this._StateKeyboard[keyobj.key]
+			;Tooltip % keyobj.key ":" this._StateKeyboard[keyobj.key]
 		}
+	}
+
+	; Called by a hotkey object to obtain a binding.
+	EnableBindMode(obj){
+		; Create the Bind GUI
+		this.BindCallback := obj
+		this.BindMode := 1
+		this.Show()
 	}
 	
 	ProcessMessage(wParam, lParam, msg, hwnd){
@@ -153,7 +181,10 @@ Class _UCR_C_InputHandler extends _UCR_C_Common {
 			flags := !flags
 			this.StateKeyboard[s] := flags
 			WinGetClass, app, A
-			this.CheckRegisteredCallbacks({key: s, flag: flags, app: app, modfiers: {} })
+			
+			mods := {ctrl: this.StateKeyboard["lcontrol"] || this.StateKeyboard["rcontrol"], alt: 0, shift: 0, win: 0}
+			
+			this.CheckRegisteredCallbacks({key: s, event: flags, app: app, modifiers: mods })
 		} Else If (r = RIM_TYPEHID) {
 			; Stick Input ==============
 			; reference material: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input

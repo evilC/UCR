@@ -114,6 +114,15 @@ Class UCR extends _UCR_C_Window {
 		Gui, % this.GuiCmd("Default")
 	}
 
+	BindMode(mode){
+		this.InputHandler.BindMode := mode
+		if (mode){
+			;this.InputHandler.BindMode := 1
+		} else {
+			
+		}
+	}
+		
 	RawInputRegister(){
 		global RIDEV_INPUTSINK
 		this.MessageHandler.RegisterMessage(0x00FF, "ProcessMessage", this.InputHandler )
@@ -220,7 +229,9 @@ Class UCR extends _UCR_C_Window {
 		CreateGui(){
 			Gui, New, % "hwndGuiHwnd -Border +Parent" this.parent.hwnd
 			this.hwnd := GuiHwnd
-			Gui, % this.GuiCmd("Add"), Edit, Disabled Section x0 w150 y2
+			;Gui, % this.GuiCmd("Add"), Edit, Disabled Section x0 w150 y2
+			;this.Hotkey := new this.root.GuiControl(this, "Edit", "Disabled Section x0 w150 y2")
+			this.Hotkey := new this.root.GuiControl(this, "Edit", "Section x0 w150 y2")
 			this.PassThru := new this.root.GuiControl(this, "Checkbox", "x160 y0 h2", "Pass`nThru", "PassThru")
 			this.Wild := new this.root.GuiControl(this, "Checkbox", "x210 y0 h25", "Wild", "Wild")
 			this.BtnBind := new this.root.GuiControl(this, "Button", "x260 y0 h25", "Bind", "Bind")
@@ -234,12 +245,25 @@ Class UCR extends _UCR_C_Window {
 		OnChange(name := ""){
 			if (name == "Bind"){
 				; bind button pressed
-				soundbeep
+				this.root.InputHandler.EnableBindMode(this)
 			} else if (name == "PassThru"){
 
 			} else if (name == "Wild"){
 				
 			}
+		}
+		
+		; After calling EnableBindMode, when a bind was detected, this method is called
+		InputBound(keyobj){
+			;soundbeep
+			;msgbox % this.Hotkey.hwnd
+			;GuiControl,, % this.Hotkey.hwnd, AAA
+			s := ""
+			if (keyobj.modifiers.ctrl){
+				s .= "Ctrl + "
+			}
+			s .= keyobj.key
+			this.Hotkey.SetValue(s)
 		}
 	}
 
@@ -387,6 +411,7 @@ Class UCR extends _UCR_C_Window {
 			fn := bind(this.OnChange, this)  ; Bind parameters to a function.
 			GuiControl +g, %ctrlHwnd%, %fn%
 			this.Hwnd := ctrlHwnd
+			;this.SetValue("HELLO")
 		}
 
 		GuiCmd(name){
@@ -409,6 +434,11 @@ Class UCR extends _UCR_C_Window {
 		
 		Test(s:="") {
 			MsgBox Test`n%s%
+		}
+		
+		SetValue(val){
+			Gui, % this.GuiCmd("Default")
+			GuiControl,, % this.hwnd, % val
 		}
 
 	}
