@@ -19,11 +19,6 @@ Class _UCR_C_Window extends _UCR_C_GuiItem {
 		return this.hwnd ":" cmd
 	}
 
-	; Useful eg for ListView commands which work on default Gui
-	GuiDefault(){
-		return this.GuiCmd("Default")
-	}
-
 	CreateGui(){
 		if (this.parent == this){
 			; Root window

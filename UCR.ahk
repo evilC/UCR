@@ -148,7 +148,7 @@ Class UCR extends _UCR_C_Window {
 	}
 
 	OnChange(name := ""){
-		Gui, % this.Hwnd ":Default"
+		Gui, % this.GuiCmd("Default")
 		Gui, Listview, % this.LVHotkeys
 		LV_Delete()
 		; Query xHotkey for hotkey list
@@ -230,8 +230,7 @@ Class UCR extends _UCR_C_Window {
 			Gui, New, % "hwndGuiHwnd -Border +Parent" this.parent.hwnd
 			this.hwnd := GuiHwnd
 			;Gui, % this.GuiCmd("Add"), Edit, Disabled Section x0 w150 y2
-			;this.Hotkey := new this.root.GuiControl(this, "Edit", "Disabled Section x0 w150 y2")
-			this.Hotkey := new this.root.GuiControl(this, "Edit", "Section x0 w150 y2")
+			this.Hotkey := new this.root.GuiControl(this, "Edit", "Disabled Section x0 w150 y2")
 			this.PassThru := new this.root.GuiControl(this, "Checkbox", "x160 y0 h2", "Pass`nThru", "PassThru")
 			this.Wild := new this.root.GuiControl(this, "Checkbox", "x210 y0 h25", "Wild", "Wild")
 			this.BtnBind := new this.root.GuiControl(this, "Button", "x260 y0 h25", "Bind", "Bind")
@@ -263,7 +262,7 @@ Class UCR extends _UCR_C_Window {
 				s .= "Ctrl + "
 			}
 			s .= keyobj.key
-			this.Hotkey.SetValue(s)
+			this.Hotkey.Set(s)
 		}
 	}
 
@@ -397,6 +396,8 @@ Class UCR extends _UCR_C_Window {
 		__New(parent, ControlType, Options := "", Text := "", name := "") {
 			this.parent := parent
 			this.name := name
+			
+			this.ControlType := ControlType
 
 			if (!ControlType) {
 				return 0
@@ -411,7 +412,6 @@ Class UCR extends _UCR_C_Window {
 			fn := bind(this.OnChange, this)  ; Bind parameters to a function.
 			GuiControl +g, %ctrlHwnd%, %fn%
 			this.Hwnd := ctrlHwnd
-			;this.SetValue("HELLO")
 		}
 
 		GuiCmd(name){
@@ -427,6 +427,7 @@ Class UCR extends _UCR_C_Window {
 		}
 
 		OnChange(){
+			Gui, % this.GuiCmd("Default")
 			GuiControlGet, OutputVar, , % this.Hwnd
 			this.Value := OutputVar
 			this.parent.OnChange(this.name)
@@ -436,9 +437,24 @@ Class UCR extends _UCR_C_Window {
 			MsgBox Test`n%s%
 		}
 		
-		SetValue(val){
+		; Sets value of GUI Control
+		Set(val){
+			; ToDo: Add Set methods for other GUI types
 			Gui, % this.GuiCmd("Default")
-			GuiControl,, % this.hwnd, % val
+			if (this.ControlType = "dropdownlist"){
+				cmd := "ChooseString"
+			} else {
+				cmd := ""
+			}
+			GuiControl, % cmd, % this.hwnd, % val
+		}
+		
+		; Gets value of GUI control
+		Get(){
+			; ToDo: Add Set methods for other GUI types
+			Gui, % this.GuiCmd("Default")
+			GuiControlGet, OutputVar, , % this.Hwnd
+			return OutputVar
 		}
 
 	}
