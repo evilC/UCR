@@ -1,6 +1,5 @@
 Class _UCR_C_InputHandler extends _UCR_C_Window {
-	_StateKeyboard := {}
-	_RegisteredCallbacks := {}
+	_RegisteredBindings := {}
 	BindMode := 0
 	BindCallback := ""
 	
@@ -8,28 +7,6 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 		base.__New(parent)
 		this.InputState := new this.CISC(this)
 		this.BindMode := 0	; BindMode 1 = pass all up events to parent
-	}
-
-	__Get(aName, key){
-		if (aName = "StateKeyboard"){
-			value := this._StateKeyboard[key] ? 1 : 0
-			;msgbox % "__GET: " aName " - " key " = " value
-			return value
-		}
-	}
-	
-	__Set(aName, key, value){
-		if (aName = "StateKeyboard"){
-			;msgbox % "__SET: " aName " - " key " = " value
-			; Filter out repeats
-			if (this._StateKeyboard[key] != value){
-				this._StateKeyboard[key] := value
-				Gui, % this.parent.Hwnd ":Default"
-				Gui, ListView, % this.parent.LVInputEvents
-				LV_Add(, key, "Keyboard", this._StateKeyboard[key] ? "Down" : "Up")
-			}
-			return value	; do not set StateKeyboard 
-		}
 	}
 
 	; An InputHandler's GUI is the pop-up binding instructions
@@ -46,25 +23,26 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 	}
 	
 	; Registers a hotkey for a callback
-	RegisterKey(key, modifiers, app){
-		if (!this._RegisteredCallbacks[key].MaxIndex()){
-			this._RegisteredCallbacks[key] := []
+	RegisterBinding(key, modifiers, app){
+		if (!this._RegisteredBindings[key].MaxIndex()){
+			this._RegisteredBindings[key] := []
 		}
-		this._RegisteredCallbacks[key].Insert({modifiers: modifiers, app: app})
+		this._RegisteredBindings[key].Insert({modifiers: modifiers, app: app})
 	}
 	
-	CheckRegisteredCallbacks(keyobj){
+	CheckBindings(){
 		if (this.BindMode){
-			if (!keyobj.event){
+			;if (!keyobj.event){
+				; On keyup event, exit BindMode
 				this.BindMode := 0
+				;BlockInput, MouseMoveOff
 				Gui, % this.hwnd ":Hide"
-				this.BindCallback.InputBound(keyobj)
-			}
+				this.BindCallback.InputBound(this.InputState)
+			;}
 			; Bind Mode - fire on up event for all keys
 		}
-		if (this._RegisteredCallbacks[keyobj.key].MaxIndex()){
+		if (this._RegisteredBindings[keyobj.key].MaxIndex()){
 			; Check for any matching combinations for this key
-			;Tooltip % keyobj.key ":" this._StateKeyboard[keyobj.key]
 		}
 	}
 
@@ -74,6 +52,10 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 		this.BindCallback := obj
 		this.BindMode := 1
 		this.Show()
+		; ToDo: Need some way of blocking input in bind mode.
+		; Disable mouse move, hide pointer, move cursor to ?hidden? ?offscreen? edit box so they don't get a "ding" when they hit a key?
+		
+		;BlockInput, MouseMove
 	}
 	
 	ProcessMessage(wParam, lParam, msg, hwnd){
@@ -180,13 +162,20 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 			}
 			s .= keyname
 			flags := !flags
-			this.StateKeyboard[s] := flags
-			;This.InputState.Keyboard[s] := flags
+			if (this.BindMode && !flags){
+				; If in BindMode, fire CheckBindings before setting key to up state
+				; That way, the ISC holds the state to be bound
+				this.CheckBindings()
+			}
+			; Set the state of the ISC
+			This.InputState.Keyboard[s] := flags
 			WinGetClass, app, A
 			
-			mods := {ctrl: this.StateKeyboard["lcontrol"] || this.StateKeyboard["rcontrol"], alt: 0, shift: 0, win: 0}
-			
-			this.CheckRegisteredCallbacks({key: s, event: flags, app: app, modifiers: mods })
+			if (!this.BindMode){
+				;this.CheckBindings({key: s, event: flags, app: app, modifiers: mods })
+			}
+			Gui, ListView, % this.parent.LVInputEvents
+			LV_Add(, s, "Keyboard", This.InputState.Keyboard[s])
 		} Else If (r = RIM_TYPEHID) {
 			; Stick Input ==============
 			; reference material: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
@@ -224,15 +213,26 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 			}
 			return 1
 		}
-	
+
+		; Converts input state to a human-readable form
+		; ToDo: Improve.
+		Render(obj){
+			s := ""
+			c := 0
+			for key, value in obj.keyboard {
+				if ( key != "States" && value){
+					if (c){
+						s .= " + "
+					}
+					s .= key
+					c++
+				}
+			}
+			return s
+		}
+
 		Class CKeyboard {
 			States := {}
-			
-			__New(parent){
-				this.parent := parent
-				this.root := this.parent.root
-				
-			}
 			
 			__Get(aName){
 				return this.States[aName] ? this.States[aName] : 0
