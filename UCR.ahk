@@ -89,7 +89,12 @@ Class UCR extends _UCR_C_Window {
 		this.MessageHandler := new _UCR_C_MessageHandler(this)
 		this.InputHandler := new _UCR_C_InputHandler(this)
 		this.RawInputRegister()
-		this.InputHandler.RegisterBinding("a", {ctrl: 0, shift: 0, alt: 0, win: 0}, "")
+		;this.InputHandler.RegisterBinding("a", {ctrl: 0, shift: 0, alt: 0, win: 0}, "")
+		this.InputHandler.RegisterBinding({keyboard: {a: 1, lcontrol: 1}}, this.BindingTest)
+	}
+	
+	BindingTest(){
+		soundbeep
 	}
 
 	CreateGui(){

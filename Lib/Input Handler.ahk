@@ -1,5 +1,5 @@
 Class _UCR_C_InputHandler extends _UCR_C_Window {
-	_RegisteredBindings := {}
+	_RegisteredBindings := []
 	BindMode := 0
 	BindCallback := ""
 	
@@ -23,11 +23,10 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 	}
 	
 	; Registers a hotkey for a callback
-	RegisterBinding(key, modifiers, app){
-		if (!this._RegisteredBindings[key].MaxIndex()){
-			this._RegisteredBindings[key] := []
-		}
-		this._RegisteredBindings[key].Insert({modifiers: modifiers, app: app})
+	RegisterBinding(key_obj, callback){
+		;this._RegisteredBindings[key].Insert({modifiers: modifiers, app: app})
+		this._RegisteredBindings.Insert({state: key_obj, callback: callback})
+		
 	}
 	
 	CheckBindings(){
@@ -41,8 +40,11 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 			;}
 			; Bind Mode - fire on up event for all keys
 		}
-		if (this._RegisteredBindings[keyobj.key].MaxIndex()){
+		Loop % this._RegisteredBindings.MaxIndex(){
 			; Check for any matching combinations for this key
+			if (this.InputState.CheckInputState(this._RegisteredBindings[A_Index].state)){
+				this._RegisteredBindings[A_Index].callback()
+			}
 		}
 	}
 
@@ -171,11 +173,12 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 			This.InputState.Keyboard[s] := flags
 			WinGetClass, app, A
 			
-			if (!this.BindMode){
-				;this.CheckBindings({key: s, event: flags, app: app, modifiers: mods })
-			}
 			Gui, ListView, % this.parent.LVInputEvents
 			LV_Add(, s, "Keyboard", This.InputState.Keyboard[s])
+			
+			if (!this.BindMode){
+				this.CheckBindings()
+			}
 		} Else If (r = RIM_TYPEHID) {
 			; Stick Input ==============
 			; reference material: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
@@ -243,6 +246,7 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 					this.States[aName] := aValue
 					; When either l/r modifier goes down, set value of unified modifier
 					; eg if lctrl goes down, set ctrl to on as well
+					/*
 					if (aName = "lctrl"){
 						if (aValue = 1){
 							this.States["ctrl"] := 1
@@ -253,12 +257,14 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 							}
 						}
 					}
+					*/
 				}
 			}
 			
 			CheckInputState(input_obj){
 				count := 0
 				for key, value in input_obj {
+					msgbox % "key: " key ", value: " value " - db: " this.States[key]
 					count++
 					if (this.States[key] != value){
 						return 0
