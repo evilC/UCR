@@ -6,6 +6,7 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 	
 	__New(parent){
 		base.__New(parent)
+		this.InputState := new this.CISC(this)
 		this.BindMode := 0	; BindMode 1 = pass all up events to parent
 	}
 
@@ -180,6 +181,7 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 			s .= keyname
 			flags := !flags
 			this.StateKeyboard[s] := flags
+			;This.InputState.Keyboard[s] := flags
 			WinGetClass, app, A
 			
 			mods := {ctrl: this.StateKeyboard["lcontrol"] || this.StateKeyboard["rcontrol"], alt: 0, shift: 0, win: 0}
@@ -198,5 +200,75 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 				
 			}
 		}
+	}
+	
+	; ISC - Input State Class
+	; An object which holds the state of all inputs and allows you to query them
+	Class CISC {
+		__New(parent){
+			this.parent := parent
+			this.root := this.parent.root
+			
+			this.Keyboard := new this.CKeyboard(this)
+			
+		}
+
+		; Checks an object against current state to check to see if it is true
+		CheckInputState(input_obj){
+			; Check keyboard
+			
+			if (IsObject(input_obj) && ObjHasKey(input_obj, "keyboard")){
+				if (!this.Keyboard.CheckInputState(input_obj.keyboard)){
+					return 0
+				}
+			}
+			return 1
+		}
+	
+		Class CKeyboard {
+			States := {}
+			
+			__New(parent){
+				this.parent := parent
+				this.root := this.parent.root
+				
+			}
+			
+			__Get(aName){
+				return this.States[aName] ? this.States[aName] : 0
+			}
+			
+			__Set(aName, aValue){
+				if (aName != "States"){
+					this.States[aName] := aValue
+					; When either l/r modifier goes down, set value of unified modifier
+					; eg if lctrl goes down, set ctrl to on as well
+					if (aName = "lctrl"){
+						if (aValue = 1){
+							this.States["ctrl"] := 1
+						} else {
+							if (!this.States["rctrl"]){
+								; if right version is not down
+								this.States["ctrl"] := 0
+							}
+						}
+					}
+				}
+			}
+			
+			CheckInputState(input_obj){
+				count := 0
+				for key, value in input_obj {
+					count++
+					if (this.States[key] != value){
+						return 0
+					}
+				}
+				; Only return 1 if we actially matched something
+				return (count > 0)
+			}
+			
+		}
+
 	}
 }
