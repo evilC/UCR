@@ -267,29 +267,14 @@ InputMsg(wParam, lParam) {
 			i := AHKHID_GetDevIndex(h)
 			dev_handle := AHKHID_GetDevHandle(i)
 
-			/*
-			// Again, read the data size, allocate then retrieve
-			GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
-			PHIDP_PREPARSED_DATA preparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(heap, 0, bufferSize);
-			GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, preparsedData, &bufferSize);
-			*/
-			;C++ GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
-			/*
-			UINT WINAPI GetRawInputDeviceInfo(
-			  _In_opt_     HANDLE hDevice,
-			  _In_         UINT uiCommand,
-			  _Inout_opt_  LPVOID pData,
-			  _Inout_      PUINT pcbSize
-			);
-			*/
-			res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", 0, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+			res := GetRIDI_PREPARSEDDATA(dev_handle, preparsedData)
 			
 			;C++ PHIDP_PREPARSED_DATA preparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(heap, 0, bufferSize);
-			VarSetCapacity(preparsedData, iSize)
+			;VarSetCapacity(preparsedData, iSize)
 			
 			;C++ GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, preparsedData, &bufferSize);
-			res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", &preparsedData, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
-
+			;res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", &preparsedData, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+			
 			/*
 			// Create a structure that will hold the values
 			HidP_GetCaps(preparsedData, &caps);
@@ -328,7 +313,7 @@ InputMsg(wParam, lParam) {
 			42 17 -- isn't 0-16 17 items? However without this line, length is not 64
 			44	  USHORT NumberLinkCollectionNodes;
 			46	  USHORT NumberInputButtonCaps;
-		   *48	  USHORT NumberInputValueCaps;
+			48	  USHORT NumberInputValueCaps;
 			50	  USHORT NumberInputDataIndices;
 			52	  USHORT NumberOutputButtonCaps;
 			54	  USHORT NumberOutputValueCaps;
@@ -365,55 +350,113 @@ InputMsg(wParam, lParam) {
 			  _In_     PHIDP_PREPARSED_DATA PreparsedData
 			);
 			*/
+			
+			/*
+				typedef struct _HIDP_BUTTON_CAPS {
+			00	  USAGE   UsagePage;
+			02	  UCHAR   ReportID;
+			03	  BOOLEAN IsAlias;
+			04	  USHORT  BitField;
+			06	  USHORT  LinkCollection;
+			08	  USAGE   LinkUsage;
+			10	  USAGE   LinkUsagePage;
+			12	  BOOLEAN IsRange;
+			13	  BOOLEAN IsStringRange;
+			14	  BOOLEAN IsDesignatorRange;
+			15	  BOOLEAN IsAbsolute;
+				  ULONG   Reserved[10];
+				  union {
+					struct {
+			56		  USAGE  UsageMin;
+			58		  USAGE  UsageMax;
+			60		  USHORT StringMin;
+			62		  USHORT StringMax;
+			64		  USHORT DesignatorMin;
+			66		  USHORT DesignatorMax;
+			68		  USHORT DataIndexMin;
+			70		  USHORT DataIndexMax;
+					} Range;
+					struct {
+			56		  USAGE  Usage;
+			58		  USAGE  Reserved1;
+			60		  USHORT StringIndex;
+			62		  USHORT Reserved2;
+			64		  USHORT DesignatorIndex;
+			66		  USHORT Reserved3;
+			68		  USHORT DataIndex;
+			70		  USHORT Reserved4;
+					} NotRange;
+				  };
+				}
+			*/
+
 			NumberInputButtonCaps := NumGet(Caps, 46, "UShort")
 			VarSetCapacity(pButtonCaps, NumberInputButtonCaps * 72)
 			res := DllCall("Hid\HidP_GetButtonCaps", "Uint", 0, "Ptr", &pButtonCaps, "Ptr", &NumberInputButtonCaps, "Ptr",  &preparsedData)
 			UsageMin := NumGet(pButtonCaps, 56, "UShort")
 			UsageMax := NumGet(pButtonCaps, 58, "UShort")
-			buttons := (UsageMax - UsageMin) + 1
-			;msgbox % "This device has " buttons " buttons"
-			;UsageMin = 56
-			;UsageMax = 58
-			
+			UsagePage := NumGet(pButtonCaps, 0, "UShort")
+			UsageLength := (UsageMax - UsageMin) + 1
+			buttons := UsageLength
+
+
 			/*
-				typedef struct _HIDP_BUTTON_CAPS {
-				  USAGE   UsagePage;
-				  UCHAR   ReportID;
-				  BOOLEAN IsAlias;
-				  USHORT  BitField;
-				  USHORT  LinkCollection;
-				  USAGE   LinkUsage;
-				  USAGE   LinkUsagePage;
-				  BOOLEAN IsRange;
-				  BOOLEAN IsStringRange;
-				  BOOLEAN IsDesignatorRange;
-				  BOOLEAN IsAbsolute;
-				  ULONG   Reserved[10];
-				  union {
-					struct {
-					  USAGE  UsageMin;
-					  USAGE  UsageMax;
-					  USHORT StringMin;
-					  USHORT StringMax;
-					  USHORT DesignatorMin;
-					  USHORT DesignatorMax;
-					  USHORT DataIndexMin;
-					  USHORT DataIndexMax;
-					} Range;
-					struct {
-					  USAGE  Usage;
-					  USAGE  Reserved1;
-					  USHORT StringIndex;
-					  USHORT Reserved2;
-					  USHORT DesignatorIndex;
-					  USHORT Reserved3;
-					  USHORT DataIndex;
-					  USHORT Reserved4;
-					} NotRange;
-				  };
-				}
+			//
+			// Get the pressed buttons
+			//
+
+			usageLength = g_NumberOfButtons;
+			CHECK(
+				HidP_GetUsages(
+					HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData, (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
+				) == HIDP_STATUS_SUCCESS );
+
+			ZeroMemory(bButtonStates, sizeof(bButtonStates));
+			for(i = 0; i < usageLength; i++)
+				bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
+
 			*/
-			;msgbox % res
+
+			/*
+			HidP_GetUsages(
+			  _In_     HIDP_REPORT_TYPE ReportType,
+			  _In_     USAGE UsagePage,
+			  _In_     USHORT LinkCollection,
+			  _Out_    PUSAGE UsageList,
+			  _Inout_  PULONG UsageLength,
+			  _In_     PHIDP_PREPARSED_DATA PreparsedData,
+			  _Out_    PCHAR Report,
+			  _In_     ULONG ReportLength
+			);
+			*/
+			
+			LinkCollection := NumGet(Caps, 6, "UShort")
+			VarSetCapacity(UsageList, 128)
+			;UsageList := 4
+			ReportLength := NumGet(caps, 4, "UShort")
+			;VarSetCapacity(Report, ReportLength)
+			;                                     ReportType,           UsagePage,    LinkCollection,         UsageList,        UsageLength,         PreparsedData,         Report,    ReportLength
+			res := DllCall("Hid\HidP_GetUsages", "UShort", 0, "UShort", UsagePage,       "UShort", 0, "Ptr", &UsageList, "Ptr", &UsageLength, "Ptr", &preparsedData, "Ptr", &uData, "Uint", ReportLength)
+			val := NumGet(UsageList,0,"UShort")
+			msgbox % val
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			
 			
 			
@@ -463,10 +506,49 @@ InputMsg(wParam, lParam) {
 			48	  LONG    PhysicalMin;
 			52	  LONG    PhysicalMax;
 			*/
-			UsagePage := NumGet(valueCaps, 0, "UShort")
-			LinkCollection := NumGet(valueCaps, 6, "Uchar")
-			Usage := 4
-			VarSetCapacity(UsageValue,4)
+			
+			/*
+				//
+				// Get the state of discrete-valued-controls
+				//
+
+				for(i = 0; i < Caps.NumberInputValueCaps; i++)
+				{
+					CHECK(
+						HidP_GetUsageValue(
+							HidP_Input, pValueCaps[i].UsagePage, 0, pValueCaps[i].Range.UsageMin, &value, pPreparsedData,
+							(PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
+						) == HIDP_STATUS_SUCCESS );
+
+					switch(pValueCaps[i].Range.UsageMin)
+					{
+					case 0x30:	// X-axis
+						lAxisX = (LONG)value - 128;
+						break;
+
+					case 0x31:	// Y-axis
+						lAxisY = (LONG)value - 128;
+						break;
+
+					case 0x32: // Z-axis
+						lAxisZ = (LONG)value - 128;
+						break;
+
+					case 0x35: // Rotate-Z
+						lAxisRz = (LONG)value - 128;
+						break;
+
+					case 0x39:	// Hat Switch
+						lHat = value;
+						break;
+					}
+				}
+			*/
+
+			;UsagePage := NumGet(valueCaps, 0, "UShort")
+			;LinkCollection := NumGet(valueCaps, 6, "Uchar")
+			;Usage := 4
+			;VarSetCapacity(UsageValue,4)
 			
 			;msgbox % test
 
@@ -620,38 +702,24 @@ Bin2Hex(addr,len) {
 	Return hex
 }
 
-AHKHID_GetPreParsedData(InputHandle, ByRef uData) {
-	;Get raw data size                                           RIDI_PREPARSEDDATA
-	;r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", 0, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
-	r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", 0, "UInt*", iSize)
-	If (r = -1) Or ErrorLevel {
-		ErrorLevel = GetRawInputData call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
-		Return -1
-	}
-	
-	;Prep var
-	VarSetCapacity(uRawInput, iSize)
-	
-	;Get raw data                                                RIDI_PREPARSEDDATA
-	;r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", &uRawInput, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
-	r := DllCall("GetRawInputDeviceInfo", "UInt", InputHandle, "UInt", 0x20000005, "Ptr", &uRawInput, "UInt*", iSize)
-	If (r = -1) Or ErrorLevel {
-		ErrorLevel = GetRawInputData call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
-		Return -1
-	} Else If (r <> iSize) {
-		ErrorLevel = GetRawInputData did not return the correct size.`nSize returned: %r%`nSize allocated: %iSize%
-		Return -1
-	}
-	
-	;Get the size of each HID input and the number of them
-	iSize   := NumGet(uRawInput, 8 + A_PtrSize * 2 + 0, "UInt") ;ID_HID_SIZE
-	iCount  := NumGet(uRawInput, 8 + A_PtrSize * 2 + 4, "UInt") ;ID_HID_COUNT
-	
-	;Allocate memory
-	VarSetCapacity(uData, iSize * iCount)
-	
-	;Copy bytes
-	DllCall("RtlMoveMemory", UInt, &uData, UInt, &uRawInput + 8 + A_PtrSize * 2 + 8, UInt, iSize * iCount)
-	
-	Return (iSize * iCount)
+
+GetRIDI_PREPARSEDDATA(hDevice, ByRef pData){
+	/*
+	// Again, read the data size, allocate then retrieve
+	GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
+	PHIDP_PREPARSED_DATA preparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(heap, 0, bufferSize);
+	GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, preparsedData, &bufferSize);
+
+	UINT WINAPI GetRawInputDeviceInfo(
+	  _In_opt_     HANDLE hDevice,
+	  _In_         UINT uiCommand,
+	  _Inout_opt_  LPVOID pData,
+	  _Inout_      PUINT pcbSize
+	);
+	*/
+	global RIDI_PREPARSEDDATA
+	res := DllCall("GetRawInputDeviceInfo", "UInt", hDevice, "UInt", RIDI_PREPARSEDDATA, "Ptr", 0, "UInt*", pcbSize, "UInt", 8 + A_PtrSize * 2)
+	VarSetCapacity(pData, pcbSize)
+	res := DllCall("GetRawInputDeviceInfo", "UInt", hDevice, "UInt", RIDI_PREPARSEDDATA, "Ptr", &pData, "UInt*", pcbSize, "UInt", 8 + A_PtrSize * 2)
+	return ErrorLevel
 }
