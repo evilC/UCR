@@ -3,6 +3,28 @@
 #SingleInstance force
 
 RIDI_PREPARSEDDATA := 0x20000005	; WinUser.h
+HIDP_STATUS_SUCCESS := 1114112
+/*
+#define HIDP_STATUS_SUCCESS                  (HIDP_ERROR_CODES(0x0,0)) 1114112
+#define HIDP_STATUS_NULL                     (HIDP_ERROR_CODES(0x8,1)) 2148597761
+#define HIDP_STATUS_INVALID_PREPARSED_DATA   (HIDP_ERROR_CODES(0xC,1)) 3435973836
+#define HIDP_STATUS_INVALID_REPORT_TYPE      (HIDP_ERROR_CODES(0xC,2)) 3222339586
+#define HIDP_STATUS_INVALID_REPORT_LENGTH    (HIDP_ERROR_CODES(0xC,3)) 3222339587
+#define HIDP_STATUS_USAGE_NOT_FOUND          (HIDP_ERROR_CODES(0xC,4)) 3222339588
+#define HIDP_STATUS_VALUE_OUT_OF_RANGE       (HIDP_ERROR_CODES(0xC,5)) 3222339589
+#define HIDP_STATUS_BAD_LOG_PHY_VALUES       (HIDP_ERROR_CODES(0xC,6)) 3222339590
+#define HIDP_STATUS_BUFFER_TOO_SMALL         (HIDP_ERROR_CODES(0xC,7)) 3222339591
+#define HIDP_STATUS_INTERNAL_ERROR           (HIDP_ERROR_CODES(0xC,8)) 3222339592
+#define HIDP_STATUS_I8042_TRANS_UNKNOWN      (HIDP_ERROR_CODES(0xC,9)) 3222339593
+#define HIDP_STATUS_INCOMPATIBLE_REPORT_ID   (HIDP_ERROR_CODES(0xC,0xA)) 3222339594
+#define HIDP_STATUS_NOT_VALUE_ARRAY          (HIDP_ERROR_CODES(0xC,0xB)) 3222339595
+#define HIDP_STATUS_IS_VALUE_ARRAY           (HIDP_ERROR_CODES(0xC,0xC)) 3222339596
+#define HIDP_STATUS_DATA_INDEX_NOT_FOUND     (HIDP_ERROR_CODES(0xC,0xD)) 3222339597
+#define HIDP_STATUS_DATA_INDEX_OUT_OF_RANGE  (HIDP_ERROR_CODES(0xC,0xE)) 3222339598
+#define HIDP_STATUS_BUTTON_NOT_PRESSED       (HIDP_ERROR_CODES(0xC,0xF)) 3222339599
+#define HIDP_STATUS_REPORT_DOES_NOT_EXIST    (HIDP_ERROR_CODES(0xC,0x10)) 3222339600
+#define HIDP_STATUS_NOT_IMPLEMENTED          (HIDP_ERROR_CODES(0xC,0x20)) 3222339616
+*/
 
 ;Intercept WM_INPUT
 OnMessage(0x00FF, "InputMsg")
@@ -251,7 +273,7 @@ InputMsg(wParam, lParam) {
 			; sizeof(USAGE) = 2
 			; sizeof(HIDP_REPORT_TYPE) = 4
 			; HidP_Input = 0
-			HIDP_STATUS_SUCCESS := 1114112
+			
 			
 			/*
 			// Parse the raw input header to read its size.
@@ -269,167 +291,26 @@ InputMsg(wParam, lParam) {
 
 			res := GetRIDI_PREPARSEDDATA(dev_handle, preparsedData)
 			
-			;C++ PHIDP_PREPARSED_DATA preparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(heap, 0, bufferSize);
-			;VarSetCapacity(preparsedData, iSize)
-			
-			;C++ GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, preparsedData, &bufferSize);
-			;res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", &preparsedData, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
-			
-			/*
-			// Create a structure that will hold the values
-			HidP_GetCaps(preparsedData, &caps);
-			USHORT capsLength = caps.NumberInputValueCaps;
-			PHIDP_VALUE_CAPS valueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(heap, 0, capsLength*sizeof(HIDP_VALUE_CAPS));
-			HidP_GetValueCaps(HidP_Input, valueCaps, &capsLength, preparsedData);
-			*/
-	
-			;C++ HidP_GetCaps(preparsedData, &caps);
-			/*
-			sizeof(HIDP_CAPS) = 64
-			offsetof(HIDP_CAPS, NumberLinkCollectionNodes) = 44
-			
-			typedef struct _HIDP_CAPS {
-			00	  USAGE  Usage;
-			02	  USAGE  UsagePage;
-			04	  USHORT InputReportByteLength;
-			06	  USHORT OutputReportByteLength;
-			08	  USHORT FeatureReportByteLength;
-			10 0  USHORT Reserved[17];
-			12 1
-			14 2
-			16 3
-			18 4
-			20 5
-			22 6
-			24 7
-			26 8
-			28 9
-			30 10
-			32 11
-			34 12
-			36 13
-			38 14
-			40 16
-			42 17 -- isn't 0-16 17 items? However without this line, length is not 64
-			44	  USHORT NumberLinkCollectionNodes;
-			46	  USHORT NumberInputButtonCaps;
-			48	  USHORT NumberInputValueCaps;
-			50	  USHORT NumberInputDataIndices;
-			52	  USHORT NumberOutputButtonCaps;
-			54	  USHORT NumberOutputValueCaps;
-			56	  USHORT NumberOutputDataIndices;
-			58	  USHORT NumberFeatureButtonCaps;
-			60	  USHORT NumberFeatureValueCaps;
-			62	  USHORT NumberFeatureDataIndices;
-			64 - end
-			}
-			*/
 			VarSetCapacity(caps, 64) ; sizeof(HIDP_CAPS) = 64
-			res := DllCall("Hid\HidP_GetCaps", "Ptr", &preparsedData, "Ptr", &caps)
 
-			;C++ USHORT capsLength = caps.NumberInputValueCaps;
+			res := HidP_GetCaps(preparsedData, caps)
+
 			capsLength := NumGet(caps, 48, "UShort")
 			
-			;C++ PHIDP_VALUE_CAPS valueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(heap, 0, capsLength*sizeof(HIDP_VALUE_CAPS));
 			VarSetCapacity(valueCaps, 72 * capsLength)
 			
-			/*
-			C++ 
-			CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
-			CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
-
-			capsLength = Caps.NumberInputButtonCaps;
-			CHECK( HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
-			g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
-			*/
-			/*
-			HidP_GetButtonCaps(
-			  _In_     HIDP_REPORT_TYPE ReportType,
-			  _Out_    PHIDP_BUTTON_CAPS ButtonCaps,
-			  _Inout_  PUSHORT ButtonCapsLength,
-			  _In_     PHIDP_PREPARSED_DATA PreparsedData
-			);
-			*/
-			
-			/*
-				typedef struct _HIDP_BUTTON_CAPS {
-			00	  USAGE   UsagePage;
-			02	  UCHAR   ReportID;
-			03	  BOOLEAN IsAlias;
-			04	  USHORT  BitField;
-			06	  USHORT  LinkCollection;
-			08	  USAGE   LinkUsage;
-			10	  USAGE   LinkUsagePage;
-			12	  BOOLEAN IsRange;
-			13	  BOOLEAN IsStringRange;
-			14	  BOOLEAN IsDesignatorRange;
-			15	  BOOLEAN IsAbsolute;
-				  ULONG   Reserved[10];
-				  union {
-					struct {
-			56		  USAGE  UsageMin;
-			58		  USAGE  UsageMax;
-			60		  USHORT StringMin;
-			62		  USHORT StringMax;
-			64		  USHORT DesignatorMin;
-			66		  USHORT DesignatorMax;
-			68		  USHORT DataIndexMin;
-			70		  USHORT DataIndexMax;
-					} Range;
-					struct {
-			56		  USAGE  Usage;
-			58		  USAGE  Reserved1;
-			60		  USHORT StringIndex;
-			62		  USHORT Reserved2;
-			64		  USHORT DesignatorIndex;
-			66		  USHORT Reserved3;
-			68		  USHORT DataIndex;
-			70		  USHORT Reserved4;
-					} NotRange;
-				  };
-				}
-			*/
-
 			NumberInputButtonCaps := NumGet(Caps, 46, "UShort")
 			VarSetCapacity(pButtonCaps, NumberInputButtonCaps * 72)
-			res := DllCall("Hid\HidP_GetButtonCaps", "Uint", 0, "Ptr", &pButtonCaps, "Ptr", &NumberInputButtonCaps, "Ptr",  &preparsedData)
+			
+			res := HidP_GetButtonCaps(pButtonCaps, NumberInputButtonCaps, preparsedData)
+			
 			UsageMin := NumGet(pButtonCaps, 56, "UShort")
 			UsageMax := NumGet(pButtonCaps, 58, "UShort")
 			UsagePage := NumGet(pButtonCaps, 0, "UShort")
 			UsageLength := (UsageMax - UsageMin) + 1
 			buttons := UsageLength
-
-
-			/*
-			//
-			// Get the pressed buttons
-			//
-
-			usageLength = g_NumberOfButtons;
-			CHECK(
-				HidP_GetUsages(
-					HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData, (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
-				) == HIDP_STATUS_SUCCESS );
-
-			ZeroMemory(bButtonStates, sizeof(bButtonStates));
-			for(i = 0; i < usageLength; i++)
-				bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
-
-			*/
-
-			/*
-			HidP_GetUsages(
-			  _In_     HIDP_REPORT_TYPE ReportType,
-			  _In_     USAGE UsagePage,
-			  _In_     USHORT LinkCollection,
-			  _Out_    PUSAGE UsageList,
-			  _Inout_  PULONG UsageLength,
-			  _In_     PHIDP_PREPARSED_DATA PreparsedData,
-			  _Out_    PCHAR Report,
-			  _In_     ULONG ReportLength
-			);
-			*/
 			
+			/*
 			LinkCollection := NumGet(Caps, 6, "UShort")
 			VarSetCapacity(UsageList, 128)
 			;UsageList := 4
@@ -439,188 +320,8 @@ InputMsg(wParam, lParam) {
 			res := DllCall("Hid\HidP_GetUsages", "UShort", 0, "UShort", UsagePage,       "UShort", 0, "Ptr", &UsageList, "Ptr", &UsageLength, "Ptr", &preparsedData, "Ptr", &uData, "Uint", ReportLength)
 			val := NumGet(UsageList,0,"UShort")
 			msgbox % val
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			; C++ HidP_GetValueCaps(HidP_Input, valueCaps, &capsLength, preparsedData);
-			/*
-			https://msdn.microsoft.com/en-us/library/windows/hardware/ff539754(v=vs.85).aspx
-			HidP_GetValueCaps(
-			  _In_     HIDP_REPORT_TYPE ReportType,
-			  _Out_    PHIDP_VALUE_CAPS ValueCaps,
-			  _Inout_  PUSHORT ValueCapsLength,
-			  _In_     PHIDP_PREPARSED_DATA PreparsedData
-			)
-			
-			ReportType [in] - Specifies a HIDP_REPORT_TYPE enumerator value that identifies the report type.
-			ValueCaps [out] - Pointer to a caller-allocated buffer in which the routine returns a value capability array for the specified report type.
-			ValueCapsLength [in, out] - Specifies the length, on input, in array elements, of the ValueCaps buffer.
-			                            On output, the routine sets ValueCapsLength to the number of elements that the it actually returns.
-			PreparsedData [in] - Pointer to a top-level collection's preparsed data.
-			);
-			*/
-			; The HidP_GetValueCaps routine returns a VALUE CAPABILITY ARRAY that describes all the HID control values in a top-level collection for a specified type of HID report.
-			VarSetCapacity(ValueCapsLength, 2) ; USHORT
-			res := DllCall("Hid\HidP_GetValueCaps", "Uint", 0, "Ptr", &valueCaps, "Ptr", &capsLength, "ptr", &preparsedData)
-			
-			/*
-			typedef struct _HIDP_VALUE_CAPS {
-			00	  USAGE   UsagePage;
-			02	  UCHAR   ReportID;
-			03	  BOOLEAN IsAlias;
-			04	  USHORT  BitField;
-			06	  USHORT  LinkCollection;
-			08	  USAGE   LinkUsage;
-			10	  USAGE   LinkUsagePage;
-			12	  BOOLEAN IsRange;
-			13	  BOOLEAN IsStringRange;
-			14	  BOOLEAN IsDesignatorRange;
-			15	  BOOLEAN IsAbsolute;
-			16	  BOOLEAN HasNull;
-			17	  UCHAR   Reserved;
-			18	  USHORT  BitSize;
-			20	  USHORT  ReportCount;
-			22	  USHORT  Reserved2[5];
-			32	  ULONG   UnitsExp;
-			36	  ULONG   Units;
-			40	  LONG    LogicalMin;
-			44	  LONG    LogicalMax;
-			48	  LONG    PhysicalMin;
-			52	  LONG    PhysicalMax;
 			*/
 			
-			/*
-				//
-				// Get the state of discrete-valued-controls
-				//
-
-				for(i = 0; i < Caps.NumberInputValueCaps; i++)
-				{
-					CHECK(
-						HidP_GetUsageValue(
-							HidP_Input, pValueCaps[i].UsagePage, 0, pValueCaps[i].Range.UsageMin, &value, pPreparsedData,
-							(PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
-						) == HIDP_STATUS_SUCCESS );
-
-					switch(pValueCaps[i].Range.UsageMin)
-					{
-					case 0x30:	// X-axis
-						lAxisX = (LONG)value - 128;
-						break;
-
-					case 0x31:	// Y-axis
-						lAxisY = (LONG)value - 128;
-						break;
-
-					case 0x32: // Z-axis
-						lAxisZ = (LONG)value - 128;
-						break;
-
-					case 0x35: // Rotate-Z
-						lAxisRz = (LONG)value - 128;
-						break;
-
-					case 0x39:	// Hat Switch
-						lHat = value;
-						break;
-					}
-				}
-			*/
-
-			;UsagePage := NumGet(valueCaps, 0, "UShort")
-			;LinkCollection := NumGet(valueCaps, 6, "Uchar")
-			;Usage := 4
-			;VarSetCapacity(UsageValue,4)
-			
-			;msgbox % test
-
-			/*
-			// Read sample value
-			HidP_GetUsageValue(HidP_Input, valueCaps[i].UsagePage, 0, valueCaps[i].Range.UsageMin, &value, preparsedData, 
-			
-			NTSTATUS __stdcall HidP_GetUsageValue(
-			  _In_   HIDP_REPORT_TYPE ReportType,
-			  _In_   USAGE UsagePage,
-			  _In_   USHORT LinkCollection,
-			  _In_   USAGE Usage,
-			  _Out_  PULONG UsageValue,
-			  _In_   PHIDP_PREPARSED_DATA PreparsedData,
-			  _In_   PCHAR Report,
-			  _In_   ULONG ReportLength
-			);
-			*/
-
-			;res := DllCall("Hid\HidP_GetUsageValue", "Uint", 0, "UShort", UsagePage, "UShort", LinkCollection, "UShort", 4, "Ptr", &UsageValue, "Ptr", &preparsedData, "Ptr", )
-			;msgbox % Errorlevel
-
-			; Decode preparsed data. Step 3, code block #2 @ http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
-			;HidP_GetCaps(pPreparsedData, &Caps)
-			; HID_CAPS: http://msdn.microsoft.com/en-us/library/windows/hardware/ff539697(v=vs.85).aspx
-			; 16 16-bit numbers - should be 256 size?
-			;VarSetCapacity(Caps, 256)
-			;ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "Ptr", &Caps)
-			;ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "UInt*", Caps)
-			;msgbox % "EL: " ErrorLevel "`nRet: " ret "`nCaps: " Caps
-
-			;returns -1072627711
-			
-			/*
-			Error Codes:
-			#ifndef FACILITY_HID_ERROR_CODE
-			#define FACILITY_HID_ERROR_CODE 0x11
-			#endif
-
-			; NTSTATUS is a LONG ?
-			#define HIDP_ERROR_CODES(SEV, CODE) \
-					((NTSTATUS) (((SEV) << 28) | (FACILITY_HID_ERROR_CODE << 16) | (CODE)))
-			
-			;																 ret: -1072627711 = 11000000000100010000000000000001
-			#define HIDP_STATUS_SUCCESS                  (HIDP_ERROR_CODES(0x0,0)) 1114112    = 00000000000100010000000000000000
-			#define HIDP_STATUS_NULL                     (HIDP_ERROR_CODES(0x8,1)) 2148597761 = 10000000000100010000000000000001
-			#define HIDP_STATUS_INVALID_PREPARSED_DATA   (HIDP_ERROR_CODES(0xC,1)) 3435973836 = 11001100 11001100 11001100 11001100
-																				   3222339585 = 11000000000100010000000000000001
-			#define HIDP_STATUS_INVALID_REPORT_TYPE      (HIDP_ERROR_CODES(0xC,2)) 3222339586 = 11000000000100010000000000000010
-			#define HIDP_STATUS_INVALID_REPORT_LENGTH    (HIDP_ERROR_CODES(0xC,3)) 3222339587
-			#define HIDP_STATUS_USAGE_NOT_FOUND          (HIDP_ERROR_CODES(0xC,4)) 3222339588
-			#define HIDP_STATUS_VALUE_OUT_OF_RANGE       (HIDP_ERROR_CODES(0xC,5)) 3222339589
-			#define HIDP_STATUS_BAD_LOG_PHY_VALUES       (HIDP_ERROR_CODES(0xC,6)) 3222339590
-			#define HIDP_STATUS_BUFFER_TOO_SMALL         (HIDP_ERROR_CODES(0xC,7)) 3222339591
-			#define HIDP_STATUS_INTERNAL_ERROR           (HIDP_ERROR_CODES(0xC,8)) 3222339592
-			#define HIDP_STATUS_I8042_TRANS_UNKNOWN      (HIDP_ERROR_CODES(0xC,9)) 3222339593
-			#define HIDP_STATUS_INCOMPATIBLE_REPORT_ID   (HIDP_ERROR_CODES(0xC,0xA)) 3222339594
-			#define HIDP_STATUS_NOT_VALUE_ARRAY          (HIDP_ERROR_CODES(0xC,0xB)) 3222339595
-			#define HIDP_STATUS_IS_VALUE_ARRAY           (HIDP_ERROR_CODES(0xC,0xC)) 3222339596
-			#define HIDP_STATUS_DATA_INDEX_NOT_FOUND     (HIDP_ERROR_CODES(0xC,0xD)) 3222339597
-			#define HIDP_STATUS_DATA_INDEX_OUT_OF_RANGE  (HIDP_ERROR_CODES(0xC,0xE)) 3222339598
-			#define HIDP_STATUS_BUTTON_NOT_PRESSED       (HIDP_ERROR_CODES(0xC,0xF)) 3222339599
-			#define HIDP_STATUS_REPORT_DOES_NOT_EXIST    (HIDP_ERROR_CODES(0xC,0x10)) 3222339600
-			#define HIDP_STATUS_NOT_IMPLEMENTED          (HIDP_ERROR_CODES(0xC,0x20)) 3222339616
-			*/
-			
-			;pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps)
-
-			;HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData
-
-			;g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
-
 			; Add to log
 			;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
 			;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
@@ -722,4 +423,223 @@ GetRIDI_PREPARSEDDATA(hDevice, ByRef pData){
 	VarSetCapacity(pData, pcbSize)
 	res := DllCall("GetRawInputDeviceInfo", "UInt", hDevice, "UInt", RIDI_PREPARSEDDATA, "Ptr", &pData, "UInt*", pcbSize, "UInt", 8 + A_PtrSize * 2)
 	return ErrorLevel
+}
+
+HidP_GetCaps(ByRef PreparsedData, Capabilities){
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539715(v=vs.85).aspx
+
+	// Create a structure that will hold the values
+	HidP_GetCaps(preparsedData, &caps);
+	USHORT capsLength = caps.NumberInputValueCaps;
+	
+	HidP_GetCaps(
+	  _In_   PHIDP_PREPARSED_DATA PreparsedData,
+	  _Out_  PHIDP_CAPS Capabilities
+	);
+	
+	struct _HIDP_CAPS {
+		00	  USAGE  Usage;
+		02	  USAGE  UsagePage;
+		04	  USHORT InputReportByteLength;
+		06	  USHORT OutputReportByteLength;
+		08	  USHORT FeatureReportByteLength;
+		10 0  USHORT Reserved[17];
+		12 1
+		14 2
+		16 3
+		18 4
+		20 5
+		22 6
+		24 7
+		26 8
+		28 9
+		30 10
+		32 11
+		34 12
+		36 13
+		38 14
+		40 16
+		42 17 -- isn't 0-16 17 items? However without this line, length is not 64
+		44	  USHORT NumberLinkCollectionNodes;
+		46	  USHORT NumberInputButtonCaps;
+		48	  USHORT NumberInputValueCaps;
+		50	  USHORT NumberInputDataIndices;
+		52	  USHORT NumberOutputButtonCaps;
+		54	  USHORT NumberOutputValueCaps;
+		56	  USHORT NumberOutputDataIndices;
+		58	  USHORT NumberFeatureButtonCaps;
+		60	  USHORT NumberFeatureValueCaps;
+		62	  USHORT NumberFeatureDataIndices;
+		64 - end
+	}
+	*/
+	global HIDP_STATUS_SUCCESS
+	VarSetCapacity(Capabilities, 64) ; sizeof(HIDP_CAPS) = 64
+	res := DllCall("Hid\HidP_GetCaps", "Ptr", &PreparsedData, "Ptr", &Capabilities)
+	if (res != HIDP_STATUS_SUCCESS){
+		msgbox A_ThisFunc ": HidP_GetCaps Failed!"
+	}
+	return ErrorLevel
+}
+
+HidP_GetValueCaps(){
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539754(v=vs.85).aspx
+	
+	HidP_GetValueCaps(
+	  _In_     HIDP_REPORT_TYPE ReportType,
+	  _Out_    PHIDP_VALUE_CAPS ValueCaps,
+	  _Inout_  PUSHORT ValueCapsLength,
+	  _In_     PHIDP_PREPARSED_DATA PreparsedData
+	)
+	
+	ReportType [in] - Specifies a HIDP_REPORT_TYPE enumerator value that identifies the report type.
+	ValueCaps [out] - Pointer to a caller-allocated buffer in which the routine returns a value capability array for the specified report type.
+	ValueCapsLength [in, out] - Specifies the length, on input, in array elements, of the ValueCaps buffer.
+								On output, the routine sets ValueCapsLength to the number of elements that the it actually returns.
+	PreparsedData [in] - Pointer to a top-level collection's preparsed data.
+
+	struct _HIDP_VALUE_CAPS {
+		00	  USAGE   UsagePage;
+		02	  UCHAR   ReportID;
+		03	  BOOLEAN IsAlias;
+		04	  USHORT  BitField;
+		06	  USHORT  LinkCollection;
+		08	  USAGE   LinkUsage;
+		10	  USAGE   LinkUsagePage;
+		12	  BOOLEAN IsRange;
+		13	  BOOLEAN IsStringRange;
+		14	  BOOLEAN IsDesignatorRange;
+		15	  BOOLEAN IsAbsolute;
+		16	  BOOLEAN HasNull;
+		17	  UCHAR   Reserved;
+		18	  USHORT  BitSize;
+		20	  USHORT  ReportCount;
+		22	  USHORT  Reserved2[5];
+		32	  ULONG   UnitsExp;
+		36	  ULONG   Units;
+		40	  LONG    LogicalMin;
+		44	  LONG    LogicalMax;
+		48	  LONG    PhysicalMin;
+		52	  LONG    PhysicalMax;
+	}
+
+	PHIDP_VALUE_CAPS valueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(heap, 0, capsLength*sizeof(HIDP_VALUE_CAPS));
+	HidP_GetValueCaps(HidP_Input, valueCaps, &capsLength, preparsedData);
+	*/
+}
+
+HidP_GetButtonCaps(ByRef ButtonCaps, ButtonCapsLength, ByRef PreparsedData){
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539707(v=vs.85).aspx
+
+	C++ 
+	CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
+	CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
+
+	capsLength = Caps.NumberInputButtonCaps;
+	CHECK( HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
+	g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
+
+	HidP_GetButtonCaps(
+	  _In_     HIDP_REPORT_TYPE ReportType,
+	  _Out_    PHIDP_BUTTON_CAPS ButtonCaps,
+	  _Inout_  PUSHORT ButtonCapsLength,
+	  _In_     PHIDP_PREPARSED_DATA PreparsedData
+	);
+	
+	sizeof(HIDP_CAPS) = 64
+
+	struct _HIDP_BUTTON_CAPS {
+		00	  USAGE   UsagePage;
+		02	  UCHAR   ReportID;
+		03	  BOOLEAN IsAlias;
+		04	  USHORT  BitField;
+		06	  USHORT  LinkCollection;
+		08	  USAGE   LinkUsage;
+		10	  USAGE   LinkUsagePage;
+		12	  BOOLEAN IsRange;
+		13	  BOOLEAN IsStringRange;
+		14	  BOOLEAN IsDesignatorRange;
+		15	  BOOLEAN IsAbsolute;
+			  ULONG   Reserved[10];
+		union {
+			struct Range {
+				56		  USAGE  UsageMin;
+				58		  USAGE  UsageMax;
+				60		  USHORT StringMin;
+				62		  USHORT StringMax;
+				64		  USHORT DesignatorMin;
+				66		  USHORT DesignatorMax;
+				68		  USHORT DataIndexMin;
+				70		  USHORT DataIndexMax;
+			} struct NotRange {
+				56		  USAGE  Usage;
+				58		  USAGE  Reserved1;
+				60		  USHORT StringIndex;
+				62		  USHORT Reserved2;
+				64		  USHORT DesignatorIndex;
+				66		  USHORT Reserved3;
+				68		  USHORT DataIndex;
+				70		  USHORT Reserved4;
+			}
+		}
+	}
+	*/
+	global HIDP_STATUS_SUCCESS
+	
+	VarSetCapacity(ButtonCaps, ButtonCapsLength * 72)
+	res := DllCall("Hid\HidP_GetButtonCaps", "Uint", 0, "Ptr", &ButtonCaps, "Ptr", &ButtonCapsLength, "Ptr",  &PreparsedData)
+	if (res != HIDP_STATUS_SUCCESS){
+		msgbox A_ThisFunc ": HidP_GetButtonCaps Failed!"
+	}
+	return ErrorLevel
+}
+
+HidP_GetUsages(){
+	/*
+	//
+	// Get the pressed buttons
+	//
+
+	usageLength = g_NumberOfButtons;
+	CHECK(
+		HidP_GetUsages(
+			HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData, (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
+		) == HIDP_STATUS_SUCCESS );
+
+	ZeroMemory(bButtonStates, sizeof(bButtonStates));
+	for(i = 0; i < usageLength; i++)
+		bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
+
+	*/
+
+	/*
+	HidP_GetUsages(
+	  _In_     HIDP_REPORT_TYPE ReportType,
+	  _In_     USAGE UsagePage,
+	  _In_     USHORT LinkCollection,
+	  _Out_    PUSAGE UsageList,
+	  _Inout_  PULONG UsageLength,
+	  _In_     PHIDP_PREPARSED_DATA PreparsedData,
+	  _Out_    PCHAR Report,
+	  _In_     ULONG ReportLength
+	);
+	*/
+}
+
+HidP_GetUsageValue(){
+	/*
+	HidP_GetUsageValue(
+	  _In_   HIDP_REPORT_TYPE ReportType,
+	  _In_   USAGE UsagePage,
+	  _In_   USHORT LinkCollection,
+	  _In_   USAGE Usage,
+	  _Out_  PULONG UsageValue,
+	  _In_   PHIDP_PREPARSED_DATA PreparsedData,
+	  _In_   PCHAR Report,
+	  _In_   ULONG ReportLength
+	);
+	*/
 }
