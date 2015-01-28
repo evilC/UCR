@@ -274,42 +274,77 @@ InputMsg(wParam, lParam) {
 			; sizeof(HIDP_REPORT_TYPE) = 4
 			; HidP_Input = 0
 			
+			; Following C code from here: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
 			
 			/*
-			// Parse the raw input header to read its size.
-			UINT bufferSize;
-			GetRawInputData(HRAWINPUT)lParam, RID_INPUT, NULL, &bufferSize, sizeof(RAWINPUTHEADER));
+			// Get the preparsed data block
 
-			// Allocate memory for the raw input data and retrieve it
-			PRAWINPUT = (PRAWINPUT)HeapAlloc(GetProcessHeap(), 0, bufferSize);
-			GetRawInputData(HRAWINPUT)lParam, RID_INPUT, rawInput /* NOT NULL */, &bufferSize, sizeof(RAWINPUTHEADER));
+			CHECK( GetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize) == 0 );
+			CHECK( pPreparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(hHeap, 0, bufferSize) );
+			CHECK( (int)GetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_PREPARSEDDATA, pPreparsedData, &bufferSize) >= 0 );
+			
 			*/
 			r := AHKHID_GetInputData(lParam, uData)
 			
 			i := AHKHID_GetDevIndex(h)
-			dev_handle := AHKHID_GetDevHandle(i)
+			hDevice := AHKHID_GetDevHandle(i)
 
-			res := GetRIDI_PREPARSEDDATA(dev_handle, preparsedData)
+			res := GetRIDI_PREPARSEDDATA(hDevice, pPreparsedData)
 			
+			/*
+			// Get the joystick's capabilities
+			
+			// Button caps
+			CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
+			CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
+
+			capsLength = Caps.NumberInputButtonCaps;
+			CHECK( HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
+			g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
+			*/
 			VarSetCapacity(caps, 64) ; sizeof(HIDP_CAPS) = 64
 
-			res := HidP_GetCaps(preparsedData, caps)
+			res := HidP_GetCaps(pPreparsedData, caps)
 
 			capsLength := NumGet(caps, 48, "UShort")
 			
-			VarSetCapacity(valueCaps, 72 * capsLength)
+			;VarSetCapacity(valueCaps, 72 * capsLength)
 			
 			NumberInputButtonCaps := NumGet(Caps, 46, "UShort")
 			VarSetCapacity(pButtonCaps, NumberInputButtonCaps * 72)
 			
-			res := HidP_GetButtonCaps(pButtonCaps, NumberInputButtonCaps, preparsedData)
+			res := HidP_GetButtonCaps(pButtonCaps, NumberInputButtonCaps, pPreparsedData)
 			
 			UsageMin := NumGet(pButtonCaps, 56, "UShort")
 			UsageMax := NumGet(pButtonCaps, 58, "UShort")
 			UsagePage := NumGet(pButtonCaps, 0, "UShort")
-			UsageLength := (UsageMax - UsageMin) + 1
-			buttons := UsageLength
+			g_NumberOfButtons := (UsageMax - UsageMin) + 1
+
+			/*
+			// Value caps
+			CHECK( pValueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_VALUE_CAPS) * Caps.NumberInputValueCaps) );
+			capsLength = Caps.NumberInputValueCaps;
+			CHECK( HidP_GetValueCaps(HidP_Input, pValueCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
+			*/
 			
+			; Ignore for now, try and fully decode buttons first
+			
+			/*
+			// Get the pressed buttons
+
+			usageLength = g_NumberOfButtons;
+			CHECK(
+				HidP_GetUsages(
+					HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData,
+					(PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
+				) == HIDP_STATUS_SUCCESS );
+
+			ZeroMemory(bButtonStates, sizeof(bButtonStates));
+			for(i = 0; i < usageLength; i++)
+				bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
+			*/
+			
+			; ???
 			/*
 			LinkCollection := NumGet(Caps, 6, "UShort")
 			VarSetCapacity(UsageList, 128)
@@ -317,7 +352,7 @@ InputMsg(wParam, lParam) {
 			ReportLength := NumGet(caps, 4, "UShort")
 			;VarSetCapacity(Report, ReportLength)
 			;                                     ReportType,           UsagePage,    LinkCollection,         UsageList,        UsageLength,         PreparsedData,         Report,    ReportLength
-			res := DllCall("Hid\HidP_GetUsages", "UShort", 0, "UShort", UsagePage,       "UShort", 0, "Ptr", &UsageList, "Ptr", &UsageLength, "Ptr", &preparsedData, "Ptr", &uData, "Uint", ReportLength)
+			res := DllCall("Hid\HidP_GetUsages", "UShort", 0, "UShort", UsagePage,       "UShort", 0, "Ptr", &UsageList, "Ptr", &UsageLength, "Ptr", &pPreparsedData, "Ptr", &uData, "Uint", ReportLength)
 			val := NumGet(UsageList,0,"UShort")
 			msgbox % val
 			*/
@@ -325,7 +360,7 @@ InputMsg(wParam, lParam) {
 			; Add to log
 			;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
 			;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
-			LV_ADD(,"Joystick", joysticks[name].human_name, "", "Buttons: " buttons)
+			LV_ADD(,"Joystick", joysticks[name].human_name, "", "Buttons: " g_NumberOfButtons)
 		}
 	}
 	
@@ -429,9 +464,14 @@ HidP_GetCaps(ByRef PreparsedData, Capabilities){
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539715(v=vs.85).aspx
 
+	---
+	
+	C++
 	// Create a structure that will hold the values
 	HidP_GetCaps(preparsedData, &caps);
 	USHORT capsLength = caps.NumberInputValueCaps;
+	
+	---
 	
 	HidP_GetCaps(
 	  _In_   PHIDP_PREPARSED_DATA PreparsedData,
@@ -534,6 +574,8 @@ HidP_GetButtonCaps(ByRef ButtonCaps, ButtonCapsLength, ByRef PreparsedData){
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539707(v=vs.85).aspx
 
+	---
+	
 	C++ 
 	CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
 	CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
@@ -541,6 +583,8 @@ HidP_GetButtonCaps(ByRef ButtonCaps, ButtonCapsLength, ByRef PreparsedData){
 	capsLength = Caps.NumberInputButtonCaps;
 	CHECK( HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
 	g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
+	
+	---
 
 	HidP_GetButtonCaps(
 	  _In_     HIDP_REPORT_TYPE ReportType,
@@ -599,10 +643,12 @@ HidP_GetButtonCaps(ByRef ButtonCaps, ButtonCapsLength, ByRef PreparsedData){
 
 HidP_GetUsages(){
 	/*
-	//
+	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539742(v=vs.85).aspx
+	
+	---
+	
+	C++
 	// Get the pressed buttons
-	//
-
 	usageLength = g_NumberOfButtons;
 	CHECK(
 		HidP_GetUsages(
@@ -612,10 +658,9 @@ HidP_GetUsages(){
 	ZeroMemory(bButtonStates, sizeof(bButtonStates));
 	for(i = 0; i < usageLength; i++)
 		bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
-
-	*/
-
-	/*
+	
+	---
+	
 	HidP_GetUsages(
 	  _In_     HIDP_REPORT_TYPE ReportType,
 	  _In_     USAGE UsagePage,
