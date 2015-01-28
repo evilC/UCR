@@ -241,14 +241,39 @@ InputMsg(wParam, lParam) {
 	} Else If (r = RIM_TYPEHID) {
 		; Stick Input ==============
 		; reference material: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
+		; same-ish: http://www.wenda.io/questions/5585134/native-way-to-get-the-feature-report-descriptor-of-hid-device.html
 		h := AHKHID_GetInputInfo(lParam, II_DEVHANDLE )
 		name := AHKHID_GetDevName(h,1)
 		if (name == StickID){
+			; sizeof(HIDP_CAPS) = 64
+			; sizeof(HIDP_VALUE_CAPS) = 72
+			; sizeof(HIDP_BUTTON_CAPS) = 72
+			; sizeof(USAGE) = 2
+			; sizeof(HIDP_REPORT_TYPE) = 4
+			; HidP_Input = 0
+			HIDP_STATUS_SUCCESS := 1114112
+			
+			/*
+			// Parse the raw input header to read its size.
+			UINT bufferSize;
+			GetRawInputData(HRAWINPUT)lParam, RID_INPUT, NULL, &bufferSize, sizeof(RAWINPUTHEADER));
+
+			// Allocate memory for the raw input data and retrieve it
+			PRAWINPUT = (PRAWINPUT)HeapAlloc(GetProcessHeap(), 0, bufferSize);
+			GetRawInputData(HRAWINPUT)lParam, RID_INPUT, rawInput /* NOT NULL */, &bufferSize, sizeof(RAWINPUTHEADER));
+			*/
 			r := AHKHID_GetInputData(lParam, uData)
 			
 			i := AHKHID_GetDevIndex(h)
 			dev_handle := AHKHID_GetDevHandle(i)
 
+			/*
+			// Again, read the data size, allocate then retrieve
+			GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
+			PHIDP_PREPARSED_DATA preparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(heap, 0, bufferSize);
+			GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, preparsedData, &bufferSize);
+			*/
+			;C++ GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
 			/*
 			UINT WINAPI GetRawInputDeviceInfo(
 			  _In_opt_     HANDLE hDevice,
@@ -257,41 +282,50 @@ InputMsg(wParam, lParam) {
 			  _Inout_      PUINT pcbSize
 			);
 			*/
-			;res := DllCall("GetRawInputDeviceInfo", "Uint", dev_handle, "Uint", RIDI_PREPARSEDDATA, "Uint", 0, "Uint", 1000)
 			res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", 0, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
-			VarSetCapacity(uRawInput, iSize)
-			res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", &uRawInput, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
 			
-			VarSetCapacity(DevCaps, 64) ; sizeof(HIDP_CAPS) = 64
-			res := DllCall("Hid\HidP_GetCaps", "Ptr", &uRawInput, "Ptr", &DevCaps)
+			;C++ PHIDP_PREPARSED_DATA preparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(heap, 0, bufferSize);
+			VarSetCapacity(preparsedData, iSize)
 			
-			;nivc := NumGet(DevCaps, 0, "UShort")
-			nivc := NumGet(DevCaps, 48, "UShort")
-			msgbox % nivc
-			
+			;C++ GetRawInputDeviceInfo(rawInput->header.hDevice, RIDI_PREPARSEDDATA, preparsedData, &bufferSize);
+			res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", &preparsedData, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
+
 			/*
-				typedef struct _HIDP_CAPS {
-			02	  USAGE  Usage;
-			04	  USAGE  UsagePage;
-			06	  USHORT InputReportByteLength;
-			08	  USHORT OutputReportByteLength;
-			10	  USHORT FeatureReportByteLength;
-			12 0  USHORT Reserved[17];
-			14 1
-			16 2
-			18 3
-			20 4
-			22 5
-			24 6
-			26 7
-			28 8
-			30 9
-			32 10
-			34 11
-			36 12
-			38 13
-			40 14
-			42 16
+			// Create a structure that will hold the values
+			HidP_GetCaps(preparsedData, &caps);
+			USHORT capsLength = caps.NumberInputValueCaps;
+			PHIDP_VALUE_CAPS valueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(heap, 0, capsLength*sizeof(HIDP_VALUE_CAPS));
+			HidP_GetValueCaps(HidP_Input, valueCaps, &capsLength, preparsedData);
+			*/
+	
+			;C++ HidP_GetCaps(preparsedData, &caps);
+			/*
+			sizeof(HIDP_CAPS) = 64
+			offsetof(HIDP_CAPS, NumberLinkCollectionNodes) = 44
+			
+			typedef struct _HIDP_CAPS {
+			00	  USAGE  Usage;
+			02	  USAGE  UsagePage;
+			04	  USHORT InputReportByteLength;
+			06	  USHORT OutputReportByteLength;
+			08	  USHORT FeatureReportByteLength;
+			10 0  USHORT Reserved[17];
+			12 1
+			14 2
+			16 3
+			18 4
+			20 5
+			22 6
+			24 7
+			26 8
+			28 9
+			30 10
+			32 11
+			34 12
+			36 13
+			38 14
+			40 16
+			42 17 -- isn't 0-16 17 items? However without this line, length is not 64
 			44	  USHORT NumberLinkCollectionNodes;
 			46	  USHORT NumberInputButtonCaps;
 		   *48	  USHORT NumberInputValueCaps;
@@ -302,11 +336,158 @@ InputMsg(wParam, lParam) {
 			58	  USHORT NumberFeatureButtonCaps;
 			60	  USHORT NumberFeatureValueCaps;
 			62	  USHORT NumberFeatureDataIndices;
+			64 - end
+			}
+			*/
+			VarSetCapacity(caps, 64) ; sizeof(HIDP_CAPS) = 64
+			res := DllCall("Hid\HidP_GetCaps", "Ptr", &preparsedData, "Ptr", &caps)
+
+			;C++ USHORT capsLength = caps.NumberInputValueCaps;
+			capsLength := NumGet(caps, 48, "UShort")
+			
+			;C++ PHIDP_VALUE_CAPS valueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(heap, 0, capsLength*sizeof(HIDP_VALUE_CAPS));
+			VarSetCapacity(valueCaps, 72 * capsLength)
+			
+			/*
+			C++ 
+			CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
+			CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
+
+			capsLength = Caps.NumberInputButtonCaps;
+			CHECK( HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
+			g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
+			*/
+			/*
+			HidP_GetButtonCaps(
+			  _In_     HIDP_REPORT_TYPE ReportType,
+			  _Out_    PHIDP_BUTTON_CAPS ButtonCaps,
+			  _Inout_  PUSHORT ButtonCapsLength,
+			  _In_     PHIDP_PREPARSED_DATA PreparsedData
+			);
+			*/
+			NumberInputButtonCaps := NumGet(Caps, 46, "UShort")
+			VarSetCapacity(pButtonCaps, NumberInputButtonCaps * 72)
+			res := DllCall("Hid\HidP_GetButtonCaps", "Uint", 0, "Ptr", &pButtonCaps, "Ptr", &NumberInputButtonCaps, "Ptr",  &preparsedData)
+			UsageMin := NumGet(pButtonCaps, 56, "UShort")
+			UsageMax := NumGet(pButtonCaps, 58, "UShort")
+			buttons := (UsageMax - UsageMin) + 1
+			;msgbox % "This device has " buttons " buttons"
+			;UsageMin = 56
+			;UsageMax = 58
+			
+			/*
+				typedef struct _HIDP_BUTTON_CAPS {
+				  USAGE   UsagePage;
+				  UCHAR   ReportID;
+				  BOOLEAN IsAlias;
+				  USHORT  BitField;
+				  USHORT  LinkCollection;
+				  USAGE   LinkUsage;
+				  USAGE   LinkUsagePage;
+				  BOOLEAN IsRange;
+				  BOOLEAN IsStringRange;
+				  BOOLEAN IsDesignatorRange;
+				  BOOLEAN IsAbsolute;
+				  ULONG   Reserved[10];
+				  union {
+					struct {
+					  USAGE  UsageMin;
+					  USAGE  UsageMax;
+					  USHORT StringMin;
+					  USHORT StringMax;
+					  USHORT DesignatorMin;
+					  USHORT DesignatorMax;
+					  USHORT DataIndexMin;
+					  USHORT DataIndexMax;
+					} Range;
+					struct {
+					  USAGE  Usage;
+					  USAGE  Reserved1;
+					  USHORT StringIndex;
+					  USHORT Reserved2;
+					  USHORT DesignatorIndex;
+					  USHORT Reserved3;
+					  USHORT DataIndex;
+					  USHORT Reserved4;
+					} NotRange;
+				  };
 				}
 			*/
+			;msgbox % res
+			
+			
+			
+			; C++ HidP_GetValueCaps(HidP_Input, valueCaps, &capsLength, preparsedData);
+			/*
+			https://msdn.microsoft.com/en-us/library/windows/hardware/ff539754(v=vs.85).aspx
+			HidP_GetValueCaps(
+			  _In_     HIDP_REPORT_TYPE ReportType,
+			  _Out_    PHIDP_VALUE_CAPS ValueCaps,
+			  _Inout_  PUSHORT ValueCapsLength,
+			  _In_     PHIDP_PREPARSED_DATA PreparsedData
+			)
+			
+			ReportType [in] - Specifies a HIDP_REPORT_TYPE enumerator value that identifies the report type.
+			ValueCaps [out] - Pointer to a caller-allocated buffer in which the routine returns a value capability array for the specified report type.
+			ValueCapsLength [in, out] - Specifies the length, on input, in array elements, of the ValueCaps buffer.
+			                            On output, the routine sets ValueCapsLength to the number of elements that the it actually returns.
+			PreparsedData [in] - Pointer to a top-level collection's preparsed data.
+			);
+			*/
+			; The HidP_GetValueCaps routine returns a VALUE CAPABILITY ARRAY that describes all the HID control values in a top-level collection for a specified type of HID report.
+			VarSetCapacity(ValueCapsLength, 2) ; USHORT
+			res := DllCall("Hid\HidP_GetValueCaps", "Uint", 0, "Ptr", &valueCaps, "Ptr", &capsLength, "ptr", &preparsedData)
+			
+			/*
+			typedef struct _HIDP_VALUE_CAPS {
+			00	  USAGE   UsagePage;
+			02	  UCHAR   ReportID;
+			03	  BOOLEAN IsAlias;
+			04	  USHORT  BitField;
+			06	  USHORT  LinkCollection;
+			08	  USAGE   LinkUsage;
+			10	  USAGE   LinkUsagePage;
+			12	  BOOLEAN IsRange;
+			13	  BOOLEAN IsStringRange;
+			14	  BOOLEAN IsDesignatorRange;
+			15	  BOOLEAN IsAbsolute;
+			16	  BOOLEAN HasNull;
+			17	  UCHAR   Reserved;
+			18	  USHORT  BitSize;
+			20	  USHORT  ReportCount;
+			22	  USHORT  Reserved2[5];
+			32	  ULONG   UnitsExp;
+			36	  ULONG   Units;
+			40	  LONG    LogicalMin;
+			44	  LONG    LogicalMax;
+			48	  LONG    PhysicalMin;
+			52	  LONG    PhysicalMax;
+			*/
+			UsagePage := NumGet(valueCaps, 0, "UShort")
+			LinkCollection := NumGet(valueCaps, 6, "Uchar")
+			Usage := 4
+			VarSetCapacity(UsageValue,4)
+			
+			;msgbox % test
 
-			waslogged := 1
-			;ret := AHKHID_GetPreParsedData(h, pPreparsedData)
+			/*
+			// Read sample value
+			HidP_GetUsageValue(HidP_Input, valueCaps[i].UsagePage, 0, valueCaps[i].Range.UsageMin, &value, preparsedData, 
+			
+			NTSTATUS __stdcall HidP_GetUsageValue(
+			  _In_   HIDP_REPORT_TYPE ReportType,
+			  _In_   USAGE UsagePage,
+			  _In_   USHORT LinkCollection,
+			  _In_   USAGE Usage,
+			  _Out_  PULONG UsageValue,
+			  _In_   PHIDP_PREPARSED_DATA PreparsedData,
+			  _In_   PCHAR Report,
+			  _In_   ULONG ReportLength
+			);
+			*/
+
+			;res := DllCall("Hid\HidP_GetUsageValue", "Uint", 0, "UShort", UsagePage, "UShort", LinkCollection, "UShort", 4, "Ptr", &UsageValue, "Ptr", &preparsedData, "Ptr", )
+			;msgbox % Errorlevel
 
 			; Decode preparsed data. Step 3, code block #2 @ http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
 			;HidP_GetCaps(pPreparsedData, &Caps)
@@ -360,7 +541,8 @@ InputMsg(wParam, lParam) {
 
 			; Add to log
 			;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
-			LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
+			;LV_ADD(,"Joystick", joysticks[name].human_name, "", Bin2Hex(&uData, r))
+			LV_ADD(,"Joystick", joysticks[name].human_name, "", "Buttons: " buttons)
 		}
 	}
 	
