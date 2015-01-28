@@ -1,11 +1,17 @@
 ; AHKHID test script
 #include <AHKHID>
 #SingleInstance force
+OnExit, GuiClose
 
 RIDI_PREPARSEDDATA := 0x20000005	; WinUser.h
+WH_KEYBOARD_LL := 13
+WH_MOUSE_LL := 14
 
 ;Intercept WM_INPUT
 OnMessage(0x00FF, "InputMsg")
+
+hHookKeybd := SetWindowsHookEx(WH_KEYBOARD_LL, RegisterCallback("Keyboard", "Fast"))
+hHookMouse := SetWindowsHookEx(WH_MOUSE_LL, RegisterCallback("MouseMove", "Fast"))
 
 joysticks := {}
 
@@ -73,11 +79,6 @@ GuiHandle := WinExist()
 Gosub, Register
 Return
 
-GuiEscape:
-GuiClose:
-ExitApp
-Return
-
 Register:
 	Gui, Submit, NoHide    ;Put the checkbox in associated var
 
@@ -123,7 +124,6 @@ ToHex(dec, padding := 4){
 
 InputMsg(wParam, lParam) {
 	Local r, h, wwaswheel
-	;global RIDI_PREPARSEDDATA
 	Critical    ;Or otherwise you could get ERROR_INVALID_HANDLE
 	r := AHKHID_GetInputInfo(lParam, II_DEVTYPE)
 	waslogged := 0
@@ -245,68 +245,8 @@ InputMsg(wParam, lParam) {
 		name := AHKHID_GetDevName(h,1)
 		if (name == StickID){
 			r := AHKHID_GetInputData(lParam, uData)
-			
-			i := AHKHID_GetDevIndex(h)
-			dev_handle := AHKHID_GetDevHandle(i)
-
-			/*
-			UINT WINAPI GetRawInputDeviceInfo(
-			  _In_opt_     HANDLE hDevice,
-			  _In_         UINT uiCommand,
-			  _Inout_opt_  LPVOID pData,
-			  _Inout_      PUINT pcbSize
-			);
-			*/
-			;res := DllCall("GetRawInputDeviceInfo", "Uint", dev_handle, "Uint", RIDI_PREPARSEDDATA, "Uint", 0, "Uint", 1000)
-			res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", 0, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
-			VarSetCapacity(uRawInput, iSize)
-			res := DllCall("GetRawInputDeviceInfo", "UInt", dev_handle, "UInt", RIDI_PREPARSEDDATA, "Ptr", &uRawInput, "UInt*", iSize, "UInt", 8 + A_PtrSize * 2)
-			
-			VarSetCapacity(DevCaps, 64) ; sizeof(HIDP_CAPS) = 64
-			res := DllCall("Hid\HidP_GetCaps", "Ptr", &uRawInput, "Ptr", &DevCaps)
-			
-			;nivc := NumGet(DevCaps, 0, "UShort")
-			nivc := NumGet(DevCaps, 48, "UShort")
-			msgbox % nivc
-			
-			/*
-				typedef struct _HIDP_CAPS {
-			02	  USAGE  Usage;
-			04	  USAGE  UsagePage;
-			06	  USHORT InputReportByteLength;
-			08	  USHORT OutputReportByteLength;
-			10	  USHORT FeatureReportByteLength;
-			12 0  USHORT Reserved[17];
-			14 1
-			16 2
-			18 3
-			20 4
-			22 5
-			24 6
-			26 7
-			28 8
-			30 9
-			32 10
-			34 11
-			36 12
-			38 13
-			40 14
-			42 16
-			44	  USHORT NumberLinkCollectionNodes;
-			46	  USHORT NumberInputButtonCaps;
-		   *48	  USHORT NumberInputValueCaps;
-			50	  USHORT NumberInputDataIndices;
-			52	  USHORT NumberOutputButtonCaps;
-			54	  USHORT NumberOutputValueCaps;
-			56	  USHORT NumberOutputDataIndices;
-			58	  USHORT NumberFeatureButtonCaps;
-			60	  USHORT NumberFeatureValueCaps;
-			62	  USHORT NumberFeatureDataIndices;
-				}
-			*/
-
 			waslogged := 1
-			;ret := AHKHID_GetPreParsedData(h, pPreparsedData)
+			ret := AHKHID_GetPreParsedData(h, pPreparsedData)
 
 			; Decode preparsed data. Step 3, code block #2 @ http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
 			;HidP_GetCaps(pPreparsedData, &Caps)
@@ -314,8 +254,8 @@ InputMsg(wParam, lParam) {
 			; 16 16-bit numbers - should be 256 size?
 			;VarSetCapacity(Caps, 256)
 			;ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "Ptr", &Caps)
-			;ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "UInt*", Caps)
-			;msgbox % "EL: " ErrorLevel "`nRet: " ret "`nCaps: " Caps
+			ret := DllCall("Hid\HidP_GetCaps", "Ptr", &pPreparsedData, "UInt*", Caps)
+			msgbox % "EL: " ErrorLevel "`nRet: " ret "`nCaps: " Caps
 
 			;returns -1072627711
 			
@@ -473,3 +413,58 @@ AHKHID_GetPreParsedData(InputHandle, ByRef uData) {
 	
 	Return (iSize * iCount)
 }
+
+Keyboard(nCode, wParam, lParam)
+{
+	Critical
+	SetFormat, Integer, H
+	If ((wParam = 0x100) || (wParam = 0x101))  ;   ; WM_KEYDOWN || WM_KEYUP
+	{
+		KeyName := GetKeyName("vk" NumGet(lParam+0, 0))
+		Tooltip, % (wParam = 0x100) ? KeyName " Down" :	KeyName " Up"
+		if (KeyName = "a"){
+			; Need to pass to function handling WM_INPUT, as it will not receive WM_INPUT message for this key, if the script is not the active app
+			;InputMsg(wParam, lParam)
+			return 1
+		}
+	}
+	Return CallNextHookEx(nCode, wParam, lParam)
+	;Return 1
+}
+
+MouseMove(nCode, wParam, lParam)
+{
+	Critical
+	if (wParam != 512){
+		; filter out mouse movement
+		tooltip % nCode ", " wParam
+		SetFormat, Integer, D
+		;If (!nCode && (wParam = 0x200)){
+			;Tooltip, %  "X " NumGet(lParam+0, 0, int) " Y " NumGet(lParam+0, 4, int)
+		;}
+	}
+	Return CallNextHookEx(nCode, wParam, lParam)
+}
+
+SetWindowsHookEx(idHook, pfn)
+{
+	Return DllCall("SetWindowsHookEx", "int", idHook, "Uint", pfn, "Uint", DllCall("GetModuleHandle", "Uint", 0), "Uint", 0)
+}
+
+UnhookWindowsHookEx(hHook)
+{
+	Return DllCall("UnhookWindowsHookEx", "Uint", hHook)
+}
+
+CallNextHookEx(nCode, wParam, lParam, hHook = 0)
+{
+	Return DllCall("CallNextHookEx", "Uint", hHook, "int", nCode, "Uint", wParam, "Uint", lParam)
+}
+
+Esc::ExitApp
+
+GuiClose:
+Unhook:
+UnhookWindowsHookEx(hHookKeybd)
+UnhookWindowsHookEx(hHookMouse)
+ExitApp
