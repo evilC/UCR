@@ -7,38 +7,46 @@ A_PtrSize for x86 is 4, so divide all sizeof() results by 4, feed result into ps
 ; sizeof(): https://raw.githubusercontent.com/HotKeyIt/_Struct/master/sizeof.ahk - docs: http://www.autohotkey.net/~HotKeyIt/AutoHotkey/sizeof.htm
 #singleinstance force
 #Include <_Struct>
-global RAWINPUTDEVICELIST := "HANDLE hDevice,DWORD  dwType"
-global RIDI_DEVICENAME := 0x20000007, RIDI_DEVICEINFO := 0x2000000b, RIDI_PREPARSEDDATA := 0x20000005
-global TYPE_RIM := {0: "Mouse", 1: "Keyboard", 2: "Other"}
 
-iCount := GetRawInputDeviceList(0,iCount)
-DeviceList := new _Struct("RAWINPUTDEVICELIST[" iCount "]")
-GetRawInputDeviceList(DeviceList, iCount)
+HID := new _HID()
+
+iCount := HID.GetRawInputDeviceList(0,iCount)
+DeviceList := new _Struct("HID.STRUCT_RAWINPUTDEVICELIST[" iCount "]")
+HID.GetRawInputDeviceList(DeviceList, iCount)
 
 Loop %  iCount {
-	s .= "#" A_Index " - Handle: " DeviceList[A_Index].hDevice ", Type: " TYPE_RIM[DeviceList[A_Index].dwType] "`n"
+	s .= "#" A_Index " - Handle: " DeviceList[A_Index].hDevice ", Type: " HID.TYPE_RIM[DeviceList[A_Index].dwType] "`n"
 }
 
 msgbox % s
 return
 
-GetRawInputDeviceList(ByRef DeviceList:="", ByRef iCount:=0){
-	if (IsByRef(DeviceList)){
-		; DeviceList contains a struct, not a number
-		dl := DeviceList[]
-	} else {
-		; Contains nothing, or a number - requesting count
-		dl := 0
+Class _HID {
+	STRUCT_RAWINPUTDEVICELIST := "HANDLE hDevice,DWORD  dwType"
+	RIDI_DEVICENAME := 0x20000007, RIDI_DEVICEINFO := 0x2000000b, RIDI_PREPARSEDDATA := 0x20000005
+	TYPE_RIM := {0: "Mouse", 1: "Keyboard", 2: "Other"}
+	
+	GetRawInputDeviceList(ByRef DeviceList:="", ByRef iCount:=0){
+		if (IsByRef(DeviceList)){
+			; DeviceList contains a struct, not a number
+			dl := DeviceList[]
+			;msgbox % "1: " sizeof(DeviceList)
+		} else {
+			; Contains nothing, or a number - requesting count
+			dl := 0
+			;msgbox % "0: " sizeof(DeviceList)
+		}
+		
+		; Perform the call
+		;r := DllCall("GetRawInputDeviceList", "Ptr", dl, "UInt*", iCount, "UInt", sizeof(STRUCT_RAWINPUTDEVICELIST) )
+		r := DllCall("GetRawInputDeviceList", "Ptr", dl, "UInt*", iCount, "UInt", sizeof(this.STRUCT_RAWINPUTDEVICELIST) )
+		
+		;Check for error
+		If (r = -1) Or ErrorLevel {
+			ErrorLevel = GetRawInputDeviceList call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
+			Return -1
+		} Else Return iCount
 	}
-	
-    ; Perform the call
-    r := DllCall("GetRawInputDeviceList", "Ptr", dl, "UInt*", iCount, "UInt", sizeof(RAWINPUTDEVICELIST) )
-	
-    ;Check for error
-    If (r = -1) Or ErrorLevel {
-        ErrorLevel = GetRawInputDeviceList call failed.`nReturn value: %r%`nErrorLevel: %ErrorLevel%`nLine: %A_LineNumber%`nLast Error: %A_LastError%
-        Return -1
-    } Else Return iCount
 }
 
 GetRawInputDeviceInfo(hDevice, uiCommand := -1, ByRef pData := 0, ByRef pcbSize := 0){
