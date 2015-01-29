@@ -4,6 +4,7 @@
 
 RIDI_PREPARSEDDATA := 0x20000005	; WinUser.h
 HIDP_STATUS_SUCCESS := 1114112
+HidP_Input := 0
 /*
 #define HIDP_STATUS_SUCCESS                  (HIDP_ERROR_CODES(0x0,0)) 1114112
 #define HIDP_STATUS_NULL                     (HIDP_ERROR_CODES(0x8,1)) 2148597761
@@ -272,7 +273,7 @@ InputMsg(wParam, lParam) {
 			; sizeof(HIDP_BUTTON_CAPS) = 72
 			; sizeof(USAGE) = 2
 			; sizeof(HIDP_REPORT_TYPE) = 4
-			; HidP_Input = 0
+			HidP_Input = 0
 			
 			; Following C code from here: http://www.codeproject.com/Articles/185522/Using-the-Raw-Input-API-to-Process-Joystick-Input
 			
@@ -310,10 +311,11 @@ InputMsg(wParam, lParam) {
 			
 			;VarSetCapacity(valueCaps, 72 * capsLength)
 			
-			NumberInputButtonCaps := NumGet(Caps, 46, "UShort")
+			;NumberInputButtonCaps := NumGet(Caps, 46, "UShort")
 			VarSetCapacity(pButtonCaps, NumberInputButtonCaps * 72)
 			
-			res := HidP_GetButtonCaps(pButtonCaps, NumberInputButtonCaps, pPreparsedData)
+			res := HidP_GetButtonCaps(HidP_Input, pButtonCaps, capsLength, pPreparsedData)
+			;msgbox % res
 			
 			UsageMin := NumGet(pButtonCaps, 56, "UShort")
 			UsageMax := NumGet(pButtonCaps, 58, "UShort")
@@ -321,30 +323,53 @@ InputMsg(wParam, lParam) {
 			g_NumberOfButtons := (UsageMax - UsageMin) + 1
 
 			/*
+			; Ignore for now, try and fully decode buttons first
+
 			// Value caps
 			CHECK( pValueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_VALUE_CAPS) * Caps.NumberInputValueCaps) );
 			capsLength = Caps.NumberInputValueCaps;
 			CHECK( HidP_GetValueCaps(HidP_Input, pValueCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS )
 			*/
-			
-			; Ignore for now, try and fully decode buttons first
-			
+
 			/*
 			// Get the pressed buttons
 
 			usageLength = g_NumberOfButtons;
 			CHECK(
 				HidP_GetUsages(
-					HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData,
-					(PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
+					HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData, (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
 				) == HIDP_STATUS_SUCCESS );
 
 			ZeroMemory(bButtonStates, sizeof(bButtonStates));
 			for(i = 0; i < usageLength; i++)
 				bButtonStates[usage[i] - pButtonCaps->Range.UsageMin] = TRUE;
 			*/
-			
+			; pButtonCaps->Range.UsageMin = 56
+
+			;pRawinput was got like this: GetRawInputData((HRAWINPUT)lParam, RID_INPUT, pRawInput, &bufferSize, sizeof(RAWINPUTHEADER));
+			; RAWHID struct: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645549(v=vs.85).aspx
+			; pRawInput->data.hid = 16
+			; dwSizeHid = +0 (DWORD)
+			; bRawData = +8 (BYTE)
 			; ???
+			/*
+			HidP_GetUsages(
+			  _In_     HIDP_REPORT_TYPE ReportType,
+			  _In_     USAGE UsagePage,
+			  _In_     USHORT LinkCollection,
+			  _Out_    PUSAGE UsageList,
+			  _Inout_  PULONG UsageLength,
+			  _In_     PHIDP_PREPARSED_DATA PreparsedData,
+			  _Out_    PCHAR Report,
+			  _In_     ULONG ReportLength
+			);
+			*/
+			dwSizeHid := NumGet(uData, 16, "Uint")
+			bRawData := NumGet(uData, 24, "UChar")
+			usageLength := g_NumberOfButtons
+			res := DllCall("Hid\HidP_GetUsages", "Uint", 0, "Uint", UsagePage, "Uint", 0, "Ptr", &UsageList, "Ptr", &UsageLength, "Ptr", &pPreparsedData, "Ptr", &Report, "Uint", capsLength)
+			
+			msgbox % ErrorLevel
 			/*
 			LinkCollection := NumGet(Caps, 6, "UShort")
 			VarSetCapacity(UsageList, 128)
@@ -570,14 +595,13 @@ HidP_GetValueCaps(){
 	*/
 }
 
-HidP_GetButtonCaps(ByRef ButtonCaps, ButtonCapsLength, ByRef PreparsedData){
+HidP_GetButtonCaps(HidP_Input, ByRef ButtonCaps, ButtonCapsLength, ByRef PreparsedData){
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539707(v=vs.85).aspx
 
 	---
 	
 	C++ 
-	CHECK( HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS )
 	CHECK( pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps) );
 
 	capsLength = Caps.NumberInputButtonCaps;
@@ -634,7 +658,7 @@ HidP_GetButtonCaps(ByRef ButtonCaps, ButtonCapsLength, ByRef PreparsedData){
 	global HIDP_STATUS_SUCCESS
 	
 	VarSetCapacity(ButtonCaps, ButtonCapsLength * 72)
-	res := DllCall("Hid\HidP_GetButtonCaps", "Uint", 0, "Ptr", &ButtonCaps, "Ptr", &ButtonCapsLength, "Ptr",  &PreparsedData)
+	res := DllCall("Hid\HidP_GetButtonCaps", "Uint", HidP_Input, "Ptr", &ButtonCaps, "Ptr", &ButtonCapsLength, "Ptr",  &PreparsedData)
 	if (res != HIDP_STATUS_SUCCESS){
 		msgbox A_ThisFunc ": HidP_GetButtonCaps Failed!"
 	}
