@@ -291,7 +291,7 @@ InputMsg(wParam, lParam) {
 			hDevice := AHKHID_GetDevHandle(i)
 
 			res := GetRIDI_PREPARSEDDATA(hDevice, pPreparsedData)
-			
+			var := NumGet(pPreparsedData, 0, "UShort")
 			/*
 			// Get the joystick's capabilities
 			
@@ -305,16 +305,20 @@ InputMsg(wParam, lParam) {
 			*/
 			VarSetCapacity(caps, 64) ; sizeof(HIDP_CAPS) = 64
 
-			res := HidP_GetCaps(pPreparsedData, caps)
+			res := HidP_GetCaps(&pPreparsedData, &caps)
 
 			capsLength := NumGet(caps, 48, "UShort")
 			
 			;VarSetCapacity(valueCaps, 72 * capsLength)
 			
-			;NumberInputButtonCaps := NumGet(Caps, 46, "UShort")
-			VarSetCapacity(pButtonCaps, NumberInputButtonCaps * 72)
+			;NumberInputButtonCaps := NumGet(caps, 46, "UShort")
+			;VarSetCapacity(pButtonCaps, NumberInputButtonCaps * 72)
 			
-			res := HidP_GetButtonCaps(HidP_Input, pButtonCaps, capsLength, pPreparsedData)
+			;res := HidP_GetButtonCaps(HidP_Input, pButtonCaps, capsLength, pPreparsedData)
+			;VarSetCapacity(ButtonCaps, ButtonCapsLength * 72)
+			
+			;res := DllCall("Hid\HidP_GetButtonCaps", "Uint", 0, "Ptr", &pButtonCaps, "Ptr", &capsLength, "Ptr",  &pPreparsedData)
+	
 			;msgbox % res
 			
 			UsageMin := NumGet(pButtonCaps, 56, "UShort")
@@ -485,7 +489,7 @@ GetRIDI_PREPARSEDDATA(hDevice, ByRef pData){
 	return ErrorLevel
 }
 
-HidP_GetCaps(ByRef PreparsedData, Capabilities){
+HidP_GetCaps(ByRef PreparsedData, ByRef Capabilities){
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/hardware/ff539715(v=vs.85).aspx
 
@@ -543,7 +547,7 @@ HidP_GetCaps(ByRef PreparsedData, Capabilities){
 	VarSetCapacity(Capabilities, 64) ; sizeof(HIDP_CAPS) = 64
 	res := DllCall("Hid\HidP_GetCaps", "Ptr", &PreparsedData, "Ptr", &Capabilities)
 	if (res != HIDP_STATUS_SUCCESS){
-		msgbox A_ThisFunc ": HidP_GetCaps Failed!"
+		msgbox % A_ThisFunc ": HidP_GetCaps Failed! ErrorLevel: " ErrorLevel
 	}
 	return ErrorLevel
 }
@@ -658,6 +662,7 @@ HidP_GetButtonCaps(HidP_Input, ByRef ButtonCaps, ButtonCapsLength, ByRef Prepars
 	global HIDP_STATUS_SUCCESS
 	
 	VarSetCapacity(ButtonCaps, ButtonCapsLength * 72)
+	
 	res := DllCall("Hid\HidP_GetButtonCaps", "Uint", HidP_Input, "Ptr", &ButtonCaps, "Ptr", &ButtonCapsLength, "Ptr",  &PreparsedData)
 	if (res != HIDP_STATUS_SUCCESS){
 		msgbox A_ThisFunc ": HidP_GetButtonCaps Failed!"
