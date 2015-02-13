@@ -13,10 +13,11 @@ Class UCR extends _CWindow {
 	Plugins := []
 	__New(){
 		base.__New()
-		this.mytext := this.Add("Text","xm ym","Blah")
-		this.mybtn := this.Add("Button","xm yp+20","Test")
+		this.myedit := this.Add("Edit","xm ym w100","ChangeMe")
+		this.mybtn := this.Add("Button","xm yp+20 w100","Beep")
 		this.Show("w500 h400", "UCR")
 		this.GuiControl("+g", this.mybtn, this.Test)
+		this.GuiControl("+g", this.myedit, this.EditChanged)
 		
 		this.ChildWindow := new _CWindow("-Border +Parent" this._hwnd)
 		this.ChildWindow.Show("x175 y0 w300 h400")
@@ -36,6 +37,10 @@ Class UCR extends _CWindow {
 	Test(){
 		SoundBeep
 	}
+	
+	EditChanged(){
+		this.ToolTip(this.myedit.value, 2000)
+	}
 }
 
 ; Wrap AHK functionality in a standardized, easy to use, syntactically similar class
@@ -48,7 +53,7 @@ Class _CWindow {
 	
 	; Equivalent to Gui, Add, <params>
 	Add(aParams*){
-		return new this.Control(this, aParams*)
+		return new this._CGuiControl(this, aParams*)
 	}
 	
 	; Equivalent to Gui, Show, <params>
@@ -73,14 +78,34 @@ Class _CWindow {
 	}
 	
 	; Gui Controls
-	Class Control {
+	Class _CGuiControl {
 		; equivalent to Gui, Add, <params>
 		; Pass parent as param 1
 		__New(aParams*){
 			this._parent := aParams[1]
+			this._type := aParams[2]
 			Gui, % this._parent._hwnd ":Add", % aParams[2], % "hwndhwnd " aParams[3], % aParams[4]
 			this._hwnd := hwnd
 		}
+		
+		__Get(aParam){
+			if (aParam = "value"){
+				; ToDo: What about other types?
+				;if (this._type = "listview"){
+				GuiControlGet, val, , % this._hwnd
+				return val
+			}
+		}
+	}
+	
+	ToolTip(Text, duration){
+		fn := bind(this.ToolTipTimer, this)
+		SetTimer, % fn, % "-" duration
+		ToolTip % Text
+	}
+	
+	ToolTipTimer(){
+		ToolTip
 	}
 }
 
