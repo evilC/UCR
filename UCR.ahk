@@ -6,61 +6,80 @@ Esc::
 GuiClose:
 	ExitApp
 
-class UCR extends _CAhkWrapper {
+Class UCR extends _CWindow {
 	__New(){
-		this.hwnd := this.Gui("New")
-		this.myedit := this.Gui("Add", "Edit", "xm ym")
-		this.mytext := this.Gui("Add", "Text", "xm yp+20", "nothing")
-		this.Gui("Show")
-		this.GuiControl(,this.mytext, "Test")
+		base.__New()
+		this.mytext := this.Add("Text","xm ym","Blah")
+		this.mybtn := this.Add("Button","xm yp+20","Test")
+		this.Show("w500 h400", "UCR")
+		this.GuiControl("+g", this.mybtn, this.Test)
+	}
+	
+	Test(){
+		SoundBeep
 	}
 }
 
-/*
-class _CGui extends _CAhkWrapper {
-	class Window {
-		__New(aParams*){
-			this.hwnd := this.Gui("New")
-		}
-		
-		Add(aParams*){
-			
-		}
-		
-		Show(aParams*){
-			this.Gui("Show")
-		}
+; Wrap AHK functionality in a standardized, easy to use, syntactically similar class
+Class _CWindow {
+	; equivalent to Gui, New, <params>
+	__New(aParams*){
+		Gui, new, % "hwndhwnd " aParams[1], % aParams[2], % aParams[3]
+		this._hwnd := hwnd
 	}
-}
-
-class _CGuiControl extends _CAhkWrapper {
-	__New(){
-		
+	
+	; Equivalent to Gui, Add, <params>
+	Add(aParams*){
+		return new this.Control(this, aParams*)
 	}
-}
-*/
-
-; A class to wrap AHK - standardize methods, improve v1/v2 portability etc.
-class _CAhkWrapper {
-	hwnd := 0
-	; Essenially prefixes Gui commands with hwnds
-	Gui(aParams*){
-		if (aParams[1] = "new"){
-			Gui, new, % "hwndhwnd " aParams[2], % aParams[3], % aParams[4]
-			return hwnd	; up to you to store handle!
-		} else if (aParams[1] = "add") {
-			Gui, % this.hwnd ":Add", % aParams[2], % "hwndhwnd " aParams[3], % aParams[4]
-			return hwnd	; up to you to store handle!
+	
+	; Equivalent to Gui, Show, <params>
+	Show(aParams*){
+		Gui, % this._hwnd ":Show", % aParams[1], % aParams[2], % aParams[3]
+	}
+	
+	; Wraps GuiControl to use hwnds and function binding etc
+	GuiControl(aParams*){
+		m := SubStr(aParams[1],1,1)
+		if (m = "+" || m = "-"){
+			; Options
+			o := SubStr(aParams[1],2,1)
+			if (o = "g"){
+				; G-Label
+				fn := bind(aParams[3],this)
+				GuiControl % aParams[1], % aParams[2]._hwnd, % fn
+			}
 		} else {
-			Gui, % this.hwnd ":" aParams[1], % aParams[2], % aParams[3], % aParams[4]
-		}
-		if (!hwnd){
+			GuiControl, % aParams[1], % aParams[2]._hwnd, % aParams[3]
 		}
 	}
 	
-	; Command to function
-	GuiControl(aParams*){
-		GuiControl, % aParams[1], % aParams[2], % aParams[3]
+	; Gui Controls
+	Class Control {
+		; equivalent to Gui, Add, <params>
+		; Pass parent as param 1
+		__New(aParams*){
+			this._parent := aParams[1]
+			Gui, % this._parent._hwnd ":Add", % aParams[2], % "hwndhwnd " aParams[3], % aParams[4]
+			this._hwnd := hwnd
+		}
 	}
 }
 
+bind(fn, args*) {  ; bind v1.2
+    try bound := fn.bind(args*)  ; Func.Bind() not yet implemented.
+    return bound ? bound : new BoundFunc(fn, args*)
+}
+
+class BoundFunc {
+    __New(fn, args*) {
+        this.fn := IsObject(fn) ? fn : Func(fn)
+        this.args := args
+    }
+    __Call(callee, args*) {
+        if (callee = "" || callee = "call" || IsObject(callee)) {  ; IsObject allows use as a method.
+            fn := this.fn, args.Insert(1, this.args*)
+            return %fn%(args*)
+        }
+    }
+}
