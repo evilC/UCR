@@ -10,14 +10,16 @@ GuiClose:
 Class MyClass extends _CPersistentWindow {
 	__New(){
 		base.__New()
-		
-		this.Gui("Margin",0,0)
-		this.myedit := this.Gui("Add", "Edit","xm ym w100","ChangeMe")
-		this.mybtn := this.Gui("Add","Button","xm yp+30 w100","Copy")
+		this.GUI_WIDTH := 200
+		this.Gui("Margin",5,5)
+		this.Gui("Add", "Text", "Center xm ym w" this.GUI_WIDTH, "Persistent (Change and Reload)")
+		this.myedit := this.Gui("Add", "Edit","xm yp+20 w" this.GUI_WIDTH,"ChangeMe")
+		this.myedit.MakePersistent("somename")
+		this.mybtn := this.Gui("Add","Button","xm yp+30 w" this.GUI_WIDTH,"Copy")
 		this.GuiControl("+g", this.mybtn, this.Test)	; pass object to bind g-label to, and method to bind to
 		this.GuiControl("+g", this.myedit, this.EditChanged)
-		this.myoutput := this.Gui("Add","Edit","xm yp+30 w100","")
-		this.Gui("Show")
+		this.myoutput := this.Gui("Add","Edit","xm yp+30 w" this.GUI_WIDTH,"")
+		this.Gui("Show", ,"Class Test")
 	}
 	
 	Test(){
@@ -32,14 +34,29 @@ Class MyClass extends _CPersistentWindow {
 	}
 }
 
+; Implement GuiControl persistence with IniRead / IniWrite
 class _CPersistentWindow extends _CWindow {
 	Class _CGuiControl extends _CWindow._CGuiControl {
 		; hook into the onchange event
 		OnChange(){
 			; IniWrite etc ...
-			return 1	; All went well, setting saved etc
+			if (this._PersistenceName){
+				val := this.value
+				sn := A_ScriptName ".ini"
+				k := this._PersistenceName
+				IniWrite, % this.value, % A_ScriptName ".ini", Settings, % this._PersistenceName
+			}
 		}
-
+		
+		; 
+		MakePersistent(Name){
+			; IniRead etc
+			this._PersistenceName := Name
+			IniRead, val, % A_ScriptName ".ini", Settings, % this._PersistenceName, -1
+			if (val != -1){
+				this.value := val
+			}
+		}
 	}
 }
 
@@ -107,9 +124,10 @@ Class _CWindow {
 			}
 		}
 		
-		; Designed to be overridden.
+		; Override this to hook into change events independently of g-label.
+		; Use to make GuiControls persistent between runs etc (ie save in INI file)
 		OnChange(){
-			return 1	; All went well, setting saved etc
+			
 		}
 		
 		; Called if a g-label is active OR persistence is on.
@@ -126,6 +144,7 @@ Class _CWindow {
 	
 	ToolTip(Text, duration){
 		fn := bind(this.ToolTipTimer, this)
+		this._TooltipActive := fn
 		SetTimer, % fn, % "-" duration
 		ToolTip % Text
 	}
