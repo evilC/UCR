@@ -264,7 +264,7 @@ Class _UCR_C_InputHandler extends _UCR_C_Window {
 			CheckInputState(input_obj){
 				count := 0
 				for key, value in input_obj {
-					msgbox % "key: " key ", value: " value " - db: " this.States[key]
+					;msgbox % "key: " key ", value: " value " - db: " this.States[key]
 					count++
 					if (this.States[key] != value){
 						return 0
