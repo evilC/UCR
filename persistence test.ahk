@@ -10,20 +10,20 @@ GuiClose:
 Class MyClass extends _CPersistentWindow {
 	__New(){
 		base.__New()
-		this.myedit := this.Add("Edit","xm ym w100","ChangeMe")
-		this.myedit.MakePersistent("myedit")
-		this.mybtn := this.Add("Button","xm yp+30 w100","Copy")
+		
+		this.Gui("Margin",0,0)
+		this.myedit := this.Gui("Add", "Edit","xm ym w100","ChangeMe")
+		this.mybtn := this.Gui("Add","Button","xm yp+30 w100","Copy")
 		this.GuiControl("+g", this.mybtn, this.Test)	; pass object to bind g-label to, and method to bind to
 		this.GuiControl("+g", this.myedit, this.EditChanged)
-		this.myoutput := this.Add("Edit","xm yp+30 w100","")
-		this.Show()
+		this.myoutput := this.Gui("Add","Edit","xm yp+30 w100","")
+		this.Gui("Show")
 	}
 	
 	Test(){
 		; Copy contents of one edit box to another
 		this.myoutput.value := this.myedit.value
 			SoundBeep
-
 	}
 	
 	EditChanged(){
@@ -51,14 +51,15 @@ Class _CWindow {
 		this._hwnd := hwnd
 	}
 	
-	; Equivalent to Gui, Add, <params>
-	Add(aParams*){
-		return new this._CGuiControl(this, aParams*)
-	}
-	
-	; Equivalent to Gui, Show, <params>
-	Show(aParams*){
-		Gui, % this._hwnd ":Show", % aParams[1], % aParams[2], % aParams[3]
+	Gui(aParams*){
+		if (aParams[1] = "new"){
+			Gui, new, % "hwndhwnd " aParams[2], % aParams[3], % aParams[4]
+			this._hwnd := hwnd
+		} else if (aParams[1] = "add") {
+			return new this._CGuiControl(this, aParams[2], aParams[3], aParams[4])
+		} else {
+			Gui, % this._hwnd ":" aParams[1], % aParams[2], % aParams[3], % aParams[4]
+		}
 	}
 	
 	; Wraps GuiControl to use hwnds and function binding etc
