@@ -36,8 +36,8 @@ Class MyClass extends _CPersistentWindow {
 }
 
 ; Implement GuiControl persistence with IniRead / IniWrite
-class _CPersistentWindow extends _CWindow {
-	Class _CGuiControl extends _CWindow._CGuiControl {
+class _CPersistentWindow extends _CGui {
+	Class _CGuiControl extends _CGuiControl {
 		; hook into the onchange event
 		OnChange(){
 			; IniWrite
@@ -59,12 +59,54 @@ class _CPersistentWindow extends _CWindow {
 	}
 }
 
+; Gui Controls
+Class _CGuiControl extends _CGui {
+	_glabel := 0
+	; equivalent to Gui, Add, <params>
+	; Pass parent as param 1
+	__New(aParams*){
+		this._parent := aParams[1]
+		this._type := aParams[2]
+		Gui, % this._parent._hwnd ":Add", % aParams[2], % "hwndhwnd " aParams[3], % aParams[4]
+		;this._parentGui("Add", aParams[2], aParams[3], aParams[4])
+		this._hwnd := hwnd
+	}
+	
+	__Get(aParam){
+		if (aParam = "value"){
+			; ToDo: What about other types?
+			;if (this._type = "listview"){
+			GuiControlGet, val, , % this._hwnd
+			return val
+		}
+	}
+	
+	__Set(aParam, aValue){
+		if (aParam = "value"){
+			return this._parent.GuiControl(,this,aValue)
+		}
+	}
+	
+	; Override this to hook into change events independently of g-label.
+	; Use to make GuiControls persistent between runs etc (ie save in INI file)
+	OnChange(){
+		
+	}
+	
+	; Called if a g-label is active OR persistence is on.
+	_OnChange(){
+		this.OnChange()	; Provide hook to update INI file etc
+		if (this._glabel != 0){
+			this._glabel.()
+		}
+	}
+}
+
 ; Wrap AHK functionality in a standardized, easy to use, syntactically similar class
-Class _CWindow {
+Class _CGui {
 	; equivalent to Gui, New, <params>
 	__New(aParams*){
-		Gui, new, % "hwndhwnd " aParams[1], % aParams[2], % aParams[3]
-		this._hwnd := hwnd
+		this.Gui("new", aParams[2], aParams[3], aParams[4])
 	}
 	
 	Gui(aParams*){
@@ -101,51 +143,6 @@ Class _CWindow {
 			}
 		} else {
 			GuiControl, % aParams[1], % aParams[2]._hwnd, % aParams[3]
-		}
-	}
-	
-	; Gui Controls
-	Class _CGuiControl {
-		_glabel := 0
-		; equivalent to Gui, Add, <params>
-		; Pass parent as param 1
-		__New(aParams*){
-			this._parent := aParams[1]
-			this._type := aParams[2]
-			Gui, % this._parent._hwnd ":Add", % aParams[2], % "hwndhwnd " aParams[3], % aParams[4]
-			this._hwnd := hwnd
-		}
-		
-		__Get(aParam){
-			if (aParam = "value"){
-				; ToDo: What about other types?
-				;if (this._type = "listview"){
-				GuiControlGet, val, , % this._hwnd
-				return val
-			}
-		}
-		
-		__Set(aParam, aValue){
-			if (aParam = "value"){
-				return this._parent.GuiControl(,this,aValue)
-			}
-		}
-		
-		; Override this to hook into change events independently of g-label.
-		; Use to make GuiControls persistent between runs etc (ie save in INI file)
-		OnChange(){
-			
-		}
-		
-		; Called if a g-label is active OR persistence is on.
-		_OnChange(){
-			this.OnChange()	; Provide hook to update INI file etc
-			if (this._glabel != 0){
-				ret := this._glabel.()
-				if (ret = 0){
-					; 
-				}
-			}
 		}
 	}
 	
