@@ -8,7 +8,7 @@ Esc::
 GuiClose:
 	ExitApp
 
-Class MyClass extends _CPersistentWindow {
+Class MyClass extends CWindow {
 	__New(){
 		base.__New()
 		this.GUI_WIDTH := 200
@@ -36,8 +36,8 @@ Class MyClass extends _CPersistentWindow {
 }
 
 ; Implement GuiControl persistence with IniRead / IniWrite
-class _CPersistentWindow extends _CGui {
-	Class _CGuiControl extends _CGuiControl {
+class CWindow extends _CGui {
+	Class CGuiControl extends _CGuiControl {
 		; hook into the onchange event
 		OnChange(){
 			; IniWrite
@@ -67,8 +67,8 @@ Class _CGuiControl extends _CGui {
 	__New(aParams*){
 		this._parent := aParams[1]
 		this._type := aParams[2]
+		; Must use base gui commands here, as this.Gui("Add",...) points here!
 		Gui, % this._parent._hwnd ":Add", % aParams[2], % "hwndhwnd " aParams[3], % aParams[4]
-		;this._parentGui("Add", aParams[2], aParams[3], aParams[4])
 		this._hwnd := hwnd
 	}
 	
@@ -120,7 +120,7 @@ Class _CGui {
 				MsgBox % "v-labels and g-labels are not allowed.`n`Please consult the documentation for alternate methods to use."
 				return
 			}
-			return new this._CGuiControl(this, aParams[2], aParams[3], aParams[4])
+			return new this.CGuiControl(this, aParams[2], aParams[3], aParams[4])
 		} else {
 			Gui, % this._hwnd ":" aParams[1], % aParams[2], % aParams[3], % aParams[4]
 		}
