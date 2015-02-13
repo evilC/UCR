@@ -23,11 +23,11 @@ Class MyClass extends CWindow {
 		this.myoutput := this.Gui("Add","Edit","xm yp+20 w" this.GUI_WIDTH,"")
 		
 		; Child Windows
-		this.ChildWindow := new CWindow(this)
-		;this.ChildWindow.SetOption("+Parent",this)
-		this.ChildWindow.Gui("+Parent" this._hwnd)
-		this.ChildWindow.Gui("Show", "x10 y200 w100 h50")
-		this.Gui("Show", "h300","Class Test")
+		this.ChildWindow := new CWindow(this, "-Border")
+		this.ChildWindow.GuiOption("+Parent", this)
+		this.ChildWindow.Gui("Add","Text", "Center x0 y40 w" this.GUI_WIDTH, "CHILD GUI")
+		this.ChildWindow.Gui("Show", "x2 y150 w" this.GUI_WIDTH " h100")
+		this.Gui("Show", "h260","Class Test")
 	}
 	
 	Test(){
@@ -121,15 +121,17 @@ Class _CGui {
 	}
 	
 	Gui(aParams*){
+		c := aParams[1]
+		opts := this.ParseOptions(aParams[3])
+		cmd := this.ParseOptions(aParams[1])
+		if (opts.flags.parent || cmd.flags.parent){
+			MsgBox % "Parent option not supported. Use GuiOption(""+Parent"", obj, ...)"
+			return
+		}
 		if (aParams[1] = "new"){
-			opts := this.ParseOptions(aParams[3])
-			if (opts.flags.parent){
-				MsgBox % "Parent option not supported. Use Gui(""+Parent"", obj, ...)"
-			}
 			Gui, new, % "hwndhwnd " aParams[2], % aParams[3], % aParams[4]
 			this._hwnd := hwnd
 		} else if (aParams[1] = "add") {
-			opts := this.ParseOptions(aParams[3])
 			if (opts.flags.v || opts.flags.g){
 				; v-label or g-label passed old-school style
 				MsgBox % "v-labels and g-labels are not allowed.`n`Please consult the documentation for alternate methods to use."
@@ -139,6 +141,11 @@ Class _CGui {
 		} else {
 			Gui, % this._hwnd ":" aParams[1], % aParams[2], % aParams[3], % aParams[4]
 		}
+	}
+	
+	; The same as Gui, +Option - but lets you pass objects instead of hwnds
+	GuiOption(option, value){
+		Gui, % this._hwnd ":" option, value
 	}
 	
 	; Wraps GuiControl to use hwnds and function binding etc
@@ -194,9 +201,9 @@ Class _CGui {
 				opt := vg
 			} else {
 				; Take all the letters as the option
-				opt := RegExReplace(opts[A_Index], "^([a-z|A-Z]*)(.*)", "$1")
+				opt := RegExReplace(opt, "^([a-z|A-Z]*)(.*)", "$1")
 				; Take numbers as value
-				value := RegExReplace(opts[A_Index], "^([a-z|A-Z]*)(.*)", "$2")
+				value := RegExReplace(opt, "^([a-z|A-Z]*)(.*)", "$2")
 			}
 			
 			ret.flags[opt] := 1
