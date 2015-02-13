@@ -1,4 +1,7 @@
 #SingleInstance force
+
+#include class_scrollgui.ahk
+
 UCR := new UCR()
 return
 
@@ -13,6 +16,21 @@ Class UCR extends _CWindow {
 		this.mybtn := this.Add("Button","xm yp+20","Test")
 		this.Show("w500 h400", "UCR")
 		this.GuiControl("+g", this.mybtn, this.Test)
+		
+		Gui, new, % "hwndhwnd -Border +Parent" this.hMain
+		this.hChild := hwnd
+		Gui, % this.hChild ":show", % "x175 y0 w300 h400"
+		Gui, Margin, 20, 20
+		Loop 10 {
+			Gui, new, % "hwndChild -Border +Parent" this.hChild
+			Gui, % Child ":Add", Text, % "xm ym", Child %A_Index%
+			Gui, % Child ":Show", % "h40 w380 x5 y" (A_Index - 1)*50,
+		}
+		; Create ScrollGUI1 with both horizontal and vertical scrollbars and mouse wheel capturing
+		this.SG1 := New ScrollGUI(this.hChild, 300, 400, "-Border +Parent" this.hMain, 3, 3)
+		; Show ScrollGUI1
+		this.SG1.Show("ScrollGUI1 Title", "x175 y0")
+		this.SG1.AdjustToChild()
 	}
 	
 	Test(){
