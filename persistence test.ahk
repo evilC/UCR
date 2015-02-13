@@ -13,7 +13,7 @@ Class MyClass extends CWindow {
 		base.__New()
 		this.GUI_WIDTH := 200
 		this.Gui("Margin",5,5)
-		this.Gui("Add", "Text", "Center xm ym w" this.GUI_WIDTH, "Persistent (Change and Reload)")
+		this.Gui("Add", "Text", "Center xm ym w" this.GUI_WIDTH, "Persistent (Remembered on Reload)")
 		this.myedit := this.Gui("Add", "Edit","xm yp+20 w" this.GUI_WIDTH,"ChangeMe")
 		this.myedit.MakePersistent("somename")
 		this.mybtn := this.Gui("Add","Button","xm yp+30 w" this.GUI_WIDTH,"v Copy v")
@@ -21,7 +21,13 @@ Class MyClass extends CWindow {
 		this.GuiControl("+g", this.myedit, this.EditChanged)
 		this.Gui("Add", "Text", "Center xm yp+30 w" this.GUI_WIDTH, "Not Persistent (Lost on Reload)")
 		this.myoutput := this.Gui("Add","Edit","xm yp+20 w" this.GUI_WIDTH,"")
-		this.Gui("Show", ,"Class Test")
+		
+		; Child Windows
+		this.ChildWindow := new CWindow(this)
+		;this.ChildWindow.SetOption("+Parent",this)
+		this.ChildWindow.Gui("+Parent" this._hwnd)
+		this.ChildWindow.Gui("Show", "x10 y200 w100 h50")
+		this.Gui("Show", "h300","Class Test")
 	}
 	
 	Test(){
@@ -105,12 +111,21 @@ Class _CGuiControl extends _CGui {
 ; Wrap AHK functionality in a standardized, easy to use, syntactically similar class
 Class _CGui {
 	; equivalent to Gui, New, <params>
-	__New(aParams*){
-		this.Gui("new", aParams[2], aParams[3], aParams[4])
+	; put parent as param 1
+	__New(parent := 0, Param2 := "", Param3 := "", Param4 := ""){
+		this._parent := parent
+		if (this.parent != 0){
+			; parent passed
+		}
+		this.Gui("new", Param2, Param3, Param4)
 	}
 	
 	Gui(aParams*){
 		if (aParams[1] = "new"){
+			opts := this.ParseOptions(aParams[3])
+			if (opts.flags.parent){
+				MsgBox % "Parent option not supported. Use Gui(""+Parent"", obj, ...)"
+			}
 			Gui, new, % "hwndhwnd " aParams[2], % aParams[3], % aParams[4]
 			this._hwnd := hwnd
 		} else if (aParams[1] = "add") {
