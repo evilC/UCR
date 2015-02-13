@@ -96,6 +96,12 @@ Class _CWindow {
 				return val
 			}
 		}
+		
+		__Set(aParam, aValue){
+			if (aParam = "value"){
+				return this._parent.GuiControl(,this,aValue)
+			}
+		}
 	}
 	
 	ToolTip(Text, duration){
