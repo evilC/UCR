@@ -9,7 +9,8 @@ It could be thought of as similar to the remapping software that comes with gami
 UCR from the user's perspective shall consist of two main components:
 
 ######Host Application ("Host")
-The Host application is a file (ideally an Executable, possibly an .ahk) that the user runs and is presented with a GUI.   
+The Host application is a file (ideally an Executable, possibly an .ahk) that the user runs and is presented with a GUI, through which they can add one or more plugins.  
+The Host can handle various common tasks for a plugin such as injecting a GUI item that allows the end user to select a hotkey, remembering a setting's value between runs (eg which hotkey is currently selected), or firing a subroutine in the plugin when the selected hotkey is pressed.
 
 ######Plugins
 A Plugin is a piece of AHK code that the user loads into the Host Application in order to perform some specific function - eg convert a key from normal momentary operation to a toggle, or launch a certain application when you hit a certain key.   
@@ -36,14 +37,14 @@ Use WinMM to enumerate IDs, match to GUIDs?
 
 ##Roadmap
 * Window Manager for Host Application?   
-Test code written for AHK v2, maybe over-complicated?   
-Just display one plugin at a time?   
-C application as parent, handle windowing with C libs?
+(Overcome AHK limitation: No scroll bar support)  
+Test code written for AHK v2, maybe over-complicated.   
 * Dynamic Includes (Plugin System)   
-AutoHotkey.dll?   
-DynaRun?   
-* Full stick support   
-sjc1000 taking a look at writing DirectInput wrapper.   
+Proof of concept code written for EXE dynamically including source (.ahk file).  
+HotkeyIt has this one covered.  
+* Full stick support  
+(Overcome AHK limitation: 6 axis / 32 button / 1 POV / No up event on buttons)  
+AHK-CHID proof of concept code written (v1)  
 * vJoy interface   
 New library written.   
 
