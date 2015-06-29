@@ -36,8 +36,8 @@ Use WinMM to enumerate IDs, match to GUIDs?
 * Useful built-in libraries such as accurate timers, math functions for axis manipulation (eg invert, deadzone etc).
 
 ##Roadmap / Hurdles to overcome
-* Overcome AHK limitation: No scroll bar support. 
-Test code written for AHK v2, maybe over-complicated. 
+* Overcome AHK limitation: No scroll bar support.  
+Test code written for AHK v2, maybe over-complicated (CGui).  
 * Dynamic Includes (Plugin System)   
 Proof of concept code written for EXE dynamically including source (.ahk file).  
 HotkeyIt has this one covered.  
@@ -45,6 +45,9 @@ HotkeyIt has this one covered.
 (Overcome AHK limitation: 6 axis / 32 button / 1 POV / No up event on buttons)  
 AHK-CHID proof of concept code written (AHK v1 only, needs porting to v2)  
 POC code yields pre-calibration values, some work maybe needed to apply calibration.  
+* Input Binding system (With GUI item)  
+Allow end-users to specify any combination of keyboard / mouse / joystick input as a "binding".  
+Some POC code written (CHID, HotClass).  
 * vJoy interface   
-New library written (AHK v1 + v2).   
+New CvJoyInterface library written (AHK v1 + v2).   
 
