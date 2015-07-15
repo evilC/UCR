@@ -3,6 +3,9 @@
 ##Goal
 To provide a replacement for the AHK `Hotkey` GUI control which allows a script user to bind any input combination to a script action. The default AHK `Hotkey` control does not support all keyboard keys / mouse combinations, and does not support joystick input at all (ie it should use RawInput / HID / DirectInput).  
 
+##Why?
+To remove the need for script authors to hard-code hotkey bindings in scripts, and allow end-users to specify which hotkey they would like to use to activate script functions.  
+
 ##Requirements
 * The control should be able to detect keyboard, mouse or joystick input (Or any combination thereof). Joystick support should not be via WinMM, as this only supports 4 axes, 32 buttons, 1 POV. Full 8 axis, 128 button, 4 POV support is essential.
 * The author should be able to define a callback function which is called whenever the state of the selected input changes (ie button up / down event, axis value changes) and pass the new state.  
