@@ -17,3 +17,24 @@ To provide a replacement for the AHK `Hotkey` GUI control which allows a script 
 ##Hurdles
 * Joystick state reading POC written (Using RawInput), but axis values are pre-calibration. Possible info on extracting calibration info [here](https://msdn.microsoft.com/en-us/library/windows/hardware/ff543344(v=vs.85).aspx) ?
 * Keyboard / mouse detection will probably need to make use of `SetWindowsHookEx` calls (POC written).
+
+##Example usage
+To clarify the requirements, here is a (psuedo-code) example of how it may work.  
+```
+fnFire := this.FireAllWeapons.Bind(this)  ; Define what func gets called on binding pressed
+fnChange := this.OptionChanged.Bind(this)   ; Define what func gets called on binding change
+AddHotkeyGuiControl("Fire All Weapons", "xm yp+10", fnFire, fnChange)  ; Adds GUI control
+
+[...]
+
+; Called when bound input changes state
+FireAllWeapons(button, axis){
+   if (button != -1){
+      ; Button state changed
+      ; button = 1 if button was pressed
+      ; button = 0 if button was released
+   } else if (axis != -1){
+      ; axis = new value of axis (0 - 32767)
+   }
+}
+```
