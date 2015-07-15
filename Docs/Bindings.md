@@ -5,7 +5,7 @@ To provide a replacement for the AHK `Hotkey` GUI control which allows a script 
 
 ##Requirements
 * The control should be able to detect keyboard, mouse or joystick input (Or any combination thereof).  
-* The author should be able to define a callback which is called whenever the state of the selected input changes (ie button up / down event, axis value changes) and pass the new state.  
+* The author should be able to define a callback function which is called whenever the state of the selected input changes (ie button up / down event, axis value changes) and pass the new state.  
 * The control should have options for pass-through (`~`) and wild (`*`) mode (Keyboard / Mouse).
 * The end-user should be able to clear bindings (Click Bind button and hold ESCape).
 * The current binding should be able to be set programatically (eg when script loads, settings pulled from an INI file and control state initialized to existing binding).
