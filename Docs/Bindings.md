@@ -1,7 +1,7 @@
 #Component design document for binding system
 
 ##Goal
-To provide a replacement for the AHK `Hotkey` GUI control.  
+To provide a replacement for the AHK `Hotkey` GUI control which allows a script user to bind any input combination to a script action. The default AHK `Hotkey` control does not support all keyboard keys / mouse combinations, and does not support joystick input at all.  
 
 ##Requirements
 * The control should be able to detect keyboard, mouse or joystick input (Or any combination thereof).  
