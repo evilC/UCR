@@ -1,6 +1,5 @@
 #SingleInstance force
-;#!ahk_h_v2
-#include JSON_H.ahk
+#include <JSON>
 
 global UCR_PLUGIN_WIDTH := 500, UCR_PLUGIN_FRAME_WIDTH := 540
 
@@ -12,7 +11,6 @@ GuiClose:
 	ExitApp
 
 Class UCRMain {
-	;_SerializeValues := ["CurrentProfile"]
 	Profiles := []
 	CurrentProfile := 0
 	PluginList := []
@@ -123,11 +121,12 @@ Class UCRMain {
 		this._LoadPluginList()
 		this._UpdatePluginSelect()
 		
-		;this._AddProfile("Global")
-		;this._AddProfile("Default")
-		;this.CurrentProfile := this.Profiles.Default
 		FileRead, j, % this._SettingsFile
-		j := JSON.Load(j)
+		if (j = ""){
+			j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
+		} else {
+			j := JSON.Load(j)
+		}
 		this._Deserialize(j)
 		
 		this._UpdateProfileSelect()
@@ -166,7 +165,6 @@ Class UCRMain {
 		
 		jdata := JSON.Dump(obj, true)
 		FileReplace(jdata,this._SettingsFile)
-		;FileOpen("A_Script
 	}
 }
 
@@ -192,7 +190,6 @@ Class _Profile {
 	}
 	
 	_Activate(){
-		;ToolTip % "Profile Activated: " this.Name
 		Gui, % this.hwnd ":Show"
 	}
 	
@@ -273,7 +270,6 @@ Class _Plugin {
 	GuiControls := {}
 	
 	AddControl(name, ChangeValueCallback, aParams*){
-		;this.ParentProfile
 		if (!ObjHasKey(this.GuiControls, name)){
 			this.GuiControls[name] := new _GuiControl(this, name, ChangeValueCallback, aParams*)
 			return this.GuiControls[name]
