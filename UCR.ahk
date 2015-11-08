@@ -347,7 +347,6 @@ class _BindModeHandler {
 				}
 			} else {
 				; regular key went down or up
-				;if (i.type && ModifierCount){
 				if (i.type && this.ModifierCount){
 					; Reject joystick button + modifier - AHK does not support this
 					if (e)
@@ -823,10 +822,13 @@ class _Key {
 class TestPlugin1 extends _Plugin {
 	static Type := "TestPlugin1"
 	Init(){
-		Gui, Add, Text,, % "Name: " this.Name ", Type: " this.Type
-		;this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "xm w200")
+		Gui, Add, Text,, % "Basic text sender Plugin. Name: " this.Name
+		Gui, Add, Text, y+10, % "When I press"
+		this.AddHotkey("MyHk1", this.MyHkChangedValue.Bind(this, "MyHk1"), this.MyHkChangedState.Bind(this, "MyHk1"), "x150 yp-2 w330")
+		Gui, Add, Text, xm , % "Send the following text"
+		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "x150 yp-2 w330")
 		;this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
-		this.AddHotkey("MyHk1", this.MyHkChangedValue.Bind(this, "MyHk1"), this.MyHkChangedState.Bind(this, "MyHk1"), "xm w200")
+
 	}
 	
 	MyEditChanged(name){
