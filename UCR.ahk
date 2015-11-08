@@ -10,6 +10,7 @@ return
 GuiClose:
 	ExitApp
 
+; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
 	Profiles := []
 	CurrentProfile := 0
@@ -39,35 +40,50 @@ Class UCRMain {
 		this.hProfileSelect := hProfileSelect
 		fn := this._ProfileSelectChanged.Bind(this)
 		GuiControl % this.hwnd ":+g", % this.hProfileSelect, % fn
-		
+
+		Gui, % this.hwnd ":Add", Button, % "hwndhAddProfile x+5 yp", Add
+		this.hAddProfile := hAddProfile
+		fn := this._AddProfile.Bind(this)
+		GuiControl % this.hwnd ":+g", % this.hAddProfile, % fn
+
+		Gui, % this.hwnd ":Add", Button, % "hwndhDeleteProfile x+5 yp", Delete
+		this.hDeleteProfile := hDeleteProfile
+		fn := this._DeleteProfile.Bind(this)
+		GuiControl % this.hwnd ":+g", % this.hDeleteProfile, % fn
+
 		; Add Plugin
 		Gui, % this.hwnd ":Add", Text, xm y+10, Plugin Selection:
 		Gui, % this.hwnd ":Add", DDL, % "x100 yp-5 hwndhPluginSelect w300"
 		this.hPluginSelect := hPluginSelect
 
-		Gui, % this.hwnd ":Add", Button, % "hwndhAddPlugin x+5 yp", Add Plugin
+		Gui, % this.hwnd ":Add", Button, % "hwndhAddPlugin x+5 yp", Add
 		this.hAddPlugin := hAddPlugin
 		fn := this._AddPlugin.Bind(this)
 		GuiControl % this.hwnd ":+g", % this.hAddPlugin, % fn
 	}
 	
+	; Called when hProfileSelect changes through user interaction (They selected a new profile)
 	_ProfileSelectChanged(){
 		GuiControlGet, name, % this.hwnd ":", % this.hProfileSelect
 		this._ChangeProfile(name)
 	}
 	
+	; The user clicked the "Add Plugin" button
 	_AddPlugin(){
 		this.CurrentProfile._AddPlugin()
 	}
 	
+	; We wish to change profile. This may happen due to user input, or application changing
 	_ChangeProfile(name){
 		if (IsObject(this.CurrentProfile))
 			this.CurrentProfile._DeActivate()
+		GuiControl, % this.hwnd ":ChooseString", % this.hProfileSelect, % name
 		this.CurrentProfile := this.Profiles[name]
 		this.CurrentProfile._Activate()
 		this._ProfileChanged(this.CurrentProfile)
 	}
 	
+	; Populate hProfileSelect with a list of available profiles
 	_UpdateProfileSelect(){
 		profiles := ["Default", "Global"]
 		for profile in this.Profiles {
@@ -90,6 +106,7 @@ Class UCRMain {
 		GuiControl,  % this.hwnd ":", % this.hProfileSelect, % str
 	}
 	
+	; Update hPluginSelect with a list of available Plugins
 	_UpdatePluginSelect(){
 		max := this.PluginList.length()
 		Loop % max {
@@ -105,18 +122,60 @@ Class UCRMain {
 		GuiControl,  % this.hwnd ":", % this.hPluginSelect, % str
 	}
 	
-	_AddProfile(name){
-		if (ObjHasKey(this.Profiles, name)){
-			return false
+	; User clicked add new profile button
+	_AddProfile(){
+		c := 1
+		alreadyused := 1
+		while (alreadyused){
+			alreadyused := 0
+			suggestedname := "Profile " c
+			for name, obj in this.Profiles {
+				if (name = suggestedname){
+					alreadyused := 1
+					break
+				}
+			}
+			if (!alreadyused)
+				break
+			c++
 		}
-		this.Profiles[name] := new _Profile(name)
-		
+		choosename := 1
+		prompt := "Enter a name for the Profile"
+		while(choosename) {
+			InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
+			if (!ErrorLevel){
+				if (ObjHasKey(this.Profiles, Name)){
+					prompt := "Duplicate name chosen, please enter a unique name"
+					name := suggestedname
+				} else {
+					this.Profiles[name] := new _Profile(name)
+					this._UpdateProfileSelect()
+					this._ChangeProfile(Name)
+					choosename := 0
+				}
+			} else {
+				choosename := 0
+			}
+		}
 	}
 	
+	; user clicked the Delete Profile button
+	_DeleteProfile(){
+		GuiControlGet, name, % this.hwnd ":", % this.hProfileSelect
+		if (name = "Default" || name = "Global")
+			return
+		this.Profiles.Delete(name)
+		this._UpdateProfileSelect()
+		this._ChangeProfile("Default")
+	}
+	
+	; Load a list of available plugins
 	_LoadPluginList(){
+		; Bodge
 		this.PluginList := ["TestPlugin1", "TestPlugin2"]
 	}
 	
+	; Load settings from disk
 	_LoadSettings(){
 		this._LoadPluginList()
 		this._UpdatePluginSelect()
@@ -133,11 +192,8 @@ Class UCRMain {
 		this._ChangeProfile(this.CurrentProfile.Name)
 	}
 	
+	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
-		obj := {}
-		for idx, key in this._SerializeValues {
-			obj[key] := this[key]
-		}
 		obj := {CurrentProfile: this.CurrentProfile.Name}
 		obj.Profiles := {}
 		for name, profile in this.Profiles {
@@ -146,10 +202,8 @@ Class UCRMain {
 		return obj
 	}
 
+	; Load this object from simple data strutures
 	_Deserialize(obj){
-		for idx, key in this._SerializeValues {
-			this[key] := obj[key]
-		}
 		this.Profiles := {}
 		for name, profile in obj.Profiles {
 			this.Profiles[name] := new _Profile(name)
@@ -160,6 +214,7 @@ Class UCRMain {
 		
 	}
 	
+	; A child profile changed in some way
 	_ProfileChanged(profile){
 		obj := this._Serialize()
 		
@@ -168,6 +223,11 @@ Class UCRMain {
 	}
 }
 
+; ======================================================================== PROFILE ===============================================================
+; The Profile class handles everything to do with Profiles.
+; It has it's own GUI (this.hwnd), which is parented to the main GUI.
+; The Profile's is parent to 0 or more plugins, which are each an instance of the _Plugin class.
+; The Gui of each plugin appears inside the Gui of this profile.
 Class _Profile {
 	Name := ""
 	Plugins := {}
@@ -177,6 +237,10 @@ Class _Profile {
 		this.UCR := parent
 		this.Name := name
 		this._CreateGui()
+	}
+	
+	__Delete(){
+		Gui, % this.hwnd ":Destroy"
 	}
 	
 	_CreateGui(){
@@ -201,7 +265,7 @@ Class _Profile {
 		GuiControlGet, plugin, % UCR.hwnd ":", % UCR.hPluginSelect
 		suggestedname := name := this._GetUniqueName(%plugin%)
 		choosename := 1
-		prompt := "Enter a Name for the plugin"
+		prompt := "Enter a name for the Plugin"
 		while(choosename) {
 			InputBox, name, Add Plugin, % prompt, ,,130,,,,, % name
 			if (!ErrorLevel){
@@ -232,9 +296,6 @@ Class _Profile {
 	
 	_Serialize(){
 		obj := {}
-		for idx, key in this._SerializeValues {
-			obj[key] := this[key]
-		}
 		obj.Plugins := {}
 		for name, plugin in this.Plugins {
 			obj.Plugins[name] := plugin._Serialize()
@@ -243,9 +304,6 @@ Class _Profile {
 	}
 	
 	_Deserialize(obj){
-		for idx, key in this._SerializeValues {
-			this[key] := obj[key]
-		}
 		for name, plugin in obj.Plugins {
 			cls := plugin.Type
 			this.Plugins[name] := new %cls%(this, name)
@@ -261,14 +319,24 @@ Class _Profile {
 	}
 }
 
+; ======================================================================== PLUGIN ===============================================================
+; The _Plugin class itself is never instantiated.
+; Instead, plugins derive from the base _Plugin class.
 Class _Plugin {
-	_SerializeValues := ["Type"]
-	static Type := "BASE PLUGIN"
-	ParentProfile := 0
-	Name := ""
-	Hotkeys := {}
-	GuiControls := {}
+	static Type := "_Plugin"	; Change this to match the name of your class. It MUST be unique amongst ALL plugins.
 	
+	ParentProfile := 0			; Will point to the parent profile
+	Name := ""					; The name the user chose for the plugin
+	Hotkeys := {}				; An associative array, indexed by name, of child Hotkeys
+	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
+	
+	; Override this class in your derived class and put your Gui creation etc in here
+	Init(){
+		
+	}
+	
+	; ------------------------------- PRIVATE -------------------------------------------
+	; Do not override methods in here unless you know what you are doing!
 	AddControl(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.GuiControls, name)){
 			this.GuiControls[name] := new _GuiControl(this, name, ChangeValueCallback, aParams*)
@@ -288,10 +356,6 @@ Class _Plugin {
 		this.hwnd := hwnd
 	}
 	
-	Init(){
-		
-	}
-	
 	Show(){
 		Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR_PLUGIN_WIDTH, % this.hwnd
 	}
@@ -301,10 +365,7 @@ Class _Plugin {
 	}
 	
 	_Serialize(){
-		obj := {}
-		for idx, key in this._SerializeValues {
-			obj[key] := this[key]
-		}
+		obj := {Type: this.Type}
 		obj.GuiControls := {}
 		for name, ctrl in this.GuiControls {
 			obj.GuiControls[name] := ctrl._Serialize()
@@ -313,9 +374,7 @@ Class _Plugin {
 	}
 	
 	_Deserialize(obj){
-		for idx, key in this._SerializeValues {
-			this[key] := obj[key]
-		}
+		this.Type := obj.Type
 		for name, ctrl in obj.GuiControls {
 			this.GuiControls[name]._Deserialize(ctrl)
 		}
@@ -324,8 +383,9 @@ Class _Plugin {
 
 }
 
+; ======================================================================== GUICONTROL ===============================================================
+; Wraps a GuiControl to make it's value persistent between runs.
 class _GuiControl {
-	_SerializeValues := ["_value"]
 	__New(parent, name, ChangeValueCallback, aParams*){
 		this.ParentPlugin := parent
 		this.Name := name
@@ -336,53 +396,57 @@ class _GuiControl {
 		GuiControl, % this.ParentPlugin.hwnd ":+g", % this.hwnd, % fn
 	}
 	
+	; Get / Set of .value
 	value[]{
+		; Read of current contents of GuiControl
 		get {
 			return this.__value
 		}
 		
+		; When the user types something in a guicontrol, this gets called
+		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this.__value := value
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
 	
+	; Get / Set of ._value
 	_value[]{
+		; this will probably not get called
 		get {
 			return this.__value
 		}
+		; Update contents of GuiControl, but do not fire _ControlChanged
+		; Parent has told child state to be in, child does not need to notify parent of change in state
 		set {
 			this.__value := value
 			GuiControl, , % this.hwnd, % value
 		}
 	}
 	
+	; The user typed something into the GuiControl
 	_ChangedValue(){
 		GuiControlGet, value, % this.ParentPlugin.hwnd ":", % this.hwnd
-		this.value := value
-		this.ParentPlugin._ControlChanged(this)
+		this.value := value		; Set control value and fire change events to parent
+		; If the script author defined a callback for onchange event of this GuiControl, then fire it
 		if (IsObject(this.ChangeValueCallback)){
 			this.ChangeValueCallback.()
 		}
 	}
 	
 	_Serialize(){
-		obj := {}
-		for idx, key in this._SerializeValues {
-			obj[key] := this[key]
-		}
+		obj := {_value: this._value}
 		return obj
 	}
 	
 	_Deserialize(obj){
-		for idx, key in this._SerializeValues {
-			this[key] := obj[key]
-		}
+		this._value := obj._value
 	}
 
 }
 
-; ============================================================================================
+; ======================================================================== SAMPLE PLUGINS ===============================================================
 
 class TestPlugin1 extends _Plugin {
 	static Type := "TestPlugin1"
