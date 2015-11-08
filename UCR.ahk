@@ -225,13 +225,9 @@ Class UCRMain {
 	_RequestBinding(hk){
 		if (!this._BindMode){
 			this._BindMode := 1
-			Binding := new _BindModeHandler()
-			; Check if binding conflicts here
-			j := JSON.Dump(binding._Serialize())
-			OutputDebug % j
+			new _BindModeHandler(hk)
 			this._BindMode := 0
-			return binding
-			;return 1
+			return 1
 		}
 		return 0
 	}
@@ -243,17 +239,18 @@ class _BindModeHandler {
 	DebugMode := 2
 	SelectedBinding := 0
 	BindMode := 1
+	EndKey := 0
+	HeldModifiers := {}
+	ModifierCount := 0
+	
 	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
-	__New(){
+	__New(bo){
+		this._OriginalBindObject := bo
 		this.SetHotkeyState(1)
-		while (!IsObject(this.SelectedBinding)){
-			Sleep 100
-		}
-		return this.SelectedBinding
 	}
 	
 	; Turns on or off the hotkeys
@@ -278,13 +275,11 @@ class _BindModeHandler {
 			n := GetKeyName("vk" code)
 			if (n = "")
 				continue
-			;OutputDebug, % "Adding key " A_Index " - " n
 			; Down event, then Up event
 			Loop 2 {
 				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
 				k := new _Key({Code: i})
 				;k.Code := i
-				;fn := this.ProcessInput.Bind(this, {type: 0, keyname: n, event: updown[A_Index].e, code: i})
 				fn := this.ProcessInput.Bind(this, k, updown[A_Index].e)
 				if (state)
 					hotkey, % pfx blk n updown[A_Index].s, % fn
@@ -299,8 +294,6 @@ class _BindModeHandler {
 				n := j "Joy" A_Index
 				Loop 2 {
 					k := new _Key({Code: btn, Type: 1, DeviceID: j})
-					;fn := this.ProcessInput.Bind(this, {type: 1, keyname: n, event: updown[A_Index].e, code: i, DeviceID: j})
-					;fn := this.ProcessInput.Bind(this, k, updown[A_Index].e)
 					fn := this._JoystickButtonDown.Bind(this, k)
 					if (state)
 							hotkey, % pfx n updown[A_Index].s, % fn
@@ -312,47 +305,33 @@ class _BindModeHandler {
 	
 	; Called when a key was pressed
 	ProcessInput(i, e){
-		static HeldModifiers := {}, EndKey := 0, ModifierCount := 0
 		if (!this.BindMode)
 			return
 		if (i.type){
 			is_modifier := 0
 		} else {
-			;is_modifier := ObjHasKey(this._Modifiers, i.code)
 			is_modifier := i.IsModifier()
 			; filter repeats
-			if (e && (is_modifier ? ObjHasKey(HeldModifiers, i.code) : EndKey) )
+			;if (e && (is_modifier ? ObjHasKey(HeldModifiers, i.code) : EndKey) )
+			if (e && (is_modifier ? ObjHasKey(this.HeldModifiers, i.code) : i.code = this.EndKey.code) )
 				return
 		}
 
-		; Are the conditions met for end of Bind Mode? (Up event of non-modifier key)
-		;if ((is_modifier ? (!e && ModifierCount = 1) : !e) && (i.type ? !ModifierCount : 1) ) {
+		;~ ; Are the conditions met for end of Bind Mode? (Up event of non-modifier key)
+		;~ if ((is_modifier ? (!e && ModifierCount = 1) : !e) && (i.type ? !ModifierCount : 1) ) {
+		; Are the conditions met for end of Bind Mode? (Up event of any key)
 		if (!e){
 			; End Bind Mode
 			this.BindMode := 0
 			this.SetHotkeyState(0)
-			binding := new _BindObject()
-			;binding.Type := i.type
-			for code, key in HeldModifiers {
-				
-				;~ k := new _Key()
-				;~ k.Code := key.code
-				;~ if (i.type){
-					;~ k.DeviceID := 
-				;~ }
-				binding.Keys.push(key)
-			}
-			;~ k := new _Key()
-			;~ k.Code := EndKey.code
-			binding.Keys.push(EndKey)
-			this.SelectedBinding := binding
+			bindObj := this._OriginalBindObject._value
 			
-			;~ binding := []
-			;~ for code, key in HeldModifiers {
-				;~ binding.push(key)
-			;~ }
-			;~ binding.push(EndKey)
-			;~ this.SelectedBinding := binding
+			bindObj.Keys := []
+			for code, key in this.HeldModifiers {
+				bindObj.Keys.push(key)
+			}
+			bindObj.Keys.push(this.EndKey)
+			this._OriginalBindObject.value := bindObj
 			
 			return
 		} else {
@@ -360,21 +339,22 @@ class _BindModeHandler {
 			if (is_modifier){
 				; modifier went up or down
 				if (e){
-					HeldModifiers[i.code] := i
-					ModifierCount++
+					this.HeldModifiers[i.code] := i
+					this.ModifierCount++
 				} else {
-					HeldModifiers.Delete(i.code)
-					ModifierCount--
+					this.HeldModifiers.Delete(i.code)
+					this.ModifierCount--
 				}
 			} else {
 				; regular key went down or up
-				if (i.type && ModifierCount){
+				;if (i.type && ModifierCount){
+				if (i.type && this.ModifierCount){
 					; Reject joystick button + modifier - AHK does not support this
 					if (e)
 						SoundBeep
 				} else if (e) {
 					; Down event of non-modifier key - set end key
-					EndKey := i
+					this.EndKey := i
 				}
 			}
 		}
@@ -665,6 +645,19 @@ class _Hotkey {
 		this._SetCueBanner()
 	}
 	
+	value[]{
+		get {
+			return this._value
+		}
+		
+		set {
+			this._value := value
+			h := this._value.BuildHumanReadable()
+			this._SetCueBanner()
+			this.ParentPlugin._ControlChanged(this)
+		}
+	}
+
 	; Builds the list of options in the DropDownList
 	_BuildOptions(){
 		;str := "|Select Binding|Wild: " (this._wild ? "On" : "Off") "|Passthrough: " (this._passthrough ? "On" : "Off") "|Repeat Supression: " (this._norepeat ? "On" : "Off") "|Clear Binding"
@@ -711,11 +704,11 @@ class _Hotkey {
 			; Option selected from list
 			if (o = 1){
 				binding := UCR._RequestBinding(this)
-				if (binding = 0)
-					return
-				this._value := binding
-				this._SetCueBanner()
-				this.ParentPlugin._ControlChanged(this)
+				;~ if (binding = 0)
+					;~ return
+				;~ this._value := binding
+				;~ this._SetCueBanner()
+				;~ this.ParentPlugin._ControlChanged(this)
 				return
 			} else if (o = 2){
 				this._wild := !this._wild
