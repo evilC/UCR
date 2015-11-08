@@ -452,12 +452,14 @@ class TestPlugin1 extends _Plugin {
 	static Type := "TestPlugin1"
 	Init(){
 		Gui, Add, Text,, % "Name: " this.Name ", Type: " this.Type
-		this.MyEdit1 := this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "xm w200")
-		this.MyEdit2 := this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
+		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "xm w200")
+		this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
 	}
 	
 	MyEditChanged(name){
-		ToolTip % Name " changed value to: " this[Name].value
+		; All GuiControls are automatically added to this.GuiControls.
+		; .value holds the contents of the GuiControl
+		ToolTip % Name " changed value to: " this.GuiControls[name].value
 	}
 }
 
