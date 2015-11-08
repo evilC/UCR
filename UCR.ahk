@@ -227,8 +227,11 @@ Class UCRMain {
 			this._BindMode := 1
 			Binding := new _BindModeHandler()
 			; Check if binding conflicts here
+			j := JSON.Dump(binding._Serialize())
+			OutputDebug % j
 			this._BindMode := 0
-			return 1
+			return binding
+			;return 1
 		}
 		return 0
 	}
@@ -239,6 +242,7 @@ Class UCRMain {
 class _BindModeHandler {
 	DebugMode := 2
 	SelectedBinding := 0
+	BindMode := 1
 	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
@@ -260,6 +264,7 @@ class _BindModeHandler {
 		onoff := state ? "On" : "Off"
 		if (state = current_state)
 			return
+		current_state := state
 		if (state){
 			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
 		} else {
@@ -277,8 +282,10 @@ class _BindModeHandler {
 			; Down event, then Up event
 			Loop 2 {
 				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
-
-				fn := this.ProcessInput.Bind(this, {type: 0, keyname: n, event: updown[A_Index].e, code: i})
+				k := new _Key({Code: i})
+				;k.Code := i
+				;fn := this.ProcessInput.Bind(this, {type: 0, keyname: n, event: updown[A_Index].e, code: i})
+				fn := this.ProcessInput.Bind(this, k, updown[A_Index].e)
 				if (state)
 					hotkey, % pfx blk n updown[A_Index].s, % fn
 				hotkey, % pfx blk n updown[A_Index].s, % fn, % onoff
@@ -288,49 +295,71 @@ class _BindModeHandler {
 		Loop 8 {
 			j := A_Index
 			Loop 32 {
+				btn := A_Index
 				n := j "Joy" A_Index
 				Loop 2 {
-					fn := this.ProcessInput.Bind(this, {type: 1, keyname: n, event: updown[A_Index].e, vk: i})
+					k := new _Key({Code: btn, Type: 1, DeviceID: j})
+					;fn := this.ProcessInput.Bind(this, {type: 1, keyname: n, event: updown[A_Index].e, code: i, DeviceID: j})
+					;fn := this.ProcessInput.Bind(this, k, updown[A_Index].e)
+					fn := this._JoystickButtonDown.Bind(this, k)
 					if (state)
 							hotkey, % pfx n updown[A_Index].s, % fn
 						hotkey, % pfx n updown[A_Index].s, % fn, % onoff
 					}
 			}
 		}
-
-		current_state := state
 	}
 	
 	; Called when a key was pressed
-	ProcessInput(i){
+	ProcessInput(i, e){
 		static HeldModifiers := {}, EndKey := 0, ModifierCount := 0
-			
+		if (!this.BindMode)
+			return
 		if (i.type){
 			is_modifier := 0
 		} else {
-			is_modifier := ObjHasKey(this._Modifiers, i.code)
+			;is_modifier := ObjHasKey(this._Modifiers, i.code)
+			is_modifier := i.IsModifier()
 			; filter repeats
-			if (i.event && (is_modifier ? ObjHasKey(HeldModifiers, i.code) : EndKey) )
+			if (e && (is_modifier ? ObjHasKey(HeldModifiers, i.code) : EndKey) )
 				return
 		}
 
 		; Are the conditions met for end of Bind Mode? (Up event of non-modifier key)
-		if ((is_modifier ? (!i.event && ModifierCount = 1) : !i.event) && (i.type ? !ModifierCount : 1) ) {
+		;if ((is_modifier ? (!e && ModifierCount = 1) : !e) && (i.type ? !ModifierCount : 1) ) {
+		if (!e){
 			; End Bind Mode
+			this.BindMode := 0
 			this.SetHotkeyState(0)
-			binding := []
+			binding := new _BindObject()
+			;binding.Type := i.type
 			for code, key in HeldModifiers {
-				binding.push(key)
+				
+				;~ k := new _Key()
+				;~ k.Code := key.code
+				;~ if (i.type){
+					;~ k.DeviceID := 
+				;~ }
+				binding.Keys.push(key)
 			}
-			binding.push(EndKey)
+			;~ k := new _Key()
+			;~ k.Code := EndKey.code
+			binding.Keys.push(EndKey)
 			this.SelectedBinding := binding
+			
+			;~ binding := []
+			;~ for code, key in HeldModifiers {
+				;~ binding.push(key)
+			;~ }
+			;~ binding.push(EndKey)
+			;~ this.SelectedBinding := binding
 			
 			return
 		} else {
 			; Process Key Up or Down event
 			if (is_modifier){
 				; modifier went up or down
-				if (i.event){
+				if (e){
 					HeldModifiers[i.code] := i
 					ModifierCount++
 				} else {
@@ -341,9 +370,9 @@ class _BindModeHandler {
 				; regular key went down or up
 				if (i.type && ModifierCount){
 					; Reject joystick button + modifier - AHK does not support this
-					if (i.event)
+					if (e)
 						SoundBeep
-				} else {
+				} else if (e) {
 					; Down event of non-modifier key - set end key
 					EndKey := i
 				}
@@ -351,10 +380,18 @@ class _BindModeHandler {
 		}
 		
 		; Mouse Wheel u/d/l/r has no Up event, so simulate it to trigger it as an EndKey
-		if (i.event && (i.code >= 156 && i.code <= 159)){
-			i.event := 0
-			this.ProcessInput(i)
+		if (e && (i.code >= 156 && i.code <= 159)){
+			this.ProcessInput(i, 0)
 		}
+	}
+	
+	_JoystickButtonDown(i){
+		this.ProcessInput(i, 1)
+		str := i.DeviceID "Joy" i.code
+		while (GetKeyState(str)){
+			Sleep 10
+		}
+		this.ProcessInput(i, 0)
 	}
 }
 
@@ -512,6 +549,10 @@ Class _Plugin {
 		for name, ctrl in this.GuiControls {
 			obj.GuiControls[name] := ctrl._Serialize()
 		}
+		obj.Hotkeys := {}
+		for name, ctrl in this.Hotkeys {
+			obj.Hotkeys[name] := ctrl._Serialize()
+		}
 		return obj
 	}
 	
@@ -519,6 +560,9 @@ Class _Plugin {
 		this.Type := obj.Type
 		for name, ctrl in obj.GuiControls {
 			this.GuiControls[name]._Deserialize(ctrl)
+		}
+		for name, ctrl in obj.Hotkeys {
+			this.Hotkeys[name]._Deserialize(ctrl)
 		}
 		
 	}
@@ -644,10 +688,13 @@ class _Hotkey {
 	; Sets the "Cue Banner" for the ComboBox
 	_SetCueBanner(){
 		static EM_SETCUEBANNER:=0x1501
-		if (this._hotkey = "")
-			Text := this._DefaultBanner
-		else
-			Text := this._BuildHumanReadable()
+		;if (this._hotkey = "") {
+		if (this._value.Keys.length()) {
+			;Text := this._BuildHumanReadable()
+			Text := this._value.BuildHumanReadable()
+		} else {
+			Text := this._DefaultBanner			
+		}
 		DllCall("User32.dll\SendMessageW", "Ptr", this._hEdit, "Uint", EM_SETCUEBANNER, "Ptr", True, "WStr", text)
 		return this
 	}
@@ -666,10 +713,9 @@ class _Hotkey {
 				binding := UCR._RequestBinding(this)
 				if (binding = 0)
 					return
-				; Set state here
-				;~ if (this._handler.RequestBindMode(this._name)){
-					;~ this._handler._InputDetector.SelectBinding(this.ChangeHotkey.Bind(this))
-				;~ }
+				this._value := binding
+				this._SetCueBanner()
+				this.ParentPlugin._ControlChanged(this)
 				return
 			} else if (o = 2){
 				this._wild := !this._wild
@@ -686,6 +732,98 @@ class _Hotkey {
 			;this.ChangeHotkey(this._hotkey)
 		}
 	}
+	
+	_Serialize(){
+		return this._value._Serialize()
+	}
+	
+	_Deserialize(obj){
+		this._value := new _BindObject(obj)
+		this._SetCueBanner()
+	}
+}
+
+class _BindObject {
+	Keys := []
+	Wild := 0
+	Block := 0
+	Suppress := 0
+	
+	__New(obj){
+		this._Deserialize(obj)
+	}
+	
+	_Serialize(){
+		obj := {Keys: [], Wild: this.Wild, Block: this.Block, Suppress: this.Suppress}
+		Loop % this.Keys.length(){
+			obj.Keys.push(this.Keys[A_Index]._Serialize())
+		}
+		return obj
+	}
+	
+	_Deserialize(obj){
+		for k, v in obj {
+			if (k = "Keys"){
+				Loop % v.length(){
+					this.Keys.push(new _Key(v[A_Index]))
+				}
+			} else {
+				this[k] := v
+			}
+		}
+	}
+	
+	BuildHumanReadable(){
+		max := this.Keys.length()
+		str := ""
+		Loop % max {
+			str .= this.Keys[A_Index].BuildHumanReadable()
+			if (A_Index != max)
+				str .= " + "
+		}
+		return str
+	}
+}
+
+class _Key {
+	Type := 0
+	Code := 0
+	DeviceID := 0
+	UID := ""
+
+	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+		,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
+		,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
+		,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
+
+	__New(obj){
+		this._Deserialize(obj)
+	}
+	
+	IsModifier(){
+		if (this.Type = 0 && ObjHasKey(this._Modifiers, this.Code))
+			return 1
+		return 0
+	}
+	
+	_Serialize(){
+		return {Type: this.Type, Code: this.Code, DeviceID: this.DeviceID, UID: this.UID}
+	}
+	
+	_Deserialize(obj){
+		for k, v in obj {
+			this[k] := v
+		}
+	}
+	
+	BuildHumanReadable(){
+		if this.Type = 0 {
+			code := Format("{:x}", this.Code)
+			return GetKeyName("vk" code)
+		} else if (this.Type = 1){
+			return this.DeviceID "Joy" this.code
+		}
+	}
 }
 ; ======================================================================== SAMPLE PLUGINS ===============================================================
 
@@ -693,8 +831,8 @@ class TestPlugin1 extends _Plugin {
 	static Type := "TestPlugin1"
 	Init(){
 		Gui, Add, Text,, % "Name: " this.Name ", Type: " this.Type
-		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "xm w200")
-		this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
+		;this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "xm w200")
+		;this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
 		this.AddHotkey("MyHk1", this.MyHkChangedValue.Bind(this, "MyHk1"), this.MyHkChangedState.Bind(this, "MyHk1"), "xm w200")
 	}
 	
