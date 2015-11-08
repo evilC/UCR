@@ -4806,7 +4806,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "+Value: String",
+											"text": "+Code: Int",
 											"horizontalAlignment": 0,
 											"verticalAlignment": 5
 										},
@@ -4834,7 +4834,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "+JoyID: Int",
+											"text": "+DeviceID: Int",
 											"horizontalAlignment": 0,
 											"verticalAlignment": 5
 										},
@@ -5273,35 +5273,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "KeyboardType",
-											"horizontalAlignment": 0,
-											"verticalAlignment": 5
-										},
-										{
-											"_type": "UMLEnumerationLiteralView",
-											"_id": "AAAAAAFQ3P5XoyeM/Nc=",
-											"_parent": {
-												"$ref": "AAAAAAFQ3P1uTCVD050="
-											},
-											"model": {
-												"$ref": "AAAAAAFQ3P5XTyd6xAI="
-											},
-											"visible": true,
-											"enabled": true,
-											"lineColor": "#000000",
-											"fillColor": "#ffffff",
-											"fontColor": "#000000",
-											"font": "Arial;13;0",
-											"showShadow": true,
-											"containerChangeable": false,
-											"containerExtending": false,
-											"left": 1325,
-											"top": 399,
-											"width": 126,
-											"height": 13,
-											"autoResize": false,
-											"underline": false,
-											"text": "MouseType",
+											"text": "KeyboardMouseType",
 											"horizontalAlignment": 0,
 											"verticalAlignment": 5
 										},
@@ -5324,7 +5296,7 @@
 											"containerChangeable": false,
 											"containerExtending": false,
 											"left": 1325,
-											"top": 414,
+											"top": 399,
 											"width": 126,
 											"height": 13,
 											"autoResize": false,
@@ -5352,7 +5324,7 @@
 											"containerChangeable": false,
 											"containerExtending": false,
 											"left": 1325,
-											"top": 429,
+											"top": 414,
 											"width": 126,
 											"height": 13,
 											"autoResize": false,
@@ -5374,7 +5346,7 @@
 									"left": 1320,
 									"top": 379,
 									"width": 136,
-									"height": 68,
+									"height": 53,
 									"autoResize": false
 								}
 							],
@@ -8850,11 +8822,11 @@
 							"_parent": {
 								"$ref": "AAAAAAFQ3P0ENCSG8iM="
 							},
-							"name": "Value",
+							"name": "Code",
 							"visibility": "public",
 							"isStatic": false,
 							"isLeaf": false,
-							"type": "String",
+							"type": "Int",
 							"isReadOnly": false,
 							"isOrdered": false,
 							"isUnique": false,
@@ -8868,7 +8840,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFQ3P0ENCSG8iM="
 							},
-							"name": "JoyID",
+							"name": "DeviceID",
 							"visibility": "public",
 							"isStatic": false,
 							"isLeaf": false,
@@ -8971,16 +8943,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFQ3P1uRiU3pO4="
 							},
-							"name": "KeyboardType",
-							"visibility": "public"
-						},
-						{
-							"_type": "UMLEnumerationLiteral",
-							"_id": "AAAAAAFQ3P5XTyd6xAI=",
-							"_parent": {
-								"$ref": "AAAAAAFQ3P1uRiU3pO4="
-							},
-							"name": "MouseType",
+							"name": "KeyboardMouseType",
 							"visibility": "public"
 						},
 						{

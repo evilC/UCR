@@ -12,6 +12,7 @@ GuiClose:
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
+	_BindMode := 0
 	Profiles := []
 	CurrentProfile := 0
 	PluginList := []
@@ -28,7 +29,6 @@ Class UCRMain {
 
 		this._CreateGui()
 		this._LoadSettings()
-		
 	}
 	
 	_CreateGui(){
@@ -210,16 +210,151 @@ Class UCRMain {
 			this.Profiles[name]._Deserialize(profile)
 		}
 		this.CurrentProfile := this.Profiles[obj.CurrentProfile]
-		
-		
 	}
 	
-	; A child profile changed in some way
+	; A child profile changed in some way - save state to disk
+	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
 	_ProfileChanged(profile){
 		obj := this._Serialize()
 		
 		jdata := JSON.Dump(obj, true)
 		FileReplace(jdata,this._SettingsFile)
+	}
+	
+	; The user selected the "Bind" option from a Hotkey GuiControl
+	_RequestBinding(hk){
+		if (!this._BindMode){
+			this._BindMode := 1
+			Binding := new _BindModeHandler()
+			; Check if binding conflicts here
+			this._BindMode := 0
+			return 1
+		}
+		return 0
+	}
+}
+
+; =================================================================== BIND MODE HANDLER ==========================================================
+; Prompts the user for input and detects their choice of binding
+class _BindModeHandler {
+	DebugMode := 2
+	SelectedBinding := 0
+	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
+	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
+	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
+
+	__New(){
+		this.SetHotkeyState(1)
+		while (!IsObject(this.SelectedBinding)){
+			Sleep 100
+		}
+		return this.SelectedBinding
+	}
+	
+	; Turns on or off the hotkeys
+	SetHotkeyState(state){
+		static pfx := "$*"
+		static current_state := 0
+		static updown := [{e: 1, s: ""}, {e: 0, s: " up"}]
+		onoff := state ? "On" : "Off"
+		if (state = current_state)
+			return
+		if (state){
+			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
+		} else {
+			SplashTextOff
+		}
+		; Cycle through all keys / mouse buttons
+		Loop 256 {
+			; Get the key name
+			i := A_Index
+			code := Format("{:x}", A_Index)
+			n := GetKeyName("vk" code)
+			if (n = "")
+				continue
+			;OutputDebug, % "Adding key " A_Index " - " n
+			; Down event, then Up event
+			Loop 2 {
+				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
+
+				fn := this.ProcessInput.Bind(this, {type: 0, keyname: n, event: updown[A_Index].e, code: i})
+				if (state)
+					hotkey, % pfx blk n updown[A_Index].s, % fn
+				hotkey, % pfx blk n updown[A_Index].s, % fn, % onoff
+			}
+		}
+		; Cycle through all Joystick Buttons
+		Loop 8 {
+			j := A_Index
+			Loop 32 {
+				n := j "Joy" A_Index
+				Loop 2 {
+					fn := this.ProcessInput.Bind(this, {type: 1, keyname: n, event: updown[A_Index].e, vk: i})
+					if (state)
+							hotkey, % pfx n updown[A_Index].s, % fn
+						hotkey, % pfx n updown[A_Index].s, % fn, % onoff
+					}
+			}
+		}
+
+		current_state := state
+	}
+	
+	; Called when a key was pressed
+	ProcessInput(i){
+		static HeldModifiers := {}, EndKey := 0, ModifierCount := 0
+			
+		if (i.type){
+			is_modifier := 0
+		} else {
+			is_modifier := ObjHasKey(this._Modifiers, i.code)
+			; filter repeats
+			if (i.event && (is_modifier ? ObjHasKey(HeldModifiers, i.code) : EndKey) )
+				return
+		}
+
+		; Are the conditions met for end of Bind Mode? (Up event of non-modifier key)
+		if ((is_modifier ? (!i.event && ModifierCount = 1) : !i.event) && (i.type ? !ModifierCount : 1) ) {
+			; End Bind Mode
+			this.SetHotkeyState(0)
+			binding := []
+			for code, key in HeldModifiers {
+				binding.push(key)
+			}
+			binding.push(EndKey)
+			this.SelectedBinding := binding
+			
+			return
+		} else {
+			; Process Key Up or Down event
+			if (is_modifier){
+				; modifier went up or down
+				if (i.event){
+					HeldModifiers[i.code] := i
+					ModifierCount++
+				} else {
+					HeldModifiers.Delete(i.code)
+					ModifierCount--
+				}
+			} else {
+				; regular key went down or up
+				if (i.type && ModifierCount){
+					; Reject joystick button + modifier - AHK does not support this
+					if (i.event)
+						SoundBeep
+				} else {
+					; Down event of non-modifier key - set end key
+					EndKey := i
+				}
+			}
+		}
+		
+		; Mouse Wheel u/d/l/r has no Up event, so simulate it to trigger it as an EndKey
+		if (i.event && (i.code >= 156 && i.code <= 159)){
+			i.event := 0
+			this.ProcessInput(i)
+		}
 	}
 }
 
@@ -344,6 +479,13 @@ Class _Plugin {
 		}
 	}
 	
+	AddHotkey(name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		if (!ObjHasKey(this.Hotkeys, name)){
+			this.Hotkeys[name] := new _Hotkey(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			return this.Hotkeys[name]
+		}
+	}
+	
 	__New(parent, name){
 		this.ParentProfile := parent
 		this.Name := name
@@ -446,6 +588,105 @@ class _GuiControl {
 
 }
 
+; ======================================================================== HOTKEY ===============================================================
+; A class the script author can instantiate to allow the user to select a hotkey.
+class _Hotkey {
+	; Internal vars describing the bindstring
+	_value := ""		; The bindstring of the hotkey (eg ~*^!a). The getter for .value returns this
+	_hotkey := ""		; The bindstring without any modes (eg ^!a)
+	_wild := 0			; Whether Wild (*) mode is on
+	_passthrough := 1	; Whether Passthrough (~) mode is on
+	_norepeat := 0		; Whether or not to supress repeat down events
+	_type := 0			; 0 = keyboard / mouse, 1 = joystick button
+	; Other internal vars
+	_DefaultBanner := "Drop down the list to select a binding"
+	_OptionMap := {Select: 1, Wild: 2, Passthrough: 3, Suppress: 4, Clear: 5}
+	
+	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		this.ParentPlugin := parent
+		this.Name := name
+		this.ChangeValueCallback := ChangeValueCallback
+		this.ChangeStateCallback := ChangeStateCallback
+		
+		Gui, % this.ParentPlugin.hwnd ":Add", % "Combobox", % "hwndhwnd " aParams[1], % aParams[2]
+		this.hwnd := hwnd
+		
+		fn := this._ChangedValue.Bind(this)
+		GuiControl, % this.ParentPlugin.hwnd ":+g", % this.hwnd, % fn
+		
+		; Get Hwnd of EditBox part of ComboBox
+		this._hEdit := DllCall("GetWindow","PTR",this.hwnd,"Uint",5) ;GW_CHILD = 5
+		
+		this._BuildOptions()
+		this._SetCueBanner()
+	}
+	
+	; Builds the list of options in the DropDownList
+	_BuildOptions(){
+		;str := "|Select Binding|Wild: " (this._wild ? "On" : "Off") "|Passthrough: " (this._passthrough ? "On" : "Off") "|Repeat Supression: " (this._norepeat ? "On" : "Off") "|Clear Binding"
+		;GuiControl, % this.ParentPlugin.hwnd ":" , % this.hwnd, % str
+		this._CurrentOptionMap := [this._OptionMap["Select"]]
+		str := "|Select Binding"
+		if (this._type = 0){
+			; Joystick buttons do not have these options
+			str .= "|Wild: " (this._wild ? "On" : "Off") 
+			this._CurrentOptionMap.push(this._OptionMap["Wild"])
+			str .= "|Passthrough: " (this._passthrough ? "On" : "Off")
+			this._CurrentOptionMap.push(this._OptionMap["Passthrough"])
+			str .= "|Repeat Suppression: " (this._norepeat ? "On" : "Off")
+			this._CurrentOptionMap.push(this._OptionMap["Suppress"])
+		}
+		str .= "|Clear Binding"
+		this._CurrentOptionMap.push(this._OptionMap["Clear"])
+		GuiControl, , % this.hwnd, % str
+	}
+
+	; Sets the "Cue Banner" for the ComboBox
+	_SetCueBanner(){
+		static EM_SETCUEBANNER:=0x1501
+		if (this._hotkey = "")
+			Text := this._DefaultBanner
+		else
+			Text := this._BuildHumanReadable()
+		DllCall("User32.dll\SendMessageW", "Ptr", this._hEdit, "Uint", EM_SETCUEBANNER, "Ptr", True, "WStr", text)
+		return this
+	}
+	
+	; An option was selected from the list
+	_ChangedValue(){
+		; Find index of dropdown list. Will be really big number if key was typed
+		SendMessage 0x147, 0, 0,, % "ahk_id " this.hwnd  ; CB_GETCURSEL
+		o := ErrorLevel
+		GuiControl, % this.ParentPlugin.hwnd ":Choose", % this.hwnd, 0
+		if (o < 100){
+			o++
+			o := this._CurrentOptionMap[o]
+			; Option selected from list
+			if (o = 1){
+				binding := UCR._RequestBinding(this)
+				if (binding = 0)
+					return
+				; Set state here
+				;~ if (this._handler.RequestBindMode(this._name)){
+					;~ this._handler._InputDetector.SelectBinding(this.ChangeHotkey.Bind(this))
+				;~ }
+				return
+			} else if (o = 2){
+				this._wild := !this._wild
+			} else if (o = 3){
+				this._passthrough := !this._passthrough
+			} else if (o = 4){
+				this._norepeat := !this._norepeat
+			} else if (o = 5){
+				this._hotkey := ""
+			} else {
+				; not one of the options from the list, user must have typed in box
+				return
+			}
+			;this.ChangeHotkey(this._hotkey)
+		}
+	}
+}
 ; ======================================================================== SAMPLE PLUGINS ===============================================================
 
 class TestPlugin1 extends _Plugin {
@@ -454,12 +695,21 @@ class TestPlugin1 extends _Plugin {
 		Gui, Add, Text,, % "Name: " this.Name ", Type: " this.Type
 		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "xm w200")
 		this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
+		this.AddHotkey("MyHk1", this.MyHkChangedValue.Bind(this, "MyHk1"), this.MyHkChangedState.Bind(this, "MyHk1"), "xm w200")
 	}
 	
 	MyEditChanged(name){
 		; All GuiControls are automatically added to this.GuiControls.
 		; .value holds the contents of the GuiControl
 		ToolTip % Name " changed value to: " this.GuiControls[name].value
+	}
+	
+	MyHkChangedValue(name){
+		ToolTip % Name " changed value to: " this.Hotkeys[name].value
+	}
+	
+	MyHkChangedState(Name, e){
+		ToolTip % Name " changed state to: " e ? "Down" : "Up"
 	}
 }
 
