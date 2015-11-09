@@ -1,6 +1,6 @@
 #SingleInstance force
 #include <JSON>				; Coco's JSON Lib v2 http://autohotkey.com/boards/viewtopic.php?f=6&t=627
-
+OutputDebug DBGVIEWCLEAR
 global UCR_PLUGIN_WIDTH := 500, UCR_PLUGIN_FRAME_WIDTH := 540
 
 global UCR
@@ -74,13 +74,16 @@ Class UCRMain {
 	}
 	
 	; We wish to change profile. This may happen due to user input, or application changing
-	_ChangeProfile(name){
+	_ChangeProfile(name, save := 1){
+		OutputDebug % "Changing Profile to: " name
 		if (IsObject(this.CurrentProfile))
 			this.CurrentProfile._DeActivate()
 		GuiControl, % this.hwnd ":ChooseString", % this.hProfileSelect, % name
 		this.CurrentProfile := this.Profiles[name]
 		this.CurrentProfile._Activate()
-		this._ProfileChanged(this.CurrentProfile)
+		if (save){
+			this._ProfileChanged(this.CurrentProfile)
+		}
 	}
 	
 	; Populate hProfileSelect with a list of available profiles
@@ -184,12 +187,13 @@ Class UCRMain {
 		if (j = ""){
 			j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
 		} else {
+			OutputDebug % "Loading JSON from disk"
 			j := JSON.Load(j)
 		}
 		this._Deserialize(j)
 		
 		this._UpdateProfileSelect()
-		this._ChangeProfile(this.CurrentProfile.Name)
+		this._ChangeProfile(this.CurrentProfile.Name, 0)
 	}
 	
 	; Serialize this object down to the bare essentials for loading it's state
@@ -216,7 +220,7 @@ Class UCRMain {
 	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
 	_ProfileChanged(profile){
 		obj := this._Serialize()
-		
+		OutputDebug % "Saving JSON to disk"
 		jdata := JSON.Dump(obj, ,true)
 		FileDelete, % this._SettingsFile
 		FileAppend, % jdata, % this._SettingsFile
@@ -402,7 +406,7 @@ Class _Profile {
 		Gui, new, HwndHwnd
 		Gui, +VScroll
 		this.hwnd := hwnd
-		Gui, Show, % "x0 y140 w" UCR_PLUGIN_FRAME_WIDTH " h400 Hide", % "Profile: " this.Name
+		Gui, Show, % "x0 y140 w" UCR_PLUGIN_FRAME_WIDTH " h200 Hide", % "Profile: " this.Name
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
@@ -468,6 +472,7 @@ Class _Profile {
 	}
 	
 	_PluginChanged(plugin){
+		OutputDebug % "Profile " this.Name " --> UCR"
 		UCR._ProfileChanged(this)
 	}
 }
@@ -521,6 +526,7 @@ Class _Plugin {
 	}
 	
 	_ControlChanged(ctrl){
+		OutputDebug % "Plugin " this.Name " --> Profile"
 		this.ParentProfile._PluginChanged(this)
 	}
 	
@@ -556,13 +562,23 @@ class _GuiControl {
 	__New(parent, name, ChangeValueCallback, aParams*){
 		this.ParentPlugin := parent
 		this.Name := name
+		this.ChangeValueFn := this._ChangedValue.Bind(this)
 		this.ChangeValueCallback := ChangeValueCallback
 		Gui, % this.ParentPlugin.hwnd ":Add", % aParams[1], % "hwndhwnd " aParams[2], % aParams[3]
 		this.hwnd := hwnd
-		fn := this._ChangedValue.Bind(this)
-		GuiControl, % this.ParentPlugin.hwnd ":+g", % this.hwnd, % fn
+		this._SetGlabel(1)
 	}
 	
+	; Turns on or off the g-label for the GuiControl
+	; This is needed to work around not being able to programmatically set GuiControl without triggering g-label
+	_SetGlabel(state){
+		if (state){
+			fn := this.ChangeValueFn
+			GuiControl, % this.ParentPlugin.hwnd ":+g", % this.hwnd, % fn
+		} else {
+			GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
+		}
+	}
 	; Get / Set of .value
 	value[]{
 		; Read of current contents of GuiControl
@@ -574,6 +590,7 @@ class _GuiControl {
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this.__value := value
+			OutputDebug % "GuiControl " this.Name " --> Plugin"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -588,7 +605,9 @@ class _GuiControl {
 		; Parent has told child state to be in, child does not need to notify parent of change in state
 		set {
 			this.__value := value
+			this._SetGlabel(0)						; Turn off g-label to avoid triggering save
 			GuiControl, , % this.hwnd, % value
+			this._SetGlabel(1)						; Turn g-label back on
 		}
 	}
 	
@@ -655,6 +674,7 @@ class _Hotkey {
 			this._value := value
 			h := this._value.BuildHumanReadable()
 			this._SetCueBanner()
+			OutputDebug % "Hotkey " this.Name " --> Plugin"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
