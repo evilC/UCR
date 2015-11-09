@@ -228,14 +228,31 @@ Class UCRMain {
 	}
 	
 	; The user selected the "Bind" option from a Hotkey GuiControl
-	_RequestBinding(hk){
-		if (!this._BindMode){
-			this._BindMode := 1
-			new _BindModeHandler(hk)
-			this._BindMode := 0
-			return 1
+	_RequestBinding(hk, delta := 0){
+		if (delta = 0){
+			; No delta param passed - request bind mode
+			if (!this._BindMode){
+				this._BindMode := 1
+				; ToDo: No need to instantiate a new class each time?
+				new _BindModeHandler(hk, this._BindModeEnded.Bind(this))
+				return 1
+			}
+			return 0
+		} else {
+			; Change property requested
+			; just set the hotkey for now
+			bo := hk.value.clone()
+			for k, v in delta {
+				bo[k] := v
+			}
+			hk.value := bo
 		}
-		return 0
+	}
+	
+	_BindModeEnded(hk, bo){
+		this._BindMode := 0
+		;hk._value := bo
+		hk.value := bo
 	}
 }
 
@@ -248,14 +265,16 @@ class _BindModeHandler {
 	EndKey := 0
 	HeldModifiers := {}
 	ModifierCount := 0
+	Callback := 0
 	
 	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
-	__New(bo){
-		this._OriginalBindObject := bo
+	__New(hk, callback){
+		this._callback := callback
+		this._OriginalHotkey := hk
 		this.SetHotkeyState(1)
 	}
 	
@@ -330,14 +349,14 @@ class _BindModeHandler {
 			; End Bind Mode
 			this.BindMode := 0
 			this.SetHotkeyState(0)
-			bindObj := this._OriginalBindObject._value
+			bindObj := this._OriginalHotkey.value.clone()
 			
 			bindObj.Keys := []
 			for code, key in this.HeldModifiers {
 				bindObj.Keys.push(key)
 			}
 			bindObj.Keys.push(this.EndKey)
-			this._OriginalBindObject.value := bindObj
+			this._Callback.(this._OriginalHotkey, bindObj)
 			
 			return
 		} else {
@@ -559,6 +578,7 @@ Class _Plugin {
 ; ======================================================================== GUICONTROL ===============================================================
 ; Wraps a GuiControl to make it's value persistent between runs.
 class _GuiControl {
+	__value := ""	; variable that actually holds value. ._value and .__value handled by Setters / Getters
 	__New(parent, name, ChangeValueCallback, aParams*){
 		this.ParentPlugin := parent
 		this.Name := name
@@ -637,7 +657,7 @@ class _GuiControl {
 ; A class the script author can instantiate to allow the user to select a hotkey.
 class _Hotkey {
 	; Internal vars describing the bindstring
-	_value := ""		; Holds the BindObject class
+	__value := ""		; Holds the BindObject class
 	; Other internal vars
 	_DefaultBanner := "Drop down the list to select a binding"
 	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
@@ -657,22 +677,31 @@ class _Hotkey {
 		; Get Hwnd of EditBox part of ComboBox
 		this._hEdit := DllCall("GetWindow","PTR",this.hwnd,"Uint",5) ;GW_CHILD = 5
 		
-		this._value := new _BindObject()
-		this._BuildOptions()
+		this.__value := new _BindObject()
 		this._SetCueBanner()
 	}
 	
 	value[]{
 		get {
-			return this._value
+			return this.__value
 		}
 		
 		set {
-			this._value := value
-			h := this._value.BuildHumanReadable()
-			this._SetCueBanner()
+			this._value := value	; trigger _value setter to set value and cuebanner etc
 			OutputDebug % "Hotkey " this.Name " --> Plugin"
 			this.ParentPlugin._ControlChanged(this)
+		}
+	}
+	
+	_value[]{
+		get {
+			return this.__value
+		}
+		
+		; Parent class told this hotkey what it's value is. Set value, but do not fire ParentPlugin._ControlChanged
+		set {
+			this.__value := value
+			this._SetCueBanner()
 		}
 	}
 
@@ -680,13 +709,13 @@ class _Hotkey {
 	_BuildOptions(){
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
 		str := "|Select New Binding"
-		if (this._value.Type = 0){
+		if (this.__value.Type = 0){
 			; Joystick buttons do not have these options
-			str .= "|Wild: " (this._value.wild ? "On" : "Off") 
+			str .= "|Wild: " (this.__value.wild ? "On" : "Off") 
 			this._CurrentOptionMap.push(this._OptionMap["Wild"])
-			str .= "|Block: " (this._value.block ? "On" : "Off")
+			str .= "|Block: " (this.__value.block ? "On" : "Off")
 			this._CurrentOptionMap.push(this._OptionMap["Block"])
-			str .= "|Suppress Repeats: " (this._value.suppress ? "On" : "Off")
+			str .= "|Suppress Repeats: " (this.__value.suppress ? "On" : "Off")
 			this._CurrentOptionMap.push(this._OptionMap["Suppress"])
 		}
 		str .= "|Clear Binding"
@@ -696,10 +725,11 @@ class _Hotkey {
 
 	; Sets the "Cue Banner" for the ComboBox
 	_SetCueBanner(){
+		this._BuildOptions()
 		static EM_SETCUEBANNER:=0x1501
-		if (this._value.Keys.length()) {
+		if (this.__value.Keys.length()) {
 			;Text := this._BuildHumanReadable()
-			Text := this._value.BuildHumanReadable()
+			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner			
 		}
@@ -716,6 +746,7 @@ class _Hotkey {
 		if (o < 100){
 			o++
 			o := this._CurrentOptionMap[o]
+			
 			; Option selected from list
 			if (o = 1){
 				; Bind
@@ -723,29 +754,34 @@ class _Hotkey {
 				return
 			} else if (o = 2){
 				; Wild
+				mod := {wild: !this.__value.wild}
 			} else if (o = 3){
 				; Block
+				mod := {block: !this.__value.block}
 			} else if (o = 4){
 				; Suppress
+				mod := {suppress: !this.__value.suppress}
 			} else if (o = 5){
-				; ToDo: Bodge. Fix. Should notify UCR of change through same channel as bind
-				this.value.Keys := []
-				this.value := this.value	; trigger save and update
+				; Clear Binding
+				mod := {Keys: []}
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return
 			}
-
+			if (IsObject(mod)){
+				UCR._RequestBinding(this, mod)
+				return
+			}
 		}
 	}
 	
 	_Serialize(){
-		return this._value._Serialize()
+		return this.__value._Serialize()
 	}
 	
 	_Deserialize(obj){
+		; Trigger _value setter to set gui state but not fire change event
 		this._value := new _BindObject(obj)
-		this._SetCueBanner()
 	}
 }
 
