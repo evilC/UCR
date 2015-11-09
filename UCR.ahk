@@ -720,26 +720,24 @@ class _Hotkey {
 			o := this._CurrentOptionMap[o]
 			; Option selected from list
 			if (o = 1){
-				binding := UCR._RequestBinding(this)
-				;~ if (binding = 0)
-					;~ return
-				;~ this._value := binding
-				;~ this._SetCueBanner()
-				;~ this.ParentPlugin._ControlChanged(this)
+				; Bind
+				UCR._RequestBinding(this)
 				return
 			} else if (o = 2){
-				this._wild := !this._wild
+				; Wild
 			} else if (o = 3){
-				this._passthrough := !this._passthrough
+				; Block
 			} else if (o = 4){
-				this._norepeat := !this._norepeat
+				; Suppress
 			} else if (o = 5){
-				;this._hotkey := ""
+				; ToDo: Bodge. Fix. Should notify UCR of change through same channel as bind
+				this.value.Keys := []
+				this.value := this.value	; trigger save and update
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return
 			}
-			;this.ChangeHotkey(this._hotkey)
+
 		}
 	}
 	
