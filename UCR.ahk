@@ -1,5 +1,5 @@
 #SingleInstance force
-#include <JSON>
+#include <JSON>				; Coco's JSON Lib v2 http://autohotkey.com/boards/viewtopic.php?f=6&t=627
 
 global UCR_PLUGIN_WIDTH := 500, UCR_PLUGIN_FRAME_WIDTH := 540
 
@@ -217,7 +217,7 @@ Class UCRMain {
 	_ProfileChanged(profile){
 		obj := this._Serialize()
 		
-		jdata := JSON.Dump(obj, true)
+		jdata := JSON.Dump(obj, ,true)
 		FileDelete, % this._SettingsFile
 		FileAppend, % jdata, % this._SettingsFile
 		;FileReplace(jdata,this._SettingsFile)
