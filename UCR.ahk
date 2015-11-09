@@ -640,7 +640,7 @@ class _Hotkey {
 	_value := ""		; Holds the BindObject class
 	; Other internal vars
 	_DefaultBanner := "Drop down the list to select a binding"
-	_OptionMap := {Select: 1, Wild: 2, Passthrough: 3, Suppress: 4, Clear: 5}
+	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		this.ParentPlugin := parent
@@ -678,17 +678,15 @@ class _Hotkey {
 
 	; Builds the list of options in the DropDownList
 	_BuildOptions(){
-		;str := "|Select Binding|Wild: " (this._wild ? "On" : "Off") "|Passthrough: " (this._passthrough ? "On" : "Off") "|Repeat Supression: " (this._norepeat ? "On" : "Off") "|Clear Binding"
-		;GuiControl, % this.ParentPlugin.hwnd ":" , % this.hwnd, % str
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
-		str := "|Select Binding"
+		str := "|Select New Binding"
 		if (this._value.Type = 0){
 			; Joystick buttons do not have these options
 			str .= "|Wild: " (this._value.wild ? "On" : "Off") 
 			this._CurrentOptionMap.push(this._OptionMap["Wild"])
-			str .= "|Passthrough: " (this._value.block ? "On" : "Off")
-			this._CurrentOptionMap.push(this._OptionMap["Passthrough"])
-			str .= "|Repeat Suppression: " (this._value.suppress ? "On" : "Off")
+			str .= "|Block: " (this._value.block ? "On" : "Off")
+			this._CurrentOptionMap.push(this._OptionMap["Block"])
+			str .= "|Suppress Repeats: " (this._value.suppress ? "On" : "Off")
 			this._CurrentOptionMap.push(this._OptionMap["Suppress"])
 		}
 		str .= "|Clear Binding"
