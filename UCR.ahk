@@ -579,6 +579,7 @@ class _GuiControl {
 			GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
 		}
 	}
+
 	; Get / Set of .value
 	value[]{
 		; Read of current contents of GuiControl
@@ -636,12 +637,7 @@ class _GuiControl {
 ; A class the script author can instantiate to allow the user to select a hotkey.
 class _Hotkey {
 	; Internal vars describing the bindstring
-	_value := ""		; The bindstring of the hotkey (eg ~*^!a). The getter for .value returns this
-	_hotkey := ""		; The bindstring without any modes (eg ^!a)
-	_wild := 0			; Whether Wild (*) mode is on
-	_passthrough := 1	; Whether Passthrough (~) mode is on
-	_norepeat := 0		; Whether or not to supress repeat down events
-	_type := 0			; 0 = keyboard / mouse, 1 = joystick button
+	_value := ""		; Holds the BindObject class
 	; Other internal vars
 	_DefaultBanner := "Drop down the list to select a binding"
 	_OptionMap := {Select: 1, Wild: 2, Passthrough: 3, Suppress: 4, Clear: 5}
@@ -661,6 +657,7 @@ class _Hotkey {
 		; Get Hwnd of EditBox part of ComboBox
 		this._hEdit := DllCall("GetWindow","PTR",this.hwnd,"Uint",5) ;GW_CHILD = 5
 		
+		this._value := new _BindObject()
 		this._BuildOptions()
 		this._SetCueBanner()
 	}
@@ -685,13 +682,13 @@ class _Hotkey {
 		;GuiControl, % this.ParentPlugin.hwnd ":" , % this.hwnd, % str
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
 		str := "|Select Binding"
-		if (this._type = 0){
+		if (this._value.Type = 0){
 			; Joystick buttons do not have these options
-			str .= "|Wild: " (this._wild ? "On" : "Off") 
+			str .= "|Wild: " (this._value.wild ? "On" : "Off") 
 			this._CurrentOptionMap.push(this._OptionMap["Wild"])
-			str .= "|Passthrough: " (this._passthrough ? "On" : "Off")
+			str .= "|Passthrough: " (this._value.block ? "On" : "Off")
 			this._CurrentOptionMap.push(this._OptionMap["Passthrough"])
-			str .= "|Repeat Suppression: " (this._norepeat ? "On" : "Off")
+			str .= "|Repeat Suppression: " (this._value.suppress ? "On" : "Off")
 			this._CurrentOptionMap.push(this._OptionMap["Suppress"])
 		}
 		str .= "|Clear Binding"
@@ -702,7 +699,6 @@ class _Hotkey {
 	; Sets the "Cue Banner" for the ComboBox
 	_SetCueBanner(){
 		static EM_SETCUEBANNER:=0x1501
-		;if (this._hotkey = "") {
 		if (this._value.Keys.length()) {
 			;Text := this._BuildHumanReadable()
 			Text := this._value.BuildHumanReadable()
@@ -738,7 +734,7 @@ class _Hotkey {
 			} else if (o = 4){
 				this._norepeat := !this._norepeat
 			} else if (o = 5){
-				this._hotkey := ""
+				;this._hotkey := ""
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return
@@ -758,6 +754,7 @@ class _Hotkey {
 }
 
 class _BindObject {
+	Type := 0
 	Keys := []
 	Wild := 0
 	Block := 0
