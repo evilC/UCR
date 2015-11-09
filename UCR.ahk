@@ -218,7 +218,9 @@ Class UCRMain {
 		obj := this._Serialize()
 		
 		jdata := JSON.Dump(obj, true)
-		FileReplace(jdata,this._SettingsFile)
+		FileDelete, % this._SettingsFile
+		FileAppend, % jdata, % this._SettingsFile
+		;FileReplace(jdata,this._SettingsFile)
 	}
 	
 	; The user selected the "Bind" option from a Hotkey GuiControl
