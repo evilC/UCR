@@ -236,6 +236,7 @@ Class UCRMain {
 			; No delta param passed - request bind mode
 			if (!this._BindMode){
 				this._BindMode := 1
+				this._HotkeyHandler.ChangeHotkeyState(0)
 				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
 				return 1
 			}
@@ -248,7 +249,8 @@ Class UCRMain {
 				bo[k] := v
 			}
 			;hk.value := bo
-			this._HotkeyHandler.RequestBinding(hk, bo)
+			this._HotkeyHandler.SetBinding(hk, bo)
+			this._HotkeyHandler.ChangeHotkeyState(1, hk)
 		}
 	}
 	
@@ -256,21 +258,38 @@ Class UCRMain {
 		this._BindMode := 0
 		;hk._value := bo
 		;hk.value := bo
-		this._HotkeyHandler.RequestBinding(hk, bo)
+		this._HotkeyHandler.SetBinding(hk, bo)
+		this._HotkeyHandler.ChangeHotkeyState(1)
 	}
 }
 ; =================================================================== HOTKEY HANDLER ==========================================================
 Class _HotkeyHandler {
-	ActiveBindings := {Profiles: {}}
+	; ToDo: RegisteredBindings needs to mimic the full Profile->Plugin->Hotkey structure...
+	; ... because names of hotkeys are only unique to the plugin
+	; Either that, or keep them in an indexed list or something
+	RegisteredBindings := {Profiles: {}}
 	__New(){
 		
 	}
 	
-	; Interface for other classes to call. Sets Hotkeys
-	RequestBinding(hk, bo){
+	; Set a Binding
+	SetBinding(hk, bo){
 		if (this.IsBindable(hk, bo)){
-			hk.value := bo
-			this.SetBinding(hk)
+			hk.value := bo		; ToDo: Should Hotkey setter really be called in here?
+			profilename := hk.ParentPlugin.ParentProfile.Name
+			if (hk.value.Keys.length()){
+				; ToDo: Object should already be created as part of plugin load / add ?
+				if (!IsObject(this.RegisteredBindings.Profiles[profilename])){
+					this.RegisteredBindings.Profiles[profilename] := {}
+				}
+				hkstring := this.BuildHotkeyString(hk.value)
+				this.RegisteredBindings.Profiles[profilename][hk.name] := {hkstring: hkstring, hk: hk}
+			} else {
+				;Clear Binding
+			}
+			return 1
+		} else {
+			return 0
 		}
 	}
 	
@@ -279,31 +298,32 @@ Class _HotkeyHandler {
 		return 1
 	}
 	
-	; actually make the binding
-	; ToDo: Bindings do not need to be made in here.
-	; EnableHotkeys / DisableHotkeys before / after bindmode should take care of that
-	SetBinding(hk){
-		profilename := hk.ParentPlugin.ParentProfile.Name
-		; Clear old binding
-		if (ObjHasKey(this.ActiveBindings.Profiles, profilename)){
-			hkstring := this.ActiveBindings.Profiles[profilename][hk.name].hkstring
-			OutputDebug % "Old binding (" hkstring ") found for hotkey " hk.Name ". Removing"
-			hotkey, % "$" hkstring, Off
-		}
-		if (hk.value.Keys.length()){
-			; Set Binding
-			; ToDo: Object should already be created as part of plugin load / add ?
-			if (!IsObject(this.ActiveBindings.Profiles[profilename])){
-				this.ActiveBindings.Profiles[profilename] := {}
+	; Turns on or off Hotkey(s)
+	ChangeHotkeyState(state, hk := 0){
+		critical
+		if (hk = 0){
+			; Change State of all hotkeys
+			for pr_name, profile in this.RegisteredBindings.Profiles {
+				for hk_name, obj in profile {
+					if (state){
+						fn := this.KeyEvent.Bind(this, obj.hk, 1)
+						hotkey, % "$" obj.hkstring, % fn, On
+					} else {
+						hotkey, % "$" obj.hkstring, Off
+					}
+				}
 			}
-			hkstring := this.BuildHotkeyString(hk.value)
-			this.ActiveBindings.Profiles[profilename][hk.name] := {hkstring: hkstring, hk: hk}
-			OutputDebug % "Binding " hk.Name " to " hkstring
-			fn := this.KeyEvent.Bind(this, hk, 1)
-			hotkey, % "$" hkstring, % fn, On
 		} else {
-			;Clear Binding
+			; Change state of one hotkey (eg toggle block)
+			obj := this.RegisteredBindings.Profiles[hk.ParentPlugin.ParentProfile.Name][hk.name]
+			if (state){
+				fn := this.KeyEvent.Bind(this, hk, 1)
+				hotkey, % "$" obj.hkstring, % fn, On
+			} else {
+				hotkey, % "$" obj.hkstring, Off
+			}
 		}
+		critical off
 	}
 	
 	BuildHotkeyString(bo){
@@ -374,6 +394,7 @@ class _BindModeHandler {
 		static pfx := "$*"
 		static current_state := 0
 		static updown := [{e: 1, s: ""}, {e: 0, s: " up"}]
+		critical
 		onoff := state ? "On" : "Off"
 		if (state = current_state)
 			return
@@ -417,6 +438,7 @@ class _BindModeHandler {
 					}
 			}
 		}
+		critical off
 	}
 	
 	; Called when a key was pressed
