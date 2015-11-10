@@ -26,7 +26,9 @@ Class UCRMain {
 		else
 			str := StrSplit(str, ".ahk")
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
-
+		
+		this._BindModeHandler := new _BindModeHandler()
+		
 		this._CreateGui()
 		this._LoadSettings()
 	}
@@ -234,7 +236,8 @@ Class UCRMain {
 			if (!this._BindMode){
 				this._BindMode := 1
 				; ToDo: No need to instantiate a new class each time?
-				new _BindModeHandler(hk, this._BindModeEnded.Bind(this))
+				;new _BindModeHandler(hk, this._BindModeEnded.Bind(this))
+				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
 				return 1
 			}
 			return 0
@@ -261,11 +264,11 @@ Class UCRMain {
 class _BindModeHandler {
 	DebugMode := 2
 	SelectedBinding := 0
-	BindMode := 1
+	BindMode := 0
 	EndKey := 0
 	HeldModifiers := {}
 	ModifierCount := 0
-	Callback := 0
+	_Callback := 0
 	
 	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
@@ -273,8 +276,19 @@ class _BindModeHandler {
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
 	__New(hk, callback){
+		
+	}
+	
+	StartBindMode(hk, callback){
 		this._callback := callback
 		this._OriginalHotkey := hk
+		
+		this.SelectedBinding := 0
+		this.BindMode := 1
+		this.EndKey := 0
+		this.HeldModifiers := {}
+		this.ModifierCount := 0
+
 		this.SetHotkeyState(1)
 	}
 	
