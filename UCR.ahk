@@ -28,6 +28,7 @@ Class UCRMain {
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
 		
 		this._BindModeHandler := new _BindModeHandler()
+		this._HotkeyHandler := new _HotkeyHandler()
 		
 		this._CreateGui()
 		this._LoadSettings()
@@ -235,8 +236,6 @@ Class UCRMain {
 			; No delta param passed - request bind mode
 			if (!this._BindMode){
 				this._BindMode := 1
-				; ToDo: No need to instantiate a new class each time?
-				;new _BindModeHandler(hk, this._BindModeEnded.Bind(this))
 				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
 				return 1
 			}
@@ -248,14 +247,92 @@ Class UCRMain {
 			for k, v in delta {
 				bo[k] := v
 			}
-			hk.value := bo
+			;hk.value := bo
+			this._HotkeyHandler.RequestBinding(hk, bo)
 		}
 	}
 	
 	_BindModeEnded(hk, bo){
 		this._BindMode := 0
 		;hk._value := bo
-		hk.value := bo
+		;hk.value := bo
+		this._HotkeyHandler.RequestBinding(hk, bo)
+	}
+}
+; =================================================================== HOTKEY HANDLER ==========================================================
+Class _HotkeyHandler {
+	ActiveBindings := {Profiles: {}}
+	__New(){
+		
+	}
+	
+	; Interface for other classes to call. Sets Hotkeys
+	RequestBinding(hk, bo){
+		if (this.IsBindable(hk, bo)){
+			hk.value := bo
+			this.SetBinding(hk)
+		}
+	}
+	
+	; Check for duplicates etc
+	IsBindable(hk, bo){
+		return 1
+	}
+	
+	; actually make the binding
+	; ToDo: Bindings do not need to be made in here.
+	; EnableHotkeys / DisableHotkeys before / after bindmode should take care of that
+	SetBinding(hk){
+		profilename := hk.ParentPlugin.ParentProfile.Name
+		; Clear old binding
+		if (ObjHasKey(this.ActiveBindings.Profiles, profilename)){
+			hkstring := this.ActiveBindings.Profiles[profilename][hk.name].hkstring
+			OutputDebug % "Old binding (" hkstring ") found for hotkey " hk.Name ". Removing"
+			hotkey, % "$" hkstring, Off
+		}
+		if (hk.value.Keys.length()){
+			; Set Binding
+			; ToDo: Object should already be created as part of plugin load / add ?
+			if (!IsObject(this.ActiveBindings.Profiles[profilename])){
+				this.ActiveBindings.Profiles[profilename] := {}
+			}
+			hkstring := this.BuildHotkeyString(hk.value)
+			this.ActiveBindings.Profiles[profilename][hk.name] := {hkstring: hkstring, hk: hk}
+			OutputDebug % "Binding " hk.Name " to " hkstring
+			fn := this.KeyEvent.Bind(this, hk, 1)
+			hotkey, % "$" hkstring, % fn, On
+		} else {
+			;Clear Binding
+		}
+	}
+	
+	BuildHotkeyString(bo){
+		str := ""
+		if (bo.Wild)
+			str .= "*"
+		if (!bo.Block)
+			str .= "~"
+		max := bo.Keys.Length()
+		Loop % max {
+			key := bo.Keys[A_Index]
+			if (A_Index = max){
+				islast := 1
+				nextkey := 0
+			} else {
+				islast := 0
+				nextkey := bo.Keys[A_Index+1]
+			}
+			if (key.IsModifier() && (max > A_Index)){
+				str .= key.RenderModifier()
+			} else {
+				str .= key.BuildHumanReadable()
+			}
+		}
+		return str
+	}
+	
+	KeyEvent(event, hk){
+		SoundBeep
 	}
 }
 
@@ -861,6 +938,10 @@ class _Key {
 		if (this.Type = 0 && ObjHasKey(this._Modifiers, this.Code))
 			return 1
 		return 0
+	}
+	
+	RenderModifier(){
+		return this._Modifiers[this.Code].s
 	}
 	
 	_Serialize(){
