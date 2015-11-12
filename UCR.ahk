@@ -301,8 +301,11 @@ Class _HotkeyHandler {
 				if (state){
 					fn := this.KeyEvent.Bind(this, obj.hk, 1)
 					hotkey, % "$" obj.hkstring, % fn, On
+					fn := this.KeyEvent.Bind(this, obj.hk, 0)
+					hotkey, % "$" obj.hkstring " up", % fn, On
 				} else {
 					hotkey, % "$" obj.hkstring, Off
+					hotkey, % "$" obj.hkstring " up", Off
 				}
 			}
 		} else {
@@ -311,8 +314,11 @@ Class _HotkeyHandler {
 			if (state){
 				fn := this.KeyEvent.Bind(this, hk, 1)
 				hotkey, % "$" obj.hkstring, % fn, On
+				fn := this.KeyEvent.Bind(this, hk, 0)
+				hotkey, % "$" obj.hkstring " up", % fn, On
 			} else {
 				hotkey, % "$" obj.hkstring, Off
+				hotkey, % "$" obj.hkstring " up", Off
 			}
 		}
 		critical off
@@ -343,8 +349,11 @@ Class _HotkeyHandler {
 		return str
 	}
 	
-	KeyEvent(event, hk){
+	KeyEvent(hk, event){
 		SoundBeep
+		if (IsObject(hk.ChangeStateCallback)){
+			hk.ChangeStateCallback.(event)
+		}
 	}
 }
 
@@ -1003,7 +1012,7 @@ class TestPlugin1 extends _Plugin {
 	}
 	
 	MyHkChangedState(Name, e){
-		ToolTip % Name " changed state to: " e ? "Down" : "Up"
+		ToolTip % Name " changed state to: " (e ? "Down" : "Up")
 	}
 }
 
