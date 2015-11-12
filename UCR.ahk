@@ -230,7 +230,8 @@ Class UCRMain {
 		;FileReplace(jdata,this._SettingsFile)
 	}
 	
-	; The user selected the "Bind" option from a Hotkey GuiControl
+	; The user selected the "Bind" option from a Hotkey GuiControl,
+	;  or changed an option such as "Wild"
 	_RequestBinding(hk, delta := 0){
 		if (delta = 0){
 			; No delta param passed - request bind mode
@@ -264,10 +265,7 @@ Class UCRMain {
 }
 ; =================================================================== HOTKEY HANDLER ==========================================================
 Class _HotkeyHandler {
-	; ToDo: RegisteredBindings needs to mimic the full Profile->Plugin->Hotkey structure...
-	; ... because names of hotkeys are only unique to the plugin
-	; Either that, or keep them in an indexed list or something
-	RegisteredBindings := {Profiles: {}}
+	RegisteredBindings := {}
 	__New(){
 		
 	}
@@ -278,14 +276,11 @@ Class _HotkeyHandler {
 			hk.value := bo		; ToDo: Should Hotkey setter really be called in here?
 			profilename := hk.ParentPlugin.ParentProfile.Name
 			if (hk.value.Keys.length()){
-				; ToDo: Object should already be created as part of plugin load / add ?
-				if (!IsObject(this.RegisteredBindings.Profiles[profilename])){
-					this.RegisteredBindings.Profiles[profilename] := {}
-				}
 				hkstring := this.BuildHotkeyString(hk.value)
-				this.RegisteredBindings.Profiles[profilename][hk.name] := {hkstring: hkstring, hk: hk}
+				this.RegisteredBindings[hk.hwnd] := {hkstring: hkstring, hk: hk}
 			} else {
 				;Clear Binding
+				this.RegisteredBindings.Delete(hk.hwnd)
 			}
 			return 1
 		} else {
@@ -303,19 +298,17 @@ Class _HotkeyHandler {
 		critical
 		if (hk = 0){
 			; Change State of all hotkeys
-			for pr_name, profile in this.RegisteredBindings.Profiles {
-				for hk_name, obj in profile {
-					if (state){
-						fn := this.KeyEvent.Bind(this, obj.hk, 1)
-						hotkey, % "$" obj.hkstring, % fn, On
-					} else {
-						hotkey, % "$" obj.hkstring, Off
-					}
+			for id, obj in this.RegisteredBindings {
+				if (state){
+					fn := this.KeyEvent.Bind(this, obj.hk, 1)
+					hotkey, % "$" obj.hkstring, % fn, On
+				} else {
+					hotkey, % "$" obj.hkstring, Off
 				}
 			}
 		} else {
-			; Change state of one hotkey (eg toggle block)
-			obj := this.RegisteredBindings.Profiles[hk.ParentPlugin.ParentProfile.Name][hk.name]
+			; Change state of one hotkey (eg toggle wild)
+			obj := this.RegisteredBindings[hk.hwnd]
 			if (state){
 				fn := this.KeyEvent.Bind(this, hk, 1)
 				hotkey, % "$" obj.hkstring, % fn, On
