@@ -4,7 +4,7 @@ OutputDebug DBGVIEWCLEAR
 global UCR_PLUGIN_WIDTH := 500, UCR_PLUGIN_FRAME_WIDTH := 540
 
 global UCR
-UCR := new UCRMain()
+new UCRMain()
 return
 
 GuiClose:
@@ -17,6 +17,7 @@ Class UCRMain {
 	CurrentProfile := 0
 	PluginList := []
 	__New(){
+		global UCR := this
 		Gui +HwndHwnd
 		this.hwnd := hwnd
 
@@ -32,6 +33,7 @@ Class UCRMain {
 		
 		this._CreateGui()
 		this._LoadSettings()
+		this._HotkeyHandler.ChangeHotkeyState(1)
 	}
 	
 	_CreateGui(){
@@ -249,9 +251,11 @@ Class UCRMain {
 			for k, v in delta {
 				bo[k] := v
 			}
-			;hk.value := bo
-			this._HotkeyHandler.SetBinding(hk, bo)
-			this._HotkeyHandler.ChangeHotkeyState(1, hk)
+			if (this._HotkeyHandler.IsBindable(hk, bo)){
+				hk.value := bo
+				this._HotkeyHandler.SetBinding(hk)
+				this._HotkeyHandler.ChangeHotkeyState(1, hk)
+			}
 		}
 	}
 	
@@ -511,7 +515,6 @@ Class _Profile {
 	AssociatedApss := 0
 	
 	__New(name){
-		this.UCR := parent
 		this.Name := name
 		this._CreateGui()
 	}
@@ -883,6 +886,8 @@ class _Hotkey {
 	_Deserialize(obj){
 		; Trigger _value setter to set gui state but not fire change event
 		this._value := new _BindObject(obj)
+		; Register hotkey on load
+		UCR._HotkeyHandler.SetBinding(this)
 	}
 }
 
