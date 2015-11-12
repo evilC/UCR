@@ -257,10 +257,11 @@ Class UCRMain {
 	
 	_BindModeEnded(hk, bo){
 		this._BindMode := 0
-		;hk._value := bo
-		;hk.value := bo
-		this._HotkeyHandler.SetBinding(hk, bo)
-		this._HotkeyHandler.ChangeHotkeyState(1)
+		if (this._HotkeyHandler.IsBindable(hk, bo)){
+			hk.value := bo
+			this._HotkeyHandler.SetBinding(hk)
+			this._HotkeyHandler.ChangeHotkeyState(1)
+		}
 	}
 }
 ; =================================================================== HOTKEY HANDLER ==========================================================
@@ -271,21 +272,15 @@ Class _HotkeyHandler {
 	}
 	
 	; Set a Binding
-	SetBinding(hk, bo){
-		if (this.IsBindable(hk, bo)){
-			hk.value := bo		; ToDo: Should Hotkey setter really be called in here?
-			profilename := hk.ParentPlugin.ParentProfile.Name
-			if (hk.value.Keys.length()){
-				hkstring := this.BuildHotkeyString(hk.value)
-				this.RegisteredBindings[hk.hwnd] := {hkstring: hkstring, hk: hk}
-			} else {
-				;Clear Binding
-				this.RegisteredBindings.Delete(hk.hwnd)
-			}
-			return 1
+	SetBinding(hk){
+		if (hk.value.Keys.length()){
+			hkstring := this.BuildHotkeyString(hk.value)
+			this.RegisteredBindings[hk.hwnd] := {hkstring: hkstring, hk: hk}
 		} else {
-			return 0
+			;Clear Binding
+			this.RegisteredBindings.Delete(hk.hwnd)
 		}
+		return 1
 	}
 	
 	; Check for duplicates etc
