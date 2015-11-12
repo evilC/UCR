@@ -350,8 +350,13 @@ Class _HotkeyHandler {
 	}
 	
 	KeyEvent(hk, event){
-		SoundBeep
 		if (IsObject(hk.ChangeStateCallback)){
+			if (hk.__value.Suppress && event && hk.State){
+				; Suppress repeats option
+				return
+			}
+			SoundBeep
+			hk.State := event
 			hk.ChangeStateCallback.(event)
 		}
 	}
@@ -536,7 +541,9 @@ Class _Profile {
 		Gui, +HwndhOld	; Preserve previous default Gui
 		Gui, Margin, 5, 5
 		Gui, new, HwndHwnd
-		Gui, +VScroll
+		try {
+			Gui, +VScroll
+		}
 		this.hwnd := hwnd
 		Gui, Show, % "x0 y140 w" UCR_PLUGIN_FRAME_WIDTH " h200 Hide", % "Profile: " this.Name
 		Gui, % hOld ":Default"	; Restore previous default Gui
