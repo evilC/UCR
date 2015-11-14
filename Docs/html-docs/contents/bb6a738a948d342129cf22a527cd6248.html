@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>ChangeHotkeyState</title>
+        <title>AddControl</title>
         <!-- <script src="http://use.edgefonts.net/source-sans-pro;source-code-pro.js"></script> -->
 <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic|Source+Code+Pro:300,400,700' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="../assets/css/bootstrap.css">
@@ -20,7 +20,7 @@
 
             <!-- Name Title -->
 
-            <h1>ChangeHotkeyState</h1>
+            <h1>AddControl</h1>
 
             <!-- Type and Stereotype -->
 
@@ -45,10 +45,10 @@
                     <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Class Diagram</a></span>
                 
                     <span>::</span>
-                    <span class="label label-info"><a href='be978155d358e0050fe38a0228267680.html'><span class='node-icon _icon-UMLClass'></span>HotkeyHandler</a></span>
+                    <span class="label label-info"><a href='0588cc357bfaaee2c31537f7d1b0ff19.html'><span class='node-icon _icon-UMLClass'></span>Plugin</a></span>
                 
                     <span>::</span>
-                    <span class="label label-info"><a href='ce66d2b7f30103d05cb4de52f3289a53.html'><span class='node-icon _icon-UMLOperation'></span>ChangeHotkeyState</a></span>
+                    <span class="label label-info"><a href='bb6a738a948d342129cf22a527cd6248.html'><span class='node-icon _icon-UMLOperation'></span>AddControl</a></span>
                 
             </section>
 
@@ -63,8 +63,7 @@
                 <h3>Description</h3>
                 <div>
                     
-                        <p>Turns on or off all registered hotkeys.
-If passed a hotkey as the 2nd parameter, only turns on or off that hotkey.</p>
+                        <span class="label label-info">none</span>
                     
                 </div>
             </section>
@@ -145,15 +144,22 @@ If passed a hotkey as the 2nd parameter, only turns on or off that hotkey.</p>
                     
                     <tr>
                         <td>in</td>
-                        <td><a href="080b796cbbf77ace34766f497d68959d.html">state</a></td>
-                        <td>bool</td>
+                        <td><a href="b0db6eb194455291816d13120c211be9.html">name</a></td>
+                        <td>string</td>
                         <td></td>
                     </tr>
                     
                     <tr>
                         <td>in</td>
-                        <td><a href="79e2235dd0dd8ce606b8ebfc0f79f6b7.html">hk</a></td>
-                        <td><a href='e57c2905a29475524538991597271304.html'><span class='node-icon _icon-UMLClass'></span>Hotkey</a></td>
+                        <td><a href="f2835cf6f7ba04150134be637ef1f630.html">ChangeValueCallback</a></td>
+                        <td>FuncObject</td>
+                        <td></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>in</td>
+                        <td><a href="97efa335f57ac68336decfb3d2e2240c.html">aParams*</a></td>
+                        <td>variadic</td>
                         <td></td>
                     </tr>
                     
@@ -225,7 +231,7 @@ If passed a hotkey as the 2nd parameter, only turns on or off that hotkey.</p>
     
     <tr>
         <td>name</td>
-        <td>ChangeHotkeyState</td>
+        <td>AddControl</td>
     </tr>
     
     
@@ -281,10 +287,13 @@ If passed a hotkey as the 2nd parameter, only turns on or off that hotkey.</p>
         <td>
             
             
-            <a href='080b796cbbf77ace34766f497d68959d.html'><span class='node-icon _icon-UMLParameter'></span>state</a>
+            <a href='b0db6eb194455291816d13120c211be9.html'><span class='node-icon _icon-UMLParameter'></span>name</a>
             
             <span>, </span>
-            <a href='79e2235dd0dd8ce606b8ebfc0f79f6b7.html'><span class='node-icon _icon-UMLParameter'></span>hk</a>
+            <a href='f2835cf6f7ba04150134be637ef1f630.html'><span class='node-icon _icon-UMLParameter'></span>ChangeValueCallback</a>
+            
+            <span>, </span>
+            <a href='97efa335f57ac68336decfb3d2e2240c.html'><span class='node-icon _icon-UMLParameter'></span>aParams*</a>
             
         </td>
     </tr>

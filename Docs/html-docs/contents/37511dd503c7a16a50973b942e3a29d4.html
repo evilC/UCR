@@ -64,6 +64,11 @@
 It has it&#39;s own GUI, and can contain 0 or more plugins.
 Profiles are a way for End-Users to organize plugins into meaningful groups.
 In the final product, Profiles will be able to be linked to applications, such that UCR switches to a profile if it&#39;s associated application becomes active.</p>
+
+<p>There are two special profiles. which are always present and cannot be deleted:
+Default - A normal profile</p>
+
+<p>Global - Always active.</p>
                     
                 </div>
             </section>
@@ -150,21 +155,21 @@ In the final product, Profiles will be able to be linked to applications, such t
                         <td>public</td>
                         <td><a href="3d9e754418991bd4f804dadb36c72d88.html">Name</a></td>
                         <td>String</td>
-                        <td></td>
+                        <td><p>The End-User defined name for the profile (eg &quot;Microsoft Word&quot;)</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="659d1765b803f736706949eff6b28b5d.html">Plugins</a></td>
                         <td>Plugin</td>
-                        <td></td>
+                        <td><p>An associative array of plugins that have been added to this profile, indexed by name.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
-                        <td><a href="b32b05e6c8494eab354f67af5dc79d68.html">AssociatedApps</a></td>
-                        <td>AppGroup</td>
-                        <td></td>
+                        <td><a href="b32b05e6c8494eab354f67af5dc79d68.html">AppGroup</a></td>
+                        <td><a href='09b08c08305d951aea390bfab734836e.html'>AppGroup</a></td>
+                        <td><p>The AppGroup associated with this profile</p></td>
                     </tr>
                     
                 </table>
@@ -186,7 +191,7 @@ In the final product, Profiles will be able to be linked to applications, such t
                     <tr>
                         <td>public</td>
                         <td><a href="e72fa4b15496ee38ae51a451687d7376.html">Activate(): bool</a></td>
-                        <td></td>
+                        <td><p>Set this profile as the active profile</p></td>
                     </tr>
                     
                     <tr>

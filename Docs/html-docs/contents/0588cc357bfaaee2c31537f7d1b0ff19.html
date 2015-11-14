@@ -204,12 +204,8 @@ Every GuiControl declared by the Plugin-Author gets added to this array.</p></td
                     
                     <tr>
                         <td>public</td>
-                        <td><a href="2f7934e36e669e91467d3214acf0fdcd.html">AddControl(name: string, ChangeValueCallback: FuncObject, aParams*: variadic)</a></td>
-                        <td><p>Plugin-Authors call this to add a GuiControl to the plugin.
-ChangeValueCallback is a callback to be called when the user changes the value of the GuiControl.
-aParams is the params that you would use with the AHK Gui command, skipping param 1 and 2.
-eg for Gui, Add, Edit, x10 y100, Default
-You would just omit the Gui param and pass &quot;Edit&quot;, &quot;x10y100&quot;, &quot;Default&quot; as aParams.</p></td>
+                        <td><a href="bb6a738a948d342129cf22a527cd6248.html">AddControl(name: string, ChangeValueCallback: FuncObject, aParams*: variadic)</a></td>
+                        <td></td>
                     </tr>
                     
                     <tr>
@@ -226,7 +222,8 @@ You would just omit the Gui param and pass &quot;x10y100&quot;, &quot;Default&qu
                     <tr>
                         <td>private</td>
                         <td><a href="682cf81b0a510f643af3f02be92f10a9.html">_CreateGui()</a></td>
-                        <td></td>
+                        <td><p>Creates the GUI for a plugin.
+Not intended to be used by Plugin-Authors, they use Init()</p></td>
                     </tr>
                     
                     <tr>

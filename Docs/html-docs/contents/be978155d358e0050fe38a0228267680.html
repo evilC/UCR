@@ -148,7 +148,9 @@ Will also simulate events not supported by native AHK (eg Up events for joystick
                         <td>public</td>
                         <td><a href="b05994750e95f7cf30bbe2e9e5584119.html">RegisteredBindings</a></td>
                         <td><a href='e57c2905a29475524538991597271304.html'>Hotkey</a></td>
-                        <td></td>
+                        <td><p>An associative array of all the bindings that are currently registered with the system.
+Used to allow disabling / enabling of all hotkeys (eg before / after bind mode) and to disallow conflicting hotkeys.
+Seeing as the name of a hotkey is only unique to a plugin, hotkeys are indexed by the HWND of their GuiControl, to provide a simpler, flatter structure and speed searches.</p></td>
                     </tr>
                     
                 </table>
@@ -170,25 +172,27 @@ Will also simulate events not supported by native AHK (eg Up events for joystick
                     <tr>
                         <td>public</td>
                         <td><a href="c80ab3d0ce00a7933bd6c57b7fb811d8.html">SetBinding(hk: Hotkey)</a></td>
-                        <td></td>
+                        <td><p>Sets the binding for a hotkey.
+Does not actually enable the hotkey, just registers it with the system.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="4234f48d64e4ac4e3460061a86f46f8a.html">IsBindable(hk: Hotkey, bo: BindObject)</a></td>
-                        <td></td>
+                        <td><p>Returns true if the passed binding is valid (eg does not conflict with another binding, false if not.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="ce66d2b7f30103d05cb4de52f3289a53.html">ChangeHotkeyState(state: bool, hk: Hotkey)</a></td>
-                        <td></td>
+                        <td><p>Turns on or off all registered hotkeys.
+If passed a hotkey as the 2nd parameter, only turns on or off that hotkey.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="bfb6f12ce1d870d36d35ac9d37839bc3.html">KeyEvent(hk: Hotkey, event: bool)</a></td>
-                        <td></td>
+                        <td><p>The hotkey that an End-User bound to a hotkey instance was pressed or released.</p></td>
                     </tr>
                     
                 </table>
