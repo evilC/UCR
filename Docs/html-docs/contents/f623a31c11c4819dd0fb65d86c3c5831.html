@@ -39,10 +39,10 @@
                 
                 
                     
-                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>Untitled</a></span>
+                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>UCR</a></span>
                 
                     <span>::</span>
-                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Model</a></span>
+                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Class Diagram</a></span>
                 
                     <span>::</span>
                     <span class="label label-info"><a href='f623a31c11c4819dd0fb65d86c3c5831.html'><span class='node-icon _icon-UMLClass'></span>Key</a></span>
@@ -60,7 +60,7 @@
                 <h3>Description</h3>
                 <div>
                     
-                        <span class="label label-info">none</span>
+                        <p>Represents a single key or button that the End-User can interact with.</p>
                     
                 </div>
             </section>
@@ -147,28 +147,37 @@
                         <td>public</td>
                         <td><a href="10d8891f8b5408b798a15c81b60aa6db.html">Type</a></td>
                         <td><a href='717988e0c75d9128d2ac268438aba7a0.html'>InputType</a></td>
-                        <td></td>
+                        <td><p>Where the input came from (Keyboard, Mouse, Joystick etc)</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
-                        <td><a href="0f1b96401c37b31f1626df3ad1172581.html">Value</a></td>
-                        <td>String</td>
-                        <td></td>
-                    </tr>
-                    
-                    <tr>
-                        <td>public</td>
-                        <td><a href="1d992055591414fec4f6ba47c54fd0a8.html">JoyID</a></td>
+                        <td><a href="0f1b96401c37b31f1626df3ad1172581.html">Code</a></td>
                         <td>Int</td>
-                        <td></td>
+                        <td><p>For keyboard / mouse, this is the Virtual Key Code of the key / button.
+For Joystick button, the number of the button</p></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>public</td>
+                        <td><a href="1d992055591414fec4f6ba47c54fd0a8.html">DeviceID</a></td>
+                        <td>Int</td>
+                        <td><p>For types that support multiple devices (eg Joystick), the device ID that the button is on.</p>
+
+<p>eg the Joystick number</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="2d64fbf9e0fbb8e5a7f1fc491aedaecc.html">UID</a></td>
                         <td>String</td>
-                        <td></td>
+                        <td><p>May not end up being used.
+Was originally going to be a unique way to recognize and keyboard or mouse or joystick button from a short string.
+eg<br/>k30 would be a
+m1 would be left mouse
+1joy1 would be joystick 1, button 1</p>
+
+<p>Useful for ObjHasKey lookups</p></td>
                     </tr>
                     
                 </table>

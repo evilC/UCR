@@ -39,10 +39,10 @@
                 
                 
                     
-                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>Untitled</a></span>
+                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>UCR</a></span>
                 
                     <span>::</span>
-                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Model</a></span>
+                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Class Diagram</a></span>
                 
                     <span>::</span>
                     <span class="label label-info"><a href='0588cc357bfaaee2c31537f7d1b0ff19.html'><span class='node-icon _icon-UMLClass'></span>Plugin</a></span>
@@ -60,7 +60,10 @@
                 <h3>Description</h3>
                 <div>
                     
-                        <span class="label label-info">none</span>
+                        <p>Each plugin is an instance of this class.
+Plugin-Authors will be deriving from this class to create plugins.
+The Gui of the Plugin-Author&#39;s script will be the Gui of the plugin (possibly with a bit of &quot;Chrome&quot; around it - plugin tite. delete plugin etc).
+The Plugin-Author can add Hotkeys and GuiControls to his script to allow the End-User to assign their own hotkeys and tweak the behavior of the script, but otherwise it is a normal AHK script that could do <em>anything</em>.</p>
                     
                 </div>
             </section>
@@ -145,30 +148,42 @@
                     
                     <tr>
                         <td>public</td>
+                        <td><a href="7d0d222c16ec0a9c0d6955bb037c5cfa.html">Type</a></td>
+                        <td>String</td>
+                        <td><p>A Plugin-Author defined unique identifier for this plugin class.
+At the moment, must be the class name of the Plugin.
+May be deprecated, if we can find a way of executing a plugin in another thread and discovering the name of the class.</p></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>public</td>
                         <td><a href="af07e3c386d80a01aba77e866d62abeb.html">ParentProfile</a></td>
                         <td><a href='37511dd503c7a16a50973b942e3a29d4.html'>Profile</a></td>
-                        <td></td>
+                        <td><p>A reference to the End-User defined profile that this plugin has been added to.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="7510f8e85d992fd4f542cf0f973e7ebf.html">Name</a></td>
                         <td>String</td>
-                        <td></td>
+                        <td><p>The End-User defined name of the plugin.
+eg &quot;Remap Joy2 to jump&quot;</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="21d5c59a8b96d604f4e4aae0905565b7.html">Hotkeys</a></td>
                         <td>Hotkey</td>
-                        <td></td>
+                        <td><p>An associative array of Hotkey objects, indexed by name.
+Every Hotkey declared by the Plugin-Author gets added to this array.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="acd2b62e36f9cb16dfbeee7a669bc175.html">GuiControls</a></td>
                         <td><a href='389a1348e68b2737a4127f9e38f05612.html'>GuiControl</a></td>
-                        <td></td>
+                        <td><p>An associative array of GuiControl objects, indexed by name.
+Every GuiControl declared by the Plugin-Author gets added to this array.</p></td>
                     </tr>
                     
                 </table>
@@ -189,14 +204,36 @@
                     
                     <tr>
                         <td>public</td>
-                        <td><a href="2f7934e36e669e91467d3214acf0fdcd.html">AddControl(name, variadic)</a></td>
-                        <td></td>
+                        <td><a href="2f7934e36e669e91467d3214acf0fdcd.html">AddControl(name: string, ChangeValueCallback: FuncObject, aParams*: variadic)</a></td>
+                        <td><p>Plugin-Authors call this to add a GuiControl to the plugin.
+ChangeValueCallback is a callback to be called when the user changes the value of the GuiControl.
+aParams is the params that you would use with the AHK Gui command, skipping param 1 and 2.
+eg for Gui, Add, Edit, x10 y100, Default
+You would just omit the Gui param and pass &quot;Edit&quot;, &quot;x10y100&quot;, &quot;Default&quot; as aParams.</p></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>public</td>
+                        <td><a href="ccccfb7e078d93b2e614187562cf1eac.html">AddHotkey(name: string, ChangeValueCallback: FuncObject, ChangeStateCallback: FuncObject, aParams*: variadic)</a></td>
+                        <td><p>Plugin-Authors call this to add a Hotkey GuiControl to the plugin.
+ChangeValueCallback is a callback to be called when the user changes the value of the GuiControl (Chooses a new hotkey).
+ChangeStateCallback is a callback to be called when the user presses or releases the hotkey.
+aParams is the params that you would use with the AHK Gui command, skipping param 1, 2 and 3.
+eg for Gui, Add, Edit, x10 y100, Default
+You would just omit the Gui param and pass &quot;x10y100&quot;, &quot;Default&quot; as aParams.</p></td>
                     </tr>
                     
                     <tr>
                         <td>private</td>
                         <td><a href="682cf81b0a510f643af3f02be92f10a9.html">_CreateGui()</a></td>
                         <td></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>public</td>
+                        <td><a href="f253c475cd97d5866fdfe304360de181.html">Init()</a></td>
+                        <td><p>Called when the plugin has done initializing.
+Does nothing by default - this method is designed to be overridden by the Plugin-Author, to perform any required initialization for their script.</p></td>
                     </tr>
                     
                 </table>

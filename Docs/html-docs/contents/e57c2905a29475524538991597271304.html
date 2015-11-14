@@ -39,10 +39,10 @@
                 
                 
                     
-                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>Untitled</a></span>
+                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>UCR</a></span>
                 
                     <span>::</span>
-                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Model</a></span>
+                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Class Diagram</a></span>
                 
                     <span>::</span>
                     <span class="label label-info"><a href='e57c2905a29475524538991597271304.html'><span class='node-icon _icon-UMLClass'></span>Hotkey</a></span>
@@ -60,7 +60,8 @@
                 <h3>Description</h3>
                 <div>
                     
-                        <span class="label label-info">none</span>
+                        <p>A GuiControl that has persistent state and Plugin-Author defined callbacks for change events (ie End User changed contents of GuiControl).
+Additionally, has Plugin-Author defined callbacks for up and down events of the End User defined hotkey.</p>
                     
                 </div>
             </section>
@@ -147,35 +148,36 @@
                         <td>public</td>
                         <td><a href="40c6e5f7935982beb2f765d679069cfd.html">ParentPlugin</a></td>
                         <td><a href='0588cc357bfaaee2c31537f7d1b0ff19.html'>Plugin</a></td>
-                        <td></td>
+                        <td><p>A reference to the Parent Plugin that this Hotkey is part of.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="326ed23b85b546d5cbc5d4035f77854a.html">Name</a></td>
                         <td>String</td>
-                        <td></td>
+                        <td><p>Plugin-Author defined name for the Hotkey.
+Should be unique among other Hotkeys in this plugin.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="34e28928cbd26431b8ef9ac329b43e14.html">Value</a></td>
                         <td><a href='8a1733287f017d9d4b85cd16d494f438.html'>BindObject</a></td>
-                        <td></td>
+                        <td><p>Holds the End User&#39;s current choice of hotkey</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="fca66e3401bd64bf1142b318512a910d.html">ChangeValueCallback</a></td>
                         <td>BoundFunc</td>
-                        <td></td>
+                        <td><p>The Plugin-Author defined routine in the plugin to call then the Hotkey changes value (eg the End-User chose another hotkey).</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="4ff90a10344b9e7a48a2d02eea9d2e77.html">ChangeStateCallback</a></td>
                         <td>BoundFunc</td>
-                        <td></td>
+                        <td><p>The Plugin-Author defined routine in the plugin to call then the Hotkey changes state (eg the End-User defined hotkey went down or up).</p></td>
                     </tr>
                     
                 </table>

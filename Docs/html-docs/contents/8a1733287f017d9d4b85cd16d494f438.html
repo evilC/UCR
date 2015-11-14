@@ -39,10 +39,10 @@
                 
                 
                     
-                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>Untitled</a></span>
+                    <span class="label label-info"><a href='cf9c8b720f3815adeccaf3ef6e48c6c4.html'><span class='node-icon _icon-Project'></span>UCR</a></span>
                 
                     <span>::</span>
-                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Model</a></span>
+                    <span class="label label-info"><a href='594af663de577680f35b13183109d675.html'><span class='node-icon _icon-UMLModel'></span>Class Diagram</a></span>
                 
                     <span>::</span>
                     <span class="label label-info"><a href='8a1733287f017d9d4b85cd16d494f438.html'><span class='node-icon _icon-UMLClass'></span>BindObject</a></span>
@@ -60,7 +60,7 @@
                 <h3>Description</h3>
                 <div>
                     
-                        <span class="label label-info">none</span>
+                        <p>Describes a binding (eg CTRL+ALT+Left Mouse) plus the various possible options (eg wild, block).</p>
                     
                 </div>
             </section>
@@ -147,28 +147,33 @@
                         <td>public</td>
                         <td><a href="9c539907a8c805faf10ad20b9877da4d.html">Keys</a></td>
                         <td><a href='f623a31c11c4819dd0fb65d86c3c5831.html'>Key</a></td>
-                        <td></td>
+                        <td><p>The list of keys that comprise the binding.
+Indexed array, ordered by the order the keys were pressed.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="b47bd753c0f8a2bbf9248b812b0d63f5.html">Wild</a></td>
                         <td>Bool</td>
-                        <td></td>
+                        <td><p>Analogous to AHK&#39;s * parameter for hotkeys.
+eg Makes &quot;a&quot; trigger even if CTRL is held.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
-                        <td><a href="1e6486806df5d6f60782b9eada4fb010.html">Passthrough</a></td>
+                        <td><a href="1e6486806df5d6f60782b9eada4fb010.html">Block</a></td>
                         <td>Bool</td>
-                        <td></td>
+                        <td><p>Whether or not to block the input from being seen by other applications.
+Block off is synonymous with the ~ prefix in AHK
+Called &quot;Block&quot; rather than &quot;Passthrough&quot; for UX reasons.</p></td>
                     </tr>
                     
                     <tr>
                         <td>public</td>
                         <td><a href="498d49e1ee115b86c4c2000d0d6916b2.html">SuppressRepeats</a></td>
                         <td>Bool</td>
-                        <td></td>
+                        <td><p>Keyboard  keys, by default, repeat when held.
+For some use-cases, this may be undesirable behavior for the end-user. This option allows them to not repeatedly fire the ChangeState callback if the key is held.</p></td>
                     </tr>
                     
                 </table>
