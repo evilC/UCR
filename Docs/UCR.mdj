@@ -9988,6 +9988,7 @@
 								"$ref": "AAAAAAFQ3PdQIhqDbQU="
 							},
 							"name": "AddControl",
+							"documentation": "Plugin-Authors call this to add a GuiControl to the plugin.\nChangeValueCallback is a callback to be called when the user changes the value of the GuiControl.\n\naParams is the params that you would use with the AHK Gui command, skipping param 1, and 2.\neg for Gui, Add, Edit, x10 y100, Default\nYou would just omit the Gui param and pass \"Edit\", \"x10y100\", \"Default\" as aParams.",
 							"visibility": "public",
 							"isStatic": false,
 							"isLeaf": false,
