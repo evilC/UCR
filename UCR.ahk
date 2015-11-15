@@ -568,13 +568,15 @@ Class _Profile {
 		}
 		Gui, -Caption
 		Gui, Color, 777777
-		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h200", % this.hwnd
+		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
 		Gui, % this.hwnd ":Hide"
+		;Gui, % this.hwnd ":Show"
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
 	_Activate(){
-		Gui, % this.hwnd ":Show", % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " h200"
+		Gui, % this.hwnd ":Show", % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH
+		;WinSet,Redraw,,% "ahk_id " this.hwnd
 		;Gui, % this.hwnd ":+Resize"
 	}
 	
@@ -682,7 +684,7 @@ Class _Plugin {
 	_CreateGui(){
 		Gui, new, HwndHwnd
 		this.hwnd := hwnd
-		Gui % this.hwnd ":+Label" this.hwnd "_On"
+		Gui % this.hwnd ":+LabelGui"
 		Gui, +ToolWindow
 	}
 	
@@ -1020,6 +1022,10 @@ class _Key {
 		}
 	}
 }
+
+GuiClose(hwnd){
+	UCR.GuiClose(hwnd)
+}
 ; ======================================================================== SAMPLE PLUGINS ===============================================================
 
 class TestPlugin1 extends _Plugin {
@@ -1054,8 +1060,4 @@ class TestPlugin2 extends _Plugin {
 	Init(){
 		Gui, Add, Text, h400, % "Name: " this.Name ", Type: " this.Type
 	}
-}
-
-GuiClose(hwnd){
-	UCR.GuiClose(hwnd)
 }
