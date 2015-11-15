@@ -6,8 +6,8 @@ global UCR
 new UCRMain()
 return
 
-GuiClose:
-	ExitApp
+;~ GuiClose:
+	;~ ExitApp
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
@@ -39,9 +39,17 @@ Class UCRMain {
 		this._HotkeyHandler.ChangeHotkeyState(1)
 	}
 	
+	GuiClose(hwnd){
+		if (hwnd = this.hwnd)
+			ExitApp
+	}
+	
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
+		Gui, % this.hwnd ":+Resize"
 		Gui % this.hwnd ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, Main UCR Window
+		Gui, % this.hwnd ":+Minsize" UCR.PLUGIN_FRAME_WIDTH "x" UCR.GUI_MIN_HEIGHT
+		Gui, % this.hwnd ":+Maxsize" UCR.PLUGIN_FRAME_WIDTH
 		Gui, new, HwndHwnd
 		this.hTopPanel := hwnd
 		Gui % this.hTopPanel ":-Border"
@@ -91,8 +99,11 @@ Class UCRMain {
 	; We wish to change profile. This may happen due to user input, or application changing
 	_ChangeProfile(name, save := 1){
 		OutputDebug % "Changing Profile to: " name
-		if (IsObject(this.CurrentProfile))
+		if (IsObject(this.CurrentProfile)){
+			;~ if (name = this.CurrentProfile.Name)
+				;~ return
 			this.CurrentProfile._DeActivate()
+		}
 		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % name
 		this.CurrentProfile := this.Profiles[name]
 		this.CurrentProfile._Activate()
@@ -551,18 +562,20 @@ Class _Profile {
 		Gui, +HwndhOld	; Preserve previous default Gui
 		Gui, Margin, 5, 5
 		Gui, new, HwndHwnd
+		this.hwnd := hwnd
 		try {
 			Gui, +VScroll
 		}
-		Gui, -Border
-		this.hwnd := hwnd
-		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " h200", % this.hwnd
+		Gui, -Caption
+		Gui, Color, 777777
+		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h200", % this.hwnd
 		Gui, % this.hwnd ":Hide"
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
 	_Activate(){
-		Gui, % this.hwnd ":Show"
+		Gui, % this.hwnd ":Show", % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " h200"
+		;Gui, % this.hwnd ":+Resize"
 	}
 	
 	_DeActivate(){
@@ -668,8 +681,9 @@ Class _Plugin {
 	
 	_CreateGui(){
 		Gui, new, HwndHwnd
-		Gui, -Border
 		this.hwnd := hwnd
+		Gui % this.hwnd ":+Label" this.hwnd "_On"
+		Gui, +ToolWindow
 	}
 	
 	Show(){
@@ -1038,6 +1052,10 @@ class TestPlugin1 extends _Plugin {
 class TestPlugin2 extends _Plugin {
 	static Type := "TestPlugin2"
 	Init(){
-		Gui, Add, Text,, % "Name: " this.Name ", Type: " this.Type
+		Gui, Add, Text, h400, % "Name: " this.Name ", Type: " this.Type
 	}
+}
+
+GuiClose(hwnd){
+	UCR.GuiClose(hwnd)
 }
