@@ -1,7 +1,6 @@
 #SingleInstance force
 #include <JSON>				; Coco's JSON Lib v2 http://autohotkey.com/boards/viewtopic.php?f=6&t=627
 OutputDebug DBGVIEWCLEAR
-global UCR_PLUGIN_WIDTH := 500, UCR_PLUGIN_FRAME_WIDTH := 540
 
 global UCR
 new UCRMain()
@@ -16,6 +15,10 @@ Class UCRMain {
 	Profiles := []
 	CurrentProfile := 0
 	PluginList := []
+	PLUGIN_WIDTH := 500
+	PLUGIN_FRAME_WIDTH := 540
+	TOP_PANEL_HEIGHT := 100
+	GUI_MIN_HEIGHT := 300
 	__New(){
 		global UCR := this
 		Gui +HwndHwnd
@@ -37,39 +40,46 @@ Class UCRMain {
 	}
 	
 	_CreateGui(){
-		Gui % this.hwnd ":Show", % "x0 y0 w" UCR_PLUGIN_FRAME_WIDTH " h100", Main UCR Window
+		Gui, % this.hwnd ":Margin", 0, 0
+		Gui % this.hwnd ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, Main UCR Window
+		Gui, new, HwndHwnd
+		this.hTopPanel := hwnd
+		Gui % this.hTopPanel ":-Border"
+		;Gui % this.hTopPanel ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, Main UCR Window
 		
 		; Profile Select DDL
-		Gui, % this.hwnd ":Add", Text, xm y+10, Current Profile:
-		Gui, % this.hwnd ":Add", DDL, % "x100 yp-5 hwndhProfileSelect w300"
+		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
+		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhProfileSelect w300"
 		this.hProfileSelect := hProfileSelect
 		fn := this._ProfileSelectChanged.Bind(this)
-		GuiControl % this.hwnd ":+g", % this.hProfileSelect, % fn
+		GuiControl % this.hTopPanel ":+g", % this.hProfileSelect, % fn
 
-		Gui, % this.hwnd ":Add", Button, % "hwndhAddProfile x+5 yp", Add
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddProfile x+5 yp", Add
 		this.hAddProfile := hAddProfile
 		fn := this._AddProfile.Bind(this)
-		GuiControl % this.hwnd ":+g", % this.hAddProfile, % fn
+		GuiControl % this.hTopPanel ":+g", % this.hAddProfile, % fn
 
-		Gui, % this.hwnd ":Add", Button, % "hwndhDeleteProfile x+5 yp", Delete
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhDeleteProfile x+5 yp", Delete
 		this.hDeleteProfile := hDeleteProfile
 		fn := this._DeleteProfile.Bind(this)
-		GuiControl % this.hwnd ":+g", % this.hDeleteProfile, % fn
+		GuiControl % this.hTopPanel ":+g", % this.hDeleteProfile, % fn
 
 		; Add Plugin
-		Gui, % this.hwnd ":Add", Text, xm y+10, Plugin Selection:
-		Gui, % this.hwnd ":Add", DDL, % "x100 yp-5 hwndhPluginSelect w300"
+		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
+		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect w300"
 		this.hPluginSelect := hPluginSelect
 
-		Gui, % this.hwnd ":Add", Button, % "hwndhAddPlugin x+5 yp", Add
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddPlugin x+5 yp", Add
 		this.hAddPlugin := hAddPlugin
 		fn := this._AddPlugin.Bind(this)
-		GuiControl % this.hwnd ":+g", % this.hAddPlugin, % fn
+		GuiControl % this.hTopPanel ":+g", % this.hAddPlugin, % fn
+		
+		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
 	}
 	
 	; Called when hProfileSelect changes through user interaction (They selected a new profile)
 	_ProfileSelectChanged(){
-		GuiControlGet, name, % this.hwnd ":", % this.hProfileSelect
+		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
 		this._ChangeProfile(name)
 	}
 	
@@ -83,7 +93,7 @@ Class UCRMain {
 		OutputDebug % "Changing Profile to: " name
 		if (IsObject(this.CurrentProfile))
 			this.CurrentProfile._DeActivate()
-		GuiControl, % this.hwnd ":ChooseString", % this.hProfileSelect, % name
+		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % name
 		this.CurrentProfile := this.Profiles[name]
 		this.CurrentProfile._Activate()
 		if (save){
@@ -111,7 +121,7 @@ Class UCRMain {
 			if (A_Index = max)
 				str .= "|"
 		}
-		GuiControl,  % this.hwnd ":", % this.hProfileSelect, % str
+		GuiControl,  % this.hTopPanel ":", % this.hProfileSelect, % str
 	}
 	
 	; Update hPluginSelect with a list of available Plugins
@@ -127,7 +137,7 @@ Class UCRMain {
 					str .= "|"
 			}
 		}
-		GuiControl,  % this.hwnd ":", % this.hPluginSelect, % str
+		GuiControl,  % this.hTopPanel ":", % this.hPluginSelect, % str
 	}
 	
 	; User clicked add new profile button
@@ -169,7 +179,7 @@ Class UCRMain {
 	
 	; user clicked the Delete Profile button
 	_DeleteProfile(){
-		GuiControlGet, name, % this.hwnd ":", % this.hProfileSelect
+		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
 		if (name = "Default" || name = "Global")
 			return
 		this.Profiles.Delete(name)
@@ -544,8 +554,10 @@ Class _Profile {
 		try {
 			Gui, +VScroll
 		}
+		Gui, -Border
 		this.hwnd := hwnd
-		Gui, Show, % "x0 y140 w" UCR_PLUGIN_FRAME_WIDTH " h200 Hide", % "Profile: " this.Name
+		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " h200", % this.hwnd
+		Gui, % this.hwnd ":Hide"
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
@@ -558,7 +570,7 @@ Class _Profile {
 	}
 	
 	_AddPlugin(){
-		GuiControlGet, plugin, % UCR.hwnd ":", % UCR.hPluginSelect
+		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
 		suggestedname := name := this._GetUniqueName(%plugin%)
 		choosename := 1
 		prompt := "Enter a name for the Plugin"
@@ -661,7 +673,7 @@ Class _Plugin {
 	}
 	
 	Show(){
-		Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR_PLUGIN_WIDTH, % this.hwnd
+		Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
 	}
 	
 	_ControlChanged(ctrl){
