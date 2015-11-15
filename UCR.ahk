@@ -154,20 +154,12 @@ Class UCRMain {
 	; User clicked add new profile button
 	_AddProfile(){
 		c := 1
-		alreadyused := 1
-		while (alreadyused){
-			alreadyused := 0
-			suggestedname := "Profile " c
-			for name, obj in this.Profiles {
-				if (name = suggestedname){
-					alreadyused := 1
-					break
-				}
-			}
-			if (!alreadyused)
-				break
+		; Find a unuqe name to suggest as a new name
+		while (ObjHasKey(this.Profiles, "Profile " c)){
 			c++
 		}
+		suggestedname := "Profile " c
+		; Allow user to pick name
 		choosename := 1
 		prompt := "Enter a name for the Profile"
 		while(choosename) {
