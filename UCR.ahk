@@ -193,7 +193,7 @@ Class UCRMain {
 	; Load a list of available plugins
 	_LoadPluginList(){
 		; Bodge
-		this.PluginList := ["TestPlugin1", "TestPlugin2"]
+		this.PluginList := ["KeyToKeyPlugin", "TestPlugin1"]
 	}
 	
 	; Load settings from disk
@@ -809,7 +809,6 @@ class _GuiControl {
 	_Deserialize(obj){
 		this._value := obj._value
 	}
-
 }
 
 ; ======================================================================== HOTKEY ===============================================================
@@ -1064,8 +1063,8 @@ GuiClose(hwnd){
 }
 ; ======================================================================== SAMPLE PLUGINS ===============================================================
 
-class TestPlugin1 extends _Plugin {
-	static Type := "TestPlugin1"
+class KeyToKeyPlugin extends _Plugin {
+	static Type := "KeyToKeyPlugin"
 	Init(){
 		Gui, Add, Text,, % "Remap Key -> Key Plugin.`t`tName: " this.Name
 		Gui, Add, Text, y+10, % "Remap"
@@ -1074,14 +1073,8 @@ class TestPlugin1 extends _Plugin {
 		this.AddOutput("MyOp1", this.MyOpChangedValue.Bind(this, "MyOp1"), "x+5 yp-2 w200")
 	}
 	
-	MyEditChanged(name){
-		; All GuiControls are automatically added to this.GuiControls.
-		; .value holds the contents of the GuiControl
-		ToolTip % Name " changed value to: " this.GuiControls[name].value
-	}
-	
 	MyHkChangedValue(name){
-		ToolTip % Name " changed value to: " this.Hotkeys[name].value
+		ToolTip % Name " changed value to: " this.Hotkeys[name].value.BuildHumanReadable()
 	}
 	
 	MyHkChangedState(Name, e){
@@ -1095,13 +1088,19 @@ class TestPlugin1 extends _Plugin {
 	}
 }
 
-class TestPlugin2 extends _Plugin {
-	static Type := "TestPlugin2"
+class TestPlugin1 extends _Plugin {
+	static Type := "TestPlugin1"
 	Init(){
-		Gui, Add, Text, h400, % "Name: " this.Name ", Type: " this.Type
-		Gui, Add, Text, xm , % "Send the following text"
-		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "x150 yp-2 w330")
+		Gui, Add, Text, xm, % "Name: " this.Name "`t`tType: " this.Type
+		Gui, Add, Text, xm, % "Send the following text"
+		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "x150 h400 yp-2 w330")
 		;this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
 
+	}
+	
+	MyEditChanged(name){
+		; All GuiControls are automatically added to this.GuiControls.
+		; .value holds the contents of the GuiControl
+		ToolTip % Name " changed value to: " this.GuiControls[name].value
 	}
 }
