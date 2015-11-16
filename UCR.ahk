@@ -274,11 +274,15 @@ Class UCRMain {
 	
 	_BindModeEnded(hk, bo){
 		this._BindMode := 0
-		if (this._HotkeyHandler.IsBindable(hk, bo)){
+		if (hk._IsOutput){
 			hk.value := bo
-			this._HotkeyHandler.SetBinding(hk)
-			this._HotkeyHandler.ChangeHotkeyState(1)
+		} else {
+			if (this._HotkeyHandler.IsBindable(hk, bo)){
+				hk.value := bo
+				this._HotkeyHandler.SetBinding(hk)
+			}
 		}
+		this._HotkeyHandler.ChangeHotkeyState(1)
 	}
 }
 ; =================================================================== HOTKEY HANDLER ==========================================================
@@ -368,7 +372,7 @@ Class _HotkeyHandler {
 				; Suppress repeats option
 				return
 			}
-			SoundBeep
+			;SoundBeep
 			hk.State := event
 			hk.ChangeStateCallback.(event)
 		}
@@ -644,6 +648,7 @@ Class _Plugin {
 	ParentProfile := 0			; Will point to the parent profile
 	Name := ""					; The name the user chose for the plugin
 	Hotkeys := {}				; An associative array, indexed by name, of child Hotkeys
+	Outputs := {}				; An associative array, indexed by name, of child Outputs
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
 	
 	; Override this class in your derived class and put your Gui creation etc in here
@@ -664,6 +669,14 @@ Class _Plugin {
 		if (!ObjHasKey(this.Hotkeys, name)){
 			this.Hotkeys[name] := new _Hotkey(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 			return this.Hotkeys[name]
+		}
+	}
+	
+	; An Output is a sequence of keys to be pressed, often in reaction to a hotkey being pressed
+	AddOutput(name, ChangeValueCallback, aParams*){
+		if (!ObjHasKey(this.Outputs, name)){
+			this.Outputs[name] := new _Output(this, name, ChangeValueCallback, aParams*)
+			return this.Outputs[name]
 		}
 	}
 	
@@ -699,6 +712,9 @@ Class _Plugin {
 		for name, ctrl in this.Hotkeys {
 			obj.Hotkeys[name] := ctrl._Serialize()
 		}
+		for name, ctrl in this.Outputs {
+			obj.Outputs[name] := ctrl._Serialize()
+		}
 		return obj
 	}
 	
@@ -709,6 +725,9 @@ Class _Plugin {
 		}
 		for name, ctrl in obj.Hotkeys {
 			this.Hotkeys[name]._Deserialize(ctrl)
+		}
+		for name, ctrl in obj.Outputs {
+			this.Outputs[name]._Deserialize(ctrl)
 		}
 		
 	}
@@ -799,14 +818,19 @@ class _Hotkey {
 	; Internal vars describing the bindstring
 	__value := ""		; Holds the BindObject class
 	; Other internal vars
+	_IsOutput := 0
 	_DefaultBanner := "Drop down the list to select a binding"
 	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		this._Setup(parent, name, ChangeValueCallback, aParams*)
+		this.ChangeStateCallback := ChangeStateCallback
+	}
+	
+	_Setup(parent, name, ChangeValueCallback, aParams*){
 		this.ParentPlugin := parent
 		this.Name := name
 		this.ChangeValueCallback := ChangeValueCallback
-		this.ChangeStateCallback := ChangeStateCallback
 		
 		Gui, % this.ParentPlugin.hwnd ":Add", % "Combobox", % "hwndhwnd " aParams[1], % aParams[2]
 		this.hwnd := hwnd
@@ -927,6 +951,26 @@ class _Hotkey {
 	}
 }
 
+; ======================================================================== OUTPUT ===============================================================
+Class _Output extends _Hotkey {
+	_DefaultBanner := "Drop down the list to select an Output"
+	_IsOutput := 1
+	__New(parent, name, ChangeValueCallback, aParams*){
+		this._Setup(parent, name, ChangeValueCallback, aParams*)
+		;obj := this.base.__New(parent, name, ChangeValueCallback, ChangeValueCallback, aParams*)
+		;return obj
+	}
+	
+	SetState(state){
+		Loop % this.__value.keys.Length(){
+			key := this.__value.keys[A_Index]
+			name := key.BuildHumanReadable()
+			Send % "{" name (state ? " Down" : " Up") "}"
+		}
+	}
+}
+
+; ======================================================================== BINDOBJECT ===============================================================
 class _BindObject {
 	Type := 0
 	Keys := []
@@ -1023,13 +1067,11 @@ GuiClose(hwnd){
 class TestPlugin1 extends _Plugin {
 	static Type := "TestPlugin1"
 	Init(){
-		Gui, Add, Text,, % "Basic text sender Plugin. Name: " this.Name
-		Gui, Add, Text, y+10, % "When I press"
-		this.AddHotkey("MyHk1", this.MyHkChangedValue.Bind(this, "MyHk1"), this.MyHkChangedState.Bind(this, "MyHk1"), "x150 yp-2 w330")
-		Gui, Add, Text, xm , % "Send the following text"
-		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "x150 yp-2 w330")
-		;this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
-
+		Gui, Add, Text,, % "Remap Key -> Key Plugin.`t`tName: " this.Name
+		Gui, Add, Text, y+10, % "Remap"
+		this.AddHotkey("MyHk1", this.MyHkChangedValue.Bind(this, "MyHk1"), this.MyHkChangedState.Bind(this, "MyHk1"), "x+5 yp-2 w200")
+		Gui, Add, Text, x+5 yp+2 , % " to "
+		this.AddOutput("MyOp1", this.MyOpChangedValue.Bind(this, "MyOp1"), "x+5 yp-2 w200")
 	}
 	
 	MyEditChanged(name){
@@ -1044,6 +1086,12 @@ class TestPlugin1 extends _Plugin {
 	
 	MyHkChangedState(Name, e){
 		ToolTip % Name " changed state to: " (e ? "Down" : "Up")
+		;Tooltip % this.Outputs[name].value
+		this.Outputs["MyOp1"].SetState(e)
+	}
+	
+	MyOpChangedValue(name){
+		;SoundBeep
 	}
 }
 
@@ -1051,5 +1099,9 @@ class TestPlugin2 extends _Plugin {
 	static Type := "TestPlugin2"
 	Init(){
 		Gui, Add, Text, h400, % "Name: " this.Name ", Type: " this.Type
+		Gui, Add, Text, xm , % "Send the following text"
+		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "x150 yp-2 w330")
+		;this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
+
 	}
 }
