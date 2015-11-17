@@ -961,10 +961,19 @@ Class _Output extends _Hotkey {
 	}
 	
 	SetState(state){
-		Loop % this.__value.keys.Length(){
-			key := this.__value.keys[A_Index]
+		max := this.__value.keys.Length()
+		if (state)
+			i := 1
+		else
+			i := max
+		Loop % max{
+			key := this.__value.keys[i]
 			name := key.BuildHumanReadable()
 			Send % "{" name (state ? " Down" : " Up") "}"
+			if (state)
+				i++
+			else
+				i--
 		}
 	}
 }
