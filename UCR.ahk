@@ -549,6 +549,7 @@ Class _Profile {
 	__New(name){
 		this.Name := name
 		this._CreateGui()
+;		this._CriticalPluginClass:=CriticalObject(_Plugin)
 	}
 	
 	__Delete(){
@@ -584,8 +585,25 @@ Class _Profile {
 	}
 	
 	_AddPlugin(){
+		static _CriticalPluginClass:=CriticalObject(_Plugin), PluginClasses:=[]
 		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
-		suggestedname := name := this._GetUniqueName(%plugin%)
+		if (!PluginClasses.HasKey(plugin)){
+			;this.Plugins[name] := new %plugin%(this, name)
+			FileRead,plugincode,% A_ScriptDir "\" plugin ".ahk"
+			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
+			plugincode:=RegExReplace(plugincode,"i)class\s+" classname1 "\s+\Kextends\s+_Plugin")
+
+			ahk:=AhkThread("#Persistent`nSetBatchlines,-1`n_CriticalClass:=CriticalObject(" classname1 ")`n_CriticalClassPtr:=&_CriticalClass`n" plugincode)
+
+			while !classPtr:=ahk.ahkgetvar("_CriticalClassPtr")
+			  Sleep 30
+
+			ahk.ahkExec(classname1 ".base:= CriticalObject(" &_CriticalPluginClass ")")
+
+			;~ %classname1%:=CriticalObject(classPtr)
+			PluginClasses[plugin]:={thread:ahk,class:CriticalObject(classPtr),name:classname1}
+		}
+		suggestedname := name := this._GetUniqueName(PluginClasses[plugin].name)
 		choosename := 1
 		prompt := "Enter a name for the Plugin"
 		while(choosename) {
@@ -595,7 +613,9 @@ Class _Profile {
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {
-					this.Plugins[name] := new %plugin%(this, name)
+					tmp := PluginClasses[plugin].class
+					this.Plugins[name] := new tmp(this, name)
+
 					this.Plugins[name].Init()
 					this.PluginOrder.push(name)
 					Gui, % this.Plugins[name].hwnd ":+Parent" this.hwnd
@@ -638,8 +658,8 @@ Class _Profile {
 		this._LayoutPlugins()
 	}
 	
-	_GetUniqueName(plugin){
-		name := plugin.Type " "
+	_GetUniqueName(name){
+		name := name " "
 		num := 1
 		while (ObjHasKey(this.Plugins, name num)){
 			num++
@@ -706,6 +726,15 @@ Class _Plugin {
 		}
 	}
 	
+	GuiControl(SubCommand,ControlID:="",aParam3:=""){
+		GuiControl % this.hwnd ":" SubCommand,% ControlID,% aParam3
+	}
+	
+	Gui(aParams*){
+		Gui % this.hwnd ":" aParams.1,% aParams.2,% "hwndhwnd " aParams.3,% aParams.4
+		return hwnd
+	}
+	
 	; An Output is a sequence of keys to be pressed, often in reaction to a hotkey being pressed
 	AddOutput(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.Outputs, name)){
@@ -728,11 +757,11 @@ Class _Plugin {
 		Gui -Caption
 	}
 	
-	;~ Show(){
-		;~ ;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
-		;~ Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
-		;~ Gui, % this.hwnd ":Show", x0 y0
-	;~ }
+	Show(){
+		;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
+		Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
+		Gui, % this.hwnd ":Show", x0 y0
+	}
 	
 	_ControlChanged(ctrl){
 		OutputDebug % "Plugin " this.Name " --> Profile"
@@ -780,6 +809,7 @@ class _GuiControl {
 		this.Name := name
 		this.ChangeValueFn := this._ChangedValue.Bind(this)
 		this.ChangeValueCallback := ChangeValueCallback
+		h := this.ParentPlugin.hwnd
 		Gui, % this.ParentPlugin.hwnd ":Add", % aParams[1], % "hwndhwnd " aParams[2], % aParams[3]
 		this.hwnd := hwnd
 		this._SetGlabel(1)
@@ -1108,7 +1138,7 @@ GuiClose(hwnd){
 	UCR.GuiClose(hwnd)
 }
 ; ======================================================================== SAMPLE PLUGINS ===============================================================
-
+/*
 class KeyToKeyPlugin extends _Plugin {
 	static Type := "KeyToKeyPlugin"
 	Init(){
@@ -1157,3 +1187,4 @@ class TestPlugin1 extends _Plugin {
 		ToolTip % Name " changed value to: " this.GuiControls[name].value
 	}
 }
+*/
