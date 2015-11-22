@@ -543,6 +543,7 @@ class _BindModeHandler {
 Class _Profile {
 	Name := ""
 	Plugins := {}
+	PluginOrder := []
 	AssociatedApss := 0
 	
 	__New(name){
@@ -560,9 +561,11 @@ Class _Profile {
 		Gui, new, HwndHwnd
 		this.hwnd := hwnd
 		try {
-			Gui, +VScroll
+			Gui, +Scroll
 		}
 		Gui, -Caption
+		Gui, Add, Edit, hwndhSpacer xm ym w50 h10 +Hidden
+		this.hSpacer := hSpacer
 		Gui, Color, 777777
 		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
 		Gui, % this.hwnd ":Hide"
@@ -594,7 +597,12 @@ Class _Profile {
 				} else {
 					this.Plugins[name] := new %plugin%(this, name)
 					this.Plugins[name].Init()
-					this.Plugins[name].Show()
+					this.PluginOrder.push(name)
+					Gui, % this.Plugins[name].hwnd ":+Parent" this.hwnd
+					;Gui, % this.hwnd ":Show", x0 y0
+					;this.Plugins[name].Show()
+					;GuiControl, Move, % this.hSpacer, h500
+					this._LayoutPlugins()
 					UCR._ProfileChanged(this)
 					choosename := 0
 				}
@@ -602,6 +610,32 @@ Class _Profile {
 				choosename := 0
 			}
 		}
+	}
+	
+	_LayoutPlugins(){
+		static SCROLLINFO:="UINT cbSize;UINT fMask;int  nMin;int  nMax;UINT nPage;int  nPos;int  nTrackPos"
+				,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO),fMask:4})
+		GetScrollInfo(this.hwnd,true,scroll[])
+		y := 5-scroll.nPos
+		Loop % this.PluginOrder.length(){
+			name := this.PluginOrder[A_Index]
+			Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y
+			WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
+			y += h + 5
+		}
+		GuiControl, Move, % this.hSpacer, % "h" y + scroll.nPos - 5
+	}
+	
+	_RemovePlugin(plugin){
+		Gui, % plugin.hwnd ":Destroy"
+		Loop % this.PluginOrder.length(){
+			if (this.PluginOrder[A_Index] = plugin.name){
+				this.PluginOrder.RemoveAt(A_Index)
+				break
+			}
+		}
+		this.Plugins.Remove(plugin.name)
+		this._LayoutPlugins()
 	}
 	
 	_GetUniqueName(plugin){
@@ -690,12 +724,15 @@ Class _Plugin {
 		Gui, new, HwndHwnd
 		this.hwnd := hwnd
 		Gui % this.hwnd ":+LabelGui"
-		Gui, +ToolWindow
+		;Gui, +ToolWindow
+		Gui -Caption
 	}
 	
-	Show(){
-		Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
-	}
+	;~ Show(){
+		;~ ;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
+		;~ Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
+		;~ Gui, % this.hwnd ":Show", x0 y0
+	;~ }
 	
 	_ControlChanged(ctrl){
 		OutputDebug % "Plugin " this.Name " --> Profile"
@@ -1075,7 +1112,7 @@ GuiClose(hwnd){
 class KeyToKeyPlugin extends _Plugin {
 	static Type := "KeyToKeyPlugin"
 	Init(){
-		Gui, Add, Text,, % "Remap Key -> Key Plugin.`t`tName: " this.Name
+		Gui Add, Text,, % "Remap Key -> Key Plugin.`t`tName: " this.Name
 		Gui, Add, Text, y+10, % "Remap"
 		this.AddHotkey("MyHk1", this.MyHkChangedValue.Bind(this, "MyHk1"), this.MyHkChangedState.Bind(this, "MyHk1"), "x+5 yp-2 w200")
 		Gui, Add, Text, x+5 yp+2 , % " to "
@@ -1100,11 +1137,18 @@ class KeyToKeyPlugin extends _Plugin {
 class TestPlugin1 extends _Plugin {
 	static Type := "TestPlugin1"
 	Init(){
+		Gui, Add, Button, hwndhClose, Close2
+		fn := this.Close.Bind(this)
+		GuiControl +g, % hClose, % fn
 		Gui, Add, Text, xm, % "Name: " this.Name "`t`tType: " this.Type
 		Gui, Add, Text, xm, % "Send the following text"
 		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "x150 h400 yp-2 w330")
 		;this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
 
+	}
+	
+	Close(){
+		this.ParentProfile._RemovePlugin(this)
 	}
 	
 	MyEditChanged(name){
