@@ -564,7 +564,8 @@ Class _Profile {
 			Gui, +Scroll
 		}
 		Gui, -Caption
-		Gui, Add, Edit, hwndhSpacer xm ym w50 h10 +Hidden
+		;Gui, Add, Edit, hwndhSpacer xm ym w50 h10 +Hidden
+		Gui, Add, Edit, hwndhSpacer x500 ym w2 h10
 		this.hSpacer := hSpacer
 		Gui, Color, 777777
 		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
@@ -598,9 +599,7 @@ Class _Profile {
 					this.Plugins[name] := new %plugin%(this, name)
 					this.Plugins[name].Init()
 					this.PluginOrder.push(name)
-					Gui, % this.Plugins[name].hwnd ":+Parent" this.hwnd
-					;Gui, % this.hwnd ":Show", x0 y0
-					;this.Plugins[name].Show()
+					this.Plugins[name].Show()
 					;GuiControl, Move, % this.hSpacer, h500
 					this._LayoutPlugins()
 					UCR._ProfileChanged(this)
@@ -660,11 +659,12 @@ Class _Profile {
 		for name, plugin in obj.Plugins {
 			cls := plugin.Type
 			this.Plugins[name] := new %cls%(this, name)
+			this.PluginOrder.push(name)
 			this.Plugins[name].Init()
 			this.Plugins[name]._Deserialize(plugin)
 			this.Plugins[name].Show()
 		}
-
+		this._LayoutPlugins()
 	}
 	
 	_PluginChanged(plugin){
@@ -728,11 +728,11 @@ Class _Plugin {
 		Gui -Caption
 	}
 	
-	;~ Show(){
-		;~ ;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
-		;~ Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
-		;~ Gui, % this.hwnd ":Show", x0 y0
-	;~ }
+	Show(){
+		;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
+		Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
+		Gui, % this.hwnd ":Show", x0 y0
+	}
 	
 	_ControlChanged(ctrl){
 		OutputDebug % "Plugin " this.Name " --> Profile"
