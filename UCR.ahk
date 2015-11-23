@@ -47,7 +47,7 @@ Class UCRMain {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		Gui % this.hwnd ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, Main UCR Window
+		Gui % this.hwnd ":Show", % "x0 y100 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, Main UCR Window
 		Gui, % this.hwnd ":+Minsize" UCR.PLUGIN_FRAME_WIDTH "x" UCR.GUI_MIN_HEIGHT
 		Gui, % this.hwnd ":+Maxsize" UCR.PLUGIN_FRAME_WIDTH
 		Gui, new, HwndHwnd
@@ -114,7 +114,7 @@ Class UCRMain {
 	
 	; Populate hProfileSelect with a list of available profiles
 	_UpdateProfileSelect(){
-		profiles := ["Default", "Global"]
+		profiles := ["Global", "Default"]
 		for profile in this.Profiles {
 			if (profile = "Default" || profile = "Global")
 				continue
@@ -229,6 +229,9 @@ Class UCRMain {
 		this.Profiles := {}
 		for name, profile in obj.Profiles {
 			this.Profiles[name] := new _Profile(name)
+			if (name != obj.CurrentProfile){
+				this.Profiles[name]._Hide()
+			}
 			this.Profiles[name]._Deserialize(profile)
 		}
 		this.CurrentProfile := this.Profiles[obj.CurrentProfile]
@@ -568,19 +571,28 @@ Class _Profile {
 		Gui, Add, Edit, hwndhSpacer x500 ym w2 h10
 		this.hSpacer := hSpacer
 		Gui, Color, 777777
+		;Gui, % this.hwnd ":Show", % "x5 w500 h400 y" UCR.TOP_PANEL_HEIGHT
 		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
-		Gui, % this.hwnd ":Hide"
+		;Gui % this.hwnd ":+Parent" UCR.hwnd
+		;Gui, % this.hwnd ":Hide"
 		;Gui, % this.hwnd ":Show"
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
+	; The profile became active
 	_Activate(){
 		Gui, % this.hwnd ":Show", % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH
 		;WinSet,Redraw,,% "ahk_id " this.hwnd
 		;Gui, % this.hwnd ":+Resize"
 	}
 	
+	; The profile went inactive
 	_DeActivate(){
+		this.Hide()
+	}
+	
+	; Hide the GUI
+	_Hide(){
 		Gui, % this.hwnd ":Hide"
 	}
 	
@@ -600,8 +612,7 @@ Class _Profile {
 					this.Plugins[name].Init()
 					this.PluginOrder.push(name)
 					this.Plugins[name].Show()
-					;GuiControl, Move, % this.hSpacer, h500
-					this._LayoutPlugins()
+					this._LayoutPlugin()
 					UCR._ProfileChanged(this)
 					choosename := 0
 				}
@@ -611,18 +622,37 @@ Class _Profile {
 		}
 	}
 	
-	_LayoutPlugins(){
+	_LayoutPlugin(i := -1){
 		static SCROLLINFO:="UINT cbSize;UINT fMask;int  nMin;int  nMax;UINT nPage;int  nPos;int  nTrackPos"
 				,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO),fMask:4})
 		GetScrollInfo(this.hwnd,true,scroll[])
-		y := 5-scroll.nPos
-		Loop % this.PluginOrder.length(){
-			name := this.PluginOrder[A_Index]
-			Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y
-			WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
-			y += h + 5
+		i := (i = -1 ? this.PluginOrder.length() : i)
+		name := this.PluginOrder[i]
+		y := 0
+		if (i > 1){
+			prev := this.PluginOrder[i-1]
+			hwnd := this.Plugins[prev].hwnd
+			WinGetPos, , , , h, % "ahk_id " hwnd
+			y := this.Plugins[prev]._y + h
 		}
-		GuiControl, Move, % this.hSpacer, % "h" y + scroll.nPos - 5
+		y += 5 - scroll.nPos
+		Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y
+		WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
+		this.Plugins[name]._y:= y
+		; breakpoint here
+		; this plugin is placed in correct place, but expansion of guicontrol causes plugins before to "move"
+		GuiControl, Move, % this.hSpacer, % "h" y + h
+	}
+	
+	_LayoutPlugins(){
+		max := this.PluginOrder.length()
+		if (max){
+			Loop % max{
+				this._LayoutPlugin(A_Index)
+			}
+		} else {
+			GuiControl, Move, % this.hSpacer, % "h10"
+		}
 	}
 	
 	_RemovePlugin(plugin){
@@ -634,6 +664,7 @@ Class _Profile {
 			}
 		}
 		this.Plugins.Remove(plugin.name)
+		this._PluginChanged(plugin)
 		this._LayoutPlugins()
 	}
 	
@@ -731,7 +762,7 @@ Class _Plugin {
 	Show(){
 		;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
 		Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
-		Gui, % this.hwnd ":Show", x0 y0
+		Gui, % this.hwnd ":Show", x0 y1000
 	}
 	
 	_ControlChanged(ctrl){
@@ -1137,7 +1168,7 @@ class KeyToKeyPlugin extends _Plugin {
 class TestPlugin1 extends _Plugin {
 	static Type := "TestPlugin1"
 	Init(){
-		Gui, Add, Button, hwndhClose, Close2
+		Gui, Add, Button, hwndhClose, Close
 		fn := this.Close.Bind(this)
 		GuiControl +g, % hClose, % fn
 		Gui, Add, Text, xm, % "Name: " this.Name "`t`tType: " this.Type
