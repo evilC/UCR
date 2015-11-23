@@ -585,25 +585,29 @@ Class _Profile {
 	}
 	
 	_AddPlugin(){
-		static _CriticalPluginClass:=CriticalObject(_Plugin), PluginClasses:=[]
+		;static _CriticalPluginClass:=CriticalObject(_Plugin), PluginClasses:=[]
 		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
-		if (!PluginClasses.HasKey(plugin)){
+		/*
+		;if (!PluginClasses.HasKey(plugin)){
 			;this.Plugins[name] := new %plugin%(this, name)
 			FileRead,plugincode,% A_ScriptDir "\" plugin ".ahk"
-			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
-			plugincode:=RegExReplace(plugincode,"i)class\s+" classname1 "\s+\Kextends\s+_Plugin")
+			;RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
+			;plugincode:=RegExReplace(plugincode,"i)class\s+" classname1 "\s+\Kextends\s+_Plugin")
 
-			ahk:=AhkThread("#Persistent`nSetBatchlines,-1`n_CriticalClass:=CriticalObject(" classname1 ")`n_CriticalClassPtr:=&_CriticalClass`n" plugincode)
+			;ahk:=AhkThread("#Persistent`nSetBatchlines,-1`n_CriticalClass:=CriticalObject(" classname1 ")`n_CriticalClassPtr:=&_CriticalClass`n" plugincode)
+			ahk:=AhkThread("#Persistent`n#include plugin.ahk`nSetBatchlines,-1`n_CriticalClass:=CriticalObject(" classname1 ")`n_CriticalClassPtr:=&_CriticalClass`n" plugincode)
 
 			while !classPtr:=ahk.ahkgetvar("_CriticalClassPtr")
 			  Sleep 30
 
-			ahk.ahkExec(classname1 ".base:= CriticalObject(" &_CriticalPluginClass ")")
+			;ahk.ahkExec(classname1 ".base:= CriticalObject(" &_CriticalPluginClass ")")
 
 			;~ %classname1%:=CriticalObject(classPtr)
-			PluginClasses[plugin]:={thread:ahk,class:CriticalObject(classPtr),name:classname1}
-		}
-		suggestedname := name := this._GetUniqueName(PluginClasses[plugin].name)
+			;PluginClasses[plugin]:={thread:ahk,class:CriticalObject(classPtr),name:classname1}
+		;}
+		*/
+		;suggestedname := name := this._GetUniqueName(PluginClasses[plugin].name)
+		suggestedname := name := this._GetUniqueName("Plugin")
 		choosename := 1
 		prompt := "Enter a name for the Plugin"
 		while(choosename) {
@@ -613,12 +617,18 @@ Class _Profile {
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {
-					tmp := PluginClasses[plugin].class
-					this.Plugins[name] := new tmp(this, name)
+					;tmp := PluginClasses[plugin].class
+					;this.Plugins[name] := new tmp(this, name)
+					FileRead,plugincode,% A_ScriptDir "\TestPlugin1.ahk"
+					ahk:=AhkThread("#Persistent`n#include Plugin.ahk`n#include GuiControl.ahk`nSetBatchlines,-1`nplugin := new TestPlugin1(" &this "," name ")`n" plugincode)
+					while !plugin := ahk.ahkgetvar("plugin")
+						Sleep 30
+					;plugin := Object(plugin)
+					this.Plugins[name] := Object(plugin)
 
 					this.Plugins[name].Init()
 					this.PluginOrder.push(name)
-					Gui, % this.Plugins[name].hwnd ":+Parent" this.hwnd
+					;Gui, % this.Plugins[name].hwnd ":+Parent" this.hwnd
 					;Gui, % this.hwnd ":Show", x0 y0
 					;this.Plugins[name].Show()
 					;GuiControl, Move, % this.hSpacer, h500
@@ -639,7 +649,8 @@ Class _Profile {
 		y := 5-scroll.nPos
 		Loop % this.PluginOrder.length(){
 			name := this.PluginOrder[A_Index]
-			Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y
+			;Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y
+			this.Plugins[name].Show("x5 y" y)
 			WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
 			y += h + 5
 		}
@@ -693,6 +704,7 @@ Class _Profile {
 	}
 }
 
+/*
 ; ======================================================================== PLUGIN ===============================================================
 ; The _Plugin class itself is never instantiated.
 ; Instead, plugins derive from the base _Plugin class.
@@ -799,7 +811,8 @@ Class _Plugin {
 	}
 
 }
-
+*/
+/*
 ; ======================================================================== GUICONTROL ===============================================================
 ; Wraps a GuiControl to make it's value persistent between runs.
 class _GuiControl {
@@ -877,6 +890,7 @@ class _GuiControl {
 		this._value := obj._value
 	}
 }
+*/
 
 ; ======================================================================== HOTKEY ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.

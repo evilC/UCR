@@ -11,6 +11,10 @@ class TestPlugin1 extends _Plugin {
 	}
 	
 	Close(){
+		Loop {
+			ToolTip % A_TickCount
+			Sleep 100
+		}
 		this.ParentProfile._RemovePlugin(this)
 	}
 	
