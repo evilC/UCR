@@ -164,7 +164,8 @@ Class UCRMain {
 		choosename := 1
 		prompt := "Enter a name for the Profile"
 		while(choosename) {
-			InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
+			;InputBox, name, Add Profile, % prompt, ,,130,,,,, %suggestedname%
+			InputBox, name, Add Profile, % prompt,, % suggestedname
 			if (!ErrorLevel){
 				if (ObjHasKey(this.Profiles, Name)){
 					prompt := "Duplicate name chosen, please enter a unique name"
@@ -200,9 +201,8 @@ Class UCRMain {
 		{
 			FileRead,plugincode,% A_LoopFileFullPath
 			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
-			this.PluginList.push(classname1)
+			this.PluginList.push(classname[1])
 			AddFile(A_LoopFileFullPath, 1)
-			a := TestPlugin1
 		}
 	}
 	
@@ -388,7 +388,7 @@ Class _HotkeyHandler {
 			}
 			;SoundBeep
 			hk.State := event
-			hk.ChangeStateCallback.(event)
+			hk.ChangeStateCallback.Call(event)
 		}
 	}
 }
@@ -409,10 +409,6 @@ class _BindModeHandler {
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
-	__New(hk, callback){
-		
-	}
-	
 	StartBindMode(hk, callback){
 		this._callback := callback
 		this._OriginalHotkey := hk
@@ -437,9 +433,9 @@ class _BindModeHandler {
 			return
 		current_state := state
 		if (state){
-			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
+			;SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
 		} else {
-			SplashTextOff
+			;SplashTextOff
 		}
 		; Cycle through all keys / mouse buttons
 		Loop 256 {
@@ -506,7 +502,7 @@ class _BindModeHandler {
 				bindObj.Keys.push(key)
 			}
 			bindObj.Keys.push(this.EndKey)
-			this._Callback.(this._OriginalHotkey, bindObj)
+			this._Callback.Call(this._OriginalHotkey, bindObj)
 			
 			return
 		} else {
@@ -599,7 +595,7 @@ Class _Profile {
 	
 	; The profile went inactive
 	_DeActivate(){
-		this.Hide()
+		this._Hide()
 	}
 	
 	; Hide the GUI
@@ -613,7 +609,7 @@ Class _Profile {
 		choosename := 1
 		prompt := "Enter a name for the Plugin"
 		while(choosename) {
-			InputBox, name, Add Plugin, % prompt, ,,130,,,,, % name
+			InputBox, name, Add Plugin, % prompt, , % name
 			if (!ErrorLevel){
 				if (ObjHasKey(this.Plugins, Name)){
 					prompt := "Duplicate name chosen, please enter a unique name"
@@ -874,7 +870,7 @@ class _GuiControl {
 		this.value := value		; Set control value and fire change events to parent
 		; If the script author defined a callback for onchange event of this GuiControl, then fire it
 		if (IsObject(this.ChangeValueCallback)){
-			this.ChangeValueCallback.()
+			this.ChangeValueCallback.Call()
 		}
 	}
 	
