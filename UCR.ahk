@@ -484,7 +484,11 @@ class _BindModeHandler {
 			is_modifier := i.IsModifier()
 			; filter repeats
 			;if (e && (is_modifier ? ObjHasKey(HeldModifiers, i.code) : EndKey) )
-			if (e && (is_modifier ? ObjHasKey(this.HeldModifiers, i.code) : i.code = this.EndKey.code) )
+			if (this.EndKey != 0)
+				code := this.EndKey.code
+			else
+				code := 0
+			if (e && (is_modifier ? ObjHasKey(this.HeldModifiers, i.code) : i.code = code) )
 				return
 		}
 
