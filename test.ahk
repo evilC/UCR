@@ -4,13 +4,10 @@ return
 
 class UCR {
 	__New(){
-		;filename := A_ScriptDir "\test2.tmp.ahk"
-		filename := A_ScriptDir "\Plugins\TestPlugin1.ahk"
-		FileRead,plugincode,% filename
-		RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
+		gui, show, x0 y0 w200 h200
+		filename := A_ScriptDir "\test3.tmp.ahk"
 		AddFile(filename, 1)
-
-		PluginInstance := new %classname1%()
+		PluginInstance := new SomeClass()
 	}
 }
 
@@ -20,3 +17,15 @@ class _Plugin {
 	}
 }
 
+/*
+test3.tmp.ahk
+class SomeClass {
+	__New(){
+		msgbox CTOR
+	}
+	
+	Blah(){
+		Gui Add, Text,, hello
+	}
+}
+*/
