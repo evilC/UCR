@@ -641,7 +641,7 @@ Class _Profile {
 		this.Plugins[name]._y:= y
 		; breakpoint here
 		; this plugin is placed in correct place, but expansion of guicontrol causes plugins before to "move"
-		GuiControl, Move, % this.hSpacer, % "h" y + h
+		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
 	}
 	
 	_LayoutPlugins(){
