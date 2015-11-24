@@ -194,7 +194,16 @@ Class UCRMain {
 	; Load a list of available plugins
 	_LoadPluginList(){
 		; Bodge
-		this.PluginList := ["KeyToKeyPlugin", "TestPlugin1"]
+		;this.PluginList := ["KeyToKeyPlugin", "TestPlugin1"]
+		this.PluginList := []
+		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", F
+		{
+			FileRead,plugincode,% A_LoopFileFullPath
+			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
+			this.PluginList.push(classname1)
+			AddFile(A_LoopFileFullPath, 1)
+			a := TestPlugin1
+		}
 	}
 	
 	; Load settings from disk
@@ -1138,8 +1147,8 @@ class _Key {
 GuiClose(hwnd){
 	UCR.GuiClose(hwnd)
 }
+/*
 ; ======================================================================== SAMPLE PLUGINS ===============================================================
-
 class KeyToKeyPlugin extends _Plugin {
 	static Type := "KeyToKeyPlugin"
 	Init(){
@@ -1188,3 +1197,4 @@ class TestPlugin1 extends _Plugin {
 		ToolTip % Name " changed value to: " this.GuiControls[name].value
 	}
 }
+*/
