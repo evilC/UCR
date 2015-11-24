@@ -114,7 +114,8 @@ Class UCRMain {
 	
 	; Populate hProfileSelect with a list of available profiles
 	_UpdateProfileSelect(){
-		profiles := ["Global", "Default"]
+		;profiles := ["Global", "Default"]
+		profiles := ["Default"]
 		for profile in this.Profiles {
 			if (profile = "Default" || profile = "Global")
 				continue
@@ -203,7 +204,8 @@ Class UCRMain {
 		
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
-			j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
+			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
+			j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
 			j := JSON.Load(j)
