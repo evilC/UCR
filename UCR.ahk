@@ -639,8 +639,6 @@ Class _Profile {
 		Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y
 		WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
 		this.Plugins[name]._y:= y
-		; breakpoint here
-		; this plugin is placed in correct place, but expansion of guicontrol causes plugins before to "move"
 		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
 	}
 	
