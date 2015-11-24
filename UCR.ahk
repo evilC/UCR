@@ -47,7 +47,7 @@ Class UCRMain {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		Gui % this.hwnd ":Show", % "x0 y100 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, Main UCR Window
+		Gui % this.hwnd ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, Main UCR Window
 		Gui, % this.hwnd ":+Minsize" UCR.PLUGIN_FRAME_WIDTH "x" UCR.GUI_MIN_HEIGHT
 		Gui, % this.hwnd ":+Maxsize" UCR.PLUGIN_FRAME_WIDTH
 		Gui, new, HwndHwnd
