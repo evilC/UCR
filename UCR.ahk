@@ -609,7 +609,7 @@ Class _Profile {
 	
 	_AddPlugin(){
 		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
-		suggestedname := name := this._GetUniqueName(%plugin%)
+		suggestedname := name := this._GetUniqueName(plugin)
 		choosename := 1
 		prompt := "Enter a name for the Plugin"
 		while(choosename) {
@@ -677,8 +677,8 @@ Class _Profile {
 		this._LayoutPlugins()
 	}
 	
-	_GetUniqueName(plugin){
-		name := plugin.Type " "
+	_GetUniqueName(name){
+		name .= " "
 		num := 1
 		while (ObjHasKey(this.Plugins, name num)){
 			num++

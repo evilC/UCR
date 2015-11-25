@@ -1,5 +1,7 @@
+/*
+Demos persistent guicontrols / callbacks for change of value for a guicontrol
+*/
 class TestPlugin1 extends _Plugin {
-	static Type := "TestPlugin1"
 	Init(){
 		Gui, Add, Button, hwndhClose, Close
 		fn := this.Close.Bind(this)
