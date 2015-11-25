@@ -114,8 +114,8 @@ Class UCRMain {
 	
 	; Populate hProfileSelect with a list of available profiles
 	_UpdateProfileSelect(){
-		;profiles := ["Global", "Default"]
-		profiles := ["Default"]
+		profiles := ["Global", "Default"]
+		;profiles := ["Default"]
 		for profile in this.Profiles {
 			if (profile = "Default" || profile = "Global")
 				continue
@@ -213,8 +213,8 @@ Class UCRMain {
 		
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
-			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
-			j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
+			j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
+			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
 			j := JSON.Load(j)
@@ -585,7 +585,7 @@ Class _Profile {
 		;Gui, % this.hwnd ":Show", % "x5 w500 h400 y" UCR.TOP_PANEL_HEIGHT
 		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
 		;Gui % this.hwnd ":+Parent" UCR.hwnd
-		;Gui, % this.hwnd ":Hide"
+		Gui, % this.hwnd ":Hide"
 		;Gui, % this.hwnd ":Show"
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
@@ -599,7 +599,7 @@ Class _Profile {
 	
 	; The profile went inactive
 	_DeActivate(){
-		this.Hide()
+		this._Hide()
 	}
 	
 	; Hide the GUI
