@@ -31,5 +31,5 @@ If you are a typical end-user of UCR, you just need to download the installer pa
 In order to run UCR un-compiled, you will need to replace your AutoHotkey EXE with one from [AHK_H v1](https://github.com/HotKeyIt/ahkdll-v1-release/archive/master.zip).  
 
 ##Documentation
-[Html Version](http://evilc.github.io/UCR/html-docs/)  
-Docs can also be viewd in StarUML format, please see the Docs folder
+[UML Diagram](http://evilc.github.io/UCR/html-docs/)  
+UML docs can also be viewd in StarUML format, please see the Docs folder
