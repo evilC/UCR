@@ -1,8 +1,5 @@
-UCR
-===
+# UCR - Universal Control Remapper
 
-Universal Control Remapper
-
-Currently just an experiment with dynamic GUIs
-
-The V2 code has no library dependencies but uses the test AHK v2 binaries from here: http://ahkscript.org/boards/viewtopic.php?f=37&t=2998
+##Documentation
+[Html Version](http://htmlpreview.github.io/?https://github.com/evilC/UCR/blob/AHK_H-Rewrite/Docs/html-docs/index.html)  
+Docs can also be viewd in StarUML format, please see the Docs folder
