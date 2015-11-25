@@ -620,6 +620,7 @@ Class _Profile {
 					name := suggestedname
 				} else {
 					this.Plugins[name] := new %plugin%(this, name)
+					this.Plugins[name].Type := plugin
 					this.Plugins[name].Init()
 					this.PluginOrder.push(name)
 					this.Plugins[name].Show()
@@ -717,8 +718,7 @@ Class _Profile {
 ; The _Plugin class itself is never instantiated.
 ; Instead, plugins derive from the base _Plugin class.
 Class _Plugin {
-	static Type := "_Plugin"	; Change this to match the name of your class. It MUST be unique amongst ALL plugins.
-	
+	Type := "_Plugin"			; The class of the plugin
 	ParentProfile := 0			; Will point to the parent profile
 	Name := ""					; The name the user chose for the plugin
 	Hotkeys := {}				; An associative array, indexed by name, of child Hotkeys
