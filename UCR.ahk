@@ -576,23 +576,16 @@ Class _Profile {
 			Gui, +Scroll
 		}
 		Gui, -Caption
-		;Gui, Add, Edit, hwndhSpacer xm ym w50 h10 +Hidden
 		Gui, Add, Edit, % "hwndhSpacer y0 w2 h10 x" UCR.PLUGIN_WIDTH + 10
 		this.hSpacer := hSpacer
 		Gui, Color, 777777
-		;Gui, % this.hwnd ":Show", % "x5 w500 h400 y" UCR.TOP_PANEL_HEIGHT
 		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
-		;Gui % this.hwnd ":+Parent" UCR.hwnd
-		;Gui, % this.hwnd ":Hide"
-		;Gui, % this.hwnd ":Show"
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
 	; The profile became active
 	_Activate(){
 		Gui, % this.hwnd ":Show", % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH
-		;WinSet,Redraw,,% "ahk_id " this.hwnd
-		;Gui, % this.hwnd ":+Resize"
 	}
 	
 	; The profile went inactive
@@ -605,6 +598,7 @@ Class _Profile {
 		Gui, % this.hwnd ":Hide"
 	}
 	
+	; User clicked Add Plugin button
 	_AddPlugin(){
 		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
 		name := this._GetUniqueName(plugin)
@@ -613,11 +607,12 @@ Class _Profile {
 		this.PluginOrder.push(name)
 		this.Plugins[name] := new %plugin%(this, name)
 		this.Plugins[name].Type := plugin
-		;this.Plugins[name].Init()
 		this._LayoutPlugin()
 		UCR._ProfileChanged(this)
 	}
 	
+	; Layout a plugin.
+	; Pass PluginOrder index to lay out, or leave blank to lay out last plugin
 	_LayoutPlugin(i := -1){
 		static SCROLLINFO:="UINT cbSize;UINT fMask;int  nMin;int  nMax;UINT nPage;int  nPos;int  nTrackPos"
 				,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO),fMask:4})
@@ -627,20 +622,18 @@ Class _Profile {
 		y := 0
 		if (i > 1){
 			prev := this.PluginOrder[i-1]
-			;hwnd := this.Plugins[prev].hwnd
 			hwnd := this.Plugins[prev].hFrame
 			WinGetPos, , , , h, % "ahk_id " hwnd
 			y := this.Plugins[prev]._y + h
 		}
 		y += 5 - scroll.nPos
-		;Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
 		Gui, % this.Plugins[name].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
-		;WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
 		WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hFrame
 		this.Plugins[name]._y:= y
 		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
 	}
 	
+	; Lays out all plugins
 	_LayoutPlugins(){
 		max := this.PluginOrder.length()
 		if (max){
@@ -652,6 +645,7 @@ Class _Profile {
 		}
 	}
 	
+	; Delete a plugin
 	_RemovePlugin(plugin){
 		Gui, % plugin.hwnd ":Destroy"
 		Gui, % plugin.hFrame ":Destroy"
@@ -666,6 +660,7 @@ Class _Profile {
 		this._LayoutPlugins()
 	}
 	
+	; Obtain a profiel-unique name for the plugin
 	_GetUniqueName(name){
 		name .= " "
 		num := 1
@@ -689,6 +684,7 @@ Class _Profile {
 		}
 	}
 	
+	; Save the plugin to disk
 	_Serialize(){
 		obj := {}
 		obj.Plugins := {}
@@ -698,12 +694,12 @@ Class _Profile {
 		return obj
 	}
 	
+	; Load the plugin from disk
 	_Deserialize(obj){
 		for name, plugin in obj.Plugins {
 			cls := plugin.Type
 			this.PluginOrder.push(name)
 			this.Plugins[name] := new %cls%(this, name)
-			;this.Plugins[name].Init()
 			this.Plugins[name]._Deserialize(plugin)
 			this._LayoutPlugin()
 		}
