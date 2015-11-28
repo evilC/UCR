@@ -17,7 +17,7 @@ Class UCRMain {
 	PluginList := []
 	PLUGIN_WIDTH := 500
 	PLUGIN_FRAME_WIDTH := 540
-	TOP_PANEL_HEIGHT := 100
+	TOP_PANEL_HEIGHT := 75
 	GUI_MIN_HEIGHT := 300
 	__New(){
 		global UCR := this
@@ -667,6 +667,7 @@ Class _Profile {
 	
 	_RemovePlugin(plugin){
 		Gui, % plugin.hwnd ":Destroy"
+		Gui, % plugin.hFrame ":Destroy"
 		Loop % this.PluginOrder.length(){
 			if (this.PluginOrder[A_Index] = plugin.name){
 				this.PluginOrder.RemoveAt(A_Index)
@@ -765,20 +766,23 @@ Class _Plugin {
 		Gui, new, HwndHwnd
 		this.hwnd := hwnd
 		Gui -Caption
-		Gui, Color, 0000FF
+		;Gui, Color, 0000FF
 	}
 	
 	_ParentGuis(){
-		DetectHiddenWindows, On
 		Gui, new, HwndHwnd
 		this.hFrame := hwnd
-		Gui, Color, 00FF00
-		WinGetPos, , , , h, % "ahk_id " this.hwnd
-		h := 100
-		Gui, Show, % "x0 w550 h" h
+		Gui, Margin, 0, 0
 		Gui -Caption
-		Gui, % this.hwnd ":+Parent" this.hFrame
-		Gui, % this.hwnd ":Show", x5 y5
+		Gui, Color, 7777FF
+		Gui, Add, Button, % "hwndhClose y3 x" UCR.PLUGIN_WIDTH - 23, X
+		Gui, Font, s15, Verdana
+		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 40, % this.Name
+		this._hTitle := hTitle
+		fn := this._Close.Bind(this)
+		GuiControl, +g, % hClose, % fn
+		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH
+		Gui, % this.hFrame ":Add", Gui, x0 y30, % this.hwnd
 		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
 	}
 	
@@ -816,7 +820,10 @@ Class _Plugin {
 		}
 		
 	}
-
+	
+	_Close(){
+		this.ParentProfile._RemovePlugin(this)
+	}
 }
 
 ; ======================================================================== GUICONTROL ===============================================================

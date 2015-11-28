@@ -3,18 +3,10 @@ Demos persistent guicontrols / callbacks for change of value for a guicontrol
 */
 class TestPlugin1 extends _Plugin {
 	Init(){
-		Gui, Add, Button, hwndhClose, Close
-		fn := this.Close.Bind(this)
-		GuiControl +g, % hClose, % fn
-		Gui, Add, Text, xm, % "Name: " this.Name
-		Gui, Add, Text, xm, % "Send the following text"
+		Gui, Add, Text, xm, % "Test Persistent Editbox"
 		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this, "MyEdit1"), "Edit", "x150 h400 yp-2 w330")
 		;this.AddControl("MyEdit2", this.MyEditChanged.Bind(this, "MyEdit2"), "Edit", "xm w200")
 
-	}
-	
-	Close(){
-		this.ParentProfile._RemovePlugin(this)
 	}
 	
 	MyEditChanged(name){

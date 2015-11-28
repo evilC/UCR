@@ -12,7 +12,6 @@ class KeyToKeyPlugin extends _Plugin {
 	; The Init() method of a plugin is called when one is added. Use it to create your Gui etc
 	Init(){
 		; Create the GUI
-		Gui Add, Text,, % "Remap Key -> Key Plugin.`t`tName: " this.Name
 		Gui, Add, Text, y+10, % "Remap"
 		; Add a hotkey, and give it the name "MyHk1". All hotkey objects can be accessed via this.Hotkeys[name]
 		; Have it call MyHkChangedValue when it changes value, and MyHkChangedState when it changes state.
