@@ -617,10 +617,10 @@ Class _Profile {
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {
+					this.PluginOrder.push(name)
 					this.Plugins[name] := new %plugin%(this, name)
 					this.Plugins[name].Type := plugin
-					this.Plugins[name].Init()
-					this.PluginOrder.push(name)
+					;this.Plugins[name].Init()
 					this._LayoutPlugin()
 					UCR._ProfileChanged(this)
 					choosename := 0
@@ -640,13 +640,16 @@ Class _Profile {
 		y := 0
 		if (i > 1){
 			prev := this.PluginOrder[i-1]
-			hwnd := this.Plugins[prev].hwnd
+			;hwnd := this.Plugins[prev].hwnd
+			hwnd := this.Plugins[prev].hFrame
 			WinGetPos, , , , h, % "ahk_id " hwnd
 			y := this.Plugins[prev]._y + h
 		}
 		y += 5 - scroll.nPos
-		Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
-		WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
+		;Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
+		Gui, % this.Plugins[name].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
+		;WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
+		WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hFrame
 		this.Plugins[name]._y:= y
 		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
 	}
@@ -696,9 +699,9 @@ Class _Profile {
 	_Deserialize(obj){
 		for name, plugin in obj.Plugins {
 			cls := plugin.Type
-			this.Plugins[name] := new %cls%(this, name)
 			this.PluginOrder.push(name)
-			this.Plugins[name].Init()
+			this.Plugins[name] := new %cls%(this, name)
+			;this.Plugins[name].Init()
 			this.Plugins[name]._Deserialize(plugin)
 			this._LayoutPlugin()
 		}
@@ -754,15 +757,29 @@ Class _Plugin {
 		this.ParentProfile := parent
 		this.Name := name
 		this._CreateGui()
+		this.Init()
+		this._ParentGuis()
 	}
 	
 	_CreateGui(){
 		Gui, new, HwndHwnd
 		this.hwnd := hwnd
-		Gui % this.hwnd ":+LabelGui"
-		;Gui, +ToolWindow
 		Gui -Caption
-		Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
+		Gui, Color, 0000FF
+	}
+	
+	_ParentGuis(){
+		DetectHiddenWindows, On
+		Gui, new, HwndHwnd
+		this.hFrame := hwnd
+		Gui, Color, 00FF00
+		WinGetPos, , , , h, % "ahk_id " this.hwnd
+		h := 100
+		Gui, Show, % "x0 w550 h" h
+		Gui -Caption
+		Gui, % this.hwnd ":+Parent" this.hFrame
+		Gui, % this.hwnd ":Show", x5 y5
+		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
 	}
 	
 	_ControlChanged(ctrl){
