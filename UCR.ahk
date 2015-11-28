@@ -607,28 +607,15 @@ Class _Profile {
 	
 	_AddPlugin(){
 		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
-		suggestedname := name := this._GetUniqueName(plugin)
-		choosename := 1
-		prompt := "Enter a name for the Plugin"
-		while(choosename) {
-			InputBox, name, Add Plugin, % prompt, ,,130,,,,, % name
-			if (!ErrorLevel){
-				if (ObjHasKey(this.Plugins, Name)){
-					prompt := "Duplicate name chosen, please enter a unique name"
-					name := suggestedname
-				} else {
-					this.PluginOrder.push(name)
-					this.Plugins[name] := new %plugin%(this, name)
-					this.Plugins[name].Type := plugin
-					;this.Plugins[name].Init()
-					this._LayoutPlugin()
-					UCR._ProfileChanged(this)
-					choosename := 0
-				}
-			} else {
-				choosename := 0
-			}
-		}
+		name := this._GetUniqueName(plugin)
+		if (name = 0)
+			return
+		this.PluginOrder.push(name)
+		this.Plugins[name] := new %plugin%(this, name)
+		this.Plugins[name].Type := plugin
+		;this.Plugins[name].Init()
+		this._LayoutPlugin()
+		UCR._ProfileChanged(this)
 	}
 	
 	_LayoutPlugin(i := -1){
@@ -685,7 +672,21 @@ Class _Profile {
 		while (ObjHasKey(this.Plugins, name num)){
 			num++
 		}
-		return name num
+		name := name num
+		prompt := "Enter a name for the Plugin"
+		Loop {
+			InputBox, name, Add Plugin, % prompt, ,,130,,,,, % name
+			if (!ErrorLevel){
+				if (ObjHasKey(this.Plugins, Name)){
+					prompt := "Duplicate name chosen, please enter a unique name"
+					name := suggestedname
+				} else {
+					return name
+				}
+			} else {
+				return 0
+			}
+		}
 	}
 	
 	_Serialize(){
