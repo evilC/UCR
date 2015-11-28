@@ -684,7 +684,7 @@ Class _Profile {
 		}
 	}
 	
-	; Save the plugin to disk
+	; Save the profile to disk
 	_Serialize(){
 		obj := {}
 		obj.Plugins := {}
@@ -694,7 +694,7 @@ Class _Profile {
 		return obj
 	}
 	
-	; Load the plugin from disk
+	; Load the profile from disk
 	_Deserialize(obj){
 		for name, plugin in obj.Plugins {
 			cls := plugin.Type
@@ -726,8 +726,42 @@ Class _Plugin {
 	Init(){
 		
 	}
+
+	__New(parent, name){
+		this.ParentProfile := parent
+		this.Name := name
+		this._CreateGui()
+		this.Init()
+		this._ParentGuis()
+	}
 	
-	; ------------------------------- PRIVATE -------------------------------------------
+	; Initialize the GUI
+	; Plugin controls will be added straight afterwards
+	_CreateGui(){
+		Gui, new, HwndHwnd
+		this.hwnd := hwnd
+		Gui -Caption
+		;Gui, Color, 0000FF
+	}
+	
+	; Add the chrome around the plugin, then add the plugin to the parent
+	_ParentGuis(){
+		Gui, new, HwndHwnd
+		this.hFrame := hwnd
+		Gui, Margin, 0, 0
+		Gui -Caption
+		Gui, Color, 7777FF
+		Gui, Add, Button, % "hwndhClose y3 x" UCR.PLUGIN_WIDTH - 23, X
+		Gui, Font, s15, Verdana
+		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 40, % this.Name
+		this._hTitle := hTitle
+		fn := this._Close.Bind(this)
+		GuiControl, +g, % hClose, % fn
+		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH
+		Gui, % this.hFrame ":Add", Gui, x0 y30, % this.hwnd
+		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
+	}
+
 	; Do not override methods in here unless you know what you are doing!
 	AddControl(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.GuiControls, name)){
@@ -751,43 +785,13 @@ Class _Plugin {
 		}
 	}
 	
-	__New(parent, name){
-		this.ParentProfile := parent
-		this.Name := name
-		this._CreateGui()
-		this.Init()
-		this._ParentGuis()
-	}
-	
-	_CreateGui(){
-		Gui, new, HwndHwnd
-		this.hwnd := hwnd
-		Gui -Caption
-		;Gui, Color, 0000FF
-	}
-	
-	_ParentGuis(){
-		Gui, new, HwndHwnd
-		this.hFrame := hwnd
-		Gui, Margin, 0, 0
-		Gui -Caption
-		Gui, Color, 7777FF
-		Gui, Add, Button, % "hwndhClose y3 x" UCR.PLUGIN_WIDTH - 23, X
-		Gui, Font, s15, Verdana
-		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 40, % this.Name
-		this._hTitle := hTitle
-		fn := this._Close.Bind(this)
-		GuiControl, +g, % hClose, % fn
-		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH
-		Gui, % this.hFrame ":Add", Gui, x0 y30, % this.hwnd
-		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
-	}
-	
+	; A GuiControl / Hotkey changed
 	_ControlChanged(ctrl){
 		OutputDebug % "Plugin " this.Name " --> Profile"
 		this.ParentProfile._PluginChanged(this)
 	}
 	
+	; Save plugin to disk
 	_Serialize(){
 		obj := {Type: this.Type}
 		obj.GuiControls := {}
@@ -804,6 +808,7 @@ Class _Plugin {
 		return obj
 	}
 	
+	; Load plugin from disk
 	_Deserialize(obj){
 		this.Type := obj.Type
 		for name, ctrl in obj.GuiControls {
@@ -818,6 +823,7 @@ Class _Plugin {
 		
 	}
 	
+	; The plugin was closed (deleted)
 	_Close(){
 		this.ParentProfile._RemovePlugin(this)
 	}
