@@ -240,10 +240,8 @@ Class UCRMain {
 		this.Profiles := {}
 		for name, profile in obj.Profiles {
 			this.Profiles[name] := new _Profile(name)
-			if (name != obj.CurrentProfile){
-				this.Profiles[name]._Hide()
-			}
 			this.Profiles[name]._Deserialize(profile)
+			this.Profiles[name]._Hide()
 		}
 		this.CurrentProfile := this.Profiles[obj.CurrentProfile]
 	}
@@ -579,13 +577,13 @@ Class _Profile {
 		}
 		Gui, -Caption
 		;Gui, Add, Edit, hwndhSpacer xm ym w50 h10 +Hidden
-		Gui, Add, Edit, hwndhSpacer x500 ym w2 h10
+		Gui, Add, Edit, % "hwndhSpacer y0 w2 h10 x" UCR.PLUGIN_WIDTH + 10
 		this.hSpacer := hSpacer
 		Gui, Color, 777777
 		;Gui, % this.hwnd ":Show", % "x5 w500 h400 y" UCR.TOP_PANEL_HEIGHT
 		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
 		;Gui % this.hwnd ":+Parent" UCR.hwnd
-		Gui, % this.hwnd ":Hide"
+		;Gui, % this.hwnd ":Hide"
 		;Gui, % this.hwnd ":Show"
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
@@ -766,12 +764,12 @@ Class _Plugin {
 		Gui % this.hwnd ":+LabelGui"
 		;Gui, +ToolWindow
 		Gui -Caption
+		Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
 	}
 	
 	Show(){
 		;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
-		Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
-		Gui, % this.hwnd ":Show", x0 y1000
+		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH, % this.hwnd
 	}
 	
 	_ControlChanged(ctrl){
