@@ -621,7 +621,6 @@ Class _Profile {
 					this.Plugins[name].Type := plugin
 					this.Plugins[name].Init()
 					this.PluginOrder.push(name)
-					this.Plugins[name].Show()
 					this._LayoutPlugin()
 					UCR._ProfileChanged(this)
 					choosename := 0
@@ -646,7 +645,7 @@ Class _Profile {
 			y := this.Plugins[prev]._y + h
 		}
 		y += 5 - scroll.nPos
-		Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y
+		Gui, % this.Plugins[name].hwnd ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
 		WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hwnd
 		this.Plugins[name]._y:= y
 		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
@@ -701,9 +700,8 @@ Class _Profile {
 			this.PluginOrder.push(name)
 			this.Plugins[name].Init()
 			this.Plugins[name]._Deserialize(plugin)
-			this.Plugins[name].Show()
+			this._LayoutPlugin()
 		}
-		this._LayoutPlugins()
 	}
 	
 	_PluginChanged(plugin){
@@ -765,11 +763,6 @@ Class _Plugin {
 		;Gui, +ToolWindow
 		Gui -Caption
 		Gui, % this.hwnd ":+Parent" this.ParentProfile.hwnd
-	}
-	
-	Show(){
-		;Gui, % this.ParentProfile.hwnd ":Add", Gui, % "w" UCR.PLUGIN_WIDTH, % this.hwnd
-		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH, % this.hwnd
 	}
 	
 	_ControlChanged(ctrl){
