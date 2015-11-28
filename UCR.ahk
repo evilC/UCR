@@ -154,6 +154,16 @@ Class UCRMain {
 	
 	; User clicked add new profile button
 	_AddProfile(){
+		name := this._GetUniqueName()
+		if (name = 0)
+			return
+		this.Profiles[name] := new _Profile(name)
+		this._UpdateProfileSelect()
+		this._ChangeProfile(Name)
+		
+	}
+	
+	_GetUniqueName(){
 		c := 1
 		; Find a unuqe name to suggest as a new name
 		while (ObjHasKey(this.Profiles, "Profile " c)){
@@ -170,13 +180,10 @@ Class UCRMain {
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {
-					this.Profiles[name] := new _Profile(name)
-					this._UpdateProfileSelect()
-					this._ChangeProfile(Name)
-					choosename := 0
+					return name
 				}
 			} else {
-				choosename := 0
+				return 0
 			}
 		}
 	}
