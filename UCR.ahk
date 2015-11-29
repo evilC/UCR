@@ -592,7 +592,7 @@ Class _Profile {
 	
 	; The profile became active
 	_Activate(){
-		Gui, % this.hwnd ":Show", % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH
+		Gui, % this.hwnd ":Show"
 	}
 	
 	; The profile went inactive
