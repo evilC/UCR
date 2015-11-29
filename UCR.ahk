@@ -1053,6 +1053,8 @@ class _Hotkey {
 }
 
 ; ======================================================================== OUTPUT ===============================================================
+; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
+; For now, just a bodge derivative of the hotkey class
 Class _Output extends _Hotkey {
 	_DefaultBanner := "Drop down the list to select an Output"
 	_IsOutput := 1
@@ -1081,6 +1083,7 @@ Class _Output extends _Hotkey {
 }
 
 ; ======================================================================== BINDOBJECT ===============================================================
+; A BindObject represents a collection of keys / mouse / joystick buttons
 class _BindObject {
 	Type := 0
 	Keys := []
@@ -1124,6 +1127,8 @@ class _BindObject {
 	}
 }
 
+; ======================================================================== KEY ===============================================================
+; A key represents a single digital input - keybpard key, mouse button, joystick button etc
 class _Key {
 	Type := 0
 	Code := 0
