@@ -292,6 +292,7 @@ Class UCRMain {
 	}
 	
 	_BindModeEnded(hk, bo){
+		OutputDebug % "Bind Mode Ended: " bo.Keys[1].code
 		this._BindMode := 0
 		if (hk._IsOutput){
 			hk.value := bo
@@ -414,8 +415,10 @@ class _BindModeHandler {
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
-	__New(hk, callback){
-		
+	__New(){
+		this.ahkdll:=AhkThread(A_ScriptDir "\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		While !this.ahkdll.ahkgetvar.autoexecute_done
+			Sleep 50 ; wait until variable has been set.
 	}
 	
 	StartBindMode(hk, callback){
@@ -433,6 +436,13 @@ class _BindModeHandler {
 	
 	; Turns on or off the hotkeys
 	SetHotkeyState(state){
+		if (state){
+			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
+		} else {
+			SplashTextOff
+		}
+		this.ahkdll.ahkExec["BindMapper.SetHotkeyState(" state ")"]
+		/*
 		static pfx := "$*"
 		static current_state := 0
 		static updown := [{e: 1, s: ""}, {e: 0, s: " up"}]
@@ -481,6 +491,15 @@ class _BindModeHandler {
 			}
 		}
 		critical off
+		*/
+	}
+	
+	_ProcessInput(o, e){
+	;_ProcessInput(){
+		i := Object(o)
+		e := e+0
+		OutputDebug % "INPUT: " i.code
+		this.ProcessInput(i,e)
 	}
 	
 	; Called when a key was pressed
@@ -509,8 +528,10 @@ class _BindModeHandler {
 			bindObj.Keys := []
 			for code, key in this.HeldModifiers {
 				bindObj.Keys.push(key)
+				OutputDebug % "pushing " code " to callback obj"
 			}
 			bindObj.Keys.push(this.EndKey)
+			OutputDebug % "pushing " this.EndKey.code " to callback obj"
 			this._Callback.(this._OriginalHotkey, bindObj)
 			
 			return
@@ -544,14 +565,14 @@ class _BindModeHandler {
 		}
 	}
 	
-	_JoystickButtonDown(i){
-		this.ProcessInput(i, 1)
-		str := i.DeviceID "Joy" i.code
-		while (GetKeyState(str)){
-			Sleep 10
-		}
-		this.ProcessInput(i, 0)
-	}
+	;~ _JoystickButtonDown(i){
+		;~ this.ProcessInput(i, 1)
+		;~ str := i.DeviceID "Joy" i.code
+		;~ while (GetKeyState(str)){
+			;~ Sleep 10
+		;~ }
+		;~ this.ProcessInput(i, 0)
+	;~ }
 }
 
 ; ======================================================================== PROFILE ===============================================================
