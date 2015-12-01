@@ -292,6 +292,7 @@ Class UCRMain {
 	}
 	
 	_BindModeEnded(hk, bo){
+		OutputDebug % "Bind Mode Ended: " bo.Keys[1].code
 		this._BindMode := 0
 		if (hk._IsOutput){
 			hk.value := bo
@@ -414,8 +415,10 @@ class _BindModeHandler {
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
-	__New(hk, callback){
-		
+	__New(){
+		this.ahkdll:=AhkThread(A_ScriptDir "\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		While !this.ahkdll.ahkgetvar.autoexecute_done
+			Sleep 50 ; wait until variable has been set.
 	}
 	
 	StartBindMode(hk, callback){
@@ -433,54 +436,19 @@ class _BindModeHandler {
 	
 	; Turns on or off the hotkeys
 	SetHotkeyState(state){
-		static pfx := "$*"
-		static current_state := 0
-		static updown := [{e: 1, s: ""}, {e: 0, s: " up"}]
-		critical
-		onoff := state ? "On" : "Off"
-		if (state = current_state)
-			return
-		current_state := state
 		if (state){
 			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
 		} else {
 			SplashTextOff
 		}
-		; Cycle through all keys / mouse buttons
-		Loop 256 {
-			; Get the key name
-			i := A_Index
-			code := Format("{:x}", A_Index)
-			n := GetKeyName("vk" code)
-			if (n = "")
-				continue
-			; Down event, then Up event
-			Loop 2 {
-				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
-				k := new _Key({Code: i})
-				;k.Code := i
-				fn := this.ProcessInput.Bind(this, k, updown[A_Index].e)
-				if (state)
-					hotkey, % pfx blk n updown[A_Index].s, % fn
-				hotkey, % pfx blk n updown[A_Index].s, % fn, % onoff
-			}
-		}
-		; Cycle through all Joystick Buttons
-		Loop 8 {
-			j := A_Index
-			Loop 32 {
-				btn := A_Index
-				n := j "Joy" A_Index
-				Loop 2 {
-					k := new _Key({Code: btn, Type: 1, DeviceID: j})
-					fn := this._JoystickButtonDown.Bind(this, k)
-					if (state)
-							hotkey, % pfx n updown[A_Index].s, % fn
-						hotkey, % pfx n updown[A_Index].s, % fn, % onoff
-					}
-			}
-		}
-		critical off
+		this.ahkdll.ahkExec["BindMapper.SetHotkeyState(" state ")"]
+	}
+	
+	; The BindModeThread calls back here
+	_ProcessInput(e, type, code, deviceid){
+		; Build Key object and pass to ProcessInput
+		i := new _Key({type: type, code: code, deviceid: deviceid})
+		this.ProcessInput(i,e)
 	}
 	
 	; Called when a key was pressed
@@ -544,14 +512,14 @@ class _BindModeHandler {
 		}
 	}
 	
-	_JoystickButtonDown(i){
-		this.ProcessInput(i, 1)
-		str := i.DeviceID "Joy" i.code
-		while (GetKeyState(str)){
-			Sleep 10
-		}
-		this.ProcessInput(i, 0)
-	}
+	;~ _JoystickButtonDown(i){
+		;~ this.ProcessInput(i, 1)
+		;~ str := i.DeviceID "Joy" i.code
+		;~ while (GetKeyState(str)){
+			;~ Sleep 10
+		;~ }
+		;~ this.ProcessInput(i, 0)
+	;~ }
 }
 
 ; ======================================================================== PROFILE ===============================================================
