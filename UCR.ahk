@@ -444,9 +444,10 @@ class _BindModeHandler {
 		this.ahkdll.ahkExec["BindMapper.SetHotkeyState(" state ")"]
 	}
 	
+	; The BindModeThread calls back here
 	_ProcessInput(e, type, code, deviceid){
+		; Build Key object and pass to ProcessInput
 		i := new _Key({type: type, code: code, deviceid: deviceid})
-		OutputDebug % "INPUT: " code
 		this.ProcessInput(i,e)
 	}
 	
@@ -476,10 +477,8 @@ class _BindModeHandler {
 			bindObj.Keys := []
 			for code, key in this.HeldModifiers {
 				bindObj.Keys.push(key)
-				OutputDebug % "pushing " code " to callback obj"
 			}
 			bindObj.Keys.push(this.EndKey)
-			OutputDebug % "pushing " this.EndKey.code " to callback obj"
 			this._Callback.(this._OriginalHotkey, bindObj)
 			
 			return

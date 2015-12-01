@@ -1,16 +1,23 @@
+/*
+Handles binding of the hotkeys for Bind Mode
+Runs as a separate thread to the main application,
+so that bind mode keys can be turned on and off quickly with Suspend
+*/
 #Persistent
 BindMapper := new _BindMapper()
 autoexecute_done := 1
+#NoTrayIcon
 
 class _BindMapper {
-	DebugMode := 2
+	DebugMode := 2	; 0 = block all, 1 = dont block LMB / RMB, 2 = no blocking
 	HotkeysEnabled := 0
 	__New(){
 		this.MasterThread := AhkExported()
-
+		
+		; Make sure hotkeys are suspended before creating them,
+		; so they are not active while they are being declared
 		this.SetHotkeyState(0)
 		this.CreateHotkeys()
-		;this.SetHotkeyState(1)
 	}
 	
 	CreateHotkeys(){
@@ -27,25 +34,20 @@ class _BindMapper {
 			; Down event, then Up event
 			Loop 2 {
 				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
-				;fn := this.HotkeyEvent.Bind(this, {type: 0, code: i, deviceid: 0}, updown[A_Index].e)
-				;k := new _Key({Code: i})				
-				;fn := this.HotkeyEvent.Bind(this, k, updown[A_Index].e)
 				fn := this.HotkeyEvent.Bind(this, updown[A_Index].e, 0, i, 0)
 				hotkey, % pfx blk n updown[A_Index].s, % fn, % "On"
 			}
 		}
-		;~ ; Cycle through all Joystick Buttons
-		;~ Loop 8 {
-			;~ j := A_Index
-			;~ Loop 32 {
-				;~ btn := A_Index
-				;~ n := j "Joy" A_Index
-				;~ ;k := new _Key({Code: btn, Type: 1, DeviceID: j})
-				;~ ;fn := this._JoystickButtonDown.Bind(this, k)
-				;~ fn := this._JoystickButtonDown.Bind(this, {type: 1, code: btn, deviceid: j}, 1)
-				;~ hotkey, % pfx n, % fn, % "On"
-			;~ }
-		;~ }
+		; Cycle through all Joystick Buttons
+		Loop 8 {
+			j := A_Index
+			Loop 32 {
+				btn := A_Index
+				n := j "Joy" A_Index
+				fn := this._JoystickButtonDown.Bind(this, 1, 1, btn, j)
+				hotkey, % pfx n, % fn, % "On"
+			}
+		}
 		critical off
 	}
 	
@@ -57,21 +59,14 @@ class _BindMapper {
 		;this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput()")
 	}
 	
-	;~ HotkeyEvent(i, e){
-		;~ if (!this.HotkeysEnabled)
-			;~ return
-		;~ ptr := &i
-		;~ this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput(" ptr "," e ")")
-		;~ ;this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput()")
-	;~ }
-	
-	_JoystickButtonDown(i, e){
-		this.HotkeyEvent(i, e)
-		str := i.deviceid "Joy" i.code
+	; Simulate proper joystick button up events
+	_JoystickButtonDown(e, type, code, deviceid){
+		this.HotkeyEvent(e, type, code, deviceid)
+		str := deviceid "Joy" code
 		while (GetKeyState(str)){
 			Sleep 10
 		}
-		this.HotkeyEvent(i, 0)
+		this.HotkeyEvent(0, type, code, deviceid)
 	}
 	
 	SetHotkeyState(state){
@@ -81,9 +76,5 @@ class _BindMapper {
 			Suspend, On
 		}
 		this.HotkeysEnabled := state
-	}
-	
-	test(){
-		msgbox test
 	}
 }
