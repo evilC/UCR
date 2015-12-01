@@ -442,63 +442,11 @@ class _BindModeHandler {
 			SplashTextOff
 		}
 		this.ahkdll.ahkExec["BindMapper.SetHotkeyState(" state ")"]
-		/*
-		static pfx := "$*"
-		static current_state := 0
-		static updown := [{e: 1, s: ""}, {e: 0, s: " up"}]
-		critical
-		onoff := state ? "On" : "Off"
-		if (state = current_state)
-			return
-		current_state := state
-		if (state){
-			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
-		} else {
-			SplashTextOff
-		}
-		; Cycle through all keys / mouse buttons
-		Loop 256 {
-			; Get the key name
-			i := A_Index
-			code := Format("{:x}", A_Index)
-			n := GetKeyName("vk" code)
-			if (n = "")
-				continue
-			; Down event, then Up event
-			Loop 2 {
-				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
-				k := new _Key({Code: i})
-				;k.Code := i
-				fn := this.ProcessInput.Bind(this, k, updown[A_Index].e)
-				if (state)
-					hotkey, % pfx blk n updown[A_Index].s, % fn
-				hotkey, % pfx blk n updown[A_Index].s, % fn, % onoff
-			}
-		}
-		; Cycle through all Joystick Buttons
-		Loop 8 {
-			j := A_Index
-			Loop 32 {
-				btn := A_Index
-				n := j "Joy" A_Index
-				Loop 2 {
-					k := new _Key({Code: btn, Type: 1, DeviceID: j})
-					fn := this._JoystickButtonDown.Bind(this, k)
-					if (state)
-							hotkey, % pfx n updown[A_Index].s, % fn
-						hotkey, % pfx n updown[A_Index].s, % fn, % onoff
-					}
-			}
-		}
-		critical off
-		*/
 	}
 	
-	_ProcessInput(o, e){
-	;_ProcessInput(){
-		i := Object(o)
-		e := e+0
-		OutputDebug % "INPUT: " i.code
+	_ProcessInput(e, type, code, deviceid){
+		i := new _Key({type: type, code: code, deviceid: deviceid})
+		OutputDebug % "INPUT: " code
 		this.ProcessInput(i,e)
 	}
 	

@@ -18,8 +18,6 @@ class _BindMapper {
 		static updown := [{e: 1, s: ""}, {e: 0, s: " up"}]
 		; Cycle through all keys / mouse buttons
 		Loop 256 {
-			if A_Index < 3
-				continue	; debugging - do not map LMB, RMB
 			; Get the key name
 			i := A_Index
 			code := Format("{:x}", A_Index)
@@ -30,8 +28,9 @@ class _BindMapper {
 			Loop 2 {
 				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
 				;fn := this.HotkeyEvent.Bind(this, {type: 0, code: i, deviceid: 0}, updown[A_Index].e)
-				k := new _Key({Code: i})				
-				fn := this.HotkeyEvent.Bind(this, k, updown[A_Index].e)
+				;k := new _Key({Code: i})				
+				;fn := this.HotkeyEvent.Bind(this, k, updown[A_Index].e)
+				fn := this.HotkeyEvent.Bind(this, updown[A_Index].e, 0, i, 0)
 				hotkey, % pfx blk n updown[A_Index].s, % fn, % "On"
 			}
 		}
@@ -50,13 +49,21 @@ class _BindMapper {
 		critical off
 	}
 	
-	HotkeyEvent(i, e){
+	HotkeyEvent(e, type, code, deviceid){
 		if (!this.HotkeysEnabled)
 			return
 		ptr := &i
-		this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput(" ptr "," e ")")
+		this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput(" e "," type "," code "," deviceid ")")
 		;this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput()")
 	}
+	
+	;~ HotkeyEvent(i, e){
+		;~ if (!this.HotkeysEnabled)
+			;~ return
+		;~ ptr := &i
+		;~ this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput(" ptr "," e ")")
+		;~ ;this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput()")
+	;~ }
 	
 	_JoystickButtonDown(i, e){
 		this.HotkeyEvent(i, e)
@@ -78,51 +85,5 @@ class _BindMapper {
 	
 	test(){
 		msgbox test
-	}
-}
-
-; ======================================================================== KEY ===============================================================
-; A key represents a single digital input - keybpard key, mouse button, joystick button etc
-class _Key {
-	Type := 0
-	Code := 0
-	DeviceID := 0
-
-	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
-		,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
-		,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
-		,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
-
-	__New(obj){
-		this._Deserialize(obj)
-	}
-	
-	IsModifier(){
-		if (this.Type = 0 && ObjHasKey(this._Modifiers, this.Code))
-			return 1
-		return 0
-	}
-	
-	RenderModifier(){
-		return this._Modifiers[this.Code].s
-	}
-	
-	_Serialize(){
-		return {Type: this.Type, Code: this.Code, DeviceID: this.DeviceID}
-	}
-	
-	_Deserialize(obj){
-		for k, v in obj {
-			this[k] := v
-		}
-	}
-	
-	BuildHumanReadable(){
-		if this.Type = 0 {
-			code := Format("{:x}", this.Code)
-			return GetKeyName("vk" code)
-		} else if (this.Type = 1){
-			return this.DeviceID "Joy" this.code
-		}
 	}
 }
