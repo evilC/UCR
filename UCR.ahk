@@ -699,10 +699,7 @@ Class _Plugin {
 	}
 	
 	__Delete(){
-		msgbox DESTRUCTOR
-		for name, hk in this.Hotkeys {
-			this.ParentProfile._HotkeyThread.ahkExec("SetBinding(" &hk ")")
-		}
+		msgbox PLUGIN DESTRUCTOR
 	}
 	
 	; Initialize the GUI
@@ -795,6 +792,10 @@ Class _Plugin {
 	
 	; The plugin was closed (deleted)
 	_Close(){
+		for name, hk in this.Hotkeys {
+			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &hk ")")
+		}
+		this.Hotkeys := this.Outputs := this.GuiControls := ""
 		this.ParentProfile._RemovePlugin(this)
 	}
 }
@@ -811,6 +812,10 @@ class _GuiControl {
 		Gui, % this.ParentPlugin.hwnd ":Add", % aParams[1], % "hwndhwnd " aParams[2], % aParams[3]
 		this.hwnd := hwnd
 		this._SetGlabel(1)
+	}
+	
+	__Delete(){
+		msgbox GUICONTROL DESTRUCTOR
 	}
 	
 	; Turns on or off the g-label for the GuiControl
@@ -889,6 +894,10 @@ class _Hotkey {
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		this._Setup(parent, name, ChangeValueCallback, aParams*)
 		this.ChangeStateCallback := ChangeStateCallback
+	}
+	
+	__Delete(){
+		msgbox HOTKEY DESTRUCTOR
 	}
 	
 	_Setup(parent, name, ChangeValueCallback, aParams*){
