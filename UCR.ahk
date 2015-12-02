@@ -792,8 +792,15 @@ Class _Plugin {
 	
 	; The plugin was closed (deleted)
 	_Close(){
+		; Free resources so destructors fire
 		for name, hk in this.Hotkeys {
+			;msgbox % ObjAddRef(&hk)
 			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &hk ")")
+			;msgbox % ObjAddRef(&hk)
+		}
+		for name, gc in this.GuiControls {
+			gc.ChangeValueFn := ""
+			gc.ChangeValueCallback := ""
 		}
 		this.Hotkeys := this.Outputs := this.GuiControls := ""
 		this.ParentProfile._RemovePlugin(this)
@@ -1056,6 +1063,10 @@ Class _Output extends _Hotkey {
 	_Deserialize(obj){
 		; Trigger _value setter to set gui state but not fire change event
 		this._value := new _BindObject(obj)
+	}
+	
+	__Delete(){
+		msgbox OUTPUT DESTRUCTOR
 	}
 }
 

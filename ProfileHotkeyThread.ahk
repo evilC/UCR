@@ -27,13 +27,20 @@ class _HotkeyThread {
 		hk := Object(hk)
 		hwnd := hk.hwnd
 		OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
+		if (!hkstring){
+			OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
+			if (this.Bindings[hwnd]){
+				hotkey, % this.Bindings[hwnd], Dummy
+				hotkey, % this.Bindings[hwnd], Off
+				hotkey, % this.Bindings[hwnd] " up", Dummy
+				hotkey, % this.Bindings[hwnd] " up", Off
+			}
+			this.Bindings.Delete(hwnd)
+			return
+		}
 		if (ObjHasKey(this.Bindings, hwnd)){
 			hotkey, % this.Bindings[hwnd], Off
 			hotkey, % this.Bindings[hwnd] " up", Off
-		}
-		if (!hkstring){
-			this.Bindings.Delete(hwnd)
-			return
 		}
 		this.Bindings[hwnd] := hkstring
 		fn := this.KeyEvent.Bind(this, hk, 1)
@@ -46,3 +53,6 @@ class _HotkeyThread {
 		this.MasterThread.ahkExec("UCR._HotkeyHandler.KeyEvent(" &hk "," event ")")
 	}
 }
+
+Dummy:
+	return
