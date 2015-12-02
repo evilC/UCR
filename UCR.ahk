@@ -260,7 +260,6 @@ Class UCRMain {
 		jdata := JSON.Dump(obj, ,true)
 		FileDelete, % this._SettingsFile
 		FileAppend, % jdata, % this._SettingsFile
-		;FileReplace(jdata,this._SettingsFile)
 	}
 	
 	; The user selected the "Bind" option from a Hotkey GuiControl,
@@ -699,7 +698,7 @@ Class _Plugin {
 	}
 	
 	__Delete(){
-		msgbox PLUGIN DESTRUCTOR
+		OutputDebug % "Plugin " this.name " in profile " this.ParentProfile.name " fired destructor"
 	}
 	
 	; Initialize the GUI
@@ -794,16 +793,14 @@ Class _Plugin {
 	_Close(){
 		; Free resources so destructors fire
 		for name, hk in this.Hotkeys {
-			;msgbox % ObjAddRef(&hk)
 			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &hk ")")
-			;msgbox % ObjAddRef(&hk)
+			hk._KillReferences()
 		}
 		for name, gc in this.GuiControls {
-			gc.ChangeValueFn := ""
-			gc.ChangeValueCallback := ""
+			gc._KillReferences()
 		}
-		this.Hotkeys := this.Outputs := this.GuiControls := ""
 		this.ParentProfile._RemovePlugin(this)
+		this.Hotkeys := this.Outputs := this.GuiControls := ""
 	}
 }
 
@@ -822,7 +819,12 @@ class _GuiControl {
 	}
 	
 	__Delete(){
-		msgbox GUICONTROL DESTRUCTOR
+		OutputDebug % "GuiControl " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+	}
+	
+	_KillReferences(){
+		this.ChangeValueFn := ""
+		this.ChangeValueCallback := ""
 	}
 	
 	; Turns on or off the g-label for the GuiControl
@@ -904,7 +906,7 @@ class _Hotkey {
 	}
 	
 	__Delete(){
-		msgbox HOTKEY DESTRUCTOR
+		OutputDebug % "Hotkey " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	_Setup(parent, name, ChangeValueCallback, aParams*){
@@ -923,6 +925,13 @@ class _Hotkey {
 		
 		this.__value := new _BindObject()
 		this._SetCueBanner()
+	}
+	
+	; Kill references so destructor can fire
+	_KillReferences(){
+		GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
+		this.ChangeValueCallback := ""
+		this.ChangeStateCallback := ""
 	}
 	
 	value[]{
@@ -1066,7 +1075,7 @@ Class _Output extends _Hotkey {
 	}
 	
 	__Delete(){
-		msgbox OUTPUT DESTRUCTOR
+		OutputDebug % "Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 }
 
