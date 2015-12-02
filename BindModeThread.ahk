@@ -4,9 +4,9 @@ Runs as a separate thread to the main application,
 so that bind mode keys can be turned on and off quickly with Suspend
 */
 #Persistent
+#NoTrayIcon
 BindMapper := new _BindMapper()
 autoexecute_done := 1
-#NoTrayIcon
 
 class _BindMapper {
 	DebugMode := 2	; 0 = block all, 1 = dont block LMB / RMB, 2 = no blocking

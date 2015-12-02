@@ -36,7 +36,6 @@ Class UCRMain {
 		
 		this._CreateGui()
 		this._LoadSettings()
-		this._HotkeyHandler.ChangeHotkeyState(1)
 	}
 	
 	GuiClose(hwnd){
@@ -271,14 +270,13 @@ Class UCRMain {
 			; No delta param passed - request bind mode
 			if (!this._BindMode){
 				this._BindMode := 1
-				this._HotkeyHandler.ChangeHotkeyState(0)
+				hk.ParentPlugin.ParentProfile._SetHotkeyState(0)
 				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
 				return 1
 			}
 			return 0
 		} else {
 			; Change property requested
-			; just set the hotkey for now
 			bo := hk.value.clone()
 			for k, v in delta {
 				bo[k] := v
@@ -286,8 +284,8 @@ Class UCRMain {
 			if (this._HotkeyHandler.IsBindable(hk, bo)){
 				hk.value := bo
 				this._HotkeyHandler.SetBinding(hk)
-				this._HotkeyHandler.ChangeHotkeyState(1, hk)
 			}
+			hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
 		}
 	}
 	
@@ -302,7 +300,7 @@ Class UCRMain {
 				this._HotkeyHandler.SetBinding(hk)
 			}
 		}
-		this._HotkeyHandler.ChangeHotkeyState(1)
+		hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
 	}
 }
 ; =================================================================== HOTKEY HANDLER ==========================================================
@@ -314,13 +312,8 @@ Class _HotkeyHandler {
 	
 	; Set a Binding
 	SetBinding(hk){
-		if (hk.value.Keys.length()){
-			hkstring := this.BuildHotkeyString(hk.value)
-			this.RegisteredBindings[hk.hwnd] := {hkstring: hkstring, hk: hk}
-		} else {
-			;Clear Binding
-			this.RegisteredBindings.Delete(hk.hwnd)
-		}
+		hkstring := this.BuildHotkeyString(hk.value)
+		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" hk.hwnd ",""" hkstring """)")
 		return 1
 	}
 	
@@ -331,37 +324,42 @@ Class _HotkeyHandler {
 	
 	; Turns on or off Hotkey(s)
 	ChangeHotkeyState(state, hk := 0){
-		critical
-		if (hk = 0){
-			; Change State of all hotkeys
-			for id, obj in this.RegisteredBindings {
-				if (state){
-					fn := this.KeyEvent.Bind(this, obj.hk, 1)
-					hotkey, % "$" obj.hkstring, % fn, On
-					fn := this.KeyEvent.Bind(this, obj.hk, 0)
-					hotkey, % "$" obj.hkstring " up", % fn, On
-				} else {
-					hotkey, % "$" obj.hkstring, Off
-					hotkey, % "$" obj.hkstring " up", Off
-				}
-			}
-		} else {
-			; Change state of one hotkey (eg toggle wild)
-			obj := this.RegisteredBindings[hk.hwnd]
-			if (state){
-				fn := this.KeyEvent.Bind(this, hk, 1)
-				hotkey, % "$" obj.hkstring, % fn, On
-				fn := this.KeyEvent.Bind(this, hk, 0)
-				hotkey, % "$" obj.hkstring " up", % fn, On
-			} else {
-				hotkey, % "$" obj.hkstring, Off
-				hotkey, % "$" obj.hkstring " up", Off
-			}
-		}
-		critical off
+		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetHotkeyState(" state ")")
+		;SetHotkeyState
+		;_HotkeyThread
+		;~ critical
+		;~ if (hk = 0){
+			;~ ; Change State of all hotkeys
+			;~ for id, obj in this.RegisteredBindings {
+				;~ if (state){
+					;~ fn := this.KeyEvent.Bind(this, obj.hk, 1)
+					;~ hotkey, % "$" obj.hkstring, % fn, On
+					;~ fn := this.KeyEvent.Bind(this, obj.hk, 0)
+					;~ hotkey, % "$" obj.hkstring " up", % fn, On
+				;~ } else {
+					;~ hotkey, % "$" obj.hkstring, Off
+					;~ hotkey, % "$" obj.hkstring " up", Off
+				;~ }
+			;~ }
+		;~ } else {
+			;~ ; Change state of one hotkey (eg toggle wild)
+			;~ obj := this.RegisteredBindings[hk.hwnd]
+			;~ if (state){
+				;~ fn := this.KeyEvent.Bind(this, hk, 1)
+				;~ hotkey, % "$" obj.hkstring, % fn, On
+				;~ fn := this.KeyEvent.Bind(this, hk, 0)
+				;~ hotkey, % "$" obj.hkstring " up", % fn, On
+			;~ } else {
+				;~ hotkey, % "$" obj.hkstring, Off
+				;~ hotkey, % "$" obj.hkstring " up", Off
+			;~ }
+		;~ }
+		;~ critical off
 	}
 	
 	BuildHotkeyString(bo){
+		if (!bo.Keys.Length())
+			return ""
 		str := ""
 		if (bo.Wild)
 			str .= "*"
@@ -535,6 +533,10 @@ Class _Profile {
 	
 	__New(name){
 		this.Name := name
+		this._HotkeyThread := AhkThread(A_ScriptDir "\ProfileHotkeyThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		While !this._HotkeyThread.ahkgetvar.autoexecute_done
+			Sleep 50 ; wait until variable has been set.
+		this._HotkeyThread.ahkExec("HotkeyThread := new _HotkeyThread(" &this ")")
 		this._CreateGui()
 	}
 	
@@ -560,12 +562,18 @@ Class _Profile {
 	
 	; The profile became active
 	_Activate(){
+		this._SetHotkeyState(1)
 		Gui, % this.hwnd ":Show"
 	}
 	
 	; The profile went inactive
 	_DeActivate(){
+		this._SetHotkeyState(0)
 		this._Hide()
+	}
+	
+	_SetHotkeyState(state){
+		this._HotkeyThread.ahkExec("HotkeyThread.SetHotkeyState(" state ")")
 	}
 	
 	; Hide the GUI
@@ -1056,6 +1064,11 @@ Class _Output extends _Hotkey {
 			else
 				i--
 		}
+	}
+	
+	_Deserialize(obj){
+		; Trigger _value setter to set gui state but not fire change event
+		this._value := new _BindObject(obj)
 	}
 }
 
