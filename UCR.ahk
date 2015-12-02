@@ -313,7 +313,7 @@ Class _HotkeyHandler {
 	; Set a Binding
 	SetBinding(hk){
 		hkstring := this.BuildHotkeyString(hk.value)
-		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" hk.hwnd ",""" hkstring """)")
+		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &hk ",""" hkstring """)")
 		return 1
 	}
 	
@@ -325,36 +325,6 @@ Class _HotkeyHandler {
 	; Turns on or off Hotkey(s)
 	ChangeHotkeyState(state, hk := 0){
 		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetHotkeyState(" state ")")
-		;SetHotkeyState
-		;_HotkeyThread
-		;~ critical
-		;~ if (hk = 0){
-			;~ ; Change State of all hotkeys
-			;~ for id, obj in this.RegisteredBindings {
-				;~ if (state){
-					;~ fn := this.KeyEvent.Bind(this, obj.hk, 1)
-					;~ hotkey, % "$" obj.hkstring, % fn, On
-					;~ fn := this.KeyEvent.Bind(this, obj.hk, 0)
-					;~ hotkey, % "$" obj.hkstring " up", % fn, On
-				;~ } else {
-					;~ hotkey, % "$" obj.hkstring, Off
-					;~ hotkey, % "$" obj.hkstring " up", Off
-				;~ }
-			;~ }
-		;~ } else {
-			;~ ; Change state of one hotkey (eg toggle wild)
-			;~ obj := this.RegisteredBindings[hk.hwnd]
-			;~ if (state){
-				;~ fn := this.KeyEvent.Bind(this, hk, 1)
-				;~ hotkey, % "$" obj.hkstring, % fn, On
-				;~ fn := this.KeyEvent.Bind(this, hk, 0)
-				;~ hotkey, % "$" obj.hkstring " up", % fn, On
-			;~ } else {
-				;~ hotkey, % "$" obj.hkstring, Off
-				;~ hotkey, % "$" obj.hkstring " up", Off
-			;~ }
-		;~ }
-		;~ critical off
 	}
 	
 	BuildHotkeyString(bo){
@@ -385,6 +355,7 @@ Class _HotkeyHandler {
 	}
 	
 	KeyEvent(hk, event){
+		hk := Object(hk)
 		if (IsObject(hk.ChangeStateCallback)){
 			if (hk.__value.Suppress && event && hk.State){
 				; Suppress repeats option

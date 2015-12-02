@@ -1,6 +1,9 @@
+/*
+Handles binding of hotkeys for a profile.
+Done in a separate thread so that hotkeys can be quickly turned on or off for a profile by using Suspend
+*/
 #Persistent
-;#NoTrayIcon
-;HotkeyThread := new _HotkeyThread()
+#NoTrayIcon
 autoexecute_done := 1
 return
 
@@ -8,38 +11,38 @@ class _HotkeyThread {
 	Bindings := {}	; List of current bindings, indexed by HWND of hotkey GuiControl
 	__New(parent){
 		this.ParentProfile := Object(parent)
+		this.MasterThread := AhkExported()
 		Suspend, On
 	}
 	
 	SetHotkeyState(state){
 		if (state){
-			OutputDebug % "Turning hotkeys on"
 			Suspend, Off
 		} else {
-			OutputDebug % "Turning hotkeys off"
 			Suspend, On
 		}
 	}
 	
-	SetBinding(hwnd, hkstring){
-		OutputDebug % "Setting Binding for hwnd " hwnd " to " hkstring
+	SetBinding(hk, hkstring){
+		hk := Object(hk)
+		hwnd := hk.hwnd
+		OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
 		if (ObjHasKey(this.Bindings, hwnd)){
 			hotkey, % this.Bindings[hwnd], Off
+			hotkey, % this.Bindings[hwnd] " up", Off
 		}
 		if (!hkstring){
 			this.Bindings.Delete(hwnd)
 			return
 		}
 		this.Bindings[hwnd] := hkstring
-		fn := this.KeyEvent.Bind(this, hwnd, 1)
+		fn := this.KeyEvent.Bind(this, hk, 1)
 		hotkey, % hkstring, % fn, On
+		fn := this.KeyEvent.Bind(this, hk, 0)
+		hotkey, % hkstring " up", % fn, On
 	}
 	
-	KeyEvent(hwnd, event){
-		SoundBeep
-	}
-	
-	Test(){
-		msgbox % "Parent Name: " this.ParentProfile.name
+	KeyEvent(hk, event){
+		this.MasterThread.ahkExec("UCR._HotkeyHandler.KeyEvent(" &hk "," event ")")
 	}
 }
