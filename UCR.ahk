@@ -663,6 +663,7 @@ Class _Profile {
 	_Serialize(){
 		obj := {}
 		obj.Plugins := {}
+		obj.PluginOrder := this.PluginOrder
 		for name, plugin in this.Plugins {
 			obj.Plugins[name] := plugin._Serialize()
 		}
@@ -671,15 +672,17 @@ Class _Profile {
 	
 	; Load the profile from disk
 	_Deserialize(obj){
-		for name, plugin in obj.Plugins {
-			cls := plugin.Type
+		Loop % obj.PluginOrder.length() {
+			name := obj.PluginOrder[A_Index]
 			this.PluginOrder.push(name)
+			plugin := obj.Plugins[name]
+			cls := plugin.Type
 			this.Plugins[name] := new %cls%(this, name)
 			this.Plugins[name]._Deserialize(plugin)
 			this._LayoutPlugin()
 		}
 	}
-	
+
 	_PluginChanged(plugin){
 		OutputDebug % "Profile " this.Name " --> UCR"
 		UCR._ProfileChanged(this)
