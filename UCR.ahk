@@ -609,7 +609,7 @@ Class _Profile {
 				break
 			}
 		}
-		this.Plugins.Remove(plugin.name)
+		this.Plugins.Delete(plugin.name)
 		this._PluginChanged(plugin)
 		this._LayoutPlugins()
 	}
@@ -696,6 +696,13 @@ Class _Plugin {
 		this._CreateGui()
 		this.Init()
 		this._ParentGuis()
+	}
+	
+	__Delete(){
+		msgbox DESTRUCTOR
+		for name, hk in this.Hotkeys {
+			this.ParentProfile._HotkeyThread.ahkExec("SetBinding(" &hk ")")
+		}
 	}
 	
 	; Initialize the GUI

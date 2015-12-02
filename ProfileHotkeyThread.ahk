@@ -23,7 +23,7 @@ class _HotkeyThread {
 		}
 	}
 	
-	SetBinding(hk, hkstring){
+	SetBinding(hk, hkstring := ""){
 		hk := Object(hk)
 		hwnd := hk.hwnd
 		OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
