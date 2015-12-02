@@ -677,6 +677,12 @@ Class _Profile {
 			this.PluginOrder.push(name)
 			plugin := obj.Plugins[name]
 			cls := plugin.Type
+			if (!IsObject(%cls%)){
+				msgbox % "Plugin class " cls " not found - removing"
+				this.PluginOrder.Pop()
+				obj.Plugins.Delete(name)
+				continue
+			}
 			this.Plugins[name] := new %cls%(this, name)
 			this.Plugins[name]._Deserialize(plugin)
 			this._LayoutPlugin()
