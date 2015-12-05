@@ -929,7 +929,14 @@ class _Hotkey {
 		
 		; Get Hwnd of EditBox part of ComboBox
 		this._hEdit := DllCall("GetWindow","PTR",this.hwnd,"Uint",5) ;GW_CHILD = 5
-		
+		; Get the position of the Editbox
+		ControlGetPos,x,y,,,,% "ahk_id " this._hEdit
+		; Set the parent of the editbox to the main Gui instead of the Combobox...
+		; .. This is so that mouse wheel scroll messages get passed to the main Gui...
+		; .. thus meaning you do not accidentally enter bind mode when using the mouse wheel to scroll the GUI
+		DllCall("SetParent","PTR",this._hEdit,"PTR",this.ParentPlugin.hwnd)
+		; Move the Editbox back to where it should be
+		ControlMove,,% x,% y,,,% "ahk_id " this._hEdit
 		this.__value := new _BindObject()
 		this._SetCueBanner()
 	}
