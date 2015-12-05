@@ -9,6 +9,11 @@ class CodeRunner extends _Plugin {
 		
 		Gui, Add, Text, xm, % "Run this AHK code"
 		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this), "Edit", "x150 h100 yp-2 w330")
+		
+		Gui, Add, Button, xm yp+20 hwndhButton, Test Code
+		this.hButton := hButton
+		fn := this.MyHkChangedState.Bind(this, 1)
+		GuiControl +g, % this.hButton, % fn
 	}
 	
 	MyHkChangedState(e){
@@ -21,4 +26,10 @@ class CodeRunner extends _Plugin {
 			}
 		}
 	}
+	
+	; In order to free memory when a plugin is closed, we must free references to this object
+	_KillReferences(){
+		GuiControl -g, % this.hButton
+	}
+		
 }

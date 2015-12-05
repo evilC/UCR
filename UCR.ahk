@@ -792,14 +792,20 @@ Class _Plugin {
 	; The plugin was closed (deleted)
 	_Close(){
 		; Free resources so destructors fire
-		for name, hk in this.Hotkeys {
-			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &hk ")")
-			hk._KillReferences()
+		for name, obj in this.Hotkeys {
+			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &obj ")")
+			obj._KillReferences()
 		}
-		for name, gc in this.GuiControls {
-			gc._KillReferences()
+		for name, obj in this.Outputs {
+			obj._KillReferences()
+		}
+		for name, obj in this.GuiControls {
+			obj._KillReferences()
 		}
 		this.ParentProfile._RemovePlugin(this)
+		try {
+			this._KillReferences()
+		}
 		this.Hotkeys := this.Outputs := this.GuiControls := ""
 	}
 }
@@ -823,6 +829,7 @@ class _GuiControl {
 	}
 	
 	_KillReferences(){
+		this._SetGlabel(0)
 		this.ChangeValueFn := ""
 		this.ChangeValueCallback := ""
 	}
@@ -1076,6 +1083,14 @@ Class _Output extends _Hotkey {
 	
 	__Delete(){
 		OutputDebug % "Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+	}
+	
+	; Kill references so destructor can fire
+	_KillReferences(){
+		base._KillReferences()
+		;~ GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
+		;~ this.ChangeValueCallback := ""
+		;~ this.ChangeStateCallback := ""
 	}
 }
 
