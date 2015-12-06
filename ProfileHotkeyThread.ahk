@@ -50,7 +50,7 @@ class _HotkeyThread {
 	}
 	
 	KeyEvent(hk, event){
-		this.MasterThread.ahkExec("UCR._HotkeyHandler.KeyEvent(" &hk "," event ")")
+		this.MasterThread.ahkExec("UCR._InputHandler.KeyEvent(" &hk "," event ")")
 	}
 }
 

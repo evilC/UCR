@@ -1,31 +1,7 @@
-/*
 #Persistent
 #NoTrayIcon
 JoystickWatcher := new _JoystickWatcher()
 autoexecute_done := 1
-
-class _JoystickWatcher {
-	__New(){
-		this.MasterThread := AhkExported()
-	}
-	
-}
-*/
-; Proof of concept for joystick watcher
-OutputDebug, DBGVIEWCLEAR
-#SingleInstance force
-#Persistent
-JoystickWatcher := new _JoystickWatcher()
-JoystickWatcher.RegisterAxis(1,2,1)
-JoystickWatcher.RegisterAxis(1,2,3)
-JoystickWatcher.RegisterAxis(1,2,2)
-JoystickWatcher.RegisterAxis(0,2,3)
-return
-
-OutFunc(stick, axis, val){
-	ToolTip % "Stick: " stick ", Axis: " axis ", Val: " val
-	OutputDebug, % "Stick " stick ", axis " axis " reports : " val
-}
 
 class _JoystickWatcher {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
@@ -34,6 +10,7 @@ class _JoystickWatcher {
 	RegisteredAxes := [{},{},{},{},{},{},{},{}]
 	RegisteredHats := [{},{},{},{},{},{},{},{}]
 	__New(){
+		this.MasterThread := AhkExported()
 		this.PollTimerFn := this.PollJoystick.Bind(this)
 	}
 
@@ -46,7 +23,10 @@ class _JoystickWatcher {
 			for index, obj in axes {
 				val := Round(GetKeyState(obj.string) * 327.67, 2)
 				if (val != obj.state){
-					OutFunc(obj.stick, obj.axis, val)
+					; don't fire if just registered, just initialize
+					if (obj.state != -1){
+						this.MasterThread.ahkExec("UCR._InputHandler.AxisEvent(" obj.stick "," obj.axis "," val ")")
+					}
 					obj.state := val
 				}
 			}
@@ -55,6 +35,7 @@ class _JoystickWatcher {
 	}
 
 	RegisterAxis(state, stick, axis){
+		OutputDebug, % "Registering Axis"
 		this.SetPollState(0)
 		if (state){
 			if (this.RegisterStick(state, stick)){
