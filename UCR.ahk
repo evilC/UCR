@@ -314,14 +314,14 @@ Class _HotkeyHandler {
 	}
 	
 	; Set a Binding
-	SetBinding(hk){
-		hkstring := this.BuildHotkeyString(hk.value)
-		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &hk ",""" hkstring """)")
+	SetBinding(BtnObj){
+		bindstring := this.BuildHotkeyString(BtnObj.value)
+		BtnObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &BtnObj ",""" bindstring """)")
 		return 1
 	}
 	
-	SetAxisBinding(axis){
-		axis.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetAxisBinding(" &axis ")")
+	SetAxisBinding(AxisObj){
+		AxisObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetAxisBinding(" &AxisObj ")")
 	}
 	
 	; Check for duplicates etc
@@ -361,9 +361,11 @@ Class _HotkeyHandler {
 		return str
 	}
 	
+	; Rename - handles axes too
 	KeyEvent(hk, event){
 		hk := Object(hk)
 		if (IsObject(hk.ChangeStateCallback)){
+			; ToDo: don't do this check for axes
 			if (hk.__value.Suppress && event && hk.State){
 				; Suppress repeats option
 				return
@@ -373,6 +375,7 @@ Class _HotkeyHandler {
 			hk.ChangeStateCallback.(event)
 		}
 	}
+	
 }
 
 ; =================================================================== BIND MODE HANDLER ==========================================================
@@ -1071,10 +1074,14 @@ class _Hotkey {
 }
 ; ======================================================================== AXIS INPUT ===============================================================
 class _AxisInput {
+	AHKAxisList := ["X","Y","Z","R","U","V"]
+	InputState := -1
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		this.ParentPlugin := parent
-		
-		Gui, % this.ParentPlugin.hwnd ":Add", % "DDL", % "AltSubmit hwndhwnd " aParams[1], 1||2|3|4|5|6
+		this.Name := name
+		this.ChangeValueCallback := ChangeValueCallback
+		this.ChangeStateCallback := ChangeStateCallback
+		Gui, % this.ParentPlugin.hwnd ":Add", % "DDL", % "AltSubmit hwndhwnd " aParams[1], None||1|2|3|4|5|6
 		this.hwnd := hwnd
 		
 		fn := this._ChangedValue.Bind(this)
@@ -1082,8 +1089,11 @@ class _AxisInput {
 	}
 	
 	_ChangedValue(){
-		GuiControlGet, value, % this.ParentPlugin.hwnd ":", % this.hwnd
-		this.__value := value
+		GuiControlGet, axis, % this.ParentPlugin.hwnd ":", % this.hwnd
+		axis -= 1	; option 1 is "None"
+		stick := 2	; hard-wire for now
+		bindstring := ( axis && stick ? stick "Joy" this.AHKAxisList[axis] : "" )
+		this.__value := {stick: stick, axis: axis, bindstring: bindstring}
 		UCR.RequestAxisBinding(this)
 	}
 }

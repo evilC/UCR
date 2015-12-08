@@ -9,9 +9,12 @@ return
 
 class _HotkeyThread {
 	Bindings := {}	; List of current bindings, indexed by HWND of hotkey GuiControl
+	Axes := {}
+	
 	__New(parent){
 		this.ParentProfile := Object(parent)
 		this.MasterThread := AhkExported()
+		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
 		Suspend, On
 	}
 	
@@ -49,15 +52,38 @@ class _HotkeyThread {
 		hotkey, % hkstring " up", % fn, On
 	}
 	
-	SetAxisBinding(axis){
-		axis := Object(axis)
-		OutputDebug % "SetAxisBinding: " axis.__value
+	SetAxisBinding(AxisObj){
+		AxisObj := Object(AxisObj)
+		fn := this.JoystickWatcherFn
+		SetTimer, % fn, Off
+		if (AxisObj.__value.bindstring == ""){
+			this.Axes.Delete(AxisObj.hwnd)
+		} else {
+			this.Axes[AxisObj.hwnd] := AxisObj
+		}
+		SetTimer, % fn, 10
 	}
 	
+	; Rename - handles axes too
 	KeyEvent(hk, event){
 		this.MasterThread.ahkExec("UCR._HotkeyHandler.KeyEvent(" &hk "," event ")")
 	}
+	
+	JoystickWatcher(){
+		for hwnd, AxisObj in this.Axes {
+			bindstring := AxisObj.__value.bindstring
+			if (bindstring){
+				state := GetKeyState(bindstring)
+				if (state != AxisObj.InputState){
+					AxisObj.InputState := state
+					this.KeyEvent(AxisObj, state)
+					;OutputDebug % "State " bindstring " changed to: " state
+				}
+			}
+		}
+	}
 }
 
+; Bind hotkeys to this to clear their binding, deleting boundfunc objects
 Dummy:
 	return
