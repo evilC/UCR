@@ -49,6 +49,11 @@ class _HotkeyThread {
 		hotkey, % hkstring " up", % fn, On
 	}
 	
+	SetAxisBinding(axis){
+		axis := Object(axis)
+		OutputDebug % "SetAxisBinding: " axis.__value
+	}
+	
 	KeyEvent(hk, event){
 		this.MasterThread.ahkExec("UCR._HotkeyHandler.KeyEvent(" &hk "," event ")")
 	}

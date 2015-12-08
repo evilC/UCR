@@ -288,6 +288,10 @@ Class UCRMain {
 		}
 	}
 	
+	RequestAxisBinding(axis){
+		this._HotkeyHandler.SetAxisBinding(axis)
+	}
+	
 	_BindModeEnded(hk, bo){
 		OutputDebug % "Bind Mode Ended: " bo.Keys[1].code
 		this._BindMode := 0
@@ -314,6 +318,10 @@ Class _HotkeyHandler {
 		hkstring := this.BuildHotkeyString(hk.value)
 		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &hk ",""" hkstring """)")
 		return 1
+	}
+	
+	SetAxisBinding(axis){
+		axis.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetAxisBinding(" &axis ")")
 	}
 	
 	; Check for duplicates etc
@@ -683,6 +691,7 @@ Class _Plugin {
 	Hotkeys := {}				; An associative array, indexed by name, of child Hotkeys
 	Outputs := {}				; An associative array, indexed by name, of child Outputs
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
+	AxisInputs := {}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -740,6 +749,13 @@ Class _Plugin {
 		if (!ObjHasKey(this.Hotkeys, name)){
 			this.Hotkeys[name] := new _Hotkey(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 			return this.Hotkeys[name]
+		}
+	}
+	
+	AddAxisInput(name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		if (!ObjHasKey(this.AxisInputs,name)){
+			this.AxisInputs[name] := new _AxisInput(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			return this.AxisInputs[name]
 		}
 	}
 	
@@ -1051,6 +1067,24 @@ class _Hotkey {
 		this._value := new _BindObject(obj)
 		; Register hotkey on load
 		UCR._HotkeyHandler.SetBinding(this)
+	}
+}
+; ======================================================================== AXIS INPUT ===============================================================
+class _AxisInput {
+	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		this.ParentPlugin := parent
+		
+		Gui, % this.ParentPlugin.hwnd ":Add", % "DDL", % "AltSubmit hwndhwnd " aParams[1], 1||2|3|4|5|6
+		this.hwnd := hwnd
+		
+		fn := this._ChangedValue.Bind(this)
+		GuiControl, % this.ParentPlugin.hwnd ":+g", % this.hwnd, % fn
+	}
+	
+	_ChangedValue(){
+		GuiControlGet, value, % this.ParentPlugin.hwnd ":", % this.hwnd
+		this.__value := value
+		UCR.RequestAxisBinding(this)
 	}
 }
 
