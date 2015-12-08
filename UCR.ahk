@@ -1,13 +1,19 @@
 #SingleInstance force
-#include <JSON>				; Coco's JSON Lib v2 http://autohotkey.com/boards/viewtopic.php?f=6&t=627
+/*
+Dependencies: 
+Autohotkey_H v1 http://hotkeyit.github.io/v2/
+UCR WILL NOT RUN USING VANILLA AUTOHOTKEY ("AHK_L")
+
+JSON serialization (for dumping settings to disk) by CoCo's JSON Lib
+For now, use my fork (Very minor tweak to fix AHK_H compatibility): https://github.com/evilC/AutoHotkey-JSON/
+Coco's JSON Lib - http://autohotkey.com/boards/viewtopic.php?f=6&t=627
+*/
+#include <JSON>				
 OutputDebug DBGVIEWCLEAR
 
 global UCR
 new UCRMain()
 return
-
-;~ GuiClose:
-	;~ ExitApp
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
