@@ -38,5 +38,4 @@ Development is currently done using Scite4AutoHotkey, so if you wish to debug UC
 UCR's code avoids the use of SetTimer, OnMessage etc in the main thread wherever possible, so that "stepping in" in the debugger does not end up dropping you into some random timer pseudo-thread. In general, it works around these situations by offloading any code that might interfere with the debugging process to a worker thread.
 
 ##Documentation
-[UML Diagram](http://evilc.github.io/UCR/html-docs/)  
-UML docs can also be viewd in StarUML format, please see the Docs folder
+Documentation is forthcoming.
