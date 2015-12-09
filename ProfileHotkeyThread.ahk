@@ -10,20 +10,33 @@ return
 class _HotkeyThread {
 	Bindings := {}	; List of current bindings, indexed by HWND of hotkey GuiControl
 	Axes := {}
+	JoystickTimerState := 0
 	
 	__New(parent){
 		this.ParentProfile := Object(parent)
 		this.MasterThread := AhkExported()
 		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
-		Suspend, On
+		this.SetHotkeyState(0)
 	}
 	
+	; rename - handles axes too
 	SetHotkeyState(state){
 		if (state){
 			Suspend, Off
 		} else {
 			Suspend, On
 		}
+		this.SetJoystickTimerState(state)
+	}
+	
+	SetJoystickTimerState(state){
+		fn := this.JoystickWatcherFn
+		if (state){
+			SetTimer, % fn, 10
+		} else {
+			SetTimer, % fn, Off
+		}
+		this.JoystickTimerState := state
 	}
 	
 	SetBinding(hk, hkstring := ""){
@@ -54,14 +67,16 @@ class _HotkeyThread {
 	
 	SetAxisBinding(AxisObj){
 		AxisObj := Object(AxisObj)
-		fn := this.JoystickWatcherFn
-		SetTimer, % fn, Off
+		oldstate := this.JoystickTimerState
+		if (oldstate)
+			this.SetJoystickTimerState(0)
 		if (AxisObj.__value.bindstring == ""){
 			this.Axes.Delete(AxisObj.hwnd)
 		} else {
 			this.Axes[AxisObj.hwnd] := AxisObj
 		}
-		SetTimer, % fn, 10
+		if (oldstate)
+			this.SetJoystickTimerState(1)
 	}
 	
 	; Rename - handles axes too
