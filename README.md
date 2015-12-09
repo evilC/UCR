@@ -21,9 +21,9 @@ Plugins can call UCR methods to add a GuiControl to their Gui whose value will b
 It can be used to allow the end user to tweak the behavior of the plugin that it is part of.
 
 ##Inputs and Outputs
-Plugins may also contain special GuiControls that allow the end user to bind inputs and outputs.
-Valid inputs are: Keyboard, Mouse, Joystick.
-Valid outputs are: Keyboard, Mouse, vJoy Virtual Joystick
+Plugins may also contain special GuiControls that allow the end user to bind inputs and outputs.  
+Valid inputs are: Keyboard, Mouse, Joystick.  
+Valid outputs are: Keyboard, Mouse, vJoy Virtual Joystick  
 
 ##Requirements
 If you are a typical end-user of UCR, you just need to download the installer package. 
