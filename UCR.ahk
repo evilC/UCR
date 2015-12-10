@@ -793,6 +793,11 @@ Class _Plugin {
 		for name, ctrl in this.Hotkeys {
 			obj.Hotkeys[name] := ctrl._Serialize()
 		}
+		obj.AxisInputs := {}
+		for name, ctrl in this.AxisInputs {
+			obj.AxisInputs[name] := ctrl._Serialize()
+		}
+		obj.Outputs := {}
 		for name, ctrl in this.Outputs {
 			obj.Outputs[name] := ctrl._Serialize()
 		}
@@ -807,6 +812,9 @@ Class _Plugin {
 		}
 		for name, ctrl in obj.Hotkeys {
 			this.Hotkeys[name]._Deserialize(ctrl)
+		}
+		for name, ctrl in obj.AxisInputs {
+			this.AxisInputs[name]._Deserialize(ctrl)
 		}
 		for name, ctrl in obj.Outputs {
 			this.Outputs[name]._Deserialize(ctrl)
@@ -1159,7 +1167,7 @@ class _AxisInput extends _BannerCombo {
 		
 		this._Options := []
 		Loop 6 {
-			this._Options.push("Axis " A_Index )
+			this._Options.push("Axis " A_Index " (" this.AHKAxisList[A_Index] ")" )
 		}
 		Loop 8 {
 			this._Options.push("Stick " A_Index )
@@ -1190,6 +1198,7 @@ class _AxisInput extends _BannerCombo {
 		this.__value.Stick := stick
 		this.__value.BindString := ( axis && stick ? stick "Joy" this.AHKAxisList[axis] : "" )
 		this.SetComboState()
+		this.value := this.__value
 		UCR.RequestAxisBinding(this)
 	}
 	
@@ -1222,6 +1231,47 @@ class _AxisInput extends _BannerCombo {
 
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
+	}
+	
+	; Get / Set of .value
+	value[]{
+		; Read of current contents of GuiControl
+		get {
+			return this.__value
+		}
+		
+		; When the user types something in a guicontrol, this gets called
+		; Fire _ControlChanged on parent so new setting can be saved
+		set {
+			this.__value := value
+			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			this.SetComboState()
+			this.ParentPlugin._ControlChanged(this)
+		}
+	}
+	
+	; Get / Set of ._value
+	_value[]{
+		; this will probably not get called
+		get {
+			return this.__value
+		}
+		; Update contents of GuiControl, but do not fire _ControlChanged
+		; Parent has told child state to be in, child does not need to notify parent of change in state
+		set {
+			this.__value := value
+			this.SetComboState()
+		}
+	}
+
+	_Serialize(){
+		obj := {_value: this._value}
+		return obj
+	}
+	
+	_Deserialize(obj){
+		this._value := obj._value
+		UCR.RequestAxisBinding(this)
 	}
 }
 
