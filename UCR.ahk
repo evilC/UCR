@@ -951,7 +951,7 @@ class _BannerCombo {
 	
 	; Pass an array of strings to set available options
 	SetOptions(opts){
-		str := "", max := opts.length()
+		str := "|", max := opts.length()
 		Loop % max{
 			str .= opts[A_Index]
 			if (A_Index != max){
@@ -1147,6 +1147,7 @@ class _Hotkey {
 class _AxisInput extends _BannerCombo {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
 	__value := {stick: 0, axis: 0, bindstring: ""}
+	_OptionMap := []
 	
 	InputState := -1
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
@@ -1156,39 +1157,71 @@ class _AxisInput extends _BannerCombo {
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
 		
-		opts := []
+		this._Options := []
 		Loop 6 {
-			opts.push("Axis " A_Index )
+			this._Options.push("Axis " A_Index )
 		}
 		Loop 8 {
-			opts.push("Stick " A_Index )
+			this._Options.push("Stick " A_Index )
 		}
-		this.SetOptions(opts)
-		this.SetCueBanner()
+		this._Options.push("Clear Binding")
+		this.SetComboState()
 	}
 	
 	_ChangedValue(o){
 		axis := this.__value.Axis
 		stick := this.__value.Stick
+		
+		; Resolve result of selection to index of full option list
+		o := this._OptionMap[o]
+		
 		if (o <= 6){
 			; Axis Selected
 			axis := o
-		} else {
+		} else if (o <= 14){
 			; Stick Selected
 			o -= 6
 			stick := o
+		} else {
+			; Clear Selected
+			axis := stick := 0
 		}
 		this.__value.Axis := axis
 		this.__value.Stick := stick
 		this.__value.BindString := ( axis && stick ? stick "Joy" this.AHKAxisList[axis] : "" )
-		this.SetCueBanner()
+		this.SetComboState()
 		UCR.RequestAxisBinding(this)
 	}
 	
-	SetCueBanner(){
+	SetComboState(){
 		axis := this.__value.Axis
 		stick := this.__value.Stick
-		base.SetCueBanner("STICK " (stick ? stick : "None") " AXIS " (axis ? axis : "None") (stick > 0  && axis > 0 ? " (" this.AHKAxisList[axis] ")" : "") )
+		this._OptionMap := []
+		opts := []
+		if (stick){
+			; Show Sticks and Axes
+			max := 14
+			index_offset := 0
+		} else {
+			str := "Pick a Stick"
+			max := 8
+			index_offset := 6
+		}
+		Loop % max {
+			map_index := A_Index + index_offset
+			opts.push(this._Options[map_index])
+			this._OptionMap.push(map_index)
+		}
+		if (stick || axis){
+			opts.push(this._Options[15])
+			this._OptionMap.push(15)
+		}
+
+		if (stick)
+			str := "Stick: " (stick ? stick : "None") ", Axis: " (axis ? axis : "None") (stick && axis ? " (" this.AHKAxisList[axis] ")" : "")
+
+		this.SetOptions(opts)
+		this.SetCueBanner(str)
 	}
 }
 
