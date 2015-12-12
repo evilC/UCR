@@ -205,8 +205,6 @@ Class UCRMain {
 	
 	; Load a list of available plugins
 	_LoadPluginList(){
-		; Bodge
-		;this.PluginList := ["KeyToKeyPlugin", "TestPlugin1"]
 		this.PluginList := []
 		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", F
 		{
@@ -214,7 +212,6 @@ Class UCRMain {
 			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
 			this.PluginList.push(classname1)
 			AddFile(A_LoopFileFullPath, 1)
-			a := TestPlugin1
 		}
 	}
 	
