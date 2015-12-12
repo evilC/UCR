@@ -19,6 +19,7 @@ return
 Class UCRMain {
 	_BindMode := 0
 	Profiles := []
+	Libraries := {}
 	CurrentProfile := 0
 	PluginList := []
 	PLUGIN_WIDTH := 500
@@ -37,6 +38,8 @@ Class UCRMain {
 			str := StrSplit(str, ".ahk")
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
 		
+		this._LoadLibraries()
+		
 		this._BindModeHandler := new _BindModeHandler()
 		this._HotkeyHandler := new _HotkeyHandler()
 		
@@ -47,6 +50,22 @@ Class UCRMain {
 	GuiClose(hwnd){
 		if (hwnd = this.hwnd)
 			ExitApp
+	}
+	
+	_LoadLibraries(){
+		Loop, Files, % A_ScriptDir "\Libraries\*.*", D
+		{
+			str := A_LoopFileName
+			AddFile(A_ScriptDir "\Libraries\" A_LoopFileName "\" A_LoopFileName ".ahk", 1)
+			lib := new %A_LoopFileName%()
+			res := lib._UCR_LoadLibrary()
+			if (res == 1)
+				this.Libraries[A_LoopFileName] := lib
+			;~ FileRead,plugincode,% A_LoopFileFullPath
+			;~ RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
+			;~ this.PluginList.push(classname1)
+			;~ AddFile(A_LoopFileFullPath, 1)
+		}
 	}
 	
 	_CreateGui(){
