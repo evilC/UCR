@@ -1276,15 +1276,18 @@ Class _Output extends _Hotkey {
 	_IsOutput := 1
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
+		this._OptionMap := {Select: 1, vJoy: 2, Clear: 3}
 	}
 	
 	; Builds the list of options in the DropDownList
 	_BuildOptions(){
 		opts := []
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
-		opts.push("Select New Output")
-		opts.push("Clear Output")
+		opts.push("Select New Keyboard / Mouse Output")
+		this._CurrentOptionMap.push(this._OptionMap["vJoy"])
+		opts.push("Select New vJoy Output")
 		this._CurrentOptionMap.push(this._OptionMap["Clear"])
+		opts.push("Clear Output")
 		this.SetOptions(opts)
 	}
 	
@@ -1304,6 +1307,46 @@ Class _Output extends _Hotkey {
 			else
 				i--
 		}
+	}
+	
+	; An option was selected from the list
+	_ChangedValue(o){
+		if (o){
+			o := this._CurrentOptionMap[o]
+			
+			; Option selected from list
+			if (o = 1){
+				; Bind
+				UCR._RequestBinding(this)
+				return
+			} else if (o = 2){
+				; vJoy
+				this._SelectvJoy()
+			} else if (o = 3){
+				; Clear Binding
+				mod := {Keys: []}
+			} else {
+				; not one of the options from the list, user must have typed in box
+				return
+			}
+			if (IsObject(mod)){
+				UCR._RequestBinding(this, mod)
+				return
+			}
+		}
+	}
+	
+	_SelectvJoy(){
+		bo := new _BindObject()
+		
+		key := new _Key()
+		key.DeviceID := 1
+		key.code := 1
+		key.IsVirtual := 1
+		key.Type := 1
+		
+		bo.Keys := [key]
+		this.value := bo
 	}
 	
 	_Deserialize(obj){
@@ -1372,11 +1415,12 @@ class _BindObject {
 ; ======================================================================== KEY ===============================================================
 ; A key represents a single digital input - keybpard key, mouse button, joystick button etc
 class _Key {
-	Type := 0
+	Type := 0 ; 0 = Key / Mouse, 1 = stick button, 2 = stick hat
 	Code := 0
 	DeviceID := 0
 	UID := ""
-
+	IsVirtual := 0		; Set to 1 for vJoy stick buttons / hats
+	
 	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 		,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
 		,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
@@ -1406,6 +1450,7 @@ class _Key {
 		}
 	}
 	
+	; This should be re-named. It builds the key name, and is used for binding
 	BuildHumanReadable(){
 		if this.Type = 0 {
 			code := Format("{:x}", this.Code)
