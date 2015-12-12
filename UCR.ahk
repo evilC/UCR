@@ -360,10 +360,12 @@ Class _HotkeyHandler {
 		if (!bo.Keys.Length())
 			return ""
 		str := ""
-		if (bo.Wild)
-			str .= "*"
-		if (!bo.Block)
-			str .= "~"
+		if (bo.Type = 0){
+			if (bo.Wild)
+				str .= "*"
+			if (!bo.Block)
+				str .= "~"
+		}
 		max := bo.Keys.Length()
 		Loop % max {
 			key := bo.Keys[A_Index]
@@ -377,7 +379,7 @@ Class _HotkeyHandler {
 			if (key.IsModifier() && (max > A_Index)){
 				str .= key.RenderModifier()
 			} else {
-				str .= key.BuildHumanReadable()
+				str .= key.BuildKeyName()
 			}
 		}
 		return str
@@ -471,6 +473,7 @@ class _BindModeHandler {
 		; Are the conditions met for end of Bind Mode? (Up event of any key)
 		if (!e){
 			; End Bind Mode
+			Type := 0
 			this.BindMode := 0
 			this.SetHotkeyState(0)
 			bindObj := this._OriginalHotkey.value.clone()
@@ -479,7 +482,9 @@ class _BindModeHandler {
 			for code, key in this.HeldModifiers {
 				bindObj.Keys.push(key)
 			}
+			
 			bindObj.Keys.push(this.EndKey)
+			bindObj.Type := this.EndKey.Type
 			this._Callback.(this._OriginalHotkey, bindObj)
 			
 			return
@@ -1300,8 +1305,12 @@ Class _Output extends _Hotkey {
 			i := max
 		Loop % max{
 			key := this.__value.keys[i]
-			name := key.BuildHumanReadable()
-			Send % "{" name (state ? " Down" : " Up") "}"
+			if (key.Type = 1 && key.IsVirtual){
+				UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
+			} else {
+				name := key.BuildKeyName()
+				Send % "{" name (state ? " Down" : " Up") "}"
+			}
 			if (state)
 				i++
 			else
@@ -1338,6 +1347,7 @@ Class _Output extends _Hotkey {
 	
 	_SelectvJoy(){
 		bo := new _BindObject()
+		bo.Type := 1
 		
 		key := new _Key()
 		key.DeviceID := 1
@@ -1381,7 +1391,7 @@ class _BindObject {
 	}
 	
 	_Serialize(){
-		obj := {Keys: [], Wild: this.Wild, Block: this.Block, Suppress: this.Suppress}
+		obj := {Keys: [], Wild: this.Wild, Block: this.Block, Suppress: this.Suppress, Type: this.Type}
 		Loop % this.Keys.length(){
 			obj.Keys.push(this.Keys[A_Index]._Serialize())
 		}
@@ -1441,7 +1451,7 @@ class _Key {
 	}
 	
 	_Serialize(){
-		return {Type: this.Type, Code: this.Code, DeviceID: this.DeviceID, UID: this.UID}
+		return {Type: this.Type, Code: this.Code, DeviceID: this.DeviceID, UID: this.UID, IsVirtual: this.IsVirtual}
 	}
 	
 	_Deserialize(obj){
@@ -1450,13 +1460,21 @@ class _Key {
 		}
 	}
 	
-	; This should be re-named. It builds the key name, and is used for binding
-	BuildHumanReadable(){
+	; Builds the AHK key name
+	BuildKeyName(){
 		if this.Type = 0 {
 			code := Format("{:x}", this.Code)
 			return GetKeyName("vk" code)
 		} else if (this.Type = 1){
 			return this.DeviceID "Joy" this.code
+		}
+	}
+	
+	BuildHumanReadable(){
+		if this.Type = 0 {
+			return this.BuildKeyName()
+		} else if (this.Type > 0){
+			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
 		}
 	}
 }

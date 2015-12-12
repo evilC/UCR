@@ -61,8 +61,11 @@ class _HotkeyThread {
 		this.Bindings[hwnd] := hkstring
 		fn := this.KeyEvent.Bind(this, hk, 1)
 		hotkey, % hkstring, % fn, On
-		fn := this.KeyEvent.Bind(this, hk, 0)
-		hotkey, % hkstring " up", % fn, On
+		; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
+		if (hk.__value.Type != 1){
+			fn := this.KeyEvent.Bind(this, hk, 0)
+			hotkey, % hkstring " up", % fn, On
+		}
 	}
 	
 	SetAxisBinding(AxisObj){
@@ -82,6 +85,15 @@ class _HotkeyThread {
 	; Rename - handles axes too
 	KeyEvent(hk, event){
 		this.MasterThread.ahkExec("UCR._HotkeyHandler.KeyEvent(" &hk "," event ")")
+		; Simulate up events for joystick buttons
+		if (hk.__value.Type = 1){
+			OutputDebug % "Waiting for release of bindstring " this.Bindings[hk.hwnd]
+			while (GetKeyState(this.Bindings[hk.hwnd])){
+				Sleep 10
+			}
+			OutputDebug % "release detected of bindstring " this.Bindings[hk.hwnd]
+			this.MasterThread.ahkExec("UCR._HotkeyHandler.KeyEvent(" &hk "," 0 ")")
+		}
 	}
 	
 	JoystickWatcher(){
