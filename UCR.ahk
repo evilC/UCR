@@ -1282,6 +1282,23 @@ Class _Output extends _Hotkey {
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
 		this._OptionMap := {Select: 1, vJoy: 2, Clear: 3}
+		Gui, new, HwndHwnd
+		Gui -Border
+		this.hVjoySelect := hwnd
+		Gui, Add, Text, w50 xm Center ,Stick
+		Gui, Add, Text, w50 xp+55 Center ,Button
+		Gui, Add, ListBox, R8 xm w50 AltSubmit HwndHwnd , None||1|2|3|4|5|6|7|8
+		this.hVjoyDevice := hwnd
+		Gui, Add, ListBox, R8 w50 xp+55 AltSubmit HwndHwnd , None||01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107|108|109|110|111|112|113|114|115|116|117|118|119|120|121|122|123|124|125|126|127|128|
+		this.hVJoyButton := hwnd
+		Gui, Add, Button, xm w50 Center HwndHwnd, Cancel
+		this.hVJoyCancel := hwnd
+		fn := this.vJoyInputCancelled.Bind(this)
+		GuiControl +g, % this.hVJoyCancel, % fn
+		Gui, Add, Button, xp+55 w50 Center HwndHwnd, Ok
+		this.hVjoyOK := hwnd
+		fn := this.vJoyInputSelected.Bind(this)
+		GuiControl +g, % this.hVjoyOK, % fn
 	}
 	
 	; Builds the list of options in the DropDownList
@@ -1318,6 +1335,30 @@ Class _Output extends _Hotkey {
 		}
 	}
 	
+	vJoyInputSelected(){
+		Gui, % this.hVjoySelect ":Submit"
+		GuiControlGet, device, % this.hVjoySelect ":" , % this.hVjoyDevice
+		device--
+		GuiControlGet, button, % this.hVjoySelect ":" , % this.hVJoyButton
+		button--
+		
+		bo := new _BindObject()
+		bo.Type := 1
+		
+		key := new _Key()
+		key.DeviceID := device
+		key.code := button
+		key.IsVirtual := 1
+		key.Type := 1
+		
+		bo.Keys := [key]
+		this.value := bo
+	}
+	
+	vJoyInputCancelled(){
+		Gui, % this.hVjoySelect ":Submit"
+	}
+	
 	; An option was selected from the list
 	_ChangedValue(o){
 		if (o){
@@ -1346,17 +1387,8 @@ Class _Output extends _Hotkey {
 	}
 	
 	_SelectvJoy(){
-		bo := new _BindObject()
-		bo.Type := 1
-		
-		key := new _Key()
-		key.DeviceID := 1
-		key.code := 1
-		key.IsVirtual := 1
-		key.Type := 1
-		
-		bo.Keys := [key]
-		this.value := bo
+		MouseGetPos, x, y
+		Gui, % this.hVjoySelect ":Show", % "x" x - 50 " y" y - 80
 	}
 	
 	_Deserialize(obj){
