@@ -997,7 +997,7 @@ class _BannerCombo {
 
 ; ======================================================================== HOTKEY ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
-class _Hotkey {
+class _Hotkey extends _BannerCombo {
 	; Internal vars describing the bindstring
 	__value := ""		; Holds the BindObject class
 	; Other internal vars
@@ -1006,8 +1006,14 @@ class _Hotkey {
 	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		this._Setup(parent, name, ChangeValueCallback, aParams*)
+		base.__New(parent.hwnd, aParams*)
+		this.ParentPlugin := parent
+		this.Name := name
+		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
+		
+		this.__value := new _BindObject()
+		this.SetComboState()
 	}
 	
 	__Delete(){
@@ -1015,28 +1021,7 @@ class _Hotkey {
 	}
 	
 	_Setup(parent, name, ChangeValueCallback, aParams*){
-		this.ParentPlugin := parent
-		this.Name := name
-		this.ChangeValueCallback := ChangeValueCallback
-		
-		Gui, % this.ParentPlugin.hwnd ":Add", % "Combobox", % "hwndhwnd " aParams[1], % aParams[2]
-		this.hwnd := hwnd
-		
-		fn := this._ChangedValue.Bind(this)
-		GuiControl, % this.ParentPlugin.hwnd ":+g", % this.hwnd, % fn
-		
-		; Get Hwnd of EditBox part of ComboBox
-		this._hEdit := DllCall("GetWindow","PTR",this.hwnd,"Uint",5) ;GW_CHILD = 5
-		; Get the position of the Editbox
-		ControlGetPos,x,y,,,,% "ahk_id " this._hEdit
-		; Set the parent of the editbox to the main Gui instead of the Combobox...
-		; .. This is so that mouse wheel scroll messages get passed to the main Gui...
-		; .. thus meaning you do not accidentally enter bind mode when using the mouse wheel to scroll the GUI
-		DllCall("SetParent","PTR",this._hEdit,"PTR",this.ParentPlugin.hwnd)
-		; Move the Editbox back to where it should be
-		ControlMove,,% x,% y,,,% "ahk_id " this._hEdit
-		this.__value := new _BindObject()
-		this._SetCueBanner()
+
 	}
 	
 	; Kill references so destructor can fire
@@ -1066,50 +1051,43 @@ class _Hotkey {
 		; Parent class told this hotkey what it's value is. Set value, but do not fire ParentPlugin._ControlChanged
 		set {
 			this.__value := value
-			this._SetCueBanner()
+			this.SetComboState()
 		}
 	}
 
 	; Builds the list of options in the DropDownList
 	_BuildOptions(){
+		opts := []
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
-		str := "|Select New Binding"
+		opts.push("Select New Binding")
 		if (this.__value.Type = 0){
 			; Joystick buttons do not have these options
-			str .= "|Wild: " (this.__value.wild ? "On" : "Off") 
+			opts.push("Wild: " (this.__value.wild ? "On" : "Off"))
 			this._CurrentOptionMap.push(this._OptionMap["Wild"])
-			str .= "|Block: " (this.__value.block ? "On" : "Off")
+			opts.push("Block: " (this.__value.block ? "On" : "Off"))
 			this._CurrentOptionMap.push(this._OptionMap["Block"])
-			str .= "|Suppress Repeats: " (this.__value.suppress ? "On" : "Off")
+			opts.push("Suppress Repeats: " (this.__value.suppress ? "On" : "Off"))
 			this._CurrentOptionMap.push(this._OptionMap["Suppress"])
 		}
-		str .= "|Clear Binding"
+		opts.push("Clear Binding")
 		this._CurrentOptionMap.push(this._OptionMap["Clear"])
-		GuiControl, , % this.hwnd, % str
+		this.SetOptions(opts)
 	}
 
 	; Sets the "Cue Banner" for the ComboBox
-	_SetCueBanner(){
+	SetComboState(){
 		this._BuildOptions()
-		static EM_SETCUEBANNER:=0x1501
 		if (this.__value.Keys.length()) {
-			;Text := this._BuildHumanReadable()
 			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner			
 		}
-		DllCall("User32.dll\SendMessageW", "Ptr", this._hEdit, "Uint", EM_SETCUEBANNER, "Ptr", True, "WStr", text)
-		return this
+		this.SetCueBanner(Text)
 	}
 	
 	; An option was selected from the list
-	_ChangedValue(){
-		; Find index of dropdown list. Will be really big number if key was typed
-		SendMessage 0x147, 0, 0,, % "ahk_id " this.hwnd  ; CB_GETCURSEL
-		o := ErrorLevel
-		GuiControl, % this.ParentPlugin.hwnd ":Choose", % this.hwnd, 0
-		if (o < 100){
-			o++
+	_ChangedValue(o){
+		if (o){
 			o := this._CurrentOptionMap[o]
 			
 			; Option selected from list
@@ -1277,16 +1255,24 @@ class _AxisInput extends _BannerCombo {
 
 ; ======================================================================== OUTPUT ===============================================================
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
-; For now, just a bodge derivative of the hotkey class
 Class _Output extends _Hotkey {
 	_DefaultBanner := "Drop down the list to select an Output"
 	_IsOutput := 1
 	__New(parent, name, ChangeValueCallback, aParams*){
-		this._Setup(parent, name, ChangeValueCallback, aParams*)
-		;obj := this.base.__New(parent, name, ChangeValueCallback, ChangeValueCallback, aParams*)
-		;return obj
+		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
 	}
 	
+	; Builds the list of options in the DropDownList
+	_BuildOptions(){
+		opts := []
+		this._CurrentOptionMap := [this._OptionMap["Select"]]
+		opts.push("Select New Output")
+		opts.push("Clear Output")
+		this._CurrentOptionMap.push(this._OptionMap["Clear"])
+		this.SetOptions(opts)
+	}
+	
+	; Used by script authors to set the state of this output
 	SetState(state){
 		max := this.__value.keys.Length()
 		if (state)
