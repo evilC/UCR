@@ -1262,9 +1262,8 @@ class _AxisInput extends _BannerCombo {
 		; When the user types something in a guicontrol, this gets called
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
-			this.__value := value
+			this._value := value
 			OutputDebug % "GuiControl " this.Name " --> Plugin"
-			this.SetComboState()
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -1280,6 +1279,9 @@ class _AxisInput extends _BannerCombo {
 		set {
 			this.__value := value
 			this.SetComboState()
+			if (IsObject(this.ChangeValueCallback)){
+				this.ChangeValueCallback.Call(this.__value)
+			}
 		}
 	}
 

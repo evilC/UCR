@@ -28,8 +28,8 @@ class AxisToAxis extends _Plugin {
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
+		GuiControl, , % this.hSliderIn, % value
 		if (this.vAxis && this.vDevice){
-			GuiControl, , % this.hSliderIn, % value
 			if (this.GuiControls.Invert.value){
 				value -= 50
 				value := value * -1
