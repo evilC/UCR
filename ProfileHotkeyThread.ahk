@@ -48,15 +48,19 @@ class _HotkeyThread {
 			if (this.Bindings[hwnd]){
 				hotkey, % this.Bindings[hwnd], Dummy
 				hotkey, % this.Bindings[hwnd], Off
-				hotkey, % this.Bindings[hwnd] " up", Dummy
-				hotkey, % this.Bindings[hwnd] " up", Off
+				try {
+					hotkey, % this.Bindings[hwnd] " up", Dummy
+					hotkey, % this.Bindings[hwnd] " up", Off
+				}
 			}
 			this.Bindings.Delete(hwnd)
 			return
 		}
 		if (ObjHasKey(this.Bindings, hwnd)){
 			hotkey, % this.Bindings[hwnd], Off
-			hotkey, % this.Bindings[hwnd] " up", Off
+			try {
+				hotkey, % this.Bindings[hwnd] " up", Off
+			}
 		}
 		this.Bindings[hwnd] := hkstring
 		fn := this.KeyEvent.Bind(this, hk, 1)

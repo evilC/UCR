@@ -22,8 +22,8 @@ Class UCRMain {
 	Libraries := {}
 	CurrentProfile := 0
 	PluginList := []
-	PLUGIN_WIDTH := 500
-	PLUGIN_FRAME_WIDTH := 540
+	PLUGIN_WIDTH := 650
+	PLUGIN_FRAME_WIDTH := 690
 	TOP_PANEL_HEIGHT := 75
 	GUI_MIN_HEIGHT := 300
 	__New(){
@@ -722,6 +722,7 @@ Class _Plugin {
 	Outputs := {}				; An associative array, indexed by name, of child Outputs
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
 	AxisInputs := {}
+	AxisOutputs := {}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -789,6 +790,13 @@ Class _Plugin {
 		}
 	}
 	
+	AddAxisOutput(name, ChangeValueCallback, aParams*){
+		if (!ObjHasKey(this.AxisOutputs,name)){
+			this.AxisOutputs[name] := new _AxisOutput(this, name, ChangeValueCallback, aParams*)
+			return this.AxisOutputs[name]
+		}
+	}
+	
 	; An Output is a sequence of keys to be pressed, often in reaction to a hotkey being pressed
 	AddOutput(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.Outputs, name)){
@@ -822,6 +830,10 @@ Class _Plugin {
 		for name, ctrl in this.Outputs {
 			obj.Outputs[name] := ctrl._Serialize()
 		}
+		obj.AxisOutputs := {}
+		for name, ctrl in this.AxisOutputs {
+			obj.AxisOutputs[name] := ctrl._Serialize()
+		}
 		return obj
 	}
 	
@@ -839,6 +851,9 @@ Class _Plugin {
 		}
 		for name, ctrl in obj.Outputs {
 			this.Outputs[name]._Deserialize(ctrl)
+		}
+		for name, ctrl in obj.AxisOutputs {
+			this.AxisOutputs[name]._Deserialize(ctrl)
 		}
 		
 	}
@@ -1409,6 +1424,126 @@ Class _Output extends _Hotkey {
 	}
 }
 
+; ======================================================================== AXIS OUTPUT ===============================================================
+class _AxisOutput extends _BannerCombo {
+	__value := {stick: 0, axis: 0}
+	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
+	__New(parent, name, ChangeValueCallback, aParams*){
+		base.__New(parent.hwnd, aParams*)
+		this.ParentPlugin := parent
+		this.Name := name
+		this.ChangeValueCallback := ChangeValueCallback
+		
+		this._Options := []
+		Loop 8 {
+			this._Options.push("Axis " A_Index " (" this.vJoyAxisList[A_Index] ")" )
+		}
+		Loop 8 {
+			this._Options.push("Stick " A_Index )
+		}
+		this._Options.push("Clear Binding")
+		this.SetComboState()
+	}
+	
+	SetComboState(){
+		axis := this.__value.Axis
+		stick := this.__value.Stick
+		this._OptionMap := []
+		opts := []
+		if (stick){
+			; Show Sticks and Axes
+			max := 16
+			index_offset := 0
+		} else {
+			str := "Pick a Stick"
+			max := 10
+			index_offset := 8
+		}
+		Loop % max {
+			map_index := A_Index + index_offset
+			opts.push(this._Options[map_index])
+			this._OptionMap.push(map_index)
+		}
+		if (stick || axis){
+			opts.push(this._Options[15])
+			this._OptionMap.push(15)
+		}
+
+		if (stick)
+			str := "Stick: " (stick ? stick : "None") ", Axis: " (axis ? axis : "None") (stick && axis ? " (" this.vJoyAxisList[axis] ")" : "")
+
+		this.SetOptions(opts)
+		this.SetCueBanner(str)
+	}
+	
+	_ChangedValue(o){
+		axis := this.__value.Axis
+		stick := this.__value.Stick
+		
+		; Resolve result of selection to index of full option list
+		o := this._OptionMap[o]
+		
+		if (o <= 8){
+			; Axis Selected
+			axis := o
+		} else if (o <= 16){
+			; Stick Selected
+			o -= 8
+			stick := o
+		} else {
+			; Clear Selected
+			axis := stick := 0
+		}
+		this.__value.Axis := axis
+		this.__value.Stick := stick
+		
+		this.SetComboState()
+		this.value := this.__value
+	}
+	
+	; Get / Set of .value
+	value[]{
+		; Read of current contents of GuiControl
+		get {
+			return this.__value
+		}
+		
+		; When the user types something in a guicontrol, this gets called
+		; Fire _ControlChanged on parent so new setting can be saved
+		set {
+			this._value := value
+			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			this.ParentPlugin._ControlChanged(this)
+		}
+	}
+	
+	; Get / Set of ._value
+	_value[]{
+		; this will probably not get called
+		get {
+			return this.__value
+		}
+		; Update contents of GuiControl, but do not fire _ControlChanged
+		; Parent has told child state to be in, child does not need to notify parent of change in state
+		set {
+			this.__value := value
+			this.SetComboState()
+			if (IsObject(this.ChangeValueCallback)){
+				this.ChangeValueCallback.Call(this.__value)
+			}
+		}
+	}
+
+	_Serialize(){
+		obj := {_value: this._value}
+		return obj
+	}
+	
+	_Deserialize(obj){
+		this._value := obj._value
+	}
+
+}
 ; ======================================================================== BINDOBJECT ===============================================================
 ; A BindObject represents a collection of keys / mouse / joystick buttons
 class _BindObject {
