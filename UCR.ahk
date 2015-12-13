@@ -1215,6 +1215,12 @@ class _InputAxis extends _BannerCombo {
 		}
 		Loop % max {
 			map_index := A_Index + index_offset
+			if ((map_index > 6 && map_index <= 14))
+				joyinfo := GetKeyState( map_index - 6 "JoyInfo")
+			else
+				joyinfo := 0
+			if ((map_index > 6 && map_index <= 14) && !JoyInfo)
+				continue
 			opts.push(this._Options[map_index])
 			this._OptionMap.push(map_index)
 		}
