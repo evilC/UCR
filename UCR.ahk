@@ -741,7 +741,7 @@ Class _Plugin {
 	; Adds a GuiControl that allows the end-user to pick Button(s) to use as Input(s)
 	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		if (!ObjHasKey(this.Hotkeys, name)){
-			this.Hotkeys[name] := new _Hotkey(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			this.Hotkeys[name] := new _InputButton(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 			return this.Hotkeys[name]
 		}
 	}
@@ -1038,7 +1038,7 @@ class _BannerCombo {
 
 ; ======================================================================== HOTKEY ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
-class _Hotkey extends _BannerCombo {
+class _InputButton extends _BannerCombo {
 	; Internal vars describing the bindstring
 	__value := ""		; Holds the BindObject class
 	; Other internal vars
@@ -1298,7 +1298,7 @@ class _AxisInput extends _BannerCombo {
 
 ; ======================================================================== OUTPUT ===============================================================
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
-Class _Output extends _Hotkey {
+Class _Output extends _InputButton {
 	_DefaultBanner := "Drop down the list to select an Output"
 	_IsOutput := 1
 	__New(parent, name, ChangeValueCallback, aParams*){
