@@ -8,7 +8,7 @@ Keyboard, Mouse Buttons/Wheel, Virtual Joystick Buttons / Hat directions
 */
 
 ; All plugins must derive from the _Plugin class
-class KeyToKeyPlugin extends _Plugin {
+class ButtonToButton extends _Plugin {
 	; The Init() method of a plugin is called when one is added. Use it to create your Gui etc
 	Init(){
 		; Create the GUI
