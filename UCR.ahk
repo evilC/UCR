@@ -749,7 +749,7 @@ Class _Plugin {
 	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an input
 	AddInputAxis(name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		if (!ObjHasKey(this.AxisInputs,name)){
-			this.AxisInputs[name] := new _AxisInput(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			this.AxisInputs[name] := new _InputAxis(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 			return this.AxisInputs[name]
 		}
 	}
@@ -757,7 +757,7 @@ Class _Plugin {
 	; Adds a GuiControl that allows the end-user to pick Button(s) to be used as output(s)
 	AddOutputButton(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.Outputs, name)){
-			this.Outputs[name] := new _Output(this, name, ChangeValueCallback, aParams*)
+			this.Outputs[name] := new _OutputButton(this, name, ChangeValueCallback, aParams*)
 			return this.Outputs[name]
 		}
 	}
@@ -765,7 +765,7 @@ Class _Plugin {
 	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an output
 	AddOutputAxis(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.AxisOutputs,name)){
-			this.AxisOutputs[name] := new _AxisOutput(this, name, ChangeValueCallback, aParams*)
+			this.AxisOutputs[name] := new _OutputAxis(this, name, ChangeValueCallback, aParams*)
 			return this.AxisOutputs[name]
 		}
 	}
@@ -1036,7 +1036,7 @@ class _BannerCombo {
 	}
 }
 
-; ======================================================================== HOTKEY ===============================================================
+; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
 class _InputButton extends _BannerCombo {
 	; Internal vars describing the bindstring
@@ -1170,8 +1170,8 @@ class _InputButton extends _BannerCombo {
 		UCR._HotkeyHandler.SetBinding(this)
 	}
 }
-; ======================================================================== AXIS INPUT ===============================================================
-class _AxisInput extends _BannerCombo {
+; ======================================================================== INPUT AXIS ===============================================================
+class _InputAxis extends _BannerCombo {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
 	__value := {stick: 0, axis: 0, bindstring: ""}
 	_OptionMap := []
@@ -1296,9 +1296,9 @@ class _AxisInput extends _BannerCombo {
 	}
 }
 
-; ======================================================================== OUTPUT ===============================================================
+; ======================================================================== OUTPUT BUTTON ===============================================================
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
-Class _Output extends _InputButton {
+Class _OutputButton extends _InputButton {
 	_DefaultBanner := "Drop down the list to select an Output"
 	_IsOutput := 1
 	__New(parent, name, ChangeValueCallback, aParams*){
@@ -1431,8 +1431,8 @@ Class _Output extends _InputButton {
 	}
 }
 
-; ======================================================================== AXIS OUTPUT ===============================================================
-class _AxisOutput extends _BannerCombo {
+; ======================================================================== OUTPUT AXIS ===============================================================
+class _OutputAxis extends _BannerCombo {
 	__value := {stick: 0, axis: 0}
 	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	__New(parent, name, ChangeValueCallback, aParams*){
