@@ -718,11 +718,12 @@ Class _Plugin {
 	Type := "_Plugin"			; The class of the plugin
 	ParentProfile := 0			; Will point to the parent profile
 	Name := ""					; The name the user chose for the plugin
-	Hotkeys := {}				; An associative array, indexed by name, of child Hotkeys
-	Outputs := {}				; An associative array, indexed by name, of child Outputs
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
-	AxisInputs := {}
-	AxisOutputs := {}
+	InputButtons := {}			; An associative array, indexed by name, of child Input Buttons (aka Hotkeys)
+	OutputButtons := {}			; An associative array, indexed by name, of child Output Buttons
+	InputAxes := {}				; An associative array, indexed by name, of child Input Axes
+	OutputAxes := {}			; An associative array, indexed by name, of child Output (virtual) Axes
+	_SerializeList := ["GuiControls", "InputButtons", "OutputButtons", "InputAxes", "OutputAxes"]
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -740,33 +741,33 @@ Class _Plugin {
 	
 	; Adds a GuiControl that allows the end-user to pick Button(s) to use as Input(s)
 	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.Hotkeys, name)){
-			this.Hotkeys[name] := new _InputButton(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.Hotkeys[name]
+		if (!ObjHasKey(this.InputButtons, name)){
+			this.InputButtons[name] := new _InputButton(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			return this.InputButtons[name]
 		}
 	}
 	
 	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an input
 	AddInputAxis(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.AxisInputs,name)){
-			this.AxisInputs[name] := new _InputAxis(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.AxisInputs[name]
+		if (!ObjHasKey(this.InputAxes,name)){
+			this.InputAxes[name] := new _InputAxis(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			return this.InputAxes[name]
 		}
 	}
 	
 	; Adds a GuiControl that allows the end-user to pick Button(s) to be used as output(s)
 	AddOutputButton(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.Outputs, name)){
-			this.Outputs[name] := new _OutputButton(this, name, ChangeValueCallback, aParams*)
-			return this.Outputs[name]
+		if (!ObjHasKey(this.OutputButtons, name)){
+			this.OutputButtons[name] := new _OutputButton(this, name, ChangeValueCallback, aParams*)
+			return this.OutputButtons[name]
 		}
 	}
 
 	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an output
 	AddOutputAxis(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.AxisOutputs,name)){
-			this.AxisOutputs[name] := new _OutputAxis(this, name, ChangeValueCallback, aParams*)
-			return this.AxisOutputs[name]
+		if (!ObjHasKey(this.OutputAxes,name)){
+			this.OutputAxes[name] := new _OutputAxis(this, name, ChangeValueCallback, aParams*)
+			return this.OutputAxes[name]
 		}
 	}
 	
@@ -819,25 +820,12 @@ Class _Plugin {
 	; Save plugin to disk
 	_Serialize(){
 		obj := {Type: this.Type}
-		obj.GuiControls := {}
-		for name, ctrl in this.GuiControls {
-			obj.GuiControls[name] := ctrl._Serialize()
-		}
-		obj.Hotkeys := {}
-		for name, ctrl in this.Hotkeys {
-			obj.Hotkeys[name] := ctrl._Serialize()
-		}
-		obj.AxisInputs := {}
-		for name, ctrl in this.AxisInputs {
-			obj.AxisInputs[name] := ctrl._Serialize()
-		}
-		obj.Outputs := {}
-		for name, ctrl in this.Outputs {
-			obj.Outputs[name] := ctrl._Serialize()
-		}
-		obj.AxisOutputs := {}
-		for name, ctrl in this.AxisOutputs {
-			obj.AxisOutputs[name] := ctrl._Serialize()
+		Loop % this._SerializeList.length(){
+			key := this._SerializeList[A_Index]
+			obj[key] := {}
+			for name, ctrl in this[key] {
+				obj[key, name] := ctrl._Serialize()
+			}
 		}
 		return obj
 	}
@@ -845,32 +833,22 @@ Class _Plugin {
 	; Load plugin from disk
 	_Deserialize(obj){
 		this.Type := obj.Type
-		for name, ctrl in obj.GuiControls {
-			this.GuiControls[name]._Deserialize(ctrl)
+		Loop % this._SerializeList.length(){
+			key := this._SerializeList[A_Index]
+			for name, ctrl in obj[key] {
+				this[key, name]._Deserialize(ctrl)
+			}
 		}
-		for name, ctrl in obj.Hotkeys {
-			this.Hotkeys[name]._Deserialize(ctrl)
-		}
-		for name, ctrl in obj.AxisInputs {
-			this.AxisInputs[name]._Deserialize(ctrl)
-		}
-		for name, ctrl in obj.Outputs {
-			this.Outputs[name]._Deserialize(ctrl)
-		}
-		for name, ctrl in obj.AxisOutputs {
-			this.AxisOutputs[name]._Deserialize(ctrl)
-		}
-		
 	}
 	
 	; The plugin was closed (deleted)
 	_Close(){
 		; Free resources so destructors fire
-		for name, obj in this.Hotkeys {
+		for name, obj in this.InputButtons {
 			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &obj ")")
 			obj._KillReferences()
 		}
-		for name, obj in this.Outputs {
+		for name, obj in this.OutputButtons {
 			obj._KillReferences()
 		}
 		for name, obj in this.GuiControls {
@@ -880,7 +858,7 @@ Class _Plugin {
 		try {
 			this._KillReferences()
 		}
-		this.Hotkeys := this.Outputs := this.GuiControls := ""
+		this.InputButtons := this.OutputButtons := this.GuiControls := ""
 	}
 }
 
