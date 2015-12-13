@@ -729,6 +729,48 @@ Class _Plugin {
 		
 	}
 
+	; === Plugins can call these commands to add various GuiControls to their Gui ===
+	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
+	AddControl(name, ChangeValueCallback, aParams*){
+		if (!ObjHasKey(this.GuiControls, name)){
+			this.GuiControls[name] := new _GuiControl(this, name, ChangeValueCallback, aParams*)
+			return this.GuiControls[name]
+		}
+	}
+	
+	; Adds a GuiControl that allows the end-user to pick Button(s) to use as Input(s)
+	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		if (!ObjHasKey(this.Hotkeys, name)){
+			this.Hotkeys[name] := new _Hotkey(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			return this.Hotkeys[name]
+		}
+	}
+	
+	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an input
+	AddInputAxis(name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		if (!ObjHasKey(this.AxisInputs,name)){
+			this.AxisInputs[name] := new _AxisInput(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
+			return this.AxisInputs[name]
+		}
+	}
+	
+	; Adds a GuiControl that allows the end-user to pick Button(s) to be used as output(s)
+	AddOutputButton(name, ChangeValueCallback, aParams*){
+		if (!ObjHasKey(this.Outputs, name)){
+			this.Outputs[name] := new _Output(this, name, ChangeValueCallback, aParams*)
+			return this.Outputs[name]
+		}
+	}
+
+	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an output
+	AddOutputAxis(name, ChangeValueCallback, aParams*){
+		if (!ObjHasKey(this.AxisOutputs,name)){
+			this.AxisOutputs[name] := new _AxisOutput(this, name, ChangeValueCallback, aParams*)
+			return this.AxisOutputs[name]
+		}
+	}
+	
+	; === Private ===
 	__New(parent, name){
 		this.ParentProfile := parent
 		this.Name := name
@@ -768,43 +810,6 @@ Class _Plugin {
 		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
 	}
 
-	; Do not override methods in here unless you know what you are doing!
-	AddControl(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.GuiControls, name)){
-			this.GuiControls[name] := new _GuiControl(this, name, ChangeValueCallback, aParams*)
-			return this.GuiControls[name]
-		}
-	}
-	
-	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.Hotkeys, name)){
-			this.Hotkeys[name] := new _Hotkey(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.Hotkeys[name]
-		}
-	}
-	
-	AddInputAxis(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.AxisInputs,name)){
-			this.AxisInputs[name] := new _AxisInput(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.AxisInputs[name]
-		}
-	}
-	
-	AddOutputAxis(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.AxisOutputs,name)){
-			this.AxisOutputs[name] := new _AxisOutput(this, name, ChangeValueCallback, aParams*)
-			return this.AxisOutputs[name]
-		}
-	}
-	
-	; An Output is a sequence of keys to be pressed, often in reaction to a hotkey being pressed
-	AddOutputButton(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.Outputs, name)){
-			this.Outputs[name] := new _Output(this, name, ChangeValueCallback, aParams*)
-			return this.Outputs[name]
-		}
-	}
-	
 	; A GuiControl / Hotkey changed
 	_ControlChanged(ctrl){
 		OutputDebug % "Plugin " this.Name " --> Profile"
