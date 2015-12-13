@@ -783,14 +783,14 @@ Class _Plugin {
 		}
 	}
 	
-	AddAxisInput(name, ChangeValueCallback, ChangeStateCallback, aParams*){
+	AddInputAxis(name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		if (!ObjHasKey(this.AxisInputs,name)){
 			this.AxisInputs[name] := new _AxisInput(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 			return this.AxisInputs[name]
 		}
 	}
 	
-	AddAxisOutput(name, ChangeValueCallback, aParams*){
+	AddOutputAxis(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.AxisOutputs,name)){
 			this.AxisOutputs[name] := new _AxisOutput(this, name, ChangeValueCallback, aParams*)
 			return this.AxisOutputs[name]

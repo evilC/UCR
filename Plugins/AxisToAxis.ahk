@@ -11,11 +11,11 @@ class AxisToAxis extends _Plugin {
 		Gui, Add, Text, % "x+5 yp w40 Center", Invert
 		Gui, Add, Text, % "x+5 yp w150 Center", Output Virtual Axis
 		Gui, Add, Text, % "x+5 yp w100 Center", Output Preview
-		this.AddAxisInput("InputAxis", 0, this.MyInputChangedState.Bind(this), "xm w150")
+		this.AddInputAxis("InputAxis", 0, this.MyInputChangedState.Bind(this), "xm w150")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
 		this.hSliderIn := hwnd
 		this.AddControl("Invert", this.MyEditChanged.Bind(this), "CheckBox", "x+20 yp+3 w30")
-		this.AddAxisOutput("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 w150 yp-3")
+		this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 w150 yp-3")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
 		this.hSliderOut := hwnd
 	}
