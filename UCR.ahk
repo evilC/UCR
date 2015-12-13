@@ -776,7 +776,7 @@ Class _Plugin {
 		}
 	}
 	
-	AddHotkey(name, ChangeValueCallback, ChangeStateCallback, aParams*){
+	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		if (!ObjHasKey(this.Hotkeys, name)){
 			this.Hotkeys[name] := new _Hotkey(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 			return this.Hotkeys[name]

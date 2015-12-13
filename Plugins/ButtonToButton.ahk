@@ -16,7 +16,7 @@ class ButtonToButton extends _Plugin {
 		; Add a hotkey, and give it the name "MyHk1". All hotkey objects can be accessed via this.Hotkeys[name]
 		; Have it call MyHkChangedValue when it changes value, and MyHkChangedState when it changes state.
 		; Pass the name of the hotkey when it gets called
-		this.AddHotkey("MyHk1", 0, this.MyHkChangedState.Bind(this, "MyHk1"), "x+5 yp-2 w200")
+		this.AddInputButton("MyHk1", 0, this.MyHkChangedState.Bind(this, "MyHk1"), "x+5 yp-2 w200")
 		Gui, Add, Text, x+5 yp+2 , % " to "
 		; Add an Output, and give it the name "MyOp1". All output objects can be accessed via this.Outputs[name]
 		this.AddOutput("MyOp1", 0, "x+5 yp-2 w200")

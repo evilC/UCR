@@ -5,7 +5,7 @@ Binds a hotkey to a snippet of AHK code
 class CodeRunner extends _Plugin {
 	Init(){
 		Gui, Add, Text, y+10, % "When I press"
-		this.AddHotkey("MyHk1", 0, this.MyHkChangedState.Bind(this), "x150 yp-2 w200")
+		this.AddInputButton("MyHk1", 0, this.MyHkChangedState.Bind(this), "x150 yp-2 w200")
 		
 		Gui, Add, Text, xm, % "Run this AHK code"
 		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this), "Edit", "x150 h100 yp-2 w330")
