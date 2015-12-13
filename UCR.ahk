@@ -798,7 +798,7 @@ Class _Plugin {
 	}
 	
 	; An Output is a sequence of keys to be pressed, often in reaction to a hotkey being pressed
-	AddOutput(name, ChangeValueCallback, aParams*){
+	AddOutputButton(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.Outputs, name)){
 			this.Outputs[name] := new _Output(this, name, ChangeValueCallback, aParams*)
 			return this.Outputs[name]

@@ -19,7 +19,7 @@ class ButtonToButton extends _Plugin {
 		this.AddInputButton("MyHk1", 0, this.MyHkChangedState.Bind(this, "MyHk1"), "x+5 yp-2 w200")
 		Gui, Add, Text, x+5 yp+2 , % " to "
 		; Add an Output, and give it the name "MyOp1". All output objects can be accessed via this.Outputs[name]
-		this.AddOutput("MyOp1", 0, "x+5 yp-2 w200")
+		this.AddOutputButton("MyOp1", 0, "x+5 yp-2 w200")
 	}
 	
 	; Called when the hotkey changes state (key is pressed or released)
