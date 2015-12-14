@@ -363,7 +363,7 @@ Class _InputHandler {
 	; Check InputButtons for duplicates etc
 	IsBindable(hk, bo){
 		; Do not allow bind of LMB with block enabled
-		if (bo.Block && bo.Buttons.length() = 1 && bo.Buttons[1].Type = 0 && bo.Buttons[1].code == 1){
+		if (bo.Block && bo.Buttons.length() = 1 && bo.Buttons[1].Type = 1 && bo.Buttons[1].code == 1){
 			; ToDo: provide proper notification
 			SoundBeep
 			return 0
@@ -382,7 +382,7 @@ Class _InputHandler {
 		if (!bo.Buttons.Length())
 			return ""
 		str := ""
-		if (bo.Type = 0){
+		if (bo.Type = 1){
 			if (bo.Wild)
 				str .= "*"
 			if (!bo.Block)
@@ -482,7 +482,7 @@ class _BindModeHandler {
 	ProcessInput(i, e){
 		if (!this.BindMode)
 			return
-		if (i.type){
+		if (i.type > 1){
 			is_modifier := 0
 		} else {
 			is_modifier := i.IsModifier()
@@ -493,11 +493,10 @@ class _BindModeHandler {
 		}
 
 		;~ ; Are the conditions met for end of Bind Mode? (Up event of non-modifier key)
-		;~ if ((is_modifier ? (!e && ModifierCount = 1) : !e) && (i.type ? !ModifierCount : 1) ) {
+		;~ if ((is_modifier ? (!e && ModifierCount = 1) : !e) && (i.type > 1 ? !ModifierCount : 1) ) {
 		; Are the conditions met for end of Bind Mode? (Up event of any key)
 		if (!e){
 			; End Bind Mode
-			Type := 0
 			this.BindMode := 0
 			this.SetHotkeyState(0)
 			bindObj := this._OriginalHotkey.value.clone()
@@ -525,7 +524,7 @@ class _BindModeHandler {
 				}
 			} else {
 				; regular key went down or up
-				if (i.type && this.ModifierCount){
+				if (i.type > 1 && this.ModifierCount){
 					; Reject joystick button + modifier - AHK does not support this
 					if (e)
 						SoundBeep
@@ -1094,7 +1093,7 @@ class _InputButton extends _BannerCombo {
 		opts := []
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
 		opts.push("Select New Binding")
-		if (this.__value.Type = 0){
+		if (this.__value.Type = 1){
 			; Joystick buttons do not have these options
 			opts.push("Wild: " (this.__value.wild ? "On" : "Off"))
 			this._CurrentOptionMap.push(this._OptionMap["Wild"])
@@ -1343,7 +1342,7 @@ Class _OutputButton extends _InputButton {
 			i := max
 		Loop % max{
 			key := this.__value.Buttons[i]
-			if (key.Type = 1 && key.IsVirtual){
+			if (key.Type = 2 && key.IsVirtual){
 				UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
 			} else {
 				name := key.BuildKeyName()
@@ -1364,13 +1363,13 @@ Class _OutputButton extends _InputButton {
 		button--
 		
 		bo := new _BindObject()
-		bo.Type := 1
+		bo.Type := 2
 		
 		key := new _Button()
 		key.DeviceID := device
 		key.code := button
 		key.IsVirtual := 1
-		key.Type := 1
+		key.Type := 2
 		
 		bo.Buttons := [key]
 		this.value := bo
@@ -1553,7 +1552,7 @@ class _OutputAxis extends _BannerCombo {
 ; ======================================================================== BINDOBJECT ===============================================================
 ; A BindObject represents a collection of keys / mouse / joystick buttons
 class _BindObject {
-	Type := 0
+	Type := 0 ; 0 = Unset, 1 = Key / Mouse, 2 = stick button, 3 = stick hat
 	Buttons := []
 	Wild := 0
 	Block := 0
@@ -1599,7 +1598,7 @@ class _BindObject {
 ; ======================================================================== BUTTON ===============================================================
 ; Represents a single digital input / output - keyboard key, mouse button, (virtual) joystick button or hat direction
 class _Button {
-	Type := 0 ; 0 = Key / Mouse, 1 = stick button, 2 = stick hat
+	Type := 0 ; 0 = Unset, 1 = Key / Mouse, 2 = stick button, 3 = stick hat
 	Code := 0
 	DeviceID := 0
 	UID := ""
@@ -1616,7 +1615,7 @@ class _Button {
 	
 	; Returns true if this Button is a modifier key on the keyboard
 	IsModifier(){
-		if (this.Type = 0 && ObjHasKey(this._Modifiers, this.Code))
+		if (this.Type = 1 && ObjHasKey(this._Modifiers, this.Code))
 			return 1
 		return 0
 	}
@@ -1628,19 +1627,19 @@ class _Button {
 	
 	; Builds the AHK key name
 	BuildKeyName(){
-		if this.Type = 0 {
+		if this.Type = 1 {
 			code := Format("{:x}", this.Code)
 			return GetKeyName("vk" code)
-		} else if (this.Type = 1){
+		} else if (this.Type = 2){
 			return this.DeviceID "Joy" this.code
 		}
 	}
 	
 	; Builds a human readable version of the key name (Mainly for joysticks)
 	BuildHumanReadable(){
-		if this.Type = 0 {
+		if (this.Type = 1) {
 			return this.BuildKeyName()
-		} else if (this.Type > 0){
+		} else if (this.Type = 2){
 			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
 		}
 	}

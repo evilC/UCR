@@ -34,7 +34,7 @@ class _BindMapper {
 			; Down event, then Up event
 			Loop 2 {
 				blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
-				fn := this.HotkeyEvent.Bind(this, updown[A_Index].e, 0, i, 0)
+				fn := this.HotkeyEvent.Bind(this, updown[A_Index].e, 1, i, 0)
 				hotkey, % pfx blk n updown[A_Index].s, % fn, % "On"
 			}
 		}
@@ -44,7 +44,7 @@ class _BindMapper {
 			Loop 32 {
 				btn := A_Index
 				n := j "Joy" A_Index
-				fn := this._JoystickButtonDown.Bind(this, 1, 1, btn, j)
+				fn := this._JoystickButtonDown.Bind(this, 1, 2, btn, j)
 				hotkey, % pfx n, % fn, % "On"
 			}
 		}

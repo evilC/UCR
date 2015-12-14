@@ -65,7 +65,7 @@ class _HotkeyThread {
 		fn := this.InputEvent.Bind(this, hk, 1)
 		hotkey, % hkstring, % fn, On
 		; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
-		if (hk.__value.Type != 1){
+		if (hk.__value.Type = 1){
 			fn := this.InputEvent.Bind(this, hk, 0)
 			hotkey, % hkstring " up", % fn, On
 		}
@@ -89,7 +89,7 @@ class _HotkeyThread {
 	InputEvent(hk, event){
 		this.MasterThread.ahkExec("UCR._InputHandler.InputEvent(" &hk "," event ")")
 		; Simulate up events for joystick buttons
-		if (hk.__value.Type = 1){
+		if (hk.__value.Type = 2){
 			OutputDebug % "Waiting for release of bindstring " this.Bindings[hk.hwnd]
 			while (GetKeyState(this.Bindings[hk.hwnd])){
 				Sleep 10
