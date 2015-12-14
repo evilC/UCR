@@ -13,7 +13,6 @@ class _HotkeyThread {
 	JoystickTimerState := 0
 	
 	__New(parent){
-		this.ParentProfile := Object(parent)
 		this.MasterThread := AhkExported()
 		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
 		this.SetHotkeyState(0)
