@@ -1109,7 +1109,7 @@ class _InputButton extends _BannerCombo {
 		this.SetOptions(opts)
 	}
 
-	; Sets the "Cue Banner" for the ComboBox
+	; Set the state of the GuiControl (Inc Cue Banner)
 	SetComboState(){
 		this._BuildOptions()
 		if (this.__value.Buttons.length()) {
@@ -1189,6 +1189,7 @@ class _InputAxis extends _BannerCombo {
 		this.SetComboState()
 	}
 	
+	; The Axis Select DDL changed value
 	_ChangedValue(o){
 		axis := this.__value.Axis
 		stick := this.__value.Stick
@@ -1215,6 +1216,7 @@ class _InputAxis extends _BannerCombo {
 		UCR.RequestAxisBinding(this)
 	}
 	
+	; Set the state of the GuiControl (Inc Cue Banner)
 	SetComboState(){
 		axis := this.__value.Axis
 		stick := this.__value.Stick
