@@ -253,6 +253,66 @@ Class UCRMain {
 		this._ChangeProfile(this.CurrentProfile.Name, 0)
 	}
 	
+	; A child profile changed in some way - save state to disk
+	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
+	_ProfileChanged(profile){
+		obj := this._Serialize()
+		OutputDebug % "Saving JSON to disk"
+		jdata := JSON.Dump(obj, ,true)
+		FileDelete, % this._SettingsFile
+		FileAppend, % jdata, % this._SettingsFile
+	}
+	
+	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
+	;  or changed an option such as "Wild" in an InputButton
+	_RequestBinding(hk, delta := 0){
+		if (delta = 0){
+			; Change Buttons requested - start Bind Mode.
+			if (!this._BindMode){
+				this._BindMode := 1
+				this.Profiles.Global._SetHotkeyState(0)
+				hk.ParentPlugin.ParentProfile._SetHotkeyState(0)
+				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
+				return 1
+			}
+			return 0
+		} else {
+			; Change option (eg wild, passthrough) requested
+			bo := hk.value.clone()
+			for k, v in delta {
+				bo[k] := v
+			}
+			if (this._HotkeyHandler.IsBindable(hk, bo)){
+				hk.value := bo
+				this._HotkeyHandler.SetBinding(hk)
+			}
+			hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
+			this.Profiles.Global._SetHotkeyState(1)
+		}
+	}
+	
+	; Bind Mode Ended.
+	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
+	_BindModeEnded(hk, bo){
+		OutputDebug % "Bind Mode Ended: " bo.Keys[1].code
+		this._BindMode := 0
+		if (hk._IsOutput){
+			hk.value := bo
+		} else {
+			if (this._HotkeyHandler.IsBindable(hk, bo)){
+				hk.value := bo
+				this._HotkeyHandler.SetBinding(hk)
+			}
+		}
+		this.Profiles.Global._SetHotkeyState(1)
+		hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
+	}
+	
+	; Request an axis binding.
+	RequestAxisBinding(axis){
+		this._HotkeyHandler.SetAxisBinding(axis)
+	}
+	
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {CurrentProfile: this.CurrentProfile.Name}
@@ -273,64 +333,7 @@ Class UCRMain {
 		}
 		this.CurrentProfile := this.Profiles[obj.CurrentProfile]
 	}
-	
-	; A child profile changed in some way - save state to disk
-	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
-	_ProfileChanged(profile){
-		obj := this._Serialize()
-		OutputDebug % "Saving JSON to disk"
-		jdata := JSON.Dump(obj, ,true)
-		FileDelete, % this._SettingsFile
-		FileAppend, % jdata, % this._SettingsFile
-	}
-	
-	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
-	;  or changed an option such as "Wild" in an InputButton
-	_RequestBinding(hk, delta := 0){
-		if (delta = 0){
-			; No delta param passed - request bind mode
-			if (!this._BindMode){
-				this._BindMode := 1
-				this.Profiles.Global._SetHotkeyState(0)
-				hk.ParentPlugin.ParentProfile._SetHotkeyState(0)
-				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
-				return 1
-			}
-			return 0
-		} else {
-			; Change property requested
-			bo := hk.value.clone()
-			for k, v in delta {
-				bo[k] := v
-			}
-			if (this._HotkeyHandler.IsBindable(hk, bo)){
-				hk.value := bo
-				this._HotkeyHandler.SetBinding(hk)
-			}
-			hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
-			this.Profiles.Global._SetHotkeyState(1)
-		}
-	}
-	
-	
-	RequestAxisBinding(axis){
-		this._HotkeyHandler.SetAxisBinding(axis)
-	}
-	
-	_BindModeEnded(hk, bo){
-		OutputDebug % "Bind Mode Ended: " bo.Keys[1].code
-		this._BindMode := 0
-		if (hk._IsOutput){
-			hk.value := bo
-		} else {
-			if (this._HotkeyHandler.IsBindable(hk, bo)){
-				hk.value := bo
-				this._HotkeyHandler.SetBinding(hk)
-			}
-		}
-		this.Profiles.Global._SetHotkeyState(1)
-		hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
-	}
+
 }
 ; =================================================================== HOTKEY HANDLER ==========================================================
 Class _HotkeyHandler {
