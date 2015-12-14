@@ -1319,7 +1319,7 @@ Class _OutputButton extends _InputButton {
 		GuiControl +g, % this.hVJoyCancel, % fn
 		Gui, Add, Button, xp+55 w50 Center HwndHwnd, Ok
 		this.hVjoyOK := hwnd
-		fn := this.vJoyInputSelected.Bind(this)
+		fn := this.vJoyOutputSelected.Bind(this)
 		GuiControl +g, % this.hVjoyOK, % fn
 	}
 	
@@ -1357,7 +1357,7 @@ Class _OutputButton extends _InputButton {
 		}
 	}
 	
-	vJoyInputSelected(){
+	vJoyOutputSelected(){
 		Gui, % this.hVjoySelect ":Submit"
 		GuiControlGet, device, % this.hVjoySelect ":" , % this.hVjoyDevice
 		device--
