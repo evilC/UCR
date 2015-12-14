@@ -360,9 +360,15 @@ Class _InputHandler {
 		AxisObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetAxisBinding(" &AxisObj ")")
 	}
 	
-	; Check for duplicates etc
+	; Check InputButtons for duplicates etc
 	IsBindable(hk, bo){
-		; ToDo: Implement
+		; Do not allow bind of LMB with block enabled
+		if (bo.Block && bo.Keys.length() = 1 && bo.Keys[1].Type = 0 && bo.Keys[1].code == 1){
+			; ToDo: provide proper notification
+			SoundBeep
+			return 0
+		}
+		; ToDo: Implement duplicate check
 		return 1
 	}
 	
