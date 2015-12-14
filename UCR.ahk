@@ -294,7 +294,7 @@ Class UCRMain {
 	; Bind Mode Ended.
 	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
 	_BindModeEnded(hk, bo){
-		OutputDebug % "Bind Mode Ended: " bo.Keys[1].code
+		OutputDebug % "Bind Mode Ended: " bo.Buttons[1].code
 		this._BindMode := 0
 		if (hk._IsOutput){
 			hk.value := bo
@@ -363,7 +363,7 @@ Class _InputHandler {
 	; Check InputButtons for duplicates etc
 	IsBindable(hk, bo){
 		; Do not allow bind of LMB with block enabled
-		if (bo.Block && bo.Keys.length() = 1 && bo.Keys[1].Type = 0 && bo.Keys[1].code == 1){
+		if (bo.Block && bo.Buttons.length() = 1 && bo.Buttons[1].Type = 0 && bo.Buttons[1].code == 1){
 			; ToDo: provide proper notification
 			SoundBeep
 			return 0
@@ -379,7 +379,7 @@ Class _InputHandler {
 	
 	; Builds an AHK hotkey string (eg ~^a) from a BindObject
 	BuildHotkeyString(bo){
-		if (!bo.Keys.Length())
+		if (!bo.Buttons.Length())
 			return ""
 		str := ""
 		if (bo.Type = 0){
@@ -388,15 +388,15 @@ Class _InputHandler {
 			if (!bo.Block)
 				str .= "~"
 		}
-		max := bo.Keys.Length()
+		max := bo.Buttons.Length()
 		Loop % max {
-			key := bo.Keys[A_Index]
+			key := bo.Buttons[A_Index]
 			if (A_Index = max){
 				islast := 1
 				nextkey := 0
 			} else {
 				islast := 0
-				nextkey := bo.Keys[A_Index+1]
+				nextkey := bo.Buttons[A_Index+1]
 			}
 			if (key.IsModifier() && (max > A_Index)){
 				str .= key.RenderModifier()
@@ -502,12 +502,12 @@ class _BindModeHandler {
 			this.SetHotkeyState(0)
 			bindObj := this._OriginalHotkey.value.clone()
 			
-			bindObj.Keys := []
+			bindObj.Buttons := []
 			for code, key in this.HeldModifiers {
-				bindObj.Keys.push(key)
+				bindObj.Buttons.push(key)
 			}
 			
-			bindObj.Keys.push(this.EndKey)
+			bindObj.Buttons.push(this.EndKey)
 			bindObj.Type := this.EndKey.Type
 			this._Callback.(this._OriginalHotkey, bindObj)
 			
@@ -1111,7 +1111,7 @@ class _InputButton extends _BannerCombo {
 	; Sets the "Cue Banner" for the ComboBox
 	SetComboState(){
 		this._BuildOptions()
-		if (this.__value.Keys.length()) {
+		if (this.__value.Buttons.length()) {
 			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner			
@@ -1140,7 +1140,7 @@ class _InputButton extends _BannerCombo {
 				mod := {suppress: !this.__value.suppress}
 			} else if (o = 5){
 				; Clear Binding
-				mod := {Keys: []}
+				mod := {Buttons: []}
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return
@@ -1336,13 +1336,13 @@ Class _OutputButton extends _InputButton {
 	
 	; Used by script authors to set the state of this output
 	SetState(state){
-		max := this.__value.keys.Length()
+		max := this.__value.Buttons.Length()
 		if (state)
 			i := 1
 		else
 			i := max
 		Loop % max{
-			key := this.__value.keys[i]
+			key := this.__value.Buttons[i]
 			if (key.Type = 1 && key.IsVirtual){
 				UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
 			} else {
@@ -1372,7 +1372,7 @@ Class _OutputButton extends _InputButton {
 		key.IsVirtual := 1
 		key.Type := 1
 		
-		bo.Keys := [key]
+		bo.Buttons := [key]
 		this.value := bo
 	}
 	
@@ -1395,7 +1395,7 @@ Class _OutputButton extends _InputButton {
 				this._SelectvJoy()
 			} else if (o = 3){
 				; Clear Binding
-				mod := {Keys: []}
+				mod := {Buttons: []}
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return
@@ -1554,7 +1554,7 @@ class _OutputAxis extends _BannerCombo {
 ; A BindObject represents a collection of keys / mouse / joystick buttons
 class _BindObject {
 	Type := 0
-	Keys := []
+	Buttons := []
 	Wild := 0
 	Block := 0
 	Suppress := 0
@@ -1564,18 +1564,18 @@ class _BindObject {
 	}
 	
 	_Serialize(){
-		obj := {Keys: [], Wild: this.Wild, Block: this.Block, Suppress: this.Suppress, Type: this.Type}
-		Loop % this.Keys.length(){
-			obj.Keys.push(this.Keys[A_Index]._Serialize())
+		obj := {Buttons: [], Wild: this.Wild, Block: this.Block, Suppress: this.Suppress, Type: this.Type}
+		Loop % this.Buttons.length(){
+			obj.Buttons.push(this.Buttons[A_Index]._Serialize())
 		}
 		return obj
 	}
 	
 	_Deserialize(obj){
 		for k, v in obj {
-			if (k = "Keys"){
+			if (k = "Buttons"){
 				Loop % v.length(){
-					this.Keys.push(new _Key(v[A_Index]))
+					this.Buttons.push(new _Key(v[A_Index]))
 				}
 			} else {
 				this[k] := v
@@ -1584,10 +1584,10 @@ class _BindObject {
 	}
 	
 	BuildHumanReadable(){
-		max := this.Keys.length()
+		max := this.Buttons.length()
 		str := ""
 		Loop % max {
-			str .= this.Keys[A_Index].BuildHumanReadable()
+			str .= this.Buttons[A_Index].BuildHumanReadable()
 			if (A_Index != max)
 				str .= " + "
 		}
