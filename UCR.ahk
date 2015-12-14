@@ -41,7 +41,7 @@ Class UCRMain {
 		this._LoadLibraries()
 		
 		this._BindModeHandler := new _BindModeHandler()
-		this._HotkeyHandler := new _HotkeyHandler()
+		this._InputHandler := new _InputHandler()
 		
 		this._CreateGui()
 		this._LoadSettings()
@@ -282,9 +282,9 @@ Class UCRMain {
 			for k, v in delta {
 				bo[k] := v
 			}
-			if (this._HotkeyHandler.IsBindable(hk, bo)){
+			if (this._InputHandler.IsBindable(hk, bo)){
 				hk.value := bo
-				this._HotkeyHandler.SetBinding(hk)
+				this._InputHandler.SetButtonBinding(hk)
 			}
 			hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
 			this.Profiles.Global._SetHotkeyState(1)
@@ -299,9 +299,9 @@ Class UCRMain {
 		if (hk._IsOutput){
 			hk.value := bo
 		} else {
-			if (this._HotkeyHandler.IsBindable(hk, bo)){
+			if (this._InputHandler.IsBindable(hk, bo)){
 				hk.value := bo
-				this._HotkeyHandler.SetBinding(hk)
+				this._InputHandler.SetButtonBinding(hk)
 			}
 		}
 		this.Profiles.Global._SetHotkeyState(1)
@@ -310,7 +310,7 @@ Class UCRMain {
 	
 	; Request an axis binding.
 	RequestAxisBinding(axis){
-		this._HotkeyHandler.SetAxisBinding(axis)
+		this._InputHandler.SetAxisBinding(axis)
 	}
 	
 	; Serialize this object down to the bare essentials for loading it's state
@@ -335,26 +335,34 @@ Class UCRMain {
 	}
 
 }
-; =================================================================== HOTKEY HANDLER ==========================================================
-Class _HotkeyHandler {
+; =================================================================== INPUT HANDLER ==========================================================
+; Manages input (ie keyboard, mouse, joystick) during "normal" operation (ie when not in Bind Mode)
+; Holds the "master list" of bound inputs and decides whether or not to allow bindings.
+; All actual detection of input is handled in separate threads.
+; Each profile has it's own thread of bindings which this class can turn on/off or add/remove bindings.
+Class _InputHandler {
 	RegisteredBindings := {}
 	__New(){
 		
 	}
 	
-	; Set a Binding
-	SetBinding(BtnObj){
+	; Set a Button Binding
+	SetButtonBinding(BtnObj){
+		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
 		bindstring := this.BuildHotkeyString(BtnObj.value)
-		BtnObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &BtnObj ",""" bindstring """)")
+		; Set binding in Profile's HotkeyThread
+		BtnObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetButtonBinding(" &BtnObj ",""" bindstring """)")
 		return 1
 	}
 	
+	; Set an Axis Binding
 	SetAxisBinding(AxisObj){
 		AxisObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetAxisBinding(" &AxisObj ")")
 	}
 	
 	; Check for duplicates etc
 	IsBindable(hk, bo){
+		; ToDo: Implement
 		return 1
 	}
 	
@@ -363,6 +371,7 @@ Class _HotkeyHandler {
 		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetHotkeyState(" state ")")
 	}
 	
+	; Builds an AHK hotkey string (eg ~^a) from a BindObject
 	BuildHotkeyString(bo){
 		if (!bo.Keys.Length())
 			return ""
@@ -392,19 +401,21 @@ Class _HotkeyHandler {
 		return str
 	}
 	
-	; Rename - handles axes too
-	KeyEvent(hk, event){
-		hk := Object(hk)
-		if (IsObject(hk.ChangeStateCallback)){
+	; An input event (eg key, mouse, joystick) occured for a bound input
+	; This will have come from another thread
+	; ipt will be an object of class _InputButton or _InputAxis
+	; event will be 0 or 1 for a Button type, or the value of the axis for an axis type
+	InputEvent(ipt, event){
+		ipt := Object(ipt)	; Resolve input object back from pointer
+		if (IsObject(ipt.ChangeStateCallback)){
 			; ToDo: don't do this check for axes
-			if (hk.__value.Suppress && event && hk.State){
+			if (ipt.__value.Suppress && event && ipt.State){
 				; Suppress repeats option
 				return
 			}
-			;SoundBeep
-			hk.State := event
-			hk.ChangeStateCallback.(event)
+			ipt.ChangeStateCallback.(event)
 		}
+		ipt.State := event
 	}
 	
 }
@@ -524,15 +535,6 @@ class _BindModeHandler {
 			this.ProcessInput(i, 0)
 		}
 	}
-	
-	;~ _JoystickButtonDown(i){
-		;~ this.ProcessInput(i, 1)
-		;~ str := i.DeviceID "Joy" i.code
-		;~ while (GetKeyState(str)){
-			;~ Sleep 10
-		;~ }
-		;~ this.ProcessInput(i, 0)
-	;~ }
 }
 
 ; ======================================================================== PROFILE ===============================================================
@@ -852,7 +854,7 @@ Class _Plugin {
 	_Close(){
 		; Free resources so destructors fire
 		for name, obj in this.InputButtons {
-			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetBinding(" &obj ")")
+			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetButtonBinding(" &obj ")")
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputButtons {
@@ -1152,7 +1154,7 @@ class _InputButton extends _BannerCombo {
 		; Trigger _value setter to set gui state but not fire change event
 		this._value := new _BindObject(obj)
 		; Register hotkey on load
-		UCR._HotkeyHandler.SetBinding(this)
+		UCR._InputHandler.SetButtonBinding(this)
 	}
 }
 ; ======================================================================== INPUT AXIS ===============================================================
