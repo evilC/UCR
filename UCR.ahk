@@ -474,7 +474,7 @@ class _BindModeHandler {
 	; The BindModeThread calls back here
 	_ProcessInput(e, type, code, deviceid){
 		; Build Key object and pass to ProcessInput
-		i := new _Key({type: type, code: code, deviceid: deviceid})
+		i := new _Button({type: type, code: code, deviceid: deviceid})
 		this.ProcessInput(i,e)
 	}
 	
@@ -1366,7 +1366,7 @@ Class _OutputButton extends _InputButton {
 		bo := new _BindObject()
 		bo.Type := 1
 		
-		key := new _Key()
+		key := new _Button()
 		key.DeviceID := device
 		key.code := button
 		key.IsVirtual := 1
@@ -1575,7 +1575,7 @@ class _BindObject {
 		for k, v in obj {
 			if (k = "Buttons"){
 				Loop % v.length(){
-					this.Buttons.push(new _Key(v[A_Index]))
+					this.Buttons.push(new _Button(v[A_Index]))
 				}
 			} else {
 				this[k] := v
@@ -1583,6 +1583,7 @@ class _BindObject {
 		}
 	}
 	
+	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
 		max := this.Buttons.length()
 		str := ""
@@ -1595,9 +1596,9 @@ class _BindObject {
 	}
 }
 
-; ======================================================================== KEY ===============================================================
-; A key represents a single digital input - keybpard key, mouse button, joystick button etc
-class _Key {
+; ======================================================================== BUTTON ===============================================================
+; Represents a single digital input / output - keyboard key, mouse button, (virtual) joystick button or hat direction
+class _Button {
 	Type := 0 ; 0 = Key / Mouse, 1 = stick button, 2 = stick hat
 	Code := 0
 	DeviceID := 0
@@ -1613,24 +1614,16 @@ class _Key {
 		this._Deserialize(obj)
 	}
 	
+	; Returns true if this Button is a modifier key on the keyboard
 	IsModifier(){
 		if (this.Type = 0 && ObjHasKey(this._Modifiers, this.Code))
 			return 1
 		return 0
 	}
 	
+	; Renders the keycode of a Modifier to it's AHK Hotkey symbol (eg 162 for LCTRL to ^)
 	RenderModifier(){
 		return this._Modifiers[this.Code].s
-	}
-	
-	_Serialize(){
-		return {Type: this.Type, Code: this.Code, DeviceID: this.DeviceID, UID: this.UID, IsVirtual: this.IsVirtual}
-	}
-	
-	_Deserialize(obj){
-		for k, v in obj {
-			this[k] := v
-		}
 	}
 	
 	; Builds the AHK key name
@@ -1643,11 +1636,22 @@ class _Key {
 		}
 	}
 	
+	; Builds a human readable version of the key name (Mainly for joysticks)
 	BuildHumanReadable(){
 		if this.Type = 0 {
 			return this.BuildKeyName()
 		} else if (this.Type > 0){
 			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
+		}
+	}
+	
+	_Serialize(){
+		return {Type: this.Type, Code: this.Code, DeviceID: this.DeviceID, UID: this.UID, IsVirtual: this.IsVirtual}
+	}
+	
+	_Deserialize(obj){
+		for k, v in obj {
+			this[k] := v
 		}
 	}
 }
