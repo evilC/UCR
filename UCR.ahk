@@ -284,13 +284,14 @@ Class UCRMain {
 		FileAppend, % jdata, % this._SettingsFile
 	}
 	
-	; The user selected the "Bind" option from a Hotkey GuiControl,
-	;  or changed an option such as "Wild"
+	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
+	;  or changed an option such as "Wild" in an InputButton
 	_RequestBinding(hk, delta := 0){
 		if (delta = 0){
 			; No delta param passed - request bind mode
 			if (!this._BindMode){
 				this._BindMode := 1
+				this.Profiles.Global._SetHotkeyState(0)
 				hk.ParentPlugin.ParentProfile._SetHotkeyState(0)
 				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
 				return 1
@@ -307,8 +308,10 @@ Class UCRMain {
 				this._HotkeyHandler.SetBinding(hk)
 			}
 			hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
+			this.Profiles.Global._SetHotkeyState(1)
 		}
 	}
+	
 	
 	RequestAxisBinding(axis){
 		this._HotkeyHandler.SetAxisBinding(axis)
@@ -325,6 +328,7 @@ Class UCRMain {
 				this._HotkeyHandler.SetBinding(hk)
 			}
 		}
+		this.Profiles.Global._SetHotkeyState(1)
 		hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
 	}
 }
