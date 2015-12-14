@@ -10,6 +10,7 @@ return
 class _HotkeyThread {
 	Bindings := {}	; List of current bindings, indexed by HWND of hotkey GuiControl
 	Axes := {}
+	AxisStates := {}
 	JoystickTimerState := 0
 	
 	__New(parent){
@@ -78,8 +79,10 @@ class _HotkeyThread {
 			this.SetJoystickTimerState(0)
 		if (AxisObj.__value.bindstring == ""){
 			this.Axes.Delete(AxisObj.hwnd)
+			this.AxisStates.Delete(AxisObj.hwnd)
 		} else {
 			this.Axes[AxisObj.hwnd] := AxisObj
+			this.AxisStates[AxisObj.hwnd] := 0
 		}
 		if (oldstate)
 			this.SetJoystickTimerState(1)
@@ -104,8 +107,8 @@ class _HotkeyThread {
 			bindstring := AxisObj.__value.bindstring
 			if (bindstring){
 				state := GetKeyState(bindstring)
-				if (state != AxisObj.InputState){
-					AxisObj.InputState := state
+				if (state != this.AxisStates[hwnd]){
+					this.AxisStates[hwnd] := state
 					this.InputEvent(AxisObj, state)
 					;OutputDebug % "State " bindstring " changed to: " state
 				}

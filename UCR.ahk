@@ -411,17 +411,17 @@ Class _InputHandler {
 	; This will have come from another thread
 	; ipt will be an object of class _InputButton or _InputAxis
 	; event will be 0 or 1 for a Button type, or the value of the axis for an axis type
-	InputEvent(ipt, event){
+	InputEvent(ipt, state){
 		ipt := Object(ipt)	; Resolve input object back from pointer
 		if (IsObject(ipt.ChangeStateCallback)){
 			; ToDo: don't do this check for axes
-			if (ipt.__value.Suppress && event && ipt.State){
+			if (ipt.__value.Suppress && state && ipt.State){
 				; Suppress repeats option
 				return
 			}
-			ipt.ChangeStateCallback.(event)
+			ipt.ChangeStateCallback.(state)
 		}
-		ipt.State := event
+		ipt.State := state
 	}
 	
 }
@@ -1031,6 +1031,8 @@ class _BannerCombo {
 ; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
 class _InputButton extends _BannerCombo {
+	; Public vars
+	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
 	__value := ""		; Holds the BindObject class
 	; Other internal vars
@@ -1168,7 +1170,7 @@ class _InputAxis extends _BannerCombo {
 	__value := {stick: 0, axis: 0, bindstring: ""}
 	_OptionMap := []
 	
-	InputState := -1
+	State := -1
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
