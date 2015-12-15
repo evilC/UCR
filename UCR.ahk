@@ -8,7 +8,7 @@ JSON serialization (for dumping settings to disk) by CoCo's JSON Lib
 For now, use my fork (Very minor tweak to fix AHK_H compatibility): https://github.com/evilC/AutoHotkey-JSON/
 Coco's JSON Lib - http://autohotkey.com/boards/viewtopic.php?f=6&t=627
 */
-#include <JSON>				
+#include Libraries\JSON.ahk
 OutputDebug DBGVIEWCLEAR
 
 global UCR
@@ -443,7 +443,7 @@ class _BindModeHandler {
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
 	__New(){
-		this.ahkdll:=AhkThread(A_ScriptDir "\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		this.ahkdll:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this.ahkdll.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
 	}
@@ -556,7 +556,7 @@ Class _Profile {
 	
 	__New(name){
 		this.Name := name
-		this._HotkeyThread := AhkThread(A_ScriptDir "\ProfileHotkeyThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		this._HotkeyThread := AhkThread(A_ScriptDir "\Threads\ProfileHotkeyThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this._HotkeyThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
 		this._HotkeyThread.ahkExec("HotkeyThread := new _HotkeyThread(" &this ")")
