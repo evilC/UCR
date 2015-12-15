@@ -1346,9 +1346,7 @@ Class _OutputButton extends _InputButton {
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
 		opts.push("Select New Keyboard / Mouse Output")
 		this._CurrentOptionMap.push(this._OptionMap["vJoyButton"])
-		opts.push("Select New vJoy Button")
-		this._CurrentOptionMap.push(this._OptionMap["vJoyHat"])
-		opts.push("Select New vJoy Hat")
+		opts.push("Select New vJoy Button / Hat")
 		this._CurrentOptionMap.push(this._OptionMap["Clear"])
 		opts.push("Clear Output")
 		this.SetOptions(opts)
@@ -1366,14 +1364,14 @@ Class _OutputButton extends _InputButton {
 			if (key.Type = 2 && key.IsVirtual){
 				; Virtual Joystick Button
 				UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
-			} else if (key.Type = 3 && key.IsVirtual){
+			} else if (key.Type >= 3 && key.IsVirtual){
 				; Virtual Joystick POV Hat
 				; ToDo: Make hat number selection actually work
 				if (state = 0)
 					state := -1
 				else
 					state := (key.code - 1) * 9000
-				UCR.Libraries.vJoy.Devices[key.DeviceID].SetContPov(state, 1)
+				UCR.Libraries.vJoy.Devices[key.DeviceID].SetContPov(state, key.Type - 2)
 			} else {
 				; Keyboard / Mouse
 				name := key.BuildKeyName()
@@ -1419,7 +1417,7 @@ Class _OutputButton extends _InputButton {
 		if (device && button){
 			t := 2
 		} else if (device && hn && hd) {
-			t := 3
+			t := 2 + hn
 		} else {
 			return
 		}
@@ -1695,7 +1693,7 @@ class _Button {
 			return GetKeyName("vk" code)
 		} else if (this.Type = 2){
 			return this.DeviceID "Joy" this.code
-		} else if (this.Type = 3){
+		} else if (this.Type >= 3){
 			return this.DeviceID "JoyPov"
 		}
 	}
@@ -1707,8 +1705,8 @@ class _Button {
 			return this.BuildKeyName()
 		} else if (this.Type = 2){
 			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
-		} else if (this.Type = 3){
-			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Hat " hat_directions[this.code]
+		} else if (this.Type >= 3){
+			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Hat " this.Type - 2 " " hat_directions[this.code]
 		}
 	}
 	
