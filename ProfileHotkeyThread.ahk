@@ -11,7 +11,11 @@ class _HotkeyThread {
 	Bindings := {}	; List of current bindings, indexed by HWND of hotkey GuiControl
 	Axes := {}
 	AxisStates := {}
+	Hats := {}
+	HatBindstrings := {}
+	HatStates := {}
 	JoystickTimerState := 0
+	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
 	
 	__New(parent){
 		this.MasterThread := AhkExported()
@@ -44,7 +48,20 @@ class _HotkeyThread {
 		hwnd := hk.hwnd
 		if (hk.__value.Type = 3){
 			; joystick hat
-			OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code
+			OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code ", bindstring: " hkstring
+			oldstate := this.JoystickTimerState
+			this.SetJoystickTimerState(0)
+			if (hkstring == "" || this.Hats[hwnd]){
+				; Remove existing binding
+				this.Hats.Delete(hwnd)
+				this.HatBindstrings.Delete(hwnd)
+				this.HatStates.Delete(hwnd)
+			}
+			this.Hats[hwnd] := hk
+			this.HatBindstrings[hwnd] := hkstring
+			this.HatStates[hwnd] := 0
+			if (oldstate)
+				this.SetJoystickTimerState(1)
 		} else {
 			OutputDebug % "type is " hk.__value.type
 			OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
@@ -110,6 +127,7 @@ class _HotkeyThread {
 	
 	JoystickWatcher(){
 		for hwnd, AxisObj in this.Axes {
+			; ToDo: This was passed in? No need to store on axisobj?
 			bindstring := AxisObj.__value.bindstring
 			if (bindstring){
 				state := GetKeyState(bindstring)
@@ -117,6 +135,21 @@ class _HotkeyThread {
 					this.AxisStates[hwnd] := state
 					this.InputEvent(AxisObj, state)
 					;OutputDebug % "State " bindstring " changed to: " state
+				}
+			}
+		}
+		for hwnd, HatObj in this.Hats {
+			bindstring := this.HatBindstrings[hwnd]
+			if (bindstring){
+				state := GetKeyState(bindstring)
+				; Get direction
+				state := (state = -1 ? 1 : round(state / 4500) + 2)
+				; Get state of that direction
+				state := this.PovMap[state, HatObj.__value.Buttons[1].code]
+				
+				if (state != this.HatStates[hwnd]){
+					this.HatStates[hwnd] := state
+					this.InputEvent(HatObj, state)
 				}
 			}
 		}
