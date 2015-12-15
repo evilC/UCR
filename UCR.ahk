@@ -1384,6 +1384,46 @@ Class _OutputButton extends _InputButton {
 		}
 	}
 	
+	; An option was selected from the list
+	_ChangedValue(o){
+		if (o){
+			o := this._CurrentOptionMap[o]
+			
+			; Option selected from list
+			if (o = 1){
+				; Bind
+				UCR._RequestBinding(this)
+				return
+			} else if (o = 2){
+				; vJoy
+				this._SelectvJoy()
+			} else if (o = 3){
+				; Clear Binding
+				mod := {Buttons: []}
+			} else {
+				; not one of the options from the list, user must have typed in box
+				return
+			}
+			if (IsObject(mod)){
+				UCR._RequestBinding(this, mod)
+				return
+			}
+		}
+	}
+	
+	; Present a menu to allow the user to select vJoy output
+	_SelectvJoy(){
+		Gui, % this.hVjoySelect ":Show"
+		dev := this.__value.Buttons[1].DeviceId + 1
+		GuiControl, % this.hVjoySelect ":Choose", % this.hVjoyDevice, % dev
+		if (this.__value.Buttons[1].Type >= 3){
+			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatNumber, % this.__value.Buttons[1].Type - 1
+			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatDir, % this.__value.Buttons[1].code + 1
+		} else {
+			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyButton, % this.__value.Buttons[1].code + 1
+		}
+	}
+	
 	vJoyOptionSelected(what){
 		GuiControlGet, dev, % this.hVjoySelect ":" , % this.hVjoyDevice
 		dev--
@@ -1439,39 +1479,7 @@ Class _OutputButton extends _InputButton {
 	vJoyInputCancelled(){
 		Gui, % this.hVjoySelect ":Submit"
 	}
-	
-	; An option was selected from the list
-	_ChangedValue(o){
-		if (o){
-			o := this._CurrentOptionMap[o]
-			
-			; Option selected from list
-			if (o = 1){
-				; Bind
-				UCR._RequestBinding(this)
-				return
-			} else if (o = 2){
-				; vJoy
-				this._SelectvJoy()
-			} else if (o = 3){
-				; Clear Binding
-				mod := {Buttons: []}
-			} else {
-				; not one of the options from the list, user must have typed in box
-				return
-			}
-			if (IsObject(mod)){
-				UCR._RequestBinding(this, mod)
-				return
-			}
-		}
-	}
-	
-	_SelectvJoy(){
-		MouseGetPos, x, y
-		Gui, % this.hVjoySelect ":Show", % "x" x - 50 " y" y - 80
-	}
-	
+
 	_Deserialize(obj){
 		; Trigger _value setter to set gui state but not fire change event
 		this._value := new _BindObject(obj)
