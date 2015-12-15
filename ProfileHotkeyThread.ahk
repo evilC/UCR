@@ -42,33 +42,39 @@ class _HotkeyThread {
 	SetButtonBinding(hk, hkstring := ""){
 		hk := Object(hk)
 		hwnd := hk.hwnd
-		OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
-		if (!hkstring){
-			OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
-			if (this.Bindings[hwnd]){
-				hotkey, % this.Bindings[hwnd], Dummy
+		if (hk.__value.Type = 3){
+			; joystick hat
+			OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code
+		} else {
+			OutputDebug % "type is " hk.__value.type
+			OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
+			if (!hkstring){
+				OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
+				if (this.Bindings[hwnd]){
+					hotkey, % this.Bindings[hwnd], Dummy
+					hotkey, % this.Bindings[hwnd], Off
+					try {
+						hotkey, % this.Bindings[hwnd] " up", Dummy
+						hotkey, % this.Bindings[hwnd] " up", Off
+					}
+				}
+				this.Bindings.Delete(hwnd)
+				return
+			}
+			if (ObjHasKey(this.Bindings, hwnd)){
 				hotkey, % this.Bindings[hwnd], Off
 				try {
-					hotkey, % this.Bindings[hwnd] " up", Dummy
 					hotkey, % this.Bindings[hwnd] " up", Off
 				}
 			}
-			this.Bindings.Delete(hwnd)
-			return
-		}
-		if (ObjHasKey(this.Bindings, hwnd)){
-			hotkey, % this.Bindings[hwnd], Off
-			try {
-				hotkey, % this.Bindings[hwnd] " up", Off
+			this.Bindings[hwnd] := hkstring
+			fn := this.InputEvent.Bind(this, hk, 1)
+			hotkey, % hkstring, % fn, On
+			; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
+			if (hk.__value.Type = 1){
+				fn := this.InputEvent.Bind(this, hk, 0)
+				hotkey, % hkstring " up", % fn, On
 			}
-		}
-		this.Bindings[hwnd] := hkstring
-		fn := this.InputEvent.Bind(this, hk, 1)
-		hotkey, % hkstring, % fn, On
-		; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
-		if (hk.__value.Type = 1){
-			fn := this.InputEvent.Bind(this, hk, 0)
-			hotkey, % hkstring " up", % fn, On
 		}
 	}
 	

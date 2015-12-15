@@ -473,6 +473,7 @@ class _BindModeHandler {
 	
 	; The BindModeThread calls back here
 	_ProcessInput(e, type, code, deviceid){
+		;OutputDebug % "e: " e ", type: " type ", code: " code ", deviceid: " deviceid
 		; Build Key object and pass to ProcessInput
 		i := new _Button({type: type, code: code, deviceid: deviceid})
 		this.ProcessInput(i,e)
@@ -1631,20 +1632,27 @@ class _Button {
 	
 	; Builds the AHK key name
 	BuildKeyName(){
+		static hat_directions := ["Up", "Right", "Down", "Left"]
 		if this.Type = 1 {
 			code := Format("{:x}", this.Code)
 			return GetKeyName("vk" code)
 		} else if (this.Type = 2){
 			return this.DeviceID "Joy" this.code
+		} else if (this.Type = 3){
+			; AHK does not actually support this bindstring, but build one in the style of AHK anyway
+			return this.DeviceID "JoyPov" hat_directions[this.code]
 		}
 	}
 	
 	; Builds a human readable version of the key name (Mainly for joysticks)
 	BuildHumanReadable(){
+		static hat_directions := ["Up", "Right", "Down", "Left"]
 		if (this.Type = 1) {
 			return this.BuildKeyName()
 		} else if (this.Type = 2){
 			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
+		} else if (this.Type = 3){
+			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Hat " hat_directions[this.code]
 		}
 	}
 	
