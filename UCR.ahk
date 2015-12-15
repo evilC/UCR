@@ -1306,21 +1306,35 @@ Class _OutputButton extends _InputButton {
 	_IsOutput := 1
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
-		this._OptionMap := {Select: 1, vJoy: 2, Clear: 3}
+		this._OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
+		; Create Select vJoy Button / Hat Select GUI
 		Gui, new, HwndHwnd
 		Gui -Border
 		this.hVjoySelect := hwnd
-		Gui, Add, Text, w50 xm Center ,Stick
-		Gui, Add, Text, w50 xp+55 Center ,Button
-		Gui, Add, ListBox, R8 xm w50 AltSubmit HwndHwnd , None||1|2|3|4|5|6|7|8
+		Gui, Add, Text, w50 xm Center, Stick
+		Gui, Add, Text, w50 xp+55 Center, Button
+		Gui, Add, Text, w50 xp+55 Center, Hat
+		Gui, Add, ListBox, R11 xm w50 AltSubmit HwndHwnd , None||1|2|3|4|5|6|7|8
 		this.hVjoyDevice := hwnd
-		Gui, Add, ListBox, R8 w50 xp+55 AltSubmit HwndHwnd , None||01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107|108|109|110|111|112|113|114|115|116|117|118|119|120|121|122|123|124|125|126|127|128|
+		fn := this.vJoyOptionSelected.Bind(this, "dev")
+		GuiControl +g, % hwnd, % fn
+		Gui, Add, ListBox, R11 w50 xp+55 AltSubmit HwndHwnd , None||01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107|108|109|110|111|112|113|114|115|116|117|118|119|120|121|122|123|124|125|126|127|128|
 		this.hVJoyButton := hwnd
-		Gui, Add, Button, xm w50 Center HwndHwnd, Cancel
+		fn := this.vJoyOptionSelected.Bind(this, "but")
+		GuiControl +g, % hwnd, % fn
+		Gui, Add, ListBox, R5 w50 xp+55 AltSubmit HwndHwnd , None||Hat 1|Hat 2|Hat 3|Hat 4
+		this.hVJoyHatNumber := hwnd
+		fn := this.vJoyOptionSelected.Bind(this, "hn")
+		GuiControl +g, % hwnd, % fn
+		Gui, Add, ListBox, R5 w50 xp y+9 AltSubmit HwndHwnd , None||Up|Right|Down|Left
+		this.hVJoyHatDir := hwnd
+		fn := this.vJoyOptionSelected.Bind(this, "hd")
+		GuiControl +g, % hwnd, % fn
+		Gui, Add, Button, xm w75 Center HwndHwnd, Cancel
 		this.hVJoyCancel := hwnd
 		fn := this.vJoyInputCancelled.Bind(this)
 		GuiControl +g, % this.hVJoyCancel, % fn
-		Gui, Add, Button, xp+55 w50 Center HwndHwnd, Ok
+		Gui, Add, Button, xp+85 w75 Center HwndHwnd, Ok
 		this.hVjoyOK := hwnd
 		fn := this.vJoyOutputSelected.Bind(this)
 		GuiControl +g, % this.hVjoyOK, % fn
@@ -1331,8 +1345,10 @@ Class _OutputButton extends _InputButton {
 		opts := []
 		this._CurrentOptionMap := [this._OptionMap["Select"]]
 		opts.push("Select New Keyboard / Mouse Output")
-		this._CurrentOptionMap.push(this._OptionMap["vJoy"])
-		opts.push("Select New vJoy Output")
+		this._CurrentOptionMap.push(this._OptionMap["vJoyButton"])
+		opts.push("Select New vJoy Button")
+		this._CurrentOptionMap.push(this._OptionMap["vJoyHat"])
+		opts.push("Select New vJoy Hat")
 		this._CurrentOptionMap.push(this._OptionMap["Clear"])
 		opts.push("Clear Output")
 		this.SetOptions(opts)
@@ -1348,8 +1364,18 @@ Class _OutputButton extends _InputButton {
 		Loop % max{
 			key := this.__value.Buttons[i]
 			if (key.Type = 2 && key.IsVirtual){
+				; Virtual Joystick Button
 				UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
+			} else if (key.Type = 3 && key.IsVirtual){
+				; Virtual Joystick POV Hat
+				; ToDo: Make hat number selection actually work
+				if (state = 0)
+					state := -1
+				else
+					state := (key.code - 1) * 9000
+				UCR.Libraries.vJoy.Devices[key.DeviceID].SetContPov(state, 1)
 			} else {
+				; Keyboard / Mouse
 				name := key.BuildKeyName()
 				Send % "{" name (state ? " Down" : " Up") "}"
 			}
@@ -1360,21 +1386,53 @@ Class _OutputButton extends _InputButton {
 		}
 	}
 	
+	vJoyOptionSelected(what){
+		GuiControlGet, dev, % this.hVjoySelect ":" , % this.hVjoyDevice
+		dev--
+		GuiControlGet, but, % this.hVjoySelect ":" , % this.hVJoyButton
+		but--
+		GuiControlGet, hn, % this.hVjoySelect ":" , % this.hVJoyHatNumber
+		hn--
+		GuiControlGet, hd, % this.hVjoySelect ":" , % this.hVJoyHatDir
+		hd--
+		if (what = "but" && but){
+			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatNumber, 1
+			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatDir, 1
+		} else if (what != "dev" && %what%){
+			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyButton, 1
+		}
+	}
+	
 	vJoyOutputSelected(){
 		Gui, % this.hVjoySelect ":Submit"
 		GuiControlGet, device, % this.hVjoySelect ":" , % this.hVjoyDevice
 		device--
 		GuiControlGet, button, % this.hVjoySelect ":" , % this.hVJoyButton
 		button--
+		GuiControlGet, hn, % this.hVjoySelect ":" , % this.hVJoyHatNumber
+		hn--
+		GuiControlGet, hd, % this.hVjoySelect ":" , % this.hVJoyHatDir
+		hd--
 		
 		bo := new _BindObject()
-		bo.Type := 2
+		
+		if (device && button){
+			t := 2
+		} else if (device && hn && hd) {
+			t := 3
+		} else {
+			return
+		}
+		bo.Type := t
 		
 		key := new _Button()
 		key.DeviceID := device
-		key.code := button
+		if (t = 2)
+			key.code := button
+		else
+			key.code := hd
 		key.IsVirtual := 1
-		key.Type := 2
+		key.Type := t
 		
 		bo.Buttons := [key]
 		this.value := bo
