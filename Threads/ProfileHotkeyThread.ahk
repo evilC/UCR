@@ -46,6 +46,7 @@ class _HotkeyThread {
 	SetButtonBinding(hk, hkstring := ""){
 		hk := Object(hk)
 		hwnd := hk.hwnd
+		; ToDo: Fix bug: If old binding was a different type, it will not get removed
 		if (hk.__value.Type = 3){
 			; joystick hat
 			OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code ", bindstring: " hkstring
@@ -113,6 +114,7 @@ class _HotkeyThread {
 	
 	; Rename - handles axes too
 	InputEvent(hk, event){
+		; ToDo: Fix bug - The below line seems to be firing with empty event - even when no keys are pressed.
 		this.MasterThread.ahkExec("UCR._InputHandler.InputEvent(" &hk "," event ")")
 		; Simulate up events for joystick buttons
 		if (hk.__value.Type = 2){
@@ -131,7 +133,8 @@ class _HotkeyThread {
 			bindstring := AxisObj.__value.bindstring
 			if (bindstring){
 				state := GetKeyState(bindstring)
-				if (state != this.AxisStates[hwnd]){
+				; ToDo: Check if state is not empty is to do with bug with InputEvent being called when it shouldnt. Should not be needed
+				if (state != "" && state != this.AxisStates[hwnd]){
 					this.AxisStates[hwnd] := state
 					this.InputEvent(AxisObj, state)
 					;OutputDebug % "State " bindstring " changed to: " state
