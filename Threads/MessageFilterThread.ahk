@@ -50,6 +50,6 @@ Class MessageFilter {
 			}
 		}
 		; Filters passed - execute boundfunc callback in main thread and pass it the message
-		this.MasterThread.AhkExec("fn := Object(" this.CallbackPtr ")`nfn.Call(" wParam "," lParam "," msg "," hwnd ")")
+		this.MasterThread.AhkExec("Object(" this.CallbackPtr ").Call(" wParam "," lParam "," msg "," hwnd ")")
 	}
 }
