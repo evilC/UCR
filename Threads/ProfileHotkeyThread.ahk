@@ -8,9 +8,8 @@ autoexecute_done := 1
 return
 
 class _HotkeyThread {
-	Bindings := {}	; List of current bindings, indexed by HWND of hotkey GuiControl
-	Axes := {}
-	AxisStates := {}
+	Bindings := {}			; List of current Button bindings, indexed by HWND of hotkey GuiControl
+	Axes := {}				; Holds all information regarding bound axes {AxisObj: axis object, state: current state, bindstring: eg "2joyX"}
 	Hats := {}
 	HatBindstrings := {}
 	HatStates := {}
@@ -97,16 +96,15 @@ class _HotkeyThread {
 	}
 	
 	SetAxisBinding(AxisObj){
+		static AHKAxisList := ["X","Y","Z","R","U","V"]
 		AxisObj := Object(AxisObj)
 		oldstate := this.JoystickTimerState
 		if (oldstate)
 			this.SetJoystickTimerState(0)
-		if (AxisObj.__value.bindstring == ""){
-			this.Axes.Delete(AxisObj.hwnd)
-			this.AxisStates.Delete(AxisObj.hwnd)
+		if (AxisObj.__value.DeviceID && AxisObj.__value.Axis){
+			this.Axes[AxisObj.hwnd] := {AxisObj: AxisObj, state: 0, bindstring: AxisObj.__value.DeviceID "joy" AHKAxisList[AxisObj.__value.Axis]}
 		} else {
-			this.Axes[AxisObj.hwnd] := AxisObj
-			this.AxisStates[AxisObj.hwnd] := 0
+			this.Axes.Delete(AxisObj.hwnd)
 		}
 		if (oldstate)
 			this.SetJoystickTimerState(1)
@@ -128,15 +126,13 @@ class _HotkeyThread {
 	}
 	
 	JoystickWatcher(){
-		for hwnd, AxisObj in this.Axes {
-			; ToDo: This was passed in? No need to store on axisobj?
-			bindstring := AxisObj.__value.bindstring
-			if (bindstring){
-				state := GetKeyState(bindstring)
-				; ToDo: Check if state is not empty is to do with bug with InputEvent being called when it shouldnt. Should not be needed
-				if (state != "" && state != this.AxisStates[hwnd]){
-					this.AxisStates[hwnd] := state
-					this.InputEvent(AxisObj, state)
+		for hwnd, o in this.Axes {
+			if (o.bindstring){
+				state := GetKeyState(o.bindstring)
+				; ToDo: state != "" is to do with bug with InputEvent being called when it shouldnt. Should not be needed
+				if (state != "" && state != o.state){
+					o.state := state
+					this.InputEvent(o.AxisObj, state)
 					;OutputDebug % "State " bindstring " changed to: " state
 				}
 			}

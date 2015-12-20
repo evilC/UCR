@@ -1164,7 +1164,7 @@ class _InputButton extends _BannerCombo {
 ; ======================================================================== INPUT AXIS ===============================================================
 class _InputAxis extends _BannerCombo {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
-	__value := {DeviceID: 0, axis: 0, bindstring: ""}
+	__value := new _Axis()
 	_OptionMap := []
 	
 	State := -1
@@ -1207,7 +1207,6 @@ class _InputAxis extends _BannerCombo {
 		}
 		this.__value.Axis := axis
 		this.__value.DeviceID := DeviceID
-		this.__value.BindString := ( axis && DeviceID ? DeviceID "Joy" this.AHKAxisList[axis] : "" )
 		this.SetComboState()
 		this.value := this.__value
 		UCR.RequestAxisBinding(this)
@@ -1727,8 +1726,8 @@ class _Button {
 
 ; ======================================================================== AXIS ===============================================================
 class _Axis {
-	
-	
+	DeviceID := 0
+	Axis := 0
 }
 
 GuiClose(hwnd){
