@@ -1,6 +1,8 @@
 /*
-Handles binding of hotkeys for a profile.
-Done in a separate thread so that hotkeys can be quickly turned on or off for a profile by using Suspend
+Handles monitoring of input for a profile.
+Done in a separate thread for the following reasons:
+1) Hotkeys can be quickly turned on or off for a profile by using Suspend
+2) Non-native input bindings (eg Hat bindings, axis bindings) can be emulated using timers without impacting debugging of the main thread.
 */
 #Persistent
 #NoTrayIcon

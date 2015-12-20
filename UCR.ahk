@@ -556,7 +556,7 @@ Class _Profile {
 	
 	__New(name){
 		this.Name := name
-		this._HotkeyThread := AhkThread(A_ScriptDir "\Threads\ProfileHotkeyThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		this._HotkeyThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this._HotkeyThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
 		this._HotkeyThread.ahkExec("HotkeyThread := new _HotkeyThread(" &this ")")
