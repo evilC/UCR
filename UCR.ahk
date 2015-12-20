@@ -955,12 +955,12 @@ class _GuiControl {
 	}
 	
 	_Serialize(){
-		obj := {_value: this._value}
+		obj := {value: this._value}
 		return obj
 	}
 	
 	_Deserialize(obj){
-		this._value := obj._value
+		this._value := obj.value
 	}
 }
 
@@ -1284,12 +1284,12 @@ class _InputAxis extends _BannerCombo {
 	}
 
 	_Serialize(){
-		obj := {_value: this._value}
+		obj := {value: this._value}
 		return obj
 	}
 	
 	_Deserialize(obj){
-		this._value := obj._value
+		this._value := obj.value
 		UCR.RequestAxisBinding(this)
 	}
 }
@@ -1495,7 +1495,8 @@ Class _OutputButton extends _InputButton {
 
 ; ======================================================================== OUTPUT AXIS ===============================================================
 class _OutputAxis extends _BannerCombo {
-	__value := {DeviceID: 0, axis: 0}
+	;__value := {DeviceID: 0, axis: 0}
+	__value := new _Axis()
 	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
@@ -1604,12 +1605,12 @@ class _OutputAxis extends _BannerCombo {
 	}
 
 	_Serialize(){
-		obj := {_value: this._value}
+		obj := {value: this._value}
 		return obj
 	}
 	
 	_Deserialize(obj){
-		this._value := obj._value
+		this._value := obj.value
 	}
 
 }
