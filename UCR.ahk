@@ -443,9 +443,12 @@ class _BindModeHandler {
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
 	__New(){
-		this.ahkdll:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
-		While !this.ahkdll.ahkgetvar.autoexecute_done
+		this._BindModeThread:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		While !this._BindModeThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
+		fn := this._ProcessInput.Bind(this)
+		this._BindModeCallback := fn	; make sure boundfunc does not go out of scope - the other thread needs it
+		this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" &fn ")"]
 	}
 	
 	StartBindMode(hk, callback){
@@ -468,7 +471,7 @@ class _BindModeHandler {
 		} else {
 			SplashTextOff
 		}
-		this.ahkdll.ahkExec["BindMapper.SetHotkeyState(" state ")"]
+		this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state ")"]
 	}
 	
 	; The BindModeThread calls back here

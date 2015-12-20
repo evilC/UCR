@@ -5,7 +5,6 @@ so that bind mode keys can be turned on and off quickly with Suspend
 */
 #Persistent
 #NoTrayIcon
-BindMapper := new _BindMapper()
 autoexecute_done := 1
 
 class _BindMapper {
@@ -15,7 +14,8 @@ class _BindMapper {
 	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
 	PovStateBase := [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
 
-	__New(){
+	__New(CallbackPtr){
+		this.CallbackPtr := CallbackPtr
 		this.MasterThread := AhkExported()
 		
 		; Make sure hotkeys are suspended before creating them,
@@ -59,9 +59,7 @@ class _BindMapper {
 	HotkeyEvent(e, type, code, deviceid){
 		if (!this.HotkeysEnabled)
 			return
-		ptr := &i
-		this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput(" e "," type "," code "," deviceid ")")
-		;this.MasterThread.ahkExec("UCR._BindModeHandler._ProcessInput()")
+		this.MasterThread.AhkExec("Object(" this.CallbackPtr ").Call(" e "," type "," code "," deviceid ")")
 	}
 	
 	; Simulate proper joystick button up events
