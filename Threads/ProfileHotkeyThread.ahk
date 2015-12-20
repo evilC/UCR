@@ -10,7 +10,7 @@ return
 class _HotkeyThread {
 	Bindings := {}			; List of current Button bindings, indexed by HWND of hotkey GuiControl
 	Axes := {}				; Holds all information regarding bound axes {AxisObj: axis object, state: current state, bindstring: eg "2joyX"}
-	Hats := {}
+	Hats := {}				; ToDo: collapse hat data into one object like axes
 	HatBindstrings := {}
 	HatStates := {}
 	JoystickTimerState := 0
