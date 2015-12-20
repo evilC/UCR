@@ -562,7 +562,9 @@ Class _Profile {
 		this._HotkeyThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this._HotkeyThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		this._HotkeyThread.ahkExec("HotkeyThread := new _HotkeyThread(" &this ")")
+		fn := UCR._InputHandler.InputEvent.Bind(UCR)
+		this._InputEventCallback := fn	; ensure BoundFunc does not go out of scope
+		this._HotkeyThread.ahkExec("HotkeyThread := new _HotkeyThread(" &fn ")")
 		this._CreateGui()
 	}
 	
