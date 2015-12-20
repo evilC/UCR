@@ -23,7 +23,7 @@ class AxisToAxis extends _Plugin {
 	; The user changed options - store stick and axis selected for fast retreival
 	MyOutputChangedValue(value){
 		this.vAxis := value.axis
-		this.vDevice := value.stick
+		this.vDevice := value.DeviceID
 	}
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly

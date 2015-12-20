@@ -1056,10 +1056,6 @@ class _InputButton extends _BannerCombo {
 		OutputDebug % "Hotkey " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
-	_Setup(parent, name, ChangeValueCallback, aParams*){
-
-	}
-	
 	; Kill references so destructor can fire
 	_KillReferences(){
 		GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
@@ -1168,7 +1164,7 @@ class _InputButton extends _BannerCombo {
 ; ======================================================================== INPUT AXIS ===============================================================
 class _InputAxis extends _BannerCombo {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
-	__value := {stick: 0, axis: 0, bindstring: ""}
+	__value := {DeviceID: 0, axis: 0, bindstring: ""}
 	_OptionMap := []
 	
 	State := -1
@@ -1193,7 +1189,7 @@ class _InputAxis extends _BannerCombo {
 	; The Axis Select DDL changed value
 	_ChangedValue(o){
 		axis := this.__value.Axis
-		stick := this.__value.Stick
+		DeviceID := this.__value.DeviceID
 		
 		; Resolve result of selection to index of full option list
 		o := this._OptionMap[o]
@@ -1204,14 +1200,14 @@ class _InputAxis extends _BannerCombo {
 		} else if (o <= 14){
 			; Stick Selected
 			o -= 6
-			stick := o
+			DeviceID := o
 		} else {
 			; Clear Selected
-			axis := stick := 0
+			axis := DeviceID := 0
 		}
 		this.__value.Axis := axis
-		this.__value.Stick := stick
-		this.__value.BindString := ( axis && stick ? stick "Joy" this.AHKAxisList[axis] : "" )
+		this.__value.DeviceID := DeviceID
+		this.__value.BindString := ( axis && DeviceID ? DeviceID "Joy" this.AHKAxisList[axis] : "" )
 		this.SetComboState()
 		this.value := this.__value
 		UCR.RequestAxisBinding(this)
@@ -1220,10 +1216,10 @@ class _InputAxis extends _BannerCombo {
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetComboState(){
 		axis := this.__value.Axis
-		stick := this.__value.Stick
+		DeviceID := this.__value.DeviceID
 		this._OptionMap := []
 		opts := []
-		if (stick){
+		if (DeviceID){
 			; Show Sticks and Axes
 			max := 14
 			index_offset := 0
@@ -1243,13 +1239,13 @@ class _InputAxis extends _BannerCombo {
 			opts.push(this._Options[map_index])
 			this._OptionMap.push(map_index)
 		}
-		if (stick || axis){
+		if (DeviceID || axis){
 			opts.push(this._Options[15])
 			this._OptionMap.push(15)
 		}
 
-		if (stick)
-			str := "Stick: " (stick ? stick : "None") ", Axis: " (axis ? axis : "None") (stick && axis ? " (" this.AHKAxisList[axis] ")" : "")
+		if (DeviceID)
+			str := "Stick: " (DeviceID ? DeviceID : "None") ", Axis: " (axis ? axis : "None") (DeviceID && axis ? " (" this.AHKAxisList[axis] ")" : "")
 
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
@@ -1500,7 +1496,7 @@ Class _OutputButton extends _InputButton {
 
 ; ======================================================================== OUTPUT AXIS ===============================================================
 class _OutputAxis extends _BannerCombo {
-	__value := {stick: 0, axis: 0}
+	__value := {DeviceID: 0, axis: 0}
 	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
@@ -1521,10 +1517,10 @@ class _OutputAxis extends _BannerCombo {
 	
 	SetComboState(){
 		axis := this.__value.Axis
-		stick := this.__value.Stick
+		DeviceID := this.__value.DeviceID
 		this._OptionMap := []
 		opts := []
-		if (stick){
+		if (DeviceID){
 			; Show Sticks and Axes
 			max := 16
 			index_offset := 0
@@ -1538,13 +1534,13 @@ class _OutputAxis extends _BannerCombo {
 			opts.push(this._Options[map_index])
 			this._OptionMap.push(map_index)
 		}
-		if (stick || axis){
+		if (DeviceID || axis){
 			opts.push(this._Options[15])
 			this._OptionMap.push(15)
 		}
 
-		if (stick)
-			str := "Stick: " (stick ? stick : "None") ", Axis: " (axis ? axis : "None") (stick && axis ? " (" this.vJoyAxisList[axis] ")" : "")
+		if (DeviceID)
+			str := "Stick: " (DeviceID ? DeviceID : "None") ", Axis: " (axis ? axis : "None") (DeviceID && axis ? " (" this.vJoyAxisList[axis] ")" : "")
 
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
@@ -1552,7 +1548,7 @@ class _OutputAxis extends _BannerCombo {
 	
 	_ChangedValue(o){
 		axis := this.__value.Axis
-		stick := this.__value.Stick
+		DeviceID := this.__value.DeviceID
 		
 		; Resolve result of selection to index of full option list
 		o := this._OptionMap[o]
@@ -1563,13 +1559,13 @@ class _OutputAxis extends _BannerCombo {
 		} else if (o <= 16){
 			; Stick Selected
 			o -= 8
-			stick := o
+			DeviceID := o
 		} else {
 			; Clear Selected
-			axis := stick := 0
+			axis := DeviceID := 0
 		}
 		this.__value.Axis := axis
-		this.__value.Stick := stick
+		this.__value.DeviceID := DeviceID
 		
 		this.SetComboState()
 		this.value := this.__value
@@ -1727,6 +1723,12 @@ class _Button {
 			this[k] := v
 		}
 	}
+}
+
+; ======================================================================== AXIS ===============================================================
+class _Axis {
+	
+	
 }
 
 GuiClose(hwnd){
