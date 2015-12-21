@@ -350,14 +350,14 @@ Class _InputHandler {
 	SetButtonBinding(BtnObj){
 		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
 		bindstring := this.BuildHotkeyString(BtnObj.value)
-		; Set binding in Profile's HotkeyThread
-		BtnObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetButtonBinding(" &BtnObj ",""" bindstring """)")
+		; Set binding in Profile's InputThread
+		BtnObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" &BtnObj ",""" bindstring """)")
 		return 1
 	}
 	
 	; Set an Axis Binding
 	SetAxisBinding(AxisObj){
-		AxisObj.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetAxisBinding(" &AxisObj ")")
+		AxisObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" &AxisObj ")")
 	}
 	
 	; Check InputButtons for duplicates etc
@@ -374,7 +374,7 @@ Class _InputHandler {
 	
 	; Turns on or off Hotkey(s)
 	ChangeHotkeyState(state, hk := 0){
-		hk.ParentPlugin.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetHotkeyState(" state ")")
+		hk.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetHotkeyState(" state ")")
 	}
 	
 	; Builds an AHK hotkey string (eg ~^a) from a BindObject
@@ -559,12 +559,12 @@ Class _Profile {
 	
 	__New(name){
 		this.Name := name
-		this._HotkeyThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
-		While !this._HotkeyThread.ahkgetvar.autoexecute_done
+		this._InputThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		While !this._InputThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
 		fn := UCR._InputHandler.InputEvent.Bind(UCR)
 		this._InputEventCallback := fn	; ensure BoundFunc does not go out of scope
-		this._HotkeyThread.ahkExec("HotkeyThread := new _HotkeyThread(" &fn ")")
+		this._InputThread.ahkExec("InputThread := new _InputThread(" &fn ")")
 		this._CreateGui()
 	}
 	
@@ -601,7 +601,7 @@ Class _Profile {
 	}
 	
 	_SetHotkeyState(state){
-		this._HotkeyThread.ahkExec("HotkeyThread.SetHotkeyState(" state ")")
+		this._InputThread.ahkExec("InputThread.SetHotkeyState(" state ")")
 	}
 	
 	; Hide the GUI
@@ -865,7 +865,7 @@ Class _Plugin {
 	_Close(){
 		; Free resources so destructors fire
 		for name, obj in this.InputButtons {
-			this.ParentProfile._HotkeyThread.ahkExec("HotkeyThread.SetButtonBinding(" &obj ")")
+			this.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" &obj ")")
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputButtons {

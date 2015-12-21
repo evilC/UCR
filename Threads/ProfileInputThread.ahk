@@ -9,7 +9,7 @@ Done in a separate thread for the following reasons:
 autoexecute_done := 1
 return
 
-class _HotkeyThread {
+class _InputThread {
 	Bindings := {}			; List of current Button bindings, indexed by HWND of hotkey GuiControl
 	Axes := {}				; Holds all information regarding bound axes {AxisObj: axis object, state: current state, bindstring: eg "2joyX"}
 	Hats := {}				; ToDo: collapse hat data into one object like axes
@@ -66,10 +66,9 @@ class _HotkeyThread {
 			if (oldstate)
 				this.SetJoystickTimerState(1)
 		} else {
-			OutputDebug % "type is " hk.__value.type
-			OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
+			;OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
 			if (!hkstring){
-				OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
+				;OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
 				if (this.Bindings[hwnd]){
 					hotkey, % this.Bindings[hwnd], Dummy
 					hotkey, % this.Bindings[hwnd], Off
