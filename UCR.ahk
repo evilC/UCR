@@ -27,7 +27,7 @@ Class UCRMain {
 	TOP_PANEL_HEIGHT := 75
 	GUI_MIN_HEIGHT := 300
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}
-	CurrentPos := {x: 0, y: 0}
+	CurrentPos := {x: "", y: ""}
 	__New(){
 		global UCR := this
 		Gui +HwndHwnd
@@ -136,7 +136,8 @@ Class UCRMain {
 	}
 	
 	_ShowGui(){
-		Gui, % this.hwnd ":Show", % "x" this.CurrentPos.x " y" this.CurrentPos.y " h" this.CurrentSize.h
+		xy := (this.CurrentPos.x != "" && this.CurrentPos.y != "" ? "x" this.CurrentPos.x " y" this.CurrentPos.y : "")
+		Gui, % this.hwnd ":Show", % xy " h" this.CurrentSize.h
 	}
 	
 	_OnMove(wParam, lParam, msg, hwnd){
