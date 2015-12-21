@@ -26,11 +26,13 @@ Class UCRMain {
 	PLUGIN_FRAME_WIDTH := 690
 	TOP_PANEL_HEIGHT := 75
 	GUI_MIN_HEIGHT := 300
+	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}
+	CurrentPos := {x: 0, y: 0}
 	__New(){
 		global UCR := this
 		Gui +HwndHwnd
 		this.hwnd := hwnd
-
+		
 		str := A_ScriptName
 		if (A_IsCompiled)
 			str := StrSplit(str, ".exe")
@@ -38,13 +40,35 @@ Class UCRMain {
 			str := StrSplit(str, ".ahk")
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
 		
+		; Provide a common repository of libraries for plugins (vJoy, HID libs etc)
 		this._LoadLibraries()
 		
+		; Start the input detection system
 		this._BindModeHandler := new _BindModeHandler()
 		this._InputHandler := new _InputHandler()
-		
+
+		; Create the Main Gui
 		this._CreateGui()
+		
+		; Watch window position and size using MessageFilter thread
+		this._MessageFilterThread := AhkThread(A_ScriptDir "\Threads\MessageFilterThread.ahk",,1)
+		While !this._MessageFilterThread.ahkgetvar.autoexecute_done
+			Sleep 50 ; wait until variable has been set.
+		fn := this._OnSize.Bind(this)
+		this._OnSizeCallback := fn	; make sure boundfunc does not go out of scope - the other thread needs it
+		matchobj := {msg: 0x5, hwnd: this.hwnd}
+		filterobj := {hwnd: this.hwnd}
+		this._MessageFilterThread.ahkExec["new MessageFilter(" &fn "," &matchobj "," &filterobj ")"]
+		matchobj.msg := 0x3
+		fn := this._OnMove.Bind(this)
+		this._OnMoveCallback := fn
+		this._MessageFilterThread.ahkExec["new MessageFilter(" &fn "," &matchobj "," &filterobj ")"]
+		
+		; Load settings. This will cause all plugins to load.
 		this._LoadSettings()
+
+		; Now we have settings from disk, move the window to it's last position and size
+		this._ShowGui()
 	}
 	
 	GuiClose(hwnd){
@@ -71,7 +95,7 @@ Class UCRMain {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		Gui % this.hwnd ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, UCR - Universal Control Remapper
+		Gui, % this.hwnd ":Show", % "Hide w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, UCR - Universal Control Remapper
 		Gui, % this.hwnd ":+Minsize" UCR.PLUGIN_FRAME_WIDTH "x" UCR.GUI_MIN_HEIGHT
 		Gui, % this.hwnd ":+Maxsize" UCR.PLUGIN_FRAME_WIDTH
 		Gui, new, HwndHwnd
@@ -107,6 +131,27 @@ Class UCRMain {
 		GuiControl % this.hTopPanel ":+g", % this.hAddPlugin, % fn
 		
 		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
+
+		;Gui, % this.hwnd ":Show"
+	}
+	
+	_ShowGui(){
+		Gui, % this.hwnd ":Show", % "x" this.CurrentPos.x " y" this.CurrentPos.y " h" this.CurrentSize.h
+	}
+	
+	_OnMove(wParam, lParam, msg, hwnd){
+		;this.CurrentPos := {x: LoWord(lParam), y: HiWord(lParam)}
+		; Use WinGetPos rather than pos in message, as this is the top left of the Gui, not the client rect
+		WinGetPos, x, y, , , % "ahk_id " this.hwnd
+		if (x != "" && y != ""){
+			this.CurrentPos := {x: x, y: y}
+			this._SaveSettings()
+		}
+	}
+	
+	_OnSize(wParam, lParam, msg, hwnd){
+		this.CurrentSize.h := HiWord(lParam)
+		this._SaveSettings()
 	}
 	
 	; Called when hProfileSelect changes through user interaction (They selected a new profile)
@@ -253,14 +298,19 @@ Class UCRMain {
 		this._ChangeProfile(this.CurrentProfile.Name, 0)
 	}
 	
-	; A child profile changed in some way - save state to disk
+	; Save settings to disk
 	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
-	_ProfileChanged(profile){
+	_SaveSettings(){
 		obj := this._Serialize()
 		OutputDebug % "Saving JSON to disk"
 		jdata := JSON.Dump(obj, ,true)
 		FileDelete, % this._SettingsFile
 		FileAppend, % jdata, % this._SettingsFile
+	}
+	
+	; A child profile changed in some way
+	_ProfileChanged(profile){
+		this._SaveSettings()
 	}
 	
 	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
@@ -315,7 +365,7 @@ Class UCRMain {
 	
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
-		obj := {CurrentProfile: this.CurrentProfile.Name}
+		obj := {CurrentProfile: this.CurrentProfile.Name, CurrentSize: this.CurrentSize, CurrentPos: this.CurrentPos}
 		obj.Profiles := {}
 		for name, profile in this.Profiles {
 			obj.Profiles[name] := profile._Serialize()
@@ -332,6 +382,10 @@ Class UCRMain {
 			this.Profiles[name]._Hide()
 		}
 		this.CurrentProfile := this.Profiles[obj.CurrentProfile]
+		if (IsObject(obj.CurrentSize))
+			this.CurrentSize := obj.CurrentSize
+		if (IsObject(obj.CurrentPos))
+			this.CurrentPos := obj.CurrentPos
 	}
 
 }

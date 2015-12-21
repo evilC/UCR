@@ -22,6 +22,7 @@ filterobj: 		A pointer to an object that defines the parameters to match in the 
 	Valid properties: wParam,lParam,msg,hwnd
 */
 #Persistent
+#NoTrayIcon
 SetBatchLines,-1
 autoexecute_done := 1
 return
