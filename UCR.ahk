@@ -22,8 +22,8 @@ Class UCRMain {
 	Libraries := {}
 	CurrentProfile := 0
 	PluginList := []
-	PLUGIN_WIDTH := 650
-	PLUGIN_FRAME_WIDTH := 690
+	PLUGIN_WIDTH := 680
+	PLUGIN_FRAME_WIDTH := 720
 	TOP_PANEL_HEIGHT := 75
 	GUI_MIN_HEIGHT := 300
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}
@@ -468,6 +468,7 @@ Class _InputHandler {
 	; event will be 0 or 1 for a Button type, or the value of the axis for an axis type
 	InputEvent(ipt, state){
 		ipt := Object(ipt)	; Resolve input object back from pointer
+		ipt.State := state
 		if (IsObject(ipt.ChangeStateCallback)){
 			; ToDo: don't do this check for axes
 			if (ipt.__value.Suppress && state && ipt.State){
@@ -476,7 +477,6 @@ Class _InputHandler {
 			}
 			ipt.ChangeStateCallback.(state)
 		}
-		ipt.State := state
 	}
 	
 }
