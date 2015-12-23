@@ -948,6 +948,9 @@ class _GuiControl {
 		this.ChangeValueCallback := ChangeValueCallback
 		Gui, % this.ParentPlugin.hwnd ":Add", % aParams[1], % "hwndhwnd " aParams[2], % aParams[3]
 		this.hwnd := hwnd
+		if (aParams[3] != ""){
+			this.__value := aParams[3]
+		}
 		this._SetGlabel(1)
 	}
 	

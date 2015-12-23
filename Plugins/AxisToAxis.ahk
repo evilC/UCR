@@ -19,9 +19,9 @@ class AxisToAxis extends _Plugin {
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
 		this.hSliderIn := hwnd
 		this.AddControl("Invert", this.MyEditChanged.Bind(this), "CheckBox", "x+20 yp+3 w30")
-		this.AddControl("Deadzone", this.MyEditChanged.Bind(this), "Edit", "x+10 yp-3 w30")
+		this.AddControl("Deadzone", this.MyEditChanged.Bind(this), "Edit", "x+10 yp-3 w30", "0")
 		Gui, Add, Text, % "x+0 yp+3", `%
-		this.AddControl("Sensitivity", this.MyEditChanged.Bind(this), "Edit", "x+10 yp-3 w30")
+		this.AddControl("Sensitivity", this.MyEditChanged.Bind(this), "Edit", "x+10 yp-3 w30", "100")
 		Gui, Add, Text, % "x+0 yp+3", `%
 		this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+15 yp-3 w125")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
