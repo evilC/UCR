@@ -55,6 +55,7 @@ class AxisMerge extends _Plugin {
 		value1 := StickOps.AHKToInternal(this.InputAxes.InputAxis1.State)
 		value2 := StickOps.AHKToInternal(this.InputAxes.InputAxis2.State)
 		
+		; Apply input axis inversions
 		if (this.GuiControls.Invert1.value){
 			value1 := StickOps.Invert(value1)
 		}
@@ -62,8 +63,27 @@ class AxisMerge extends _Plugin {
 			value2 := StickOps.Invert(value2)
 		}
 		
-		outval := (value1 + value2) / 2
+		; Do the merge
+		if (this.GuiControls.MergeMode.value = 1){
+			; Average
+			outval := (value1 + value2) / 2
+		} else if (this.GuiControls.MergeMode.value = 2){
+			; Greatest
+			v1 := value1 - 50
+			v2 := value2 + 50
+			a1 := abs(v1)
+			a2 := abs(v2)
+			if (a1 == a2)
+				outval := 0
+			else if (a1 > a2)
+				outval := v1 / 2
+			else
+				outval := v2 / 2
+		}
+		
+		; Set the output axis
 		if (this.vAxis && this.vDevice){
+			; Apply Deadzone / Sensitivity
 			if (this.GuiControls.Deadzone.value){
 				outval := StickOps.Deadzone(outval, this.GuiControls.Deadzone.value)
 			}
