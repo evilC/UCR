@@ -172,11 +172,14 @@ Class UCRMain {
 		if (IsObject(this.CurrentProfile)){
 			;~ if (name = this.CurrentProfile.Name)
 				;~ return
-			this.CurrentProfile._DeActivate()
+			this.CurrentProfile._Hide()
+			if (!this.CurrentProfile._IsGlobal)
+				this.CurrentProfile._DeActivate()
 		}
 		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % name
 		this.CurrentProfile := this.Profiles[name]
 		this.CurrentProfile._Activate()
+		this.CurrentProfile._Show()
 		if (save){
 			this._ProfileChanged(this.CurrentProfile)
 		}
@@ -305,6 +308,7 @@ Class UCRMain {
 		this._Deserialize(j)
 		
 		this._UpdateProfileSelect()
+		this.Profiles.Global._Activate()
 		this._ChangeProfile(this.CurrentProfile.Name, 0)
 	}
 	
@@ -622,9 +626,13 @@ Class _Profile {
 	Plugins := {}
 	PluginOrder := []
 	AssociatedApss := 0
+	_IsGlobal := 0
 	
 	__New(name){
 		this.Name := name
+		if (this.Name = "global"){
+			this._IsGlobal := 1
+		}
 		this._InputThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this._InputThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
@@ -657,17 +665,20 @@ Class _Profile {
 	; The profile became active
 	_Activate(){
 		this._SetHotkeyState(1)
-		Gui, % this.hwnd ":Show"
 	}
 	
 	; The profile went inactive
 	_DeActivate(){
 		this._SetHotkeyState(0)
-		this._Hide()
 	}
 	
 	_SetHotkeyState(state){
 		this._InputThread.ahkExec("InputThread.SetHotkeyState(" state ")")
+	}
+	
+	; Show the GUI
+	_Show(){
+		Gui, % this.hwnd ":Show"
 	}
 	
 	; Hide the GUI
