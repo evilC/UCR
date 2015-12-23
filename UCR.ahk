@@ -276,6 +276,15 @@ Class UCRMain {
 			FileRead,plugincode,% A_LoopFileFullPath
 			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
 			this.PluginList.push(classname1)
+			; Check if the classname already exists.
+			if (IsObject(%classname1%)){
+				cls := %classname1%
+				if (cls.base.__Class = "_Plugin"){
+					; Existing class extends plugin
+					; Class has been included via other means (eg to debug it), so do not try to include again.
+					continue
+				}
+			}
 			AddFile(A_LoopFileFullPath, 1)
 		}
 	}
