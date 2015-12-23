@@ -957,9 +957,10 @@ class _GuiControl {
 		this.ChangeValueCallback := ChangeValueCallback
 		Gui, % this.ParentPlugin.hwnd ":Add", % aParams[1], % "hwndhwnd " aParams[2], % aParams[3]
 		this.hwnd := hwnd
-		if (aParams[3] != ""){
-			this.__value := aParams[3]
-		}
+		; Set default value - get this from state of GuiControl before any loading of settings is done
+		GuiControlGet, value, % this.ParentPlugin.hwnd ":", % this.hwnd
+		this.__value := value
+		; Turn on the gLabel
 		this._SetGlabel(1)
 	}
 	

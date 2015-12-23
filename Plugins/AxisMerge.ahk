@@ -30,10 +30,10 @@ class AxisMerge extends _Plugin {
 		Gui, Add, Text, % "x+0 yp w125 Center", Output Virtual Axis
 		Gui, Add, Text, % "x+5 yp w100 Center", Output Preview
 		
-		this.AddControl("MergeMode", this.MyEditChanged.Bind(this), "DDL", "x270 yp+20 w70", "Average||")
-		this.AddControl("Deadzone", this.MyEditChanged.Bind(this), "Edit", "x+15 yp w30")
+		this.AddControl("MergeMode", this.MyEditChanged.Bind(this), "DDL", "x270 yp+20 w70 AltSubmit", "Average||Greatest")
+		this.AddControl("Deadzone", this.MyEditChanged.Bind(this), "Edit", "x+15 yp w30", "0")
 		Gui, Add, Text, % "x+0 yp+3", `%
-		this.AddControl("Sensitivity", this.MyEditChanged.Bind(this), "Edit", "x+15 yp-3 w30")
+		this.AddControl("Sensitivity", this.MyEditChanged.Bind(this), "Edit", "x+15 yp-3 w30", "100")
 		Gui, Add, Text, % "x+0 yp+3", `%
 		this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
