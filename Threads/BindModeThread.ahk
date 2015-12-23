@@ -10,6 +10,7 @@ autoexecute_done := 1
 class _BindMapper {
 	DebugMode := 2	; 0 = block all, 1 = dont block LMB / RMB, 2 = no blocking
 	HotkeysEnabled := 0
+	AllowJoystick := 1		; When detecting an output, we want to ignore all joystick buttons
 	PovStrings := ["1JoyPOV", "2JoyPOV", "3JoyPOV", "4JoyPOV", "5JoyPOV", "6JoyPOV" ,"7JoyPOV" ,"8JoyPOV"]
 	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
 	PovStateBase := [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
@@ -57,7 +58,7 @@ class _BindMapper {
 	
 	; Rename - handles buttons also
 	HotkeyEvent(e, type, code, deviceid){
-		if (!this.HotkeysEnabled)
+		if (!this.HotkeysEnabled || (type > 1 && !this.AllowJoystick))
 			return
 		this.MasterThread.AhkExec("Object(" this.CallbackPtr ").Call(" e "," type "," code "," deviceid ")")
 	}
@@ -72,15 +73,18 @@ class _BindMapper {
 		this.HotkeyEvent(0, type, code, deviceid)
 	}
 	
-	SetHotkeyState(state){
+	SetHotkeyState(state, enablejoysticks := 1){
 		if (state){
-			this.SetHatWatchState(1)
+			if (enablejoysticks)
+				this.SetHatWatchState(1)
 			Suspend, Off
 		} else {
-			this.SetHatWatchState(0)
+			if (enablejoysticks)
+				this.SetHatWatchState(0)
 			Suspend, On
 		}
 		this.HotkeysEnabled := state
+		this.AllowJoystick := enablejoysticks
 	}
 	
 	SetHatWatchState(state){

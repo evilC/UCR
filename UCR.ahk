@@ -524,18 +524,20 @@ class _BindModeHandler {
 		this.EndKey := 0
 		this.HeldModifiers := {}
 		this.ModifierCount := 0
-
-		this.SetHotkeyState(1)
+		
+		; When detecting an output, tell the Bind Handler to ignore physical joysticks...
+		; ... as output cannot be "sent" to physical sticks
+		this.SetHotkeyState(1, !hk._IsOutput)
 	}
 	
 	; Turns on or off the hotkeys
-	SetHotkeyState(state){
+	SetHotkeyState(state, enablejoystick := 1){
 		if (state){
 			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
 		} else {
 			SplashTextOff
 		}
-		this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state ")"]
+		this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
 	}
 	
 	; The BindModeThread calls back here
