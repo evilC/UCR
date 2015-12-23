@@ -953,8 +953,25 @@ class _GuiControl {
 	__New(parent, name, ChangeValueCallback, aParams*){
 		this.ParentPlugin := parent
 		this.Name := name
+		this.ControlType := aParams[1]
+		; Detect what kind of GuiControl this is, so that later operations (eg set of value) work as intended.
+		; Decide whether the control type is a "List" type: ListBox, DropDownList (ddl), ComboBox, and Tab (and tab2?)
+		if (aParams[1] = "listbox" ||aParams[1] = "ddl" || aParams[1] = "dropdownlist" || aParams[1] = "combobox" || aParams[1] = "tab" || aParams[1] = "tab2"){
+			this.IsListType := 1
+			; Detect if this List Type uses AltSubmit
+			if (InStr(aParams[2], "altsubmit"))
+				this.IsAltSubmitType := 1
+			else 
+				this.IsAltSubmitType := 0
+		} else {
+			this.IsListType := 0
+			this.IsAltSubmitType := 0
+		}
+		; Set which (internal) function gets called when the control changes value 
 		this.ChangeValueFn := this._ChangedValue.Bind(this)
+		; Store the user's callback that is to be fired when the Control changes value
 		this.ChangeValueCallback := ChangeValueCallback
+		; Add the Control
 		Gui, % this.ParentPlugin.hwnd ":Add", % aParams[1], % "hwndhwnd " aParams[2], % aParams[3]
 		this.hwnd := hwnd
 		; Set default value - get this from state of GuiControl before any loading of settings is done
@@ -1012,7 +1029,11 @@ class _GuiControl {
 		set {
 			this.__value := value
 			this._SetGlabel(0)						; Turn off g-label to avoid triggering save
-			GuiControl, , % this.hwnd, % value
+			cmd := ""
+			if (this.IsListType){
+				cmd := (this.IsAltSubmitType ? "choose" : "choosestring")
+			}
+			GuiControl, % cmd, % this.hwnd, % value
 			this._SetGlabel(1)						; Turn g-label back on
 		}
 	}
