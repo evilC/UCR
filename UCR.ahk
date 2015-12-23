@@ -1626,7 +1626,6 @@ class _OutputAxis extends _BannerCombo {
 		Loop % max {
 			map_index := A_Index + index_offset
 			if (map_index > 8 && map_index <= 16){
-				OutputDebug % "processing virtual stick. map_index: " map_index  ", map: " this._Options[map_index]
 				if (!UCR.Libraries.vJoy.Devices[map_index - 8].IsAvailable()){
 					continue
 				}
