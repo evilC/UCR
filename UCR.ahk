@@ -515,9 +515,6 @@ Class _InputHandler {
 				return
 			}
 			ipt.ChangeStateCallback.Call(state)
-			; POC for QuickBind replacement - delay all inputs
-			;fn := this._DelayCallback.Bind(this, ipt.ChangeStateCallback, state)
-			;SetTimer, % fn, -1000
 		}
 	}
 	
