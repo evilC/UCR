@@ -3,6 +3,8 @@ Demos persistent guicontrols / callbacks for change of value for a guicontrol
 Binds a hotkey to a snippet of AHK code
 */
 class CodeRunner extends _Plugin {
+	Type := "Code Runner"
+	Description := "Runs AHK code when you press an Input Button"
 	Init(){
 		Gui, Add, Text, y+10, % "When I press"
 		this.AddInputButton("MyHk1", 0, this.MyHkChangedState.Bind(this), "x150 yp-2 w200")

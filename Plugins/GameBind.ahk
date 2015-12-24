@@ -1,4 +1,5 @@
 class GameBind extends _Plugin {
+	
 	_DelayInGameBindMode := 0
 	Init(){
 		Text = 

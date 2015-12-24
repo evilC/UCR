@@ -3,6 +3,8 @@ Merges two physical axes into one virtual axis
 Requires the StickOps library and the vJoy library
 */
 class AxisMerge extends _Plugin {
+	Type := "Remapper (Axis Merger)"
+	Description := "Merges two input axes into one output virtual axis"
 	vAxis := 0
 	vDevice := 0
 	; Set up the GUI to allow the user to select input and output axes
