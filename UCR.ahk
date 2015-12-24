@@ -142,7 +142,7 @@ Class UCRMain {
 
 		; Add Plugin
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
-		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect w" UCR.PLUGIN_FRAME_WIDTH - 150
+		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect AltSubmit w" UCR.PLUGIN_FRAME_WIDTH - 150
 		this.hPluginSelect := hPluginSelect
 
 		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddPlugin x+5 yp-1", Add
@@ -757,6 +757,7 @@ Class _Profile {
 	; User clicked Add Plugin button
 	_AddPlugin(){
 		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
+		plugin := UCR.PluginList[plugin]
 		name := this._GetUniqueName(plugin)
 		if (name = 0)
 			return
