@@ -1629,6 +1629,11 @@ class _OutputAxis extends _BannerCombo {
 		this.SetComboState()
 	}
 	
+	; Plugin Authors call this to set the state of the output axis
+	SetState(state){
+		UCR.Libraries.vJoy.Devices[this.__value.DeviceID].SetAxisByIndex(state, this.__value.Axis)
+	}
+	
 	SetComboState(){
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID

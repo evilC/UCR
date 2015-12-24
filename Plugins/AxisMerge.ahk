@@ -48,9 +48,9 @@ class AxisMerge extends _Plugin {
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
-		static StickOps := 0
-		if (StickOps = 0)
-			StickOps := UCR.Libraries.StickOps
+		static StickOps := UCR.Libraries.StickOps
+		static OutAxis := this.OutputAxes.OutputAxis
+		
 		outval := 0
 		value1 := StickOps.AHKToInternal(this.InputAxes.InputAxis1.State)
 		value2 := StickOps.AHKToInternal(this.InputAxes.InputAxis2.State)
@@ -86,7 +86,7 @@ class AxisMerge extends _Plugin {
 			outval := StickOps.InternalToAHK(outval)
 			GuiControl, , % this.hSliderOut, % outval
 			outval := StickOps.AHKToVjoy(outval)
-			UCR.Libraries.vJoy.Devices[this.vDevice].SetAxisByIndex(outval, this.vAxis)
+			OutAxis.SetState(outval)
 		}
 		GuiControl, , % this.hSliderIn1, % StickOps.InternalToAHK(value1)
 		GuiControl, , % this.hSliderIn2, % StickOps.InternalToAHK(value2)
