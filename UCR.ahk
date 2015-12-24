@@ -17,6 +17,8 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
+	Version := "0.0.1"				; The version of the main application
+	SettingsVersion := "0.0.1"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
@@ -98,7 +100,7 @@ Class UCRMain {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		Gui, % this.hwnd ":Show", % "Hide w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, UCR - Universal Control Remapper
+		Gui, % this.hwnd ":Show", % "Hide w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
 		Gui, % this.hwnd ":+Minsize" UCR.PLUGIN_FRAME_WIDTH "x" UCR.GUI_MIN_HEIGHT
 		Gui, % this.hwnd ":+Maxsize" UCR.PLUGIN_FRAME_WIDTH
 		Gui, new, HwndHwnd
@@ -319,6 +321,7 @@ Class UCRMain {
 	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
 	_SaveSettings(){
 		obj := this._Serialize()
+		obj.SettingsVersion := this.SettingsVersion
 		OutputDebug % "Saving JSON to disk"
 		jdata := JSON.Dump(obj, ,true)
 		FileDelete, % this._SettingsFile
