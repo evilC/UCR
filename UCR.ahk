@@ -27,6 +27,7 @@ Class UCRMain {
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
 	PluginList := []				; A list of classnames of available plugins
+	PluginDetails := {}				; A name-indexed list of plugin Details (Description etc)
 	PLUGIN_WIDTH := 680				; The Width of a plugin
 	PLUGIN_FRAME_WIDTH := 720		; The width of the app
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
@@ -114,27 +115,37 @@ Class UCRMain {
 		
 		; Profile Select DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
-		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhProfileSelect w300"
+		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhProfileSelect w" UCR.PLUGIN_FRAME_WIDTH - 335
 		this.hProfileSelect := hProfileSelect
 		fn := this._ProfileSelectChanged.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hProfileSelect, % fn
 
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddProfile x+5 yp", Add
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddProfile x+5 yp-1 w50", Add
 		this.hAddProfile := hAddProfile
 		fn := this._AddProfile.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hAddProfile, % fn
 
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhDeleteProfile x+5 yp", Delete
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhDeleteProfile x+5 yp w50", Delete
 		this.hDeleteProfile := hDeleteProfile
 		fn := this._DeleteProfile.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hDeleteProfile, % fn
 
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhRenameProfile x+5 yp w50 disabled", Rename
+		this.hRenameProfile := hRenameProfile
+		fn := this._RenameProfile.Bind(this)
+		GuiControl % this.hTopPanel ":+g", % this.hRenameProfile, % fn
+
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhCopyProfile x+5 yp w50 disabled", Copy
+		this.hCopyProfile := hCopyProfile
+		fn := this._CopyProfile.Bind(this)
+		GuiControl % this.hTopPanel ":+g", % this.hCopyProfile, % fn
+
 		; Add Plugin
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
-		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect w300"
+		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect w" UCR.PLUGIN_FRAME_WIDTH - 150
 		this.hPluginSelect := hPluginSelect
 
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddPlugin x+5 yp", Add
+		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddPlugin x+5 yp-1", Add
 		this.hAddPlugin := hAddPlugin
 		fn := this._AddPlugin.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hAddPlugin, % fn
@@ -224,7 +235,8 @@ Class UCRMain {
 		Loop % max {
 			if (A_Index > 1)
 				str .= "|"
-			str .= this.PluginList[A_Index]
+			;str .= this.PluginList[A_Index]
+			str .= this.PluginDetails[this.PluginList[A_Index]].Type " - " this.PluginDetails[this.PluginList[A_Index]].Description
 			if (A_Index = 1){
 				str .= "|"
 				if (A_Index = max)
@@ -245,31 +257,6 @@ Class UCRMain {
 		
 	}
 	
-	_GetUniqueName(){
-		c := 1
-		; Find a unuqe name to suggest as a new name
-		while (ObjHasKey(this.Profiles, "Profile " c)){
-			c++
-		}
-		suggestedname := "Profile " c
-		; Allow user to pick name
-		choosename := 1
-		prompt := "Enter a name for the Profile"
-		while(choosename) {
-			InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
-			if (!ErrorLevel){
-				if (ObjHasKey(this.Profiles, Name)){
-					prompt := "Duplicate name chosen, please enter a unique name"
-					name := suggestedname
-				} else {
-					return name
-				}
-			} else {
-				return 0
-			}
-		}
-	}
-	
 	; user clicked the Delete Profile button
 	_DeleteProfile(){
 		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
@@ -278,6 +265,14 @@ Class UCRMain {
 		this.Profiles.Delete(name)
 		this._UpdateProfileSelect()
 		this._ChangeProfile("Default")
+	}
+	
+	_RenameProfile(){
+		
+	}
+	
+	_CopyProfile(){
+		
 	}
 	
 	; Load a list of available plugins
@@ -312,7 +307,9 @@ Class UCRMain {
 				continue
 			} else if (Type == "" || Description == ""){
 				MsgBox % "Plugin " classname1 " does not have a type or description. Removing from list."
+				continue
 			}
+			this.PluginDetails[classname1] := {Type: Type, Description: Description}
 			AddFile(A_LoopFileFullPath, 1)
 		}
 	}
@@ -417,6 +414,31 @@ Class UCRMain {
 	; Request an axis binding.
 	RequestAxisBinding(axis){
 		this._InputHandler.SetAxisBinding(axis)
+	}
+	
+	_GetUniqueName(){
+		c := 1
+		; Find a unuqe name to suggest as a new name
+		while (ObjHasKey(this.Profiles, "Profile " c)){
+			c++
+		}
+		suggestedname := "Profile " c
+		; Allow user to pick name
+		choosename := 1
+		prompt := "Enter a name for the Profile"
+		while(choosename) {
+			InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
+			if (!ErrorLevel){
+				if (ObjHasKey(this.Profiles, Name)){
+					prompt := "Duplicate name chosen, please enter a unique name"
+					name := suggestedname
+				} else {
+					return name
+				}
+			} else {
+				return 0
+			}
+		}
 	}
 	
 	; Serialize this object down to the bare essentials for loading it's state
