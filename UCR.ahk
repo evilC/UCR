@@ -19,6 +19,7 @@ return
 Class UCRMain {
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
+	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0
 	Profiles := []
 	Libraries := {}
@@ -327,6 +328,22 @@ Class UCRMain {
 	; A child profile changed in some way
 	_ProfileChanged(profile){
 		this._SaveSettings()
+	}
+	
+	; Turns on or off GameBind mode. In GameBind mode, all outputs are delayed
+	SetGameBindState(state){
+		if (state){
+			if (this._CurrentState == this._State.Normal){
+				this._CurrentState := this._State.GameBind
+				return 1
+			}
+		} else {
+			if (this._CurrentState == this._State.GameBind){
+				this._CurrentState := this._State.Normal
+				return 1
+			}
+		}
+		return 0
 	}
 	
 	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
@@ -1066,7 +1083,7 @@ class _GuiControl {
 		this.value := value		; Set control value and fire change events to parent
 		; If the script author defined a callback for onchange event of this GuiControl, then fire it
 		if (IsObject(this.ChangeValueCallback)){
-			this.ChangeValueCallback.()
+			this.ChangeValueCallback.Call(value)
 		}
 	}
 	
@@ -1464,34 +1481,39 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	; Used by script authors to set the state of this output
-	SetState(state){
-		max := this.__value.Buttons.Length()
-		if (state)
-			i := 1
-		else
-			i := max
-		Loop % max{
-			key := this.__value.Buttons[i]
-			if (key.Type = 2 && key.IsVirtual){
-				; Virtual Joystick Button
-				UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
-			} else if (key.Type >= 3 && key.IsVirtual){
-				; Virtual Joystick POV Hat
-				; ToDo: Make hat number selection actually work
-				if (state = 0)
-					state := -1
-				else
-					state := (key.code - 1) * 9000
-				UCR.Libraries.vJoy.Devices[key.DeviceID].SetContPov(state, key.Type - 2)
-			} else {
-				; Keyboard / Mouse
-				name := key.BuildKeyName()
-				Send % "{" name (state ? " Down" : " Up") "}"
-			}
+	SetState(state, delay_done := 0){
+		if (UCR._CurrentState == 2 && !delay_done){
+			fn := this.SetState.Bind(this, state, 1)
+			SetTimer, % fn, % -UCR._GameBindDuration
+		} else {
+			max := this.__value.Buttons.Length()
 			if (state)
-				i++
+				i := 1
 			else
-				i--
+				i := max
+			Loop % max{
+				key := this.__value.Buttons[i]
+				if (key.Type = 2 && key.IsVirtual){
+					; Virtual Joystick Button
+					UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
+				} else if (key.Type >= 3 && key.IsVirtual){
+					; Virtual Joystick POV Hat
+					; ToDo: Make hat number selection actually work
+					if (state = 0)
+						state := -1
+					else
+						state := (key.code - 1) * 9000
+					UCR.Libraries.vJoy.Devices[key.DeviceID].SetContPov(state, key.Type - 2)
+				} else {
+					; Keyboard / Mouse
+					name := key.BuildKeyName()
+					Send % "{" name (state ? " Down" : " Up") "}"
+				}
+				if (state)
+					i++
+				else
+					i--
+			}
 		}
 	}
 	
@@ -1632,8 +1654,15 @@ class _OutputAxis extends _BannerCombo {
 	}
 	
 	; Plugin Authors call this to set the state of the output axis
-	SetState(state){
-		UCR.Libraries.vJoy.Devices[this.__value.DeviceID].SetAxisByIndex(state, this.__value.Axis)
+	SetState(state, delay_done := 0){
+		if (UCR._CurrentState == 2 && !delay_done){
+			; In GameBind Mode - delay output.
+			; Call this method again, but pass 1 to delay_done
+			fn := this.SetState.Bind(this, state, 1)
+			SetTimer, % fn, % -UCR._GameBindDuration
+		} else {
+			UCR.Libraries.vJoy.Devices[this.__value.DeviceID].SetAxisByIndex(state, this.__value.Axis)
+		}
 	}
 	
 	SetComboState(){
