@@ -1,7 +1,18 @@
 class GameBind extends _Plugin {
 	_DelayInGameBindMode := 0
 	Init(){
-		Gui, Add, Text, xm ym, Toggle GameBind
+		Text = 
+		(LTrim
+		If you cannot hide your input from a game's bind menu, then you can use GameBind to insert a delay between your input and UCR's output.
+		1) Bind a Button to the `"Toggle GameBind`" input.
+		If the GameBind plugin is in the Global Profile, afterwards switch to the Profile you wish to use.
+		2) Go into the game's bind menu and hit the Toggle GameBind button you bound in the previous step.
+		3) Move the input (press button, move axis etc) that corresponds to the output you wish to bind to the game function.
+		4) Quickly enable bind mode for the function you wish to bind in the game.
+		5) After the amount of time specified by the `"GameBind Delay`" Editbox, the Output will change state, and the game should bind to it.
+		)
+		Gui, Add, Text, xm ym, % text
+		Gui, Add, Text, xm, Toggle GameBind
 		this.AddInputButton("GameBind", 0, this.ToggleGameBind.Bind(this), "x+5 yp-3 w200")
 		Gui, Add, Text, x+25 yp+3, GameBind Delay
 		this.AddControl("GameBindDelay", this.DelayChanged.Bind(this), "Edit", "x+5 yp-3 w70", "2000")
