@@ -11,7 +11,7 @@ Coco's JSON Lib - http://autohotkey.com/boards/viewtopic.php?f=6&t=627
 #include Libraries\JSON.ahk
 OutputDebug DBGVIEWCLEAR
 
-global UCR
+global UCR	; set UCR as a super-global
 new UCRMain()
 return
 
@@ -22,19 +22,19 @@ Class UCRMain {
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
-	_CurrentState := 0
-	Profiles := []
-	Libraries := {}
-	CurrentProfile := 0
-	PluginList := []
-	PLUGIN_WIDTH := 680
-	PLUGIN_FRAME_WIDTH := 720
-	TOP_PANEL_HEIGHT := 75
-	GUI_MIN_HEIGHT := 300
-	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}
-	CurrentPos := {x: "", y: ""}
+	_CurrentState := 0				; The current state of the application
+	Profiles := []					; A name-indexed array of instances of _Profile objects
+	Libraries := {}					; A name indexed array of instances of library objects
+	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
+	PluginList := []				; A list of classnames of available plugins
+	PLUGIN_WIDTH := 680				; The Width of a plugin
+	PLUGIN_FRAME_WIDTH := 720		; The width of the app
+	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
+	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
+	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
+	CurrentPos := {x: "", y: ""}										; The current position of the app.
 	__New(){
-		global UCR := this
+		global UCR := this			; Set super-global UCR to point to class instance
 		Gui +HwndHwnd
 		this.hwnd := hwnd
 		
@@ -81,19 +81,23 @@ Class UCRMain {
 			ExitApp
 	}
 	
+	; Libraries can be used to easily add functionality to UCR.
+	; Place a folder in the Libraries folder eg "MyLib", with an ahk file of the same name (eg "MyLib.ahk") and it will be included.
+	; It should contain a class definition of the same name (eg "Class MyLib") which will be instantiated and added to the Libraries array
+	; Once instantiated, the method _UCR_LoadLibrary() will be called on the instance. It has the opportunity to return 1 for OK, 0 for fail
+	; The class instance will be available for all plugins as UCR.Libraries.MyLib
 	_LoadLibraries(){
 		Loop, Files, % A_ScriptDir "\Libraries\*.*", D
 		{
 			str := A_LoopFileName
-			AddFile(A_ScriptDir "\Libraries\" A_LoopFileName "\" A_LoopFileName ".ahk", 1)
-			lib := new %A_LoopFileName%()
-			res := lib._UCR_LoadLibrary()
-			if (res == 1)
-				this.Libraries[A_LoopFileName] := lib
-			;~ FileRead,plugincode,% A_LoopFileFullPath
-			;~ RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
-			;~ this.PluginList.push(classname1)
-			;~ AddFile(A_LoopFileFullPath, 1)
+			filename := A_ScriptDir "\Libraries\" A_LoopFileName "\" A_LoopFileName ".ahk"
+			if (FileExist(filename)){
+				AddFile(filename, 1)
+				lib := new %A_LoopFileName%()
+				res := lib._UCR_LoadLibrary()
+				if (res == 1)
+					this.Libraries[A_LoopFileName] := lib
+			}
 		}
 	}
 	
