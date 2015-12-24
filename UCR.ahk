@@ -488,8 +488,15 @@ Class _InputHandler {
 				; Suppress repeats option
 				return
 			}
-			ipt.ChangeStateCallback.(state)
+			ipt.ChangeStateCallback.Call(state)
+			; POC for QuickBind replacement - delay all inputs
+			;fn := this._DelayCallback.Bind(this, ipt.ChangeStateCallback, state)
+			;SetTimer, % fn, -1000
 		}
+	}
+	
+	_DelayCallback(cb, state){
+		cb.Call(state)
 	}
 	
 }
