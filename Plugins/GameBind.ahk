@@ -1,5 +1,6 @@
 class GameBind extends _Plugin {
-	
+	Type := "GameBind Toggler"
+	Description := "Makes binding outputs to game functions easier by introducing a delay"
 	_DelayInGameBindMode := 0
 	Init(){
 		Text = 

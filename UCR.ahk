@@ -297,6 +297,22 @@ Class UCRMain {
 					continue
 				}
 			}
+			dllthread := AhkThread("test := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
+			t := A_TickCount + 1000
+			While !autoexecute_done := dllthread.ahkgetvar.autoexecute_done && A_TickCount < t
+				Sleep 10
+			if (autoexecute_done){
+				Type := dllthread.ahkgetvar.Type
+				Description := dllthread.ahkgetvar.Description
+			}
+			ahkthread_free(dllthread)
+			dllthread := ""
+			if (!autoexecute_done){
+				MsgBox % "Plugin " classname1 " failed to load. Removing from list."
+				continue
+			} else if (Type == "" || Description == ""){
+				MsgBox % "Plugin " classname1 " does not have a type or description. Removing from list."
+			}
 			AddFile(A_LoopFileFullPath, 1)
 		}
 	}
@@ -821,7 +837,7 @@ Class _Profile {
 			plugin := obj.Plugins[name]
 			cls := plugin.Type
 			if (!IsObject(%cls%)){
-				msgbox % "Plugin class " cls " not found - removing"
+				msgbox % "Plugin class " cls " not found - removing from profile """ this.Name """"
 				this.PluginOrder.Pop()
 				obj.Plugins.Delete(name)
 				continue
