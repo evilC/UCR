@@ -17,7 +17,9 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	_BindMode := 0
+	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
+	_State := {Normal: 0, InputBind: 1, GameBind: 2}
+	_CurrentState := 0
 	Profiles := []
 	Libraries := {}
 	CurrentProfile := 0
@@ -332,8 +334,8 @@ Class UCRMain {
 	_RequestBinding(hk, delta := 0){
 		if (delta = 0){
 			; Change Buttons requested - start Bind Mode.
-			if (!this._BindMode){
-				this._BindMode := 1
+			if (this._CurrentState == this._State.Normal){
+				this._CurrentState := this._State.InputBind
 				this.Profiles.Global._SetHotkeyState(0)
 				hk.ParentPlugin.ParentProfile._SetHotkeyState(0)
 				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
@@ -359,7 +361,7 @@ Class UCRMain {
 	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
 	_BindModeEnded(hk, bo){
 		OutputDebug % "Bind Mode Ended: " bo.Buttons[1].code
-		this._BindMode := 0
+		this._CurrentState := this._State.Normal
 		if (hk._IsOutput){
 			hk.value := bo
 		} else {
