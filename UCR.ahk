@@ -1,13 +1,5 @@
 #SingleInstance force
-/*
-Dependencies: 
-Autohotkey_H v1 http://hotkeyit.github.io/v2/
-UCR WILL NOT RUN USING VANILLA AUTOHOTKEY ("AHK_L")
 
-JSON serialization (for dumping settings to disk) by CoCo's JSON Lib
-For now, use my fork (Very minor tweak to fix AHK_H compatibility): https://github.com/evilC/AutoHotkey-JSON/
-Coco's JSON Lib - http://autohotkey.com/boards/viewtopic.php?f=6&t=627
-*/
 #include Libraries\JSON.ahk
 OutputDebug DBGVIEWCLEAR
 
@@ -1016,12 +1008,20 @@ Class _Plugin {
 	
 	; The plugin was closed (deleted)
 	_Close(){
-		; Free resources so destructors fire
+		; Remove input bindings etc here
+		; Some attempt is also made to free resources so destructors fire, though this is a WIP
 		for name, obj in this.InputButtons {
 			this.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" &obj ")")
 			obj._KillReferences()
 		}
+		for Name, obj in this.InputAxes {
+			this.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" &obj ",1)")
+			obj._KillReferences()
+		}
 		for name, obj in this.OutputButtons {
+			obj._KillReferences()
+		}
+		for name, obj in this.OutputAxes {
 			obj._KillReferences()
 		}
 		for name, obj in this.GuiControls {
