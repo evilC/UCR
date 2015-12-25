@@ -1,5 +1,8 @@
 #UCR - Universal Control Remapper
 
+#[MAIN UCR DOWNLOAD LINK](http://evilccom/files/ahk/ucr/UCR.zip)
+##[Historical releases](https://github.com/evilC/UCR/releases)
+
 ##About
 The aim of UCR is to allow end-users to easily leverage the power of AHK without having to learn to code.  
 At it's basest level, think of it as a way for an end-user to run a number of scripts written by various people, and manage when each script runs, what keys trigger it's functions, tweak each script's parameters, etc - solely by using a GUI application.
