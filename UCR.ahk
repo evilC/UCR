@@ -26,8 +26,8 @@ Class UCRMain {
 	Profiles := []					; A name-indexed array of instances of _Profile objects
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
-	PluginList := []				; A list of classnames of available plugins
-	PluginDetails := {}				; A name-indexed list of plugin Details (Description etc)
+	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
+	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	PLUGIN_WIDTH := 680				; The Width of a plugin
 	PLUGIN_FRAME_WIDTH := 720		; The width of the app
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
@@ -231,17 +231,18 @@ Class UCRMain {
 	
 	; Update hPluginSelect with a list of available Plugins
 	_UpdatePluginSelect(){
-		max := this.PluginList.length()
-		Loop % max {
-			if (A_Index > 1)
+		this.PluginList := []
+		str := ""
+		i := 1
+		for type, obj in this.PluginDetails {
+			if (i > 1)
 				str .= "|"
-			;str .= this.PluginList[A_Index]
-			str .= this.PluginDetails[this.PluginList[A_Index]].Type " - " this.PluginDetails[this.PluginList[A_Index]].Description
-			if (A_Index = 1){
+			str .= type "     - " obj.Description
+			this.PluginList.push(type)
+			if (i == 1){
 				str .= "|"
-				if (A_Index = max)
-					str .= "|"
 			}
+			i++
 		}
 		GuiControl,  % this.hTopPanel ":", % this.hPluginSelect, % str
 	}
@@ -277,12 +278,12 @@ Class UCRMain {
 	
 	; Load a list of available plugins
 	_LoadPluginList(){
-		this.PluginList := []
 		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", F
 		{
 			FileRead,plugincode,% A_LoopFileFullPath
 			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
-			this.PluginList.push(classname1)
+			
+			
 			; Check if the classname already exists.
 			if (IsObject(%classname1%)){
 				cls := %classname1%
@@ -309,7 +310,7 @@ Class UCRMain {
 				MsgBox % "Plugin " classname1 " does not have a type or description. Removing from list."
 				continue
 			}
-			this.PluginDetails[classname1] := {Type: Type, Description: Description}
+			this.PluginDetails[Type] := {Description: Description, ClassName: classname1}
 			AddFile(A_LoopFileFullPath, 1)
 		}
 	}
@@ -756,8 +757,8 @@ Class _Profile {
 	
 	; User clicked Add Plugin button
 	_AddPlugin(){
-		GuiControlGet, plugin, % UCR.hTopPanel ":", % UCR.hPluginSelect
-		plugin := UCR.PluginList[plugin]
+		GuiControlGet, idx, % UCR.hTopPanel ":", % UCR.hPluginSelect
+		plugin := UCR.PluginDetails[UCR.PluginList[idx]].ClassName
 		name := this._GetUniqueName(plugin)
 		if (name = 0)
 			return
