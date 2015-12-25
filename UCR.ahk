@@ -292,7 +292,7 @@ Class UCRMain {
 					continue
 				}
 			}
-			dllthread := AhkThread("test := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
+			dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
 			t := A_TickCount + 1000
 			While !autoexecute_done := dllthread.ahkgetvar.autoexecute_done && A_TickCount < t
 				Sleep 10
