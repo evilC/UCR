@@ -1,6 +1,6 @@
 #UCR - Universal Control Remapper
 
-#[MAIN UCR DOWNLOAD LINK](http://evilccom/files/ahk/ucr/UCR.zip)
+#[MAIN UCR DOWNLOAD LINK](http://evilc.com/files/ahk/ucr/UCR.zip)
 ##[Historical releases](https://github.com/evilC/UCR/releases)
 
 ##About
