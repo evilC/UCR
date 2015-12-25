@@ -1406,6 +1406,8 @@ class _InputAxis extends _BannerCombo {
 			; Show Sticks and Axes
 			max := 14
 			index_offset := 0
+			if (!Axis)
+				str := "Pick an Axis (Stick " DeviceID ")"
 		} else {
 			str := "Pick a Stick"
 			max := 8
@@ -1427,8 +1429,8 @@ class _InputAxis extends _BannerCombo {
 			this._OptionMap.push(15)
 		}
 
-		if (DeviceID)
-			str := "Stick: " (DeviceID ? DeviceID : "None") ", Axis: " (axis ? axis : "None") (DeviceID && axis ? " (" this.AHKAxisList[axis] ")" : "")
+		if (DeviceID && Axis)
+			str := "Stick " DeviceID ", Axis " axis " (" this.AHKAxisList[axis] ")"
 
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
@@ -1725,8 +1727,10 @@ class _OutputAxis extends _BannerCombo {
 			; Show Sticks and Axes
 			max := 16
 			index_offset := 0
+			if (!Axis)
+				str := "Pick an Axis (Stick " DeviceID ")"
 		} else {
-			str := "Pick a Stick"
+			str := "Pick a virtual Stick"
 			max := 10
 			index_offset := 8
 		}
@@ -1745,9 +1749,9 @@ class _OutputAxis extends _BannerCombo {
 			this._OptionMap.push(17)
 		}
 
-		if (DeviceID)
-			str := "Stick: " (DeviceID ? DeviceID : "None") ", Axis: " (axis ? axis : "None") (DeviceID && axis ? " (" this.vJoyAxisList[axis] ")" : "")
-
+		if (DeviceID && Axis)
+			str := "Stick " DeviceID ", Axis " axis " (" this.vJoyAxisList[axis] ")"
+		
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
 	}
