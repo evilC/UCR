@@ -46,6 +46,12 @@ Class UCRMain {
 			str := StrSplit(str, ".ahk")
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
 		
+		; Load the Joystick OEM name DLL
+		DllCall("LoadLibrary", Str, A_ScriptDir "\Resources\JoystickOEMName.dll")
+		if (ErrorLevel != 0){
+			MsgBox Error Loading \Resources\JoystickOEMName.dll. Exiting...
+			ExitApp
+		}
 		; Provide a common repository of libraries for plugins (vJoy, HID libs etc)
 		this._LoadLibraries()
 		
@@ -1357,7 +1363,8 @@ class _InputAxis extends _BannerCombo {
 			this._Options.push("Axis " A_Index " (" this.AHKAxisList[A_Index] ")" )
 		}
 		Loop 8 {
-			this._Options.push("Stick " A_Index )
+			;this._Options.push("Stick " A_Index )
+			this._Options.push(A_Index ": " DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL Str"))
 		}
 		this._Options.push("Clear Binding")
 		this.SetComboState()

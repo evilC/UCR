@@ -1,0 +1,13 @@
+Copyright © 2008 Jeroen van der Gun
+
+This is a licence agreement ("Agreement") between you and your company ("You"), the user of this Joystick OEM Name DLL for Game Maker and its accompanying files ("DLL"), and the creator of the DLL, Jeroen van der Gun ("Blijbol"). You may not use the DLL if you do not agree to the terms of this Agreement. All rights, not expressly granted by this Agreement, are reserved to Blijbol.
+
+1. The Author grants You a non-exclusive, non-transferable, limited right and licence to use the DLL in a non-commercial way and subject to these terms.
+
+2. You must not remove, disable, modify, add to or tamper with any program code or data, or copyright notice contained within the DLL. You are not allowed to reverse engineer, decompile, or disassemble the DLL.
+
+3. If You use the DLL in any of your applications containing this DLL ("Application"), it is required to mention Blijbol in the credits of the Application.
+
+4. THIS DLL IS PROVIDED "AS IS". BLIJBOL DOES NOT WARRANT THAT THE DLL WILL FUNCTION WITHOUT INTERRUPTION OR BE ERROR FREE, THAT ALL DEFICIENCIES, ERRORS, DEFECTS OR NONCONFORMITIES WILL BE CORRECTED OR THAT THE DLL WILL MEET YOUR SPECIFIC REQUIREMENTS. BLIJBOL IS NOT RESPONSIBLE FOR ANY DAMAGE THE DLL COULD DO TO YOU, OR THE END-USERS OF YOUR APPLICATIONS. You will be responsible for the Applications and any dealings in them and You accept that full responsibility and liability for the Application and the DLL rests solely with you. Blijbol shall have no liability in relation thereto. 
+
+5. If You have any questions about this Agreement, please contact Blijbol at info@blijbol.nl.
