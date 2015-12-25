@@ -1485,14 +1485,14 @@ class _InputAxis extends _BannerCombo {
 Class _OutputButton extends _InputButton {
 	_DefaultBanner := "Drop down the list to select an Output"
 	_IsOutput := 1
+	_OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
-		this._OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
 		; Create Select vJoy Button / Hat Select GUI
 		Gui, new, HwndHwnd
 		Gui -Border
 		this.hVjoySelect := hwnd
-		Gui, Add, Text, w50 xm Center, Stick
+		Gui, Add, Text, w50 xm Center, vJoy Stick
 		Gui, Add, Text, w50 xp+55 Center, Button
 		Gui, Add, Text, w50 xp+55 Center, Hat
 		Gui, Add, ListBox, R11 xm w50 AltSubmit HwndHwnd , None||1|2|3|4|5|6|7|8
