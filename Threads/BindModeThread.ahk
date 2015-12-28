@@ -14,15 +14,30 @@ class _BindMapper {
 	PovStrings := ["1JoyPOV", "2JoyPOV", "3JoyPOV", "4JoyPOV", "5JoyPOV", "6JoyPOV" ,"7JoyPOV" ,"8JoyPOV"]
 	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
 	PovStateBase := [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
-
+	JoystickCaps := []
+	
 	__New(CallbackPtr){
 		this.CallbackPtr := CallbackPtr
 		this.MasterThread := AhkExported()
+		this.GetJoystickCaps()
 		
 		; Make sure hotkeys are suspended before creating them,
 		; so they are not active while they are being declared
 		this.SetHotkeyState(0)
 		this.CreateHotkeys()
+	}
+	
+	GetJoystickCaps(){
+		Loop 8 {
+			cap := {}
+			info := GetKeyState(A_Index "JoyInfo")
+			if (InStr(info, "p"))
+				cap.pov := 1
+			else
+				cap.pov := 0
+			cap.btns := GetKeyState(A_Index "JoyButtons")
+			this.JoystickCaps.push(cap)
+		}
 	}
 	
 	CreateHotkeys(){
@@ -43,10 +58,11 @@ class _BindMapper {
 				hotkey, % pfx blk n updown[A_Index].s, % fn, % "On"
 			}
 		}
+		
 		; Cycle through all Joystick Buttons
 		Loop 8 {
 			j := A_Index
-			Loop 32 {
+			Loop % this.JoystickCaps[j].btns {
 				btn := A_Index
 				n := j "Joy" A_Index
 				fn := this._JoystickButtonDown.Bind(this, 1, 2, btn, j)
@@ -99,6 +115,8 @@ class _BindMapper {
 	
 	HatWatcher(){
 		Loop 8 {
+			if (this.JoystickCaps[j].pov == 0)
+				continue
 			joyid := A_Index
 			pov := GetKeyState(this.PovStrings[joyid])
 			if (pov = pov_states[joyid]){
