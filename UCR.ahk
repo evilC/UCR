@@ -544,6 +544,10 @@ Class _InputHandler {
 	; event will be 0 or 1 for a Button type, or the value of the axis for an axis type
 	InputEvent(ipt, state){
 		ipt := Object(ipt)	; Resolve input object back from pointer
+		if (ipt.__value.Suppress && state && ipt.State > 0){
+			; Suppress repeats option
+			return
+		}
 		ipt.State := state
 		if (IsObject(ipt.ChangeStateCallback)){
 			; ToDo: don't do this check for axes
