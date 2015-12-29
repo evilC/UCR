@@ -69,10 +69,16 @@ Class UCRMain {
 		this._MessageFilterThread.ahkExec["new MessageFilter(" &fn "," &matchobj "," &filterobj ")"]
 		
 		; Load settings. This will cause all plugins to load.
-		this._LoadSettings()
+		p := this._LoadSettings()
+
+		this._UpdateProfileSelect()
+		
+		this._ShowGui()
+		
+		this.Profiles.Global._Activate()
+		this.ChangeProfile(p, 0)
 
 		; Now we have settings from disk, move the window to it's last position and size
-		this._ShowGui()
 	}
 	
 	GuiClose(hwnd){
@@ -330,10 +336,7 @@ Class UCRMain {
 			j := JSON.Load(j)
 		}
 		this._Deserialize(j)
-		
-		this._UpdateProfileSelect()
-		this.Profiles.Global._Activate()
-		this.ChangeProfile(j.CurrentProfile, 0)
+		return j.CurrentProfile
 	}
 	
 	; Save settings to disk
