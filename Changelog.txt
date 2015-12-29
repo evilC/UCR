@@ -1,0 +1,14 @@
+Key:
+! : Warning
+* : Comment
+= : Change / Fix
++ : Added feature
+
+0.0.2 - UNRELEASED
+= When in Bind Mode, only joystick buttons and hats that actually exist are polled.
+  This is better practice, and also seems to solve crashes on some systems.
+= Split plugins folder into Core and User folders.
+  This should allow easier upgrading if you have your own plugins.
+
+0.0.1 - 25th Dec 2015
++ First versioned release
