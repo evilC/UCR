@@ -559,6 +559,7 @@ Class _InputHandler {
 				return
 			}
 			ipt.ChangeStateCallback.Call(state)
+			ipt.ParentPlugin.InputEvent(ipt, state)
 		}
 	}
 	
@@ -700,6 +701,7 @@ Class _Profile {
 	Plugins := {}
 	PluginOrder := []
 	AssociatedApss := 0
+	PluginStateSubscriptions := {}
 	_IsGlobal := 0
 	
 	__New(name){
@@ -893,6 +895,21 @@ Class _Profile {
 		OutputDebug % "Profile " this.Name " --> UCR"
 		UCR._ProfileChanged(this)
 	}
+	
+	; Plugin authors can call this to allow a plugin to be notified whenever an Input in any other plugin in this profile changes state
+	; This is primarily used for temporal plugins
+	SubscribeToStateChange(plugin, callback){
+		if (!ObjHasKey(this.PluginStateSubscriptions, plugin.Name)){
+			this.PluginStateSubscriptions[plugin.Name] := callback
+		}
+	}
+	
+	InputEvent(ipt, state){
+		for name, callback in this.PluginStateSubscriptions {
+			callback.Call(ipt, state)
+		}
+	}
+	
 }
 
 ; ======================================================================== PLUGIN ===============================================================
@@ -953,6 +970,11 @@ Class _Plugin {
 			this.OutputAxes[name] := new _OutputAxis(this, name, ChangeValueCallback, aParams*)
 			return this.OutputAxes[name]
 		}
+	}
+	
+	; An input in this plugin changed state. This happens after the ChangeStateCallback is fired.
+	InputEvent(ipt, state){
+		this.ParentProfile.InputEvent(ipt, state)
 	}
 	
 	; === Private ===
