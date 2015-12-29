@@ -1280,6 +1280,10 @@ class _GuiControl {
 	
 	_Deserialize(obj){
 		this._value := obj.value
+		; Fire callback so plugins can initialize internal vars
+		if (IsObject(this.ChangeValueCallback)){
+			this.ChangeValueCallback.Call(obj.value)
+		}
 	}
 }
 
