@@ -186,10 +186,10 @@ Class UCRMain {
 	
 	; We wish to change profile. This may happen due to user input, or application changing
 	_ChangeProfile(name, save := 1){
-		OutputDebug % "Changing Profile to: " name
+		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " name
 		if (IsObject(this.CurrentProfile)){
-			;~ if (name = this.CurrentProfile.Name)
-				;~ return
+			if (name = this.CurrentProfile.Name)
+				return
 			this.CurrentProfile._Hide()
 			if (!this.CurrentProfile._IsGlobal)
 				this.CurrentProfile._DeActivate()
@@ -330,7 +330,7 @@ Class UCRMain {
 		
 		this._UpdateProfileSelect()
 		this.Profiles.Global._Activate()
-		this._ChangeProfile(this.CurrentProfile.Name, 0)
+		this._ChangeProfile(j.CurrentProfile, 0)
 	}
 	
 	; Save settings to disk
@@ -458,7 +458,7 @@ Class UCRMain {
 			this.Profiles[name]._Deserialize(profile)
 			this.Profiles[name]._Hide()
 		}
-		this.CurrentProfile := this.Profiles[obj.CurrentProfile]
+		;this.CurrentProfile := this.Profiles[obj.CurrentProfile]
 		if (IsObject(obj.CurrentSize))
 			this.CurrentSize := obj.CurrentSize
 		if (IsObject(obj.CurrentPos))
@@ -736,11 +736,23 @@ Class _Profile {
 	; The profile became active
 	_Activate(){
 		this._SetHotkeyState(1)
+		Loop % this.PluginOrder.length() {
+			plugin := this.Plugins[this.PluginOrder[A_Index]]
+			if (IsFunc(plugin["OnActive"])){
+				plugin.OnActive()
+			}
+		}
 	}
 	
 	; The profile went inactive
 	_DeActivate(){
 		this._SetHotkeyState(0)
+		Loop % this.PluginOrder.length() {
+			plugin := this.Plugins[this.PluginOrder[A_Index]]
+			if (IsFunc(plugin["OnInactive"])){
+				plugin.OnInactive()
+			}
+		}
 	}
 	
 	_SetHotkeyState(state){
