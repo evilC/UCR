@@ -470,6 +470,98 @@ Class UCRMain {
 		if (IsObject(obj.CurrentPos))
 			this.CurrentPos := obj.CurrentPos
 	}
+	
+	; ================================== MOUSEDELTA LIBRARY ========================================
+	; Instantiate this class and pass it a func name or a Function Object
+	; The specified function will be called with the delta move for the X and Y axes
+	; Normally, there is no windows message "mouse stopped", so one is simulated.
+	; After 10ms of no mouse movement, the callback is called with 0 for X and Y
+	Class MouseDelta {
+		__New(callback, timeout := 10){
+			this.TimeOutDuration := timeout
+			this.TimeoutFn := this.TimeoutFunc.Bind(this)
+			this.MoveFn := this.MouseMoved.Bind(this)
+			this.Callback := callback
+		}
+	 
+		__Delete(){
+			this.UnRegister()
+		}
+		
+		Register(){
+			static RIDEV_INPUTSINK := 0x00000100
+			; Register mouse for WM_INPUT messages.
+			static DevSize := 8 + A_PtrSize
+			static RAWINPUTDEVICE := 0
+			if (RAWINPUTDEVICE == 0){
+				VarSetCapacity(RAWINPUTDEVICE, DevSize)
+				NumPut(1, RAWINPUTDEVICE, 0, "UShort")
+				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
+				NumPut(RIDEV_INPUTSINK, RAWINPUTDEVICE, 4, "Uint")
+				; WM_INPUT needs a hwnd to route to, so get the hwnd of the AHK Gui.
+				; It doesn't matter if the GUI is showing, as long as it exists
+				NumPut(UCR.hwnd, RAWINPUTDEVICE, 8, "Uint")
+			}
+			r := DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
+			
+			OnMessage(0x00FF, this.MoveFn, -1)
+		}
+		
+		UnRegister(){
+			static RIDEV_REMOVE := 0x00000001
+			static DevSize := 8 + A_PtrSize
+			
+			fn := this.TimeoutFn
+			SetTimer, % fn, Off
+			
+			;RAWINPUTDEVICE := this.RAWINPUTDEVICE
+			static RAWINPUTDEVICE := 0
+			if (RAWINPUTDEVICE == 0){
+				VarSetCapacity(RAWINPUTDEVICE, DevSize)
+				NumPut(1, RAWINPUTDEVICE, 0, "UShort")
+				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
+				NumPut(RIDEV_REMOVE, RAWINPUTDEVICE, 4, "Uint")
+			}
+			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 0, "UInt", DevSize )
+			OnMessage(0x00FF, this.MoveFn, 0)
+		}
+	 
+		SetTimeOut(t){
+			this.TimeOutDuration := t
+		}
+		
+		; Called when the mouse moved.
+		; Messages tend to contain small (+/- 1) movements, and happen frequently (~20ms)
+		MouseMoved(wParam, lParam){
+			; RawInput statics
+			static DeviceSize := 2 * A_PtrSize, iSize := 0, sz := 0, offsets := {x: (20+A_PtrSize*2), y: (24+A_PtrSize*2)}, uRawInput
+	 
+			static axes := {x: 1, y: 2}
+	 
+			; Find size of rawinput data - only needs to be run the first time.
+			if (!iSize){
+				r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", 0, "UInt*", iSize, "UInt", 8 + (A_PtrSize * 2))
+				VarSetCapacity(uRawInput, iSize)
+			}
+			sz := iSize	; param gets overwritten with # of bytes output, so preserve iSize
+			; Get RawInput data
+			r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", &uRawInput, "UInt*", sz, "UInt", 8 + (A_PtrSize * 2))
+	 
+			x := NumGet(&uRawInput, offsets.x, "Int")
+			y := NumGet(&uRawInput, offsets.y, "Int")
+	 
+			this.Callback.(x, y)
+	 
+			; There is no message for "Stopped", so simulate one
+			fn := this.TimeoutFn
+			SetTimer, % fn, % -this.TimeOutDuration
+		}
+	 
+		TimeoutFunc(){
+			this.Callback.(0, 0)
+		}
+	 
+	}
 
 }
 ; =================================================================== INPUT HANDLER ==========================================================
