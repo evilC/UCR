@@ -176,7 +176,7 @@ Class UCRMain {
 	; Called when hProfileSelect changes through user interaction (They selected a new profile)
 	_ProfileSelectChanged(){
 		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
-		this._ChangeProfile(name)
+		this.ChangeProfile(name)
 	}
 	
 	; The user clicked the "Add Plugin" button
@@ -185,11 +185,13 @@ Class UCRMain {
 	}
 	
 	; We wish to change profile. This may happen due to user input, or application changing
-	_ChangeProfile(name, save := 1){
+	ChangeProfile(name, save := 1){
+		if (!ObjHasKey(this.Profiles, name))
+			return 0
 		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " name
 		if (IsObject(this.CurrentProfile)){
 			if (name = this.CurrentProfile.Name)
-				return
+				return 1
 			this.CurrentProfile._Hide()
 			if (!this.CurrentProfile._IsGlobal)
 				this.CurrentProfile._DeActivate()
@@ -201,6 +203,7 @@ Class UCRMain {
 		if (save){
 			this._ProfileChanged(this.CurrentProfile)
 		}
+		return 1
 	}
 	
 	; Populate hProfileSelect with a list of available profiles
@@ -252,7 +255,7 @@ Class UCRMain {
 			return
 		this.Profiles[name] := new _Profile(name)
 		this._UpdateProfileSelect()
-		this._ChangeProfile(Name)
+		this.ChangeProfile(Name)
 		
 	}
 	
@@ -263,7 +266,7 @@ Class UCRMain {
 			return
 		this.Profiles.Delete(name)
 		this._UpdateProfileSelect()
-		this._ChangeProfile("Default")
+		this.ChangeProfile("Default")
 	}
 	
 	_RenameProfile(){
@@ -330,7 +333,7 @@ Class UCRMain {
 		
 		this._UpdateProfileSelect()
 		this.Profiles.Global._Activate()
-		this._ChangeProfile(j.CurrentProfile, 0)
+		this.ChangeProfile(j.CurrentProfile, 0)
 	}
 	
 	; Save settings to disk
