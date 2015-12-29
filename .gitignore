@@ -8,3 +8,6 @@
 *.tmp.*
 _Ignore
 !*.dll
+/Plugins/*
+!.gitignore
+!/Plugins/Core
