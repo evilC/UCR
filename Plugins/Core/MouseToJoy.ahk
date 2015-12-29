@@ -32,13 +32,18 @@ class MouseToJoy extends _Plugin {
 		this.AddControl("AbsoluteTimeoutY", this.TimeoutChanged.Bind(this, "Y"), "Edit", "x120 w40 y" y_row, 10)
 		
 		; Relative Mode
-		Gui, Add, GroupBox, % "x185 ym w200 h" y_row+25, % "Relative Mode"
+		Gui, Add, GroupBox, % "x185 ym w90 h" y_row+25, % "Relative Mode"
 		;Gui, Add, Text, % "x200 w40 center y" title_row, Timeout
 		;this.AddControl("RelativeTimeoutX", this.TimeoutChanged.Bind(this, 2, "X"), "Edit", "x200 w40 y" x_row, 10)
 		;this.AddControl("RelativeTimeoutY", this.TimeoutChanged.Bind(this, 2, "Y"), "Edit", "x200 w40 y" y_row, 10)
-		Gui, Add, Text, % "x200 w40 center y" title_row-5, Scale Factor
-		this.AddControl("RelativeScaleFactorX", this.ScaleFactorChanged.Bind(this, "X"), "Edit", "x200 w40 y" x_row, 1)
-		this.AddControl("RelativeScaleFactorY", this.ScaleFactorChanged.Bind(this, "Y"), "Edit", "x200 w40 y" y_row, 1)
+		Gui, Add, Text, % "x185 w80 center y" title_row, Scale Factor
+		this.AddControl("RelativeScaleFactorX", this.ScaleFactorChanged.Bind(this, "X"), "Edit", "x200 w45 y" x_row, 1)
+		this.AddControl("RelativeScaleFactorY", this.ScaleFactorChanged.Bind(this, "Y"), "Edit", "x200 w45 y" y_row, 1)
+		
+		; Tweaks
+		Gui, Add, Text, % "x295 w20 center y" title_row, Invert
+		this.AddControl("InvertX", 0, "CheckBox", "x300 y" x_row, "", 0)
+		this.AddControl("InvertY", 0, "CheckBox", "x300 y" y_row, "", 0)
 		
 		; Outputs
 		this.AddOutputAxis("OutputAxisX", 0, "x420 w125 y" x_row)
@@ -80,11 +85,16 @@ class MouseToJoy extends _Plugin {
 			curr_x := x * this.AbsoluteThresholdFactor.X
 			curr_y := y * this.AbsoluteThresholdFactor.Y
 		} else {
+			if (this.GuiControls.InvertX.value)
+				x *= -1
 			curr_x += ( x * this.RelativeScaleFactor.X )
 			if (curr_x > 50)
 				curr_x := 50
 			else if (curr_x < -50)
 				curr_x := -50
+			
+			if (this.GuiControls.InvertY.value)
+				y *= -1
 			curr_y += ( y * this.RelativeScaleFactor.Y )
 			if (curr_y > 50)
 				curr_y := 50
