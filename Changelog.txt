@@ -9,6 +9,7 @@ Key:
   This is better practice, and also seems to solve crashes on some systems.
 = Split plugins folder into Core and User folders.
   This should allow easier upgrading if you have your own plugins.
+* If upgrading, it is advised that you back up your INI file and delete the old folder.
 
 0.0.1 - 25th Dec 2015
 + First versioned release
