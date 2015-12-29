@@ -276,7 +276,7 @@ Class UCRMain {
 	
 	; Load a list of available plugins
 	_LoadPluginList(){
-		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", F
+		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", FR
 		{
 			FileRead,plugincode,% A_LoopFileFullPath
 			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
