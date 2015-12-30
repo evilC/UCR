@@ -2,7 +2,7 @@
 
 #include Libraries\JSON.ahk
 OutputDebug DBGVIEWCLEAR
-
+SetBatchLines, -1
 global UCR	; set UCR as a super-global
 new UCRMain()
 return
@@ -2081,4 +2081,7 @@ class _Axis {
 
 GuiClose(hwnd){
 	UCR.GuiClose(hwnd)
+}
+UCR_OnMessageCreate(msg,hwnd,fnPtr){
+	OnMessage(msg+0,hwnd+0,Object(fnPtr+0))
 }

@@ -17,7 +17,7 @@ class _BindMapper {
 	JoystickCaps := []
 	
 	__New(CallbackPtr){
-		this.CallbackPtr := CallbackPtr
+		this.Callback := Object(CallbackPtr)
 		this.MasterThread := AhkExported()
 		this.GetJoystickCaps()
 		
@@ -76,7 +76,7 @@ class _BindMapper {
 	HotkeyEvent(e, type, code, deviceid){
 		if (!this.HotkeysEnabled || (type > 1 && !this.AllowJoystick))
 			return
-		this.MasterThread.AhkExec("Object(" this.CallbackPtr ").Call(" e "," type "," code "," deviceid ")")
+		this.Callback.Call(e,type,code,deviceid)
 	}
 	
 	; Simulate proper joystick button up events

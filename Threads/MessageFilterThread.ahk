@@ -36,11 +36,12 @@ Class MessageFilter {
 		this.FilterObj := this.FilterObj.Clone()
 		
 		this.MasterThread := AhkExported()		; Get link back to calling thread
-		this.CallbackPtr := CallbackPtr
+		this.Callback := Object(CallbackPtr)
 		
 		; Execute an OnMessage command in the master thread, but pass it a boundfunc in this thread
 		this.MessageHandlerFn := this.MessageHandler.Bind(this)
-		this.MasterThread.AhkExec("OnMessage(" this.MatchObj.msg "," this.MatchObj.hwnd ",Object(" &this.MessageHandlerFn "))")
+		;~ this.MasterThread.AhkExec("OnMessage(" this.MatchObj.msg "," this.MatchObj.hwnd ",Object(" &this.MessageHandlerFn "))")
+		this.MasterThread.ahkFunction("UCR_OnMessageCreate", this.MatchObj.msg "", this.MatchObj.hwnd "", (&this.MessageHandlerFn) "")
 	}
 	
 	MessageHandler(wParam,lParam,msg,hwnd){
@@ -51,6 +52,6 @@ Class MessageFilter {
 			}
 		}
 		; Filters passed - execute boundfunc callback in main thread and pass it the message
-		this.MasterThread.AhkExec("Object(" this.CallbackPtr ").Call(" wParam "," lParam "," msg "," hwnd ")")
+		this.Callback.Call(wParam,lParam,msg,hwnd)
 	}
 }

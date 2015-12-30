@@ -20,6 +20,7 @@ class _InputThread {
 	
 	__New(CallbackPtr){
 		this.CallbackPtr := CallbackPtr
+		this.Callback := Object(CallbackPtr)
 		this.MasterThread := AhkExported()
 		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
 		this.SetHotkeyState(0)
@@ -122,7 +123,8 @@ class _InputThread {
 	; Rename - handles axes too
 	InputEvent(hk, event){
 		; ToDo: Fix bug - The below line seems to be firing with empty event - even when no keys are pressed.
-		this.MasterThread.AhkExec("Object(" this.CallbackPtr ").Call(" &hk "," event ")")
+		this.Callback.Call(&hk,event)
+		
 		; Simulate up events for joystick buttons
 		if (hk.__value.Type = 2){
 			;OutputDebug % "Waiting for release of bindstring " this.Bindings[hk.hwnd]
@@ -130,7 +132,7 @@ class _InputThread {
 				Sleep 10
 			}
 			;OutputDebug % "release detected of bindstring " this.Bindings[hk.hwnd]
-			this.MasterThread.AhkExec("Object(" this.CallbackPtr ").Call(" &hk "," 0 ")")
+			this.Callback.Call(&hk,0)
 		}
 	}
 	

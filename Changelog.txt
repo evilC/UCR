@@ -5,6 +5,10 @@ Key:
 + : Added feature
 
 0.0.2 - UNRELEASED
+= AHK_H version updated
++ MouseDelta library added for reading of Delta Move information from mice.
++ Mouse to Joystick plugin added for controlling a vJoy stick using mouse.
+= Fix for: Leak of memory on each input event (eg button down/up, axis move).
 = When in Bind Mode, only joystick buttons and hats that actually exist are polled.
   This is better practice, and also seems to solve crashes on some systems.
 = Split plugins folder into Core and User folders.
