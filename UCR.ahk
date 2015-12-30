@@ -39,11 +39,12 @@ Class UCRMain {
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
 		
 		; Load the Joystick OEM name DLL
-		DllCall("LoadLibrary", Str, A_ScriptDir "\Resources\JoystickOEMName.dll")
-		if (ErrorLevel != 0){
-			MsgBox Error Loading \Resources\JoystickOEMName.dll. Exiting...
-			ExitApp
-		}
+		#DllImport,joystick_OEM_name,%A_ScriptDir%\Resources\JoystickOEMName.dll\joystick_OEM_name,double,,CDecl AStr
+		;~ DllCall("LoadLibrary", Str, A_ScriptDir "\Resources\JoystickOEMName.dll")
+		;~ if (ErrorLevel != 0){
+			;~ MsgBox Error Loading \Resources\JoystickOEMName.dll. Exiting...
+			;~ ExitApp
+		;~ }
 		; Provide a common repository of libraries for plugins (vJoy, HID libs etc)
 		this._LoadLibraries()
 		
@@ -1500,7 +1501,8 @@ class _InputAxis extends _BannerCombo {
 		}
 		Loop 8 {
 			;this._Options.push("Stick " A_Index )
-			this._Options.push(A_Index ": " DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr"))
+			;~ this._Options.push(A_Index ": " DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr"))
+			this._Options.push(A_Index ": " joystick_OEM_name(A_Index))
 		}
 		this._Options.push("Clear Binding")
 		this.SetComboState()
