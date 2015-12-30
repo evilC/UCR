@@ -882,23 +882,22 @@ Class _Profile {
 	
 	; Layout a plugin.
 	; Pass PluginOrder index to lay out, or leave blank to lay out last plugin
-	_LayoutPlugin(i := -1){
+	_LayoutPlugin(index := -1){
 		static SCROLLINFO:="UINT cbSize;UINT fMask;int  nMin;int  nMax;UINT nPage;int  nPos;int  nTrackPos"
 				,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO),fMask:4})
 		GetScrollInfo(this.hwnd,true,scroll[])
-		i := (i = -1 ? this.PluginOrder.length() : i)
+		i := (index = -1 ? this.PluginOrder.length() : index)
 		name := this.PluginOrder[i]
 		y := 0
 		if (i > 1){
+			ControlGetPos,,wy,,,,% "ahk_id " this.hwnd
 			prev := this.PluginOrder[i-1]
-			hwnd := this.Plugins[prev].hFrame
-			WinGetPos, , , , h, % "ahk_id " hwnd
-			y := this.Plugins[prev]._y + h
+			ControlGetPos,,y,,h,,% "ahk_id " this.Plugins[prev].hFrame
+			y += h - wy
 		}
-		y += 5 - scroll.nPos
+		y += 5 - (index=-1 ? 0 : scroll.nPos)
 		Gui, % this.Plugins[name].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
-		WinGetPos, , , , h, % "ahk_id " this.Plugins[name].hFrame
-		this.Plugins[name]._y:= y
+		ControlGetPos, , , , h, , % "ahk_id " this.Plugins[name].hFrame
 		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
 	}
 	
@@ -916,6 +915,7 @@ Class _Profile {
 	
 	; Delete a plugin
 	_RemovePlugin(plugin){
+		ControlGetPos, , , , height_frame, ,% "ahk_id " plugin.hFrame
 		Gui, % plugin.hwnd ":Destroy"
 		Gui, % plugin.hFrame ":Destroy"
 		Loop % this.PluginOrder.length(){
@@ -924,7 +924,9 @@ Class _Profile {
 				break
 			}
 		}
-		GuiControl, Move, % this.hSpacer, % "h10"	; Set spacer to 10
+		
+		ControlGetPos, , , , height_spacer, ,% "ahk_id " this.hSpacer
+		GuiControl, Move, % this.hSpacer, % "h" height_spacer - height_frame
 		this.Plugins.Delete(plugin.name)
 		this._PluginChanged(plugin)
 		this._LayoutPlugins()
