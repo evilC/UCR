@@ -643,16 +643,12 @@ Class _InputHandler {
 	InputEvent(ipt, state){
 		ipt := Object(ipt)	; Resolve input object back from pointer
 		if (ipt.__value.Suppress && state && ipt.State > 0){
+			; ToDo: don't do this check for axes
 			; Suppress repeats option
 			return
 		}
 		ipt.State := state
 		if (IsObject(ipt.ChangeStateCallback)){
-			; ToDo: don't do this check for axes
-			if (ipt.__value.Suppress && state && ipt.State){
-				; Suppress repeats option
-				return
-			}
 			ipt.ChangeStateCallback.Call(state)
 			ipt.ParentPlugin.InputEvent(ipt, state)
 		}
