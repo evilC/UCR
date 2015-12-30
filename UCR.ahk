@@ -924,6 +924,7 @@ Class _Profile {
 				break
 			}
 		}
+		GuiControl, Move, % this.hSpacer, % "h10"	; Set spacer to 10
 		this.Plugins.Delete(plugin.name)
 		this._PluginChanged(plugin)
 		this._LayoutPlugins()
