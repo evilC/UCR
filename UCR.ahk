@@ -903,11 +903,19 @@ Class _Profile {
 	
 	; Lays out all plugins
 	_LayoutPlugins(){
+		;~ static SCROLLINFO:="UINT cbSize;UINT fMask;int  nMin;int  nMax;UINT nPage;int  nPos;int  nTrackPos"
+				;~ ,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO)})
+		;~ scroll.fMask:=0x17
+		;~ GetScrollInfo(this.hwnd,true,scroll[])
+		;~ scrollPos:=scroll.nPos
 		max := this.PluginOrder.length()
 		if (max){
 			Loop % max{
 				this._LayoutPlugin(A_Index)
 			}
+			;~ GetScrollInfo(this.hwnd,true,scroll[])
+			;~ scroll.nPos:=scrollPos>scroll.nMax ? scroll.nMax : scrollPos
+			;~ SendMessage,0x115,0,% LoWord(4)|HiWord(scrollPos>scroll.nMax ? -scroll.nMax : -scrollPos),,% "ahk_id " this.hwnd
 		} else {
 			GuiControl, Move, % this.hSpacer, % "h10"
 		}
