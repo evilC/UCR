@@ -1500,7 +1500,7 @@ class _InputAxis extends _BannerCombo {
 		}
 		Loop 8 {
 			;this._Options.push("Stick " A_Index )
-			this._Options.push(A_Index ": " DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL Str"))
+			this._Options.push(A_Index ": " DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr"))
 		}
 		this._Options.push("Clear Binding")
 		this.SetComboState()
