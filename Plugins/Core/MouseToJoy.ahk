@@ -1,3 +1,7 @@
+/*
+Remaps mouse DELTA information (is unconcerned with cursor position, just cares about mouse movement) to joystick output.
+Features Absolute and Relative modes
+*/
 class MouseToJoy extends _Plugin {
 	Type := "Remapper (Mouse Axis To Joystick Axis)"
 	Description := "Converts mouse input delta information into two joystick axes"
