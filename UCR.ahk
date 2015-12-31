@@ -1218,6 +1218,10 @@ class _GuiControl {
 		this.__value := value
 		; Turn on the gLabel
 		this._SetGlabel(1)
+		
+		; Fire ChangeValueCallback so that any variables that depend on GuiControl values can be initialized
+		if (IsObject(ChangeValueCallback))
+			ChangeValueCallback.Call(value)
 	}
 	
 	__Delete(){
