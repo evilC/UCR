@@ -6,8 +6,9 @@ Key:
 
 0.0.2 - UNRELEASED
 = AHK_H version updated
++ Button To Axis remapper plugin added. Allows mapping of WSAD to vJoy
 + MouseDelta library added for reading of Delta Move information from mice.
-+ Mouse to Joystick plugin added for controlling a vJoy stick using mouse.
++ Mouse to Joystick remapper plugin added for controlling a vJoy stick using mouse.
 = Fix for: Leak of memory on each input event (eg button down/up, axis move).
 = When in Bind Mode, only joystick buttons and hats that actually exist are polled.
   This is better practice, and also seems to solve crashes on some systems.
