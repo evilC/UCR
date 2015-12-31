@@ -1154,6 +1154,10 @@ Class _Plugin {
 	
 	; The plugin was closed (deleted)
 	_Close(){
+		; Call plugin's OnDelete method, if it exists
+		if (IsFunc(this["OnDelete"])){
+			this.OnDelete()
+		}
 		; Remove input bindings etc here
 		; Some attempt is also made to free resources so destructors fire, though this is a WIP
 		for name, obj in this.InputButtons {

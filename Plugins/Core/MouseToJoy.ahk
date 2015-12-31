@@ -67,6 +67,12 @@ class MouseToJoy extends _Plugin {
 		this.MouseDelta.UnRegister()
 	}
 	
+	; Plugin was deleted - stop watching mouse
+	OnDelete(){
+		this.MouseDelta.UnRegister()
+		this.MouseDelta := ""
+	}
+	
 	;~ Calibrate(axis){
 		;~ static state := 0
 		;~ if (axis = "x"){
