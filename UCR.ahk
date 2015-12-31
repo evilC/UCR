@@ -878,6 +878,8 @@ Class _Profile {
 		this.Plugins[name].Type := plugin
 		this._LayoutPlugin()
 		UCR._ProfileChanged(this)
+		if (IsFunc(this.Plugins[name, "OnActive"]))
+			this.Plugins[name].OnActive()
 	}
 	
 	; Layout a plugin.
