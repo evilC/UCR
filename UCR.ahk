@@ -684,6 +684,11 @@ class _BindModeHandler {
 		fn := this._ProcessInput.Bind(this)
 		this._BindModeCallback := fn	; make sure boundfunc does not go out of scope - the other thread needs it
 		this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" &fn ")"]
+		
+		Gui, new, +HwndHwnd
+		Gui +ToolWindow -Border
+		this.hBindModePrompt := hwnd
+		Gui, Add, Text, Center, Press the button(s) you wish to bind to this input.`n`nBind Mode will end when you release a key.
 	}
 	
 	StartBindMode(hk, callback){
@@ -704,9 +709,9 @@ class _BindModeHandler {
 	; Turns on or off the hotkeys
 	SetHotkeyState(state, enablejoystick := 1){
 		if (state){
-			SplashTextOn, 300, 30, Bind  Mode, Press a key combination to bind
+			Gui, % this.hBindModePrompt ":Show"
 		} else {
-			SplashTextOff
+			Gui, % this.hBindModePrompt ":Hide"
 		}
 		this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
 	}
