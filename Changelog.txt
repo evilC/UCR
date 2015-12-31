@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.2 - UNRELEASED
+0.0.2 - 31st Dec 2015
 = AHK_H version updated
 + Button To Axis remapper plugin added. Allows mapping of WSAD to vJoy
 + MouseDelta library added for reading of Delta Move information from mice.
