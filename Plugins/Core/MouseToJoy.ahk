@@ -108,10 +108,14 @@ class MouseToJoy extends _Plugin {
 				curr_y := -50
 		}
 		;OutputDebug, % "x: " curr_x " (" StickOps.InternalToAHK(curr_x) "), y: " curr_y
-		this.OutputAxes.OutputAxisX.SetState(StickOps.InternalToVjoy(curr_x))
-		this.OutputAxes.OutputAxisY.SetState(StickOps.InternalToVjoy(curr_y))
-		GuiControl, , % this.hSliderX, % StickOps.InternalToAHK(curr_x)
-		GuiControl, , % this.hSliderY, % StickOps.InternalToAHK(curr_y)
+		if (this.OutputAxes.OutputAxisX.value.DeviceID && this.OutputAxes.OutputAxisX.value.Axis){
+			this.OutputAxes.OutputAxisX.SetState(StickOps.InternalToVjoy(curr_x))
+			GuiControl, , % this.hSliderX, % StickOps.InternalToAHK(curr_x)
+		}
+		if (this.OutputAxes.OutputAxisY.value.DeviceID && this.OutputAxes.OutputAxisY.value.Axis){
+			this.OutputAxes.OutputAxisY.SetState(StickOps.InternalToVjoy(curr_y))
+			GuiControl, , % this.hSliderY, % StickOps.InternalToAHK(curr_y)
+		}
 	}
 	
 	ModeSelect(value){
