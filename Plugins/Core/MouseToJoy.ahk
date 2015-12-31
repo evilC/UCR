@@ -1,5 +1,5 @@
 class MouseToJoy extends _Plugin {
-	Type := "Mouse Axis To Joystick Axis"
+	Type := "Remapper (Mouse Axis To Joystick Axis)"
 	Description := "Converts mouse input delta information into two joystick axes"
 	AbsoluteThresholdFactor := {x: 10, y: 10}
 	AbsoluteTimeout := {x: 10, y: 10}
