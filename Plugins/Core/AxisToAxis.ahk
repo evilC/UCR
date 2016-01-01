@@ -39,9 +39,7 @@ class AxisToAxis extends _Plugin {
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
 		static StickOps := UCR.Libraries.StickOps
-		static OutAxis := 0
-		if (OutAxis == 0)
-			OutAxis := this.OutputAxes.OutputAxis
+		static OutAxis := this.OutputAxes.OutputAxis
 		
 		GuiControl, , % this.hSliderIn, % value
 		value := StickOps.AHKToInternal(value)
