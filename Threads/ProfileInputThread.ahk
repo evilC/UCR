@@ -20,7 +20,7 @@ class _InputThread {
 	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
 	
 	__New(CallbackPtr){
-		this.CallbackPtr := CallbackPtr
+		;~ this.Callback := CriticalObject(CallbackPtr)
 		this.Callback := Object(CallbackPtr)
 		this.MasterThread := AhkExported()
 		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
