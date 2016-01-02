@@ -6,6 +6,7 @@ Done in a separate thread for the following reasons:
 */
 #Persistent
 #NoTrayIcon
+#MaxHotkeysPerInterval 9999
 autoexecute_done := 1
 return
 
