@@ -55,6 +55,18 @@ Class UCRMain {
 		; Create the Main Gui
 		this._CreateGui()
 		
+		; Load settings. This will cause all plugins to load.
+		p := this._LoadSettings()
+
+		this._UpdateProfileSelect()
+		
+
+		; Now we have settings from disk, move the window to it's last position and size
+		this._ShowGui()
+		
+		this.Profiles.Global._Activate()
+		this.ChangeProfile(p, 0)
+
 		; Watch window position and size using MessageFilter thread
 		this._MessageFilterThread := AhkThread(A_ScriptDir "\Threads\MessageFilterThread.ahk",,1)
 		While !this._MessageFilterThread.ahkgetvar.autoexecute_done
@@ -68,18 +80,6 @@ Class UCRMain {
 		fn := this._OnMove.Bind(this)
 		this._OnMoveCallback := fn
 		this._MessageFilterThread.ahkExec["new MessageFilter(" &fn "," &matchobj "," &filterobj ")"]
-		
-		; Load settings. This will cause all plugins to load.
-		p := this._LoadSettings()
-
-		this._UpdateProfileSelect()
-		
-		this._ShowGui()
-		
-		this.Profiles.Global._Activate()
-		this.ChangeProfile(p, 0)
-
-		; Now we have settings from disk, move the window to it's last position and size
 	}
 	
 	GuiClose(hwnd){
