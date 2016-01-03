@@ -9,6 +9,7 @@ Key:
   Adding one can be tricky (You will have to use keyboard to manipulate the Output Axis Combos)...
   ... But once you have added one, it will effectively break UCR - crashes all over the place :(
   You will also not be able to remove the plugin via the GUI.
+= AHK_H version updated
 = Mouse Delta input now fires InputEvent like the other inputs
 = InputEvent callbacks are now "Critical Objects".
   Input from the global profile at the same time as the active profile should no longer crash UCR.
