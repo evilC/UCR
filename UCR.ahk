@@ -719,7 +719,7 @@ Class _Profile {
 	_IsGlobal := 0
 	
 	__New(name){
-		;~ static fn
+		static fn
 		this.Name := name
 		if (this.Name = "global"){
 			this._IsGlobal := 1
@@ -727,9 +727,9 @@ Class _Profile {
 		this._InputThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this._InputThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		;~ if !fn
-			;~ fn := CriticalObject(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler))
-		fn := UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)
+		if !fn
+			fn := CriticalObject(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler))
+		;fn := UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)
 		this._InputEventCallback := fn	; ensure BoundFunc does not go out of scope
 		this._InputThread.ahkExec("InputThread := new _InputThread(" &fn ")")
 		this._CreateGui()
