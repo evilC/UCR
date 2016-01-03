@@ -135,7 +135,6 @@ class _InputThread {
 			this.MouseDeltaMappings[DeltaObj.hwnd] := DeltaObj
 		}
 		if (this.MouseDeltaMappings == {}){
-			OutputDebug Turning mouse detection off
 			this.UnRegisterMouse()
 		} else {
 			this.RegisterMouse()
@@ -202,10 +201,8 @@ class _InputThread {
 			; It doesn't matter if the GUI is showing, as long as it exists
 			NumPut(this.hwnd, RAWINPUTDEVICE, 8, "Uint")
 		}
-		r := DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
-
+		DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
 		OnMessage(0x00FF, this.MouseMoveFn, -1)
-		OutputDebug % "Turning mouse detection on: " r ", " ErrorLevel
 	}
 	
 	UnRegisterMouse(){
