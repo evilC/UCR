@@ -61,15 +61,14 @@ class MouseToJoy extends _Plugin {
 		;this.AddControl("RelativeRadio", 0, "Radio", "x270 ym",, 0)
 		this.AddControl("ModeSelect", this.ModeSelect.Bind(this), "DDL", "x575 w100 ym AltSubmit", "Mode: Absolute||Mode: Relative")
 		this.AddInputDelta("MouseDelta", this.MouseEvent.Bind(this))
-		;this.MouseDelta := new UCR.MouseDelta(this.MouseEvent.Bind(this))
 	}
 	
 	OnActive(){
-		;this.MouseDelta.Register()
+		this.InputDeltas.MouseDelta.Register()
 	}
 	
 	OnInactive(){
-		;this.MouseDelta.UnRegister()
+		this.InputDeltas.MouseDelta.UnRegister()
 	}
 	
 	; Plugin was deleted - stop watching mouse

@@ -1087,6 +1087,7 @@ Class _Plugin {
 	
 	; The plugin was closed (deleted)
 	_Close(){
+		; ToDo: These should call UCR.RequestXxxBinding, as bindings were added that way
 		; Call plugin's OnDelete method, if it exists
 		if (IsFunc(this["OnDelete"])){
 			this.OnDelete()
@@ -1584,47 +1585,26 @@ class _InputDelta {
 		this.ParentPlugin := parent
 		this.Name := name
 		this.hwnd := parent.hwnd	; no gui for this input, so use hwnd of parent for unique id
+		this.value := 0
 	}
 
-	; Get / Set of .value
-	value[]{
-		; Read of current contents of GuiControl
-		get {
-			return this.__value
-		}
-		
-		; When the user types something in a guicontrol, this gets called
-		; Fire _ControlChanged on parent so new setting can be saved
-		set {
-			this._value := value
-			this.ParentPlugin._ControlChanged(this)
-		}
+	Register(){
+		this.value := 1
+		UCR.RequestDeltaBinding(this)
 	}
 	
-	; Get / Set of ._value
-	_value[]{
-		; this will probably not get called
-		get {
-			return this.__value
-		}
-		; Update contents of GuiControl, but do not fire _ControlChanged
-		; Parent has told child state to be in, child does not need to notify parent of change in state
-		set {
-			this.__value := value
-			if (IsObject(this.ChangeValueCallback)){
-				this.ChangeValueCallback.Call(this.__value)
-			}
-		}
+	UnRegister(){
+		this.value := 0
+		UCR.RequestDeltaBinding(this)
 	}
 	
 	_Serialize(){
-		obj := {value: this._value}
+		obj := {value: this.value}
 		return obj
 	}
 	
 	_Deserialize(obj){
-		this._value := obj.value
-		UCR.RequestDeltaBinding(this)
+		this.value := obj.value
 	}
 }
 

@@ -129,6 +129,8 @@ class _InputThread {
 	
 	SetDeltaBinding(DeltaObj, delete := 0){
 		DeltaObj := Object(DeltaObj)
+		if (DeltaObj.value == "")	; ToDo: bit of a bodge. Fix. Remove delete param?
+			delete := 1
 		if (delete){
 			this.MouseDeltaMappings.Delete(DeltaObj.hwnd)
 		} else {
