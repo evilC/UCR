@@ -422,6 +422,11 @@ Class UCRMain {
 		this._InputHandler.SetAxisBinding(axis)
 	}
 	
+	; Request a Mouse Axis Delta binding
+	RequestDeltaBinding(delta){
+		this._InputHandler.SetDeltaBinding(delta)
+	}
+	
 	_GetUniqueName(){
 		c := 1
 		; Find a unuqe name to suggest as a new name
@@ -472,98 +477,6 @@ Class UCRMain {
 			this.CurrentPos := obj.CurrentPos
 	}
 	
-	; ================================== MOUSEDELTA LIBRARY ========================================
-	; Instantiate this class and pass it a func name or a Function Object
-	; The specified function will be called with the delta move for the X and Y axes
-	; Normally, there is no windows message "mouse stopped", so one is simulated.
-	; After 10ms of no mouse movement, the callback is called with 0 for X and Y
-	Class MouseDelta {
-		__New(callback, timeout := 10){
-			this.TimeOutDuration := timeout
-			this.TimeoutFn := this.TimeoutFunc.Bind(this)
-			this.MoveFn := this.MouseMoved.Bind(this)
-			this.Callback := callback
-		}
-	 
-		__Delete(){
-			this.UnRegister()
-		}
-		
-		Register(){
-			static RIDEV_INPUTSINK := 0x00000100
-			; Register mouse for WM_INPUT messages.
-			static DevSize := 8 + A_PtrSize
-			static RAWINPUTDEVICE := 0
-			if (RAWINPUTDEVICE == 0){
-				VarSetCapacity(RAWINPUTDEVICE, DevSize)
-				NumPut(1, RAWINPUTDEVICE, 0, "UShort")
-				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
-				NumPut(RIDEV_INPUTSINK, RAWINPUTDEVICE, 4, "Uint")
-				; WM_INPUT needs a hwnd to route to, so get the hwnd of the AHK Gui.
-				; It doesn't matter if the GUI is showing, as long as it exists
-				NumPut(UCR.hwnd, RAWINPUTDEVICE, 8, "Uint")
-			}
-			r := DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
-			
-			OnMessage(0x00FF, this.MoveFn, -1)
-		}
-		
-		UnRegister(){
-			static RIDEV_REMOVE := 0x00000001
-			static DevSize := 8 + A_PtrSize
-			
-			fn := this.TimeoutFn
-			SetTimer, % fn, Off
-			
-			;RAWINPUTDEVICE := this.RAWINPUTDEVICE
-			static RAWINPUTDEVICE := 0
-			if (RAWINPUTDEVICE == 0){
-				VarSetCapacity(RAWINPUTDEVICE, DevSize)
-				NumPut(1, RAWINPUTDEVICE, 0, "UShort")
-				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
-				NumPut(RIDEV_REMOVE, RAWINPUTDEVICE, 4, "Uint")
-			}
-			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 0, "UInt", DevSize )
-			OnMessage(0x00FF, this.MoveFn, 0)
-		}
-	 
-		SetTimeOut(t){
-			this.TimeOutDuration := t
-		}
-		
-		; Called when the mouse moved.
-		; Messages tend to contain small (+/- 1) movements, and happen frequently (~20ms)
-		MouseMoved(wParam, lParam){
-			; RawInput statics
-			static DeviceSize := 2 * A_PtrSize, iSize := 0, sz := 0, offsets := {x: (20+A_PtrSize*2), y: (24+A_PtrSize*2)}, uRawInput
-	 
-			static axes := {x: 1, y: 2}
-	 
-			; Find size of rawinput data - only needs to be run the first time.
-			if (!iSize){
-				r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", 0, "UInt*", iSize, "UInt", 8 + (A_PtrSize * 2))
-				VarSetCapacity(uRawInput, iSize)
-			}
-			sz := iSize	; param gets overwritten with # of bytes output, so preserve iSize
-			; Get RawInput data
-			r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", &uRawInput, "UInt*", sz, "UInt", 8 + (A_PtrSize * 2))
-	 
-			x := NumGet(&uRawInput, offsets.x, "Int")
-			y := NumGet(&uRawInput, offsets.y, "Int")
-	 
-			this.Callback.(x, y)
-	 
-			; There is no message for "Stopped", so simulate one
-			fn := this.TimeoutFn
-			SetTimer, % fn, % -this.TimeOutDuration
-		}
-	 
-		TimeoutFunc(){
-			this.Callback.(0, 0)
-		}
-	 
-	}
-
 }
 ; =================================================================== INPUT HANDLER ==========================================================
 ; Manages input (ie keyboard, mouse, joystick) during "normal" operation (ie when not in Bind Mode)
@@ -588,6 +501,10 @@ Class _InputHandler {
 	; Set an Axis Binding
 	SetAxisBinding(AxisObj){
 		AxisObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" &AxisObj ")")
+	}
+	
+	SetDeltaBinding(DeltaObj){
+		DeltaObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" &DeltaObj ")")
 	}
 	
 	; Check InputButtons for duplicates etc
@@ -1034,10 +951,11 @@ Class _Plugin {
 	Name := ""					; The name the user chose for the plugin
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
 	InputButtons := {}			; An associative array, indexed by name, of child Input Buttons (aka Hotkeys)
+	InputDeltas := {}
 	OutputButtons := {}			; An associative array, indexed by name, of child Output Buttons
 	InputAxes := {}				; An associative array, indexed by name, of child Input Axes
 	OutputAxes := {}			; An associative array, indexed by name, of child Output (virtual) Axes
-	_SerializeList := ["GuiControls", "InputButtons", "OutputButtons", "InputAxes", "OutputAxes"]
+	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes"]
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -1066,6 +984,13 @@ Class _Plugin {
 		if (!ObjHasKey(this.InputAxes,name)){
 			this.InputAxes[name] := new _InputAxis(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 			return this.InputAxes[name]
+		}
+	}
+	
+	AddInputDelta(name, ChangeStateCallback, aParams*){
+		if (!ObjHasKey(this.InputDeltas,name)){
+			this.InputDeltas[name] := new _InputDelta(this, name, ChangeStateCallback, aParams*)
+			return this.InputDeltas[name]
 		}
 	}
 	
@@ -1177,6 +1102,10 @@ Class _Plugin {
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputButtons {
+			obj._KillReferences()
+		}
+		for name, obj in this.InputDeltas {
+			this.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" &obj ",1)")
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputAxes {
@@ -1644,6 +1573,58 @@ class _InputAxis extends _BannerCombo {
 	_Deserialize(obj){
 		this._value := obj.value
 		UCR.RequestAxisBinding(this)
+	}
+}
+
+; ======================================================================== INPUT DELTA ===============================================================
+; An input that reads delta move information from the mouse
+class _InputDelta {
+	__New(parent, name, ChangeStateCallback, aParams*){
+		this.ChangeStateCallback := ChangeStateCallback
+		this.ParentPlugin := parent
+		this.Name := name
+		this.hwnd := parent.hwnd	; no gui for this input, so use hwnd of parent for unique id
+	}
+
+	; Get / Set of .value
+	value[]{
+		; Read of current contents of GuiControl
+		get {
+			return this.__value
+		}
+		
+		; When the user types something in a guicontrol, this gets called
+		; Fire _ControlChanged on parent so new setting can be saved
+		set {
+			this._value := value
+			this.ParentPlugin._ControlChanged(this)
+		}
+	}
+	
+	; Get / Set of ._value
+	_value[]{
+		; this will probably not get called
+		get {
+			return this.__value
+		}
+		; Update contents of GuiControl, but do not fire _ControlChanged
+		; Parent has told child state to be in, child does not need to notify parent of change in state
+		set {
+			this.__value := value
+			if (IsObject(this.ChangeValueCallback)){
+				this.ChangeValueCallback.Call(this.__value)
+			}
+		}
+	}
+	
+	_Serialize(){
+		obj := {value: this._value}
+		return obj
+	}
+	
+	_Deserialize(obj){
+		this._value := obj.value
+		UCR.RequestDeltaBinding(this)
 	}
 }
 

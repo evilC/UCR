@@ -18,12 +18,18 @@ class _InputThread {
 	HatStates := {}
 	JoystickTimerState := 0
 	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
+	MouseDeltaMappings := {}
 	
 	__New(CallbackPtr){
 		;~ this.Callback := CriticalObject(CallbackPtr)
 		this.Callback := Object(CallbackPtr)
 		this.MasterThread := AhkExported()
+		Gui, +HwndHwnd		; Get a unique hwnd so we can register for messages
+		this.hwnd := hwnd
 		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
+		this.MouseTimeOutDuration := 10	; ToDo: Allow changing
+		this.MouseTimeoutFn := this.OnMouseTimeout.Bind(this)
+		this.MouseMoveFn := this.OnMouseMove.Bind(this)
 		this.SetHotkeyState(0)
 	}
 	
@@ -121,6 +127,21 @@ class _InputThread {
 			this.SetJoystickTimerState(1)
 	}
 	
+	SetDeltaBinding(DeltaObj, delete := 0){
+		DeltaObj := Object(DeltaObj)
+		if (delete){
+			this.MouseDeltaMappings.Delete(DeltaObj.hwnd)
+		} else {
+			this.MouseDeltaMappings[DeltaObj.hwnd] := DeltaObj
+		}
+		if (this.MouseDeltaMappings == {}){
+			OutputDebug Turning mouse detection off
+			this.UnRegisterMouse()
+		} else {
+			this.RegisterMouse()
+		}
+	}
+	
 	; Rename - handles axes too
 	InputEvent(hk, event){
 		; ToDo: Fix bug - The below line seems to be firing with empty event - even when no keys are pressed.
@@ -164,6 +185,80 @@ class _InputThread {
 					this.InputEvent(HatObj, state)
 				}
 			}
+		}
+	}
+	
+	RegisterMouse(){
+		static RIDEV_INPUTSINK := 0x00000100
+		; Register mouse for WM_INPUT messages.
+		static DevSize := 8 + A_PtrSize
+		static RAWINPUTDEVICE := 0
+		if (RAWINPUTDEVICE == 0){
+			VarSetCapacity(RAWINPUTDEVICE, DevSize)
+			NumPut(1, RAWINPUTDEVICE, 0, "UShort")
+			NumPut(2, RAWINPUTDEVICE, 2, "UShort")
+			NumPut(RIDEV_INPUTSINK, RAWINPUTDEVICE, 4, "Uint")
+			; WM_INPUT needs a hwnd to route to, so get the hwnd of the AHK Gui.
+			; It doesn't matter if the GUI is showing, as long as it exists
+			NumPut(this.hwnd, RAWINPUTDEVICE, 8, "Uint")
+		}
+		r := DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
+
+		OnMessage(0x00FF, this.MouseMoveFn, -1)
+		OutputDebug % "Turning mouse detection on: " r ", " ErrorLevel
+	}
+	
+	UnRegisterMouse(){
+		static RIDEV_REMOVE := 0x00000001
+		static DevSize := 8 + A_PtrSize
+		
+		fn := this.TimeoutFn
+		SetTimer, % fn, Off
+		
+		;RAWINPUTDEVICE := this.RAWINPUTDEVICE
+		static RAWINPUTDEVICE := 0
+		if (RAWINPUTDEVICE == 0){
+			VarSetCapacity(RAWINPUTDEVICE, DevSize)
+			NumPut(1, RAWINPUTDEVICE, 0, "UShort")
+			NumPut(2, RAWINPUTDEVICE, 2, "UShort")
+			NumPut(RIDEV_REMOVE, RAWINPUTDEVICE, 4, "Uint")
+		}
+		DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 0, "UInt", DevSize )
+		OnMessage(0x00FF, this.MouseMoveFn, 0)
+	}
+	
+	; Called when the mouse moved.
+	; Messages tend to contain small (+/- 1) movements, and happen frequently (~20ms)
+	OnMouseMove(wParam, lParam){
+		; RawInput statics
+		static DeviceSize := 2 * A_PtrSize, iSize := 0, sz := 0, offsets := {x: (20+A_PtrSize*2), y: (24+A_PtrSize*2)}, uRawInput
+ 
+		static axes := {x: 1, y: 2}
+ 
+		; Find size of rawinput data - only needs to be run the first time.
+		if (!iSize){
+			r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", 0, "UInt*", iSize, "UInt", 8 + (A_PtrSize * 2))
+			VarSetCapacity(uRawInput, iSize)
+		}
+		sz := iSize	; param gets overwritten with # of bytes output, so preserve iSize
+		; Get RawInput data
+		r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", &uRawInput, "UInt*", sz, "UInt", 8 + (A_PtrSize * 2))
+ 
+		x := NumGet(&uRawInput, offsets.x, "Int")
+		y := NumGet(&uRawInput, offsets.y, "Int")
+ 
+		for hwnd, obj in this.MouseDeltaMappings {
+			this.InputEvent(obj, {x: x, y: y})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
+		}
+ 
+		; There is no message for "Stopped", so simulate one
+		fn := this.MouseTimeoutFn
+		SetTimer, % fn, % -this.MouseTimeOutDuration
+	}
+	
+	OnMouseTimeout(){
+		for hwnd, obj in this.MouseDeltaMappings {
+			this.InputEvent(obj, {x: 0, y: 0})
 		}
 	}
 }

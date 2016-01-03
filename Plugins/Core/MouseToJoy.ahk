@@ -60,21 +60,22 @@ class MouseToJoy extends _Plugin {
 		;this.AddControl("AbsoluteRadio", 0, "Radio", "x150 ym",, 1)
 		;this.AddControl("RelativeRadio", 0, "Radio", "x270 ym",, 0)
 		this.AddControl("ModeSelect", this.ModeSelect.Bind(this), "DDL", "x575 w100 ym AltSubmit", "Mode: Absolute||Mode: Relative")
-		this.MouseDelta := new UCR.MouseDelta(this.MouseEvent.Bind(this))
+		this.AddInputDelta("MouseDelta", this.MouseEvent.Bind(this))
+		;this.MouseDelta := new UCR.MouseDelta(this.MouseEvent.Bind(this))
 	}
 	
 	OnActive(){
-		this.MouseDelta.Register()
+		;this.MouseDelta.Register()
 	}
 	
 	OnInactive(){
-		this.MouseDelta.UnRegister()
+		;this.MouseDelta.UnRegister()
 	}
 	
 	; Plugin was deleted - stop watching mouse
 	OnDelete(){
-		this.MouseDelta.UnRegister()
-		this.MouseDelta := ""
+		;this.MouseDelta.UnRegister()
+		;this.MouseDelta := ""
 	}
 	
 	;~ Calibrate(axis){
@@ -86,7 +87,10 @@ class MouseToJoy extends _Plugin {
 		;~ }
 	;~ }
 	
-	MouseEvent(x := 0, y := 0){
+	;MouseEvent(x := 0, y := 0){
+	MouseEvent(value){
+		x := value.x, y := value.y
+		;OutputDebug % "Plugin - X: " x ", Y: " y
 		; The "Range" for a given axis is -50 to +50
 		static curr_x := 0, curr_y := 0
 		static StickOps := UCR.Libraries.StickOps
@@ -133,7 +137,7 @@ class MouseToJoy extends _Plugin {
 	
 	TimeoutChanged(axis, value){
 		this.AbsoluteTimeout[axis] := value
-		this.MouseDelta.SetTimeOut(value)
+		;this.MouseDelta.SetTimeOut(value)
 	}
 	
 	; === Relative Mode variable changed
