@@ -4,6 +4,14 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.3 - UNRELEASED
+= Mouse Delta input now fires InputEvent like the other inputs
+= InputEvent is now "thread safe"
+  Input from the global profile at the same time as the active profile should no longer crash UCR.
+= Spamming button inputs quickly should no longer result in a "MaxHotkeysPerInterval" warning.
+= Fix for current profile being forgotten on exit.
+= Fix for multiple AxisToAxis plugins all using same output.
+
 0.0.2 - 31st Dec 2015
 = AHK_H version updated
 + Button To Axis remapper plugin added. Allows mapping of WSAD to vJoy
