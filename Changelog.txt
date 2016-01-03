@@ -4,9 +4,13 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.3 - UNRELEASED
+0.0.3 - 3rd Jan 2016
+! WARNING: The Mouse To Joystick plugin is DANGEROUS in this version.
+  Adding one can be tricky (You will have to use keyboard to manipulate the Output Axis Combos)...
+  ... But once you have added one, it will effectively break UCR - crashes all over the place :(
+  You will also not be able to remove the plugin via the GUI.
 = Mouse Delta input now fires InputEvent like the other inputs
-= InputEvent is now "thread safe"
+= InputEvent callbacks are now "Critical Objects".
   Input from the global profile at the same time as the active profile should no longer crash UCR.
 = Spamming button inputs quickly should no longer result in a "MaxHotkeysPerInterval" warning.
 = Fix for current profile being forgotten on exit.
