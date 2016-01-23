@@ -22,7 +22,7 @@ class _InputThread {
 	
 	__New(CallbackPtr){
 		;~ this.Callback := CriticalObject(CallbackPtr)
-		this.Callback := Object(CallbackPtr)
+		this.Callback := ObjShare(CallbackPtr)
 		this.MasterThread := AhkExported()
 		Gui, +HwndHwnd		; Get a unique hwnd so we can register for messages
 		this.hwnd := hwnd
@@ -33,12 +33,33 @@ class _InputThread {
 		this.SetHotkeyState(0)
 	}
 	
+	; All input flows from here back to the main thread
+	InputEvent(hk, event){
+		; ToDo: Fix bug - The below line seems to be firing with empty event - even when no keys are pressed.
+		this.Callback.Call(hk._Ptr,event)
+		
+		; Simulate up events for joystick buttons
+		if (hk.__value.Type = 2){
+			;OutputDebug % "Waiting for release of bindstring " this.Bindings[hk.hwnd]
+			while (GetKeyState(this.Bindings[hk.hwnd])){
+				Sleep 10
+			}
+			;OutputDebug % "release detected of bindstring " this.Bindings[hk.hwnd]
+			this.Callback.Call(hk._Ptr,0)
+		}
+	}
+
 	; rename - handles axes too
+	; The main thread requested a change in state of input
 	SetHotkeyState(state){
 		if (state){
 			Suspend, Off
+			if (MouseDeltaMappings != {})
+				this.RegisterMouse()
 		} else {
 			Suspend, On
+			if (MouseDeltaMappings != {})
+				this.UnRegisterMouse()
 		}
 		this.SetJoystickTimerState(state)
 	}
@@ -53,12 +74,18 @@ class _InputThread {
 		}
 		this.JoystickTimerState := state
 	}
+
+	; The main thread asked for a change in button binding.
+	SetButtonBinding(hk, hkstring := ""){
+		; Allow call from main thread to return before attempting to use the object it passed.
+		fn := this.SetButtonBindingCallback.Bind(this,ObjShare(hk))
+		SetTimer,% fn,-1
+	}
 	
 	; Sets a button binding.
 	; This can either be using AHK hotkeys (for regular keyboard, mouse, joystick button down events etc)...
 	; ... or for "emulated" events such as joystick hat direction press/release, or simulating "proper" up events for joystick buttons
-	SetButtonBinding(hk, hkstring := ""){
-		hk := Object(hk)
+	SetButtonBindingCallback(hk){
 		hwnd := hk.hwnd
 		; ToDo: Fix bug: If old binding was a different type, it will not get removed
 		if (hk.__value.Type = 3){
@@ -108,13 +135,18 @@ class _InputThread {
 			}
 		}
 	}
+
+	; The main thread requested a change in axis binding
+	SetAxisBinding(AxisObj, delete := 0){
+		fn := this.SetAxisBindingCallBack.Bind(this,ObjShare(AxisObj))
+		SetTimer,% fn,-1
+	}
 	
 	; Cause an axis to be watched, and fire a callback when it changes.
 	; AxisObj is the Axis GuiControl object.
 	; Set delete to 1 to force a delete (so if you delete a plugin still set to an axis, you can force a delete)
-	SetAxisBinding(AxisObj, delete := 0){
+	SetAxisBindingCallBack(AxisObj){
 		static AHKAxisList := ["X","Y","Z","R","U","V"]
-		AxisObj := Object(AxisObj)
 		oldstate := this.JoystickTimerState
 		if (oldstate)
 			this.SetJoystickTimerState(0)
@@ -127,8 +159,14 @@ class _InputThread {
 			this.SetJoystickTimerState(1)
 	}
 	
+	; The main thread requested a (mouse) delta binding
 	SetDeltaBinding(DeltaObj, delete := 0){
-		DeltaObj := Object(DeltaObj)
+		fn := this.SetDeltaBindingCallBack.Bind(this,ObjShare(DeltaObj))
+		SetTimer,% fn,-1
+	}
+	
+	; Subscribes to "delta" mouse movement
+	SetDeltaBindingCallBack(DeltaObj){
 		if (DeltaObj.value == "")	; ToDo: bit of a bodge. Fix. Remove delete param?
 			delete := 1
 		if (delete){
@@ -142,23 +180,7 @@ class _InputThread {
 			this.RegisterMouse()
 		}
 	}
-	
-	; Rename - handles axes too
-	InputEvent(hk, event){
-		; ToDo: Fix bug - The below line seems to be firing with empty event - even when no keys are pressed.
-		this.Callback.Call(&hk,event)
-		
-		; Simulate up events for joystick buttons
-		if (hk.__value.Type = 2){
-			;OutputDebug % "Waiting for release of bindstring " this.Bindings[hk.hwnd]
-			while (GetKeyState(this.Bindings[hk.hwnd])){
-				Sleep 10
-			}
-			;OutputDebug % "release detected of bindstring " this.Bindings[hk.hwnd]
-			this.Callback.Call(&hk,0)
-		}
-	}
-	
+
 	; Polls state of joystick for change in axis or POV hat state
 	JoystickWatcher(){
 		for hwnd, o in this.Axes {
@@ -211,7 +233,7 @@ class _InputThread {
 		static RIDEV_REMOVE := 0x00000001
 		static DevSize := 8 + A_PtrSize
 		
-		fn := this.TimeoutFn
+		fn := this.MouseTimeoutFn
 		SetTimer, % fn, Off
 		
 		;RAWINPUTDEVICE := this.RAWINPUTDEVICE

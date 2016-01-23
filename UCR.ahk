@@ -494,17 +494,17 @@ Class _InputHandler {
 		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
 		bindstring := this.BuildHotkeyString(BtnObj.value)
 		; Set binding in Profile's InputThread
-		BtnObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" &BtnObj ",""" bindstring """)")
+		BtnObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" ObjShare(BtnObj) ",""" bindstring """)")
 		return 1
 	}
 	
 	; Set an Axis Binding
 	SetAxisBinding(AxisObj){
-		AxisObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" &AxisObj ")")
+		AxisObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" ObjShare(AxisObj) ")")
 	}
 	
 	SetDeltaBinding(DeltaObj){
-		DeltaObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" &DeltaObj ")")
+		DeltaObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" ObjShare(DeltaObj) ")")
 	}
 	
 	; Check InputButtons for duplicates etc
@@ -727,11 +727,7 @@ Class _Profile {
 		this._InputThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this._InputThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		if !fn
-			fn := CriticalObject(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler))
-		;fn := UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)
-		this._InputEventCallback := fn	; ensure BoundFunc does not go out of scope
-		this._InputThread.ahkExec("InputThread := new _InputThread(" &fn ")")
+		this._InputThread.ahkExec("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")")
 		this._CreateGui()
 	}
 	
@@ -1095,18 +1091,18 @@ Class _Plugin {
 		; Remove input bindings etc here
 		; Some attempt is also made to free resources so destructors fire, though this is a WIP
 		for name, obj in this.InputButtons {
-			this.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" &obj ")")
+			this.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" ObjShare(obj) ")")
 			obj._KillReferences()
 		}
 		for Name, obj in this.InputAxes {
-			this.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" &obj ",1)")
+			this.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" ObjShare(obj) ",1)")
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputButtons {
 			obj._KillReferences()
 		}
 		for name, obj in this.InputDeltas {
-			this.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" &obj ",1)")
+			this.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" ObjShare(obj) ",1)")
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputAxes {
@@ -1248,6 +1244,7 @@ class _GuiControl {
 class _BannerCombo {
 	__New(ParentHwnd, aParams*){
 		this._ParentHwnd := ParentHwnd
+		this._Ptr := &this
 		Gui, % this._ParentHwnd ":Add", % "Combobox", % "hwndhwnd " aParams[1], % aParams[2]
 		this.hwnd := hwnd
 		
@@ -1581,6 +1578,7 @@ class _InputAxis extends _BannerCombo {
 ; An input that reads delta move information from the mouse
 class _InputDelta {
 	__New(parent, name, ChangeStateCallback, aParams*){
+		this._Ptr := &this
 		this.ChangeStateCallback := ChangeStateCallback
 		this.ParentPlugin := parent
 		this.Name := name
