@@ -4,6 +4,19 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.4 - 24th Jan 2016
++ Profile Switcher plugin added to allow changing profile using a hotkey.
+  This can be placed in the global profile to always be in effect.
++ Basic Joystick Axis to Button remapper plugin added.
++ Settings file is now written after one second's inactivity, rather than on every change.
++ Fix for Gui getting "Lost" when you minimized it.
+  If this happened to you, edit your INI file and reset the x and y coordinates at the top to 0.
++ vJoy API calls optimized.
+= State property added to Output GuiControls, to match input GuiControls.
+= AHK_H version updated
+= Objects which are used in multiple threads are shared via COM using new AHK_H function ObjShare().
+
+
 0.0.3 - 3rd Jan 2016
 ! WARNING: The Mouse To Joystick plugin is DANGEROUS in this version.
   Adding one can be tricky (You will have to use keyboard to manipulate the Output Axis Combos)...
