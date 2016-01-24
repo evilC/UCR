@@ -71,15 +71,11 @@ Class UCRMain {
 		this._MessageFilterThread := AhkThread(A_ScriptDir "\Threads\MessageFilterThread.ahk",,1)
 		While !this._MessageFilterThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		fn := this._OnSize.Bind(this)
-		this._OnSizeCallback := fn	; make sure boundfunc does not go out of scope - the other thread needs it
 		matchobj := {msg: 0x5, hwnd: this.hwnd}
 		filterobj := {hwnd: this.hwnd}
-		this._MessageFilterThread.ahkExec["new MessageFilter(" &fn "," &matchobj "," &filterobj ")"]
+		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnSize.Bind(this)) "," &matchobj "," &filterobj ")"]
 		matchobj.msg := 0x3
-		fn := this._OnMove.Bind(this)
-		this._OnMoveCallback := fn
-		this._MessageFilterThread.ahkExec["new MessageFilter(" &fn "," &matchobj "," &filterobj ")"]
+		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnMove.Bind(this)) "," &matchobj "," &filterobj ")"]
 	}
 	
 	GuiClose(hwnd){

@@ -36,7 +36,7 @@ Class MessageFilter {
 		this.FilterObj := this.FilterObj.Clone()
 		
 		this.MasterThread := AhkExported()		; Get link back to calling thread
-		this.Callback := Object(CallbackPtr)
+		this.Callback := ObjShare(CallbackPtr)
 		
 		; Execute an OnMessage command in the master thread, but pass it a boundfunc in this thread
 		this.MessageHandlerFn := this.MessageHandler.Bind(this)
@@ -52,6 +52,12 @@ Class MessageFilter {
 			}
 		}
 		; Filters passed - execute boundfunc callback in main thread and pass it the message
+		; Because the messages must be subscribed to in the main thread, this function is called  
+		fn := this.MessageHandlerCallback.Bind(this,wParam,lParam,msg,hwnd)
+		SetTimer,% fn,-1
+	}
+	
+	MessageHandlerCallback(wParam,lParam,msg,hwnd){
 		this.Callback.Call(wParam,lParam,msg,hwnd)
 	}
 }
