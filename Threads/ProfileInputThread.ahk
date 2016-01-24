@@ -90,7 +90,7 @@ class _InputThread {
 		; ToDo: Fix bug: If old binding was a different type, it will not get removed
 		if (hk.__value.Type = 3){
 			; joystick hat
-			OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code ", bindstring: " hkstring
+			;OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code ", bindstring: " hkstring
 			oldstate := this.JoystickTimerState
 			this.SetJoystickTimerState(0)
 			if (hkstring == "" || this.Hats[hwnd]){
@@ -106,7 +106,6 @@ class _InputThread {
 				this.SetJoystickTimerState(1)
 		} else {
 			;OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
-			OutputDebug % "SetButtonBinding: " hkstring
 			if (!hkstring){
 				;OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
 				if (this.Bindings[hwnd]){
@@ -127,7 +126,7 @@ class _InputThread {
 				}
 			}
 			this.Bindings[hwnd] := hkstring
-			OutputDebug % "Binding " hkstring
+			;OutputDebug % "Binding " hkstring
 			fn := this.InputEvent.Bind(this, hk, 1)
 			hotkey, % hkstring, % fn, On
 			; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
@@ -140,14 +139,14 @@ class _InputThread {
 
 	; The main thread requested a change in axis binding
 	SetAxisBinding(AxisObj, delete := 0){
-		fn := this.SetAxisBindingCallBack.Bind(this,ObjShare(AxisObj))
+		fn := this.SetAxisBindingCallBack.Bind(this,ObjShare(AxisObj), delete)
 		SetTimer,% fn,-1
 	}
 	
 	; Cause an axis to be watched, and fire a callback when it changes.
 	; AxisObj is the Axis GuiControl object.
 	; Set delete to 1 to force a delete (so if you delete a plugin still set to an axis, you can force a delete)
-	SetAxisBindingCallBack(AxisObj){
+	SetAxisBindingCallBack(AxisObj, delete := 0){
 		static AHKAxisList := ["X","Y","Z","R","U","V"]
 		oldstate := this.JoystickTimerState
 		if (oldstate)
@@ -163,12 +162,12 @@ class _InputThread {
 	
 	; The main thread requested a (mouse) delta binding
 	SetDeltaBinding(DeltaObj, delete := 0){
-		fn := this.SetDeltaBindingCallBack.Bind(this,ObjShare(DeltaObj))
+		fn := this.SetDeltaBindingCallBack.Bind(this,ObjShare(DeltaObj), delete)
 		SetTimer,% fn,-1
 	}
 	
 	; Subscribes to "delta" mouse movement
-	SetDeltaBindingCallBack(DeltaObj){
+	SetDeltaBindingCallBack(DeltaObj, delete := 0){
 		if (DeltaObj.value == "")	; ToDo: bit of a bodge. Fix. Remove delete param?
 			delete := 1
 		if (delete){
