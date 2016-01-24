@@ -78,14 +78,14 @@ class _InputThread {
 	; The main thread asked for a change in button binding.
 	SetButtonBinding(hk, hkstring := ""){
 		; Allow call from main thread to return before attempting to use the object it passed.
-		fn := this.SetButtonBindingCallback.Bind(this,ObjShare(hk))
+		fn := this.SetButtonBindingCallback.Bind(this,ObjShare(hk), hkstring)
 		SetTimer,% fn,-1
 	}
 	
 	; Sets a button binding.
 	; This can either be using AHK hotkeys (for regular keyboard, mouse, joystick button down events etc)...
 	; ... or for "emulated" events such as joystick hat direction press/release, or simulating "proper" up events for joystick buttons
-	SetButtonBindingCallback(hk){
+	SetButtonBindingCallback(hk, hkstring := ""){
 		hwnd := hk.hwnd
 		; ToDo: Fix bug: If old binding was a different type, it will not get removed
 		if (hk.__value.Type = 3){
@@ -106,6 +106,7 @@ class _InputThread {
 				this.SetJoystickTimerState(1)
 		} else {
 			;OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
+			OutputDebug % "SetButtonBinding: " hkstring
 			if (!hkstring){
 				;OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
 				if (this.Bindings[hwnd]){
@@ -126,6 +127,7 @@ class _InputThread {
 				}
 			}
 			this.Bindings[hwnd] := hkstring
+			OutputDebug % "Binding " hkstring
 			fn := this.InputEvent.Bind(this, hk, 1)
 			hotkey, % hkstring, % fn, On
 			; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
