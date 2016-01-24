@@ -342,12 +342,18 @@ Class UCRMain {
 	; Save settings to disk
 	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
 	_SaveSettings(){
+		static SettingsFile, obj
+		SetTimer, Save, Off
 		obj := this._Serialize()
 		obj.SettingsVersion := this.SettingsVersion
-		OutputDebug % "Saving JSON to disk"
-		jdata := JSON.Dump(obj, ,true)
-		FileDelete, % this._SettingsFile
-		FileAppend, % jdata, % this._SettingsFile
+		SettingsFile := this._SettingsFile
+		SetTimer, Save, -1000
+		Return
+		Save:
+			OutputDebug % "Saving JSON to disk"
+			FileReplace(JSON.Dump(obj, ,true), SettingsFile)
+		Return
+
 	}
 	
 	; A child profile changed in some way
