@@ -206,6 +206,7 @@ Class CvJoyInterface {
 
 	; Load the vJoyInterface DLL.
 	LoadLibrary() {
+		static functions:={vJoyEnabled:"i=",GetvJoyVersion:"i=",GetvJoyProductString:"i=",GetvJoyManufacturerString:"i=",GetvJoySerialNumberString:"i=",GetVJDStatus:"i=ui",_AcquireVJD:"i=ui",_RelinquishVJD:"i=ui",UpdateVJD:"i=uit",GetVJDButtonNumber:"i=ui",GetVJDDiscPovNumber:"i=ui",GetVJDContPovNumber:"i=ui",GetVJDAxisExist:"i=uiui",ResetVJD:"i=ui",ResetAll:"i=",ResetButtons:"i=ui",ResetPovs:"i=ui",SetAxis:"i=iuiui",SetBtn:"i=iuiui",SetDiscPov:"i=iuiuc",SetContPov:"i=iuiuc"}
 		;Global hModule
 
 		if (this.LibraryLoaded) {
@@ -258,6 +259,8 @@ Class CvJoyInterface {
 				this.LoadLibraryLog .= "FOUND.`nTrying to load.. "
 				hModule := DLLCall("LoadLibrary", "Str", CheckLocations[A_Index])
 				if (hModule){
+					for k,v in functions
+						this[k] := DynaCall(GetProcAddress(hModule,LTrim(k,"_")),v)
 					this.hModule := hModule
 					this.LoadLibraryLog .= "OK.`n"
 					this.LoadLibraryLog .= "Checking driver enabled... "
@@ -288,97 +291,15 @@ Class CvJoyInterface {
 	; In the order detailed in the vJoy SDK's Interface Function Reference
 	; http://sourceforge.net/projects/vjoystick/files/
 
-	; === General driver data
-	vJoyEnabled(){
-		return DllCall("vJoyInterface\vJoyEnabled")
-	}
-
-	GetvJoyVersion(){
-		return DllCall("vJoyInterface\GetvJoyVersion")
-	}
-
-	GetvJoyProductString(){
-		return DllCall("vJoyInterface\GetvJoyProductString")
-	}
-
-	GetvJoyManufacturerString(){
-		return DllCall("vJoyInterface\GetvJoyManufacturerString")
-	}
-
-	GetvJoySerialNumberString(){
-		return DllCall("vJoyInterface\GetvJoySerialNumberString")
-	}
-
-	; === Write access to vJoy Device
-	GetVJDStatus(rID){
-		return DllCall("vJoyInterface\GetVJDStatus", "UInt", rID)
-	}
-
 	; Handle setting IsOwned property outside helper class, to allow mixing
 	AcquireVJD(rID){
-		this.Devices[rID].IsOwned := DllCall("vJoyInterface\AcquireVJD", "UInt", rID)
+		this.Devices[rID].IsOwned := this._AcquireVJD[rID]
 		return this.Devices[rID].IsOwned
 	}
 
 	RelinquishVJD(rID){
-		DllCall("vJoyInterface\RelinquishVJD", "UInt", rID)
+		this._RelinquishVJD[rID]
 		this.Devices[rID].IsOwned := 0
 		return this.Devices[rID].IsOwned
 	}
-
-	; Not sure if this one is good. What is a "PVOID"?
-	UpdateVJD(rID, pData){
-		return DllCall("vJoyInterface\UpdateVJD", "UInt", rID, "PVOID", pData)
-	}
-
-	; === vJoy Device properties
-
-	GetVJDButtonNumber(rID){
-		return DllCall("vJoyInterface\GetVJDButtonNumber", "UInt", rID)
-	}
-
-	GetVJDDiscPovNumber(rID){
-		return DllCall("vJoyInterface\GetVJDDiscPovNumber", "UInt", rID)
-	}
-
-	GetVJDContPovNumber(rID){
-		return DllCall("vJoyInterface\GetVJDContPovNumber", "UInt", rID)
-	}
-
-	GetVJDAxisExist(rID, Axis){
-		return DllCall("vJoyInterface\GetVJDAxisExist", "UInt", rID, "Uint", Axis)
-	}
-
-	ResetVJD(rID){
-		return DllCall("vJoyInterface\ResetVJD", "UInt", rID)
-	}
-
-	ResetAll(){
-		return DllCall("vJoyInterface\ResetAll")
-	}
-
-	ResetButtons(rID){
-		return DllCall("vJoyInterface\ResetButtons", "UInt", rID)
-	}
-
-	ResetPovs(rID){
-		return DllCall("vJoyInterface\ResetPovs", "UInt", rID)
-	}
-
-	SetAxis(Value, rID, Axis){
-		return DllCall("vJoyInterface\SetAxis", "Int", Value, "UInt", rID, "UInt", Axis)
-	}
-
-	SetBtn(Value, rID, nBtn){
-		return DllCall("vJoyInterface\SetBtn", "Int", Value, "UInt", rID, "UInt", nBtn)
-	}
-
-	SetDiscPov(Value, rID, nPov){
-		return DllCall("vJoyInterface\SetDiscPov", "Int", Value, "UInt", rID, "UChar", nPov)
-	}
-
-	SetContPov(Value, rID, nPOV){
-		return DllCall("vJoyInterface\SetContPov", "Int", Value, "UInt", rID, "UChar", nPov)
-	}
-
 }
