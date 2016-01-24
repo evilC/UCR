@@ -1668,6 +1668,7 @@ Class _OutputButton extends _InputButton {
 			fn := this.SetState.Bind(this, state, 1)
 			SetTimer, % fn, % -UCR._GameBindDuration
 		} else {
+			this.State := state
 			max := this.__value.Buttons.Length()
 			if (state)
 				i := 1
@@ -1843,6 +1844,7 @@ class _OutputAxis extends _BannerCombo {
 			fn := this.SetState.Bind(this, state, 1)
 			SetTimer, % fn, % -UCR._GameBindDuration
 		} else {
+			this.State := state
 			UCR.Libraries.vJoy.Devices[this.__value.DeviceID].SetAxisByIndex(state, this.__value.Axis)
 			;UCR.Libraries.vJoy.SetAxis(state, this.__value.DeviceID, this.__value.Axis)
 		}
