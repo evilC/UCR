@@ -603,9 +603,7 @@ class _BindModeHandler {
 		this._BindModeThread:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		While !this._BindModeThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		fn := this._ProcessInput.Bind(this)
-		this._BindModeCallback := fn	; make sure boundfunc does not go out of scope - the other thread needs it
-		this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" &fn ")"]
+		this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" ObjShare(this._ProcessInput.Bind(this)) ")"]
 		
 		Gui, new, +HwndHwnd
 		Gui +ToolWindow -Border

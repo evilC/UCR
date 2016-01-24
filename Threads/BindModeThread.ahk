@@ -17,7 +17,7 @@ class _BindMapper {
 	JoystickCaps := []
 	
 	__New(CallbackPtr){
-		this.Callback := Object(CallbackPtr)
+		this.Callback := ObjShare(CallbackPtr)
 		this.MasterThread := AhkExported()
 		this.GetJoystickCaps()
 		
