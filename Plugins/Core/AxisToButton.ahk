@@ -1,5 +1,5 @@
 /*
-Remaps a physical joystick axis to a virtual joystick axis
+Remaps a physical joystick axis to a pair of button outputs
 Requires the StickOps library and the vJoy library
 */
 class AxisToButton extends _Plugin {
