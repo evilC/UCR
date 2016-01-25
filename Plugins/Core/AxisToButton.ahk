@@ -52,13 +52,12 @@ class AxisToButton extends _Plugin {
 			return
 		
 		; Release the old button
-		this.OutputButtons["OB" LastState].SetState(0)
-		
-		if (new_state == 0)
-			return
+		if (LastState != 0)
+			this.OutputButtons["OB" LastState].SetState(0)
 		
 		; Press the new button
-		this.OutputButtons["OB" new_state].SetState(1)
+		if (new_state != 0)
+			this.OutputButtons["OB" new_state].SetState(1)
 		
 		LastState := new_state
 	}
