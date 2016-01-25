@@ -5,6 +5,7 @@ Requires the StickOps library and the vJoy library
 class AxisToButton extends _Plugin {
 	Type := "Remapper (Axis To Button)"
 	Description := "Maps a joystick axis input to a pair of button outputs"
+	LastState := 0
 	; Set up the GUI to allow the user to select inputs and outputs
 	Init(){
 		Gui, Add, Text, % "xm w125 Center", Input Axis
@@ -27,7 +28,6 @@ class AxisToButton extends _Plugin {
 	; The user moved the selected input axis. Manipulate the output buttons accordingly
 	MyInputChangedState(value){
 		static StickOps := UCR.Libraries.StickOps
-		static LastState := 0
 		
 		GuiControl, , % this.hSliderIn, % value
 		
@@ -46,19 +46,19 @@ class AxisToButton extends _Plugin {
 		else
 			new_state := 0
 		
-		;OutputDebug % "value: " value ", LastState: " LastState ", new_state: " new_state
+		;OutputDebug % "value: " value ", LastState: " this.LastState ", new_state: " new_state
 
-		if (new_state == LastState)
+		if (new_state == this.LastState)
 			return
 		
 		; Release the old button
-		if (LastState != 0)
-			this.OutputButtons["OB" LastState].SetState(0)
+		if (this.LastState != 0)
+			this.OutputButtons["OB" this.LastState].SetState(0)
 		
 		; Press the new button
 		if (new_state != 0)
 			this.OutputButtons["OB" new_state].SetState(1)
 		
-		LastState := new_state
+		this.LastState := new_state
 	}
 }
