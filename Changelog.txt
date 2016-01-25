@@ -4,6 +4,11 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.5 - 25th Jan 2016
+= On change of profile, all held buttons are released.
+= AxisToButton plugins now correctly manipulate the outputs.
+= Multiple AxisToButton plugins now work together.
+
 0.0.4 - 24th Jan 2016
 + Profile Switcher plugin added to allow changing profile using a hotkey.
   This can be placed in the global profile to always be in effect.
