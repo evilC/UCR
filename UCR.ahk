@@ -770,9 +770,7 @@ Class _Profile {
 		this._SetHotkeyState(0)
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
-			if (IsFunc(plugin["OnInactive"])){
-				plugin.OnInactive()
-			}
+			plugin._OnInactive()
 		}
 	}
 	
@@ -1081,6 +1079,18 @@ Class _Plugin {
 			for name, ctrl in obj[key] {
 				this[key, name]._Deserialize(ctrl)
 			}
+		}
+	}
+	
+	; Called when a plugin becomes inactive (eg profile changed)
+	_OnInActive(){
+		for k, v in this.OutputButtons{
+			if (v.State == 1)
+				v.SetState(0)
+		}
+		; Call user's OnInactive method (if it exists)
+		if (IsFunc(this["OnInactive"])){
+			plugin.OnInactive()
 		}
 	}
 	
