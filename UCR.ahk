@@ -1674,6 +1674,9 @@ Class _OutputButton extends _InputButton {
 	
 	; Used by script authors to set the state of this output
 	SetState(state, delay_done := 0){
+		static PovMap := {0: {x:0, y:0}, 1: {x: 0, y: 1}, 2: {x: 1, y: 0}, 3: {x: 0, y: 2}, 4: {x: 2, y: 0}}
+		static PovAngles := {0: {0:-1, 1:0, 2:18000}, 1:{0:9000, 1:4500, 2:13500}, 2:{0:27000, 1:31500, 2:22500}}
+		static Axes := ["x", "y"]
 		if (UCR._CurrentState == 2 && !delay_done){
 			fn := this.SetState.Bind(this, state, 1)
 			SetTimer, % fn, % -UCR._GameBindDuration
@@ -1692,11 +1695,27 @@ Class _OutputButton extends _InputButton {
 				} else if (key.Type >= 3 && key.IsVirtual){
 					; Virtual Joystick POV Hat
 					; ToDo: Make hat number selection actually work
-					if (state = 0)
-						state := -1
+					device := UCR.Libraries.vJoy.Devices[key.DeviceID]
+					if (!IsObject(device.PovState))
+						device.PovState := {x: 0, y: 0}
+					if (state)
+						new_state := PovMap[key.code].clone()
 					else
-						state := (key.code - 1) * 9000
-					UCR.Libraries.vJoy.Devices[key.DeviceID].SetContPov(state, key.Type - 2)
+						new_state := PovMap[0].clone()
+
+					this_angle := PovMap[key.code]
+					Loop 2 {
+						ax := Axes[A_Index]
+						if (this_angle[ax]){
+							if (device.PovState[ax] && device.PovState[ax] != new_state[ax])
+								new_state[ax] := 0
+						} else {
+							; this key does not control this axis, look at device.PovState for value
+							new_state[ax] := device.PovState[ax]
+						}
+					}
+					device.SetContPov(PovAngles[new_state.x,new_state.y], key.Type - 2)
+					device.PovState := new_state
 				} else {
 					; Keyboard / Mouse
 					name := key.BuildKeyName()
