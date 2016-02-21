@@ -9,7 +9,7 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.5"				; The version of the main application
+	Version := "0.0.6"				; The version of the main application
 	SettingsVersion := "0.0.1"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
@@ -727,10 +727,16 @@ Class _Profile {
 		if (this.Name = "global"){
 			this._IsGlobal := 1
 		}
-		this._InputThread := AhkThread(A_ScriptDir "\Threads\ProfileInputThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
+		this._InputThread := AhkThread("
+			(
+			InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")
+			_SetState := ObjShare(InputThread.SetHotkeyState.Bind(InputThread))
+			)`n" Script)
+							
 		While !this._InputThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		this._InputThread.ahkExec("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")")
+		this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_SetState"))
 		this._CreateGui()
 	}
 	
@@ -772,10 +778,6 @@ Class _Profile {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
 			plugin._OnInactive()
 		}
-	}
-	
-	_SetHotkeyState(state){
-		this._InputThread.ahkExec("InputThread.SetHotkeyState(" state ")")
 	}
 	
 	; Show the GUI

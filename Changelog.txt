@@ -4,6 +4,10 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.6 - 21st Feb 2016
+= Fixed errors while switching profile at the same time as input was happening.
+  The ProfileSwitcher plugin should no longer crash UCR.
+
 0.0.5 - 25th Jan 2016
 = On change of profile, all held buttons are released.
 = AxisToButton plugins now correctly manipulate the outputs.
