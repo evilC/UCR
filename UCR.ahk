@@ -499,17 +499,17 @@ Class _InputHandler {
 		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
 		bindstring := this.BuildHotkeyString(BtnObj.value)
 		; Set binding in Profile's InputThread
-		BtnObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" ObjShare(BtnObj) ",""" bindstring """)")
+		BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
 		return 1
 	}
 	
 	; Set an Axis Binding
 	SetAxisBinding(AxisObj){
-		AxisObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" ObjShare(AxisObj) ")")
+		AxisObj.ParentPlugin.ParentProfile._SetAxisBinding(ObjShare(AxisObj))
 	}
 	
 	SetDeltaBinding(DeltaObj){
-		DeltaObj.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" ObjShare(DeltaObj) ")")
+		DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj))
 	}
 	
 	; Check InputButtons for duplicates etc
@@ -733,6 +733,9 @@ Class _Profile {
 			Sleep 50 ; wait until variable has been set.
 		; Get thread-safe boundfunc object for thread's SetHotkeyState
 		this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
+		this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
+		this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
+		this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
 		this._CreateGui()
 	}
 	
@@ -1102,18 +1105,18 @@ Class _Plugin {
 		; Remove input bindings etc here
 		; Some attempt is also made to free resources so destructors fire, though this is a WIP
 		for name, obj in this.InputButtons {
-			this.ParentProfile._InputThread.ahkExec("InputThread.SetButtonBinding(" ObjShare(obj) ")")
+			this.ParentProfile._SetButtonBinding(ObjShare(obj))
 			obj._KillReferences()
 		}
 		for Name, obj in this.InputAxes {
-			this.ParentProfile._InputThread.ahkExec("InputThread.SetAxisBinding(" ObjShare(obj) ",1)")
+			this.ParentProfile._SetAxisBinding(ObjShare(obj),1)
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputButtons {
 			obj._KillReferences()
 		}
 		for name, obj in this.InputDeltas {
-			this.ParentProfile._InputThread.ahkExec("InputThread.SetDeltaBinding(" ObjShare(obj) ",1)")
+			this.ParentProfile._SetDeltaBinding(ObjShare(obj),1)
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputAxes {

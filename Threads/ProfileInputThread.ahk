@@ -30,6 +30,9 @@ class _InputThread {
 		this.MouseMoveFn := this.OnMouseMove.Bind(this)
 		; Add interfaces so main thread can call methods in a thread-safe manner
 		global _InterfaceSetHotkeyState := ObjShare(this.SetHotkeyState.Bind(this))
+		global _InterfaceSetButtonBinding := ObjShare(this.SetButtonBinding.Bind(this))
+		global _InterfaceSetAxisBinding := ObjShare(this.SetAxisBinding.Bind(this))
+		global _InterfaceSetDeltaBinding := ObjShare(this.SetDeltaBinding.Bind(this))
 		this.SetHotkeyState(0)
 	}
 	
