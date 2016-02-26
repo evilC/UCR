@@ -526,7 +526,7 @@ Class _InputHandler {
 	
 	; Turns on or off Hotkey(s)
 	ChangeHotkeyState(state, hk := 0){
-		hk.ParentPlugin.ParentProfile._InputThread.ahkExec("InputThread.SetHotkeyState(" state ")")
+		hk.ParentPlugin.ParentProfile._SetHotkeyState(state)
 	}
 	
 	; Builds an AHK hotkey string (eg ~^a) from a BindObject
