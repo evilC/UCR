@@ -728,15 +728,11 @@ Class _Profile {
 			this._IsGlobal := 1
 		}
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
-		this._InputThread := AhkThread("
-			(
-			InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")
-			_SetState := ObjShare(InputThread.SetHotkeyState.Bind(InputThread))
-			)`n" Script)
-							
+		this._InputThread := AhkThread("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" Script)
 		While !this._InputThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_SetState"))
+		; Get thread-safe boundfunc object for thread's SetHotkeyState
+		this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
 		this._CreateGui()
 	}
 	

@@ -21,15 +21,15 @@ class _InputThread {
 	MouseDeltaMappings := {}
 	
 	__New(CallbackPtr){
-		;~ this.Callback := CriticalObject(CallbackPtr)
 		this.Callback := ObjShare(CallbackPtr)
-		this.MasterThread := AhkExported()
 		Gui, +HwndHwnd		; Get a unique hwnd so we can register for messages
 		this.hwnd := hwnd
 		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
 		this.MouseTimeOutDuration := 10	; ToDo: Allow changing
 		this.MouseTimeoutFn := this.OnMouseTimeout.Bind(this)
 		this.MouseMoveFn := this.OnMouseMove.Bind(this)
+		; Add interfaces so main thread can call methods in a thread-safe manner
+		global _InterfaceSetHotkeyState := ObjShare(this.SetHotkeyState.Bind(this))
 		this.SetHotkeyState(0)
 	}
 	
