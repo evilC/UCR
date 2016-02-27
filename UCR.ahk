@@ -345,11 +345,14 @@ Class UCRMain {
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
 			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
-			j := {"CurrentProfile":"2","Profiles":{"1":{"Name": "Global"}, "2": {"Name": "Default"}}}
+			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "Profiles":{"1":{"Name": "Global"}, "2": {"Name": "Default"}}}
 			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
 			j := JSON.Load(j)
+		}
+		if (j.SettingsVersion != this.SettingsVersion){
+			j := this._UpdateSettings(j)
 		}
 		this._Deserialize(j)
 		return j.CurrentProfile
@@ -370,6 +373,36 @@ Class UCRMain {
 			FileReplace(JSON.Dump(obj, ,true), SettingsFile)
 		Return
 
+	}
+	
+	; If SettingsVersion changes, this handles converting the INI file to the new format
+	_UpdateSettings(obj){
+		if (obj.SettingsVersion = "0.0.1"){
+			; Upgrade from 0.0.1 to 0.0.2
+			; Convert profiles from name-indexed to unique-id indexed
+			oldprofiles := obj.Profiles.clone()
+			obj.Profiles := {}
+			obj.CurrentProfile := 2
+			for name, profile in oldprofiles {
+				if (name = "global"){
+					id := 1
+				} else if (name = "default"){
+					id := 2
+				} else {
+					Loop {
+						id := A_NOW
+						Sleep 10
+					} until (!ObjHasKey(obj.Profiles, id))
+				}
+				profile.id := id
+				profile.Name := name
+				obj.Profiles[id] := profile
+			}
+			obj.SettingsVersion := "0.0.2"
+			return obj
+		}
+		; Default to making no changes
+		return obj
 	}
 	
 	; A child profile changed in some way
