@@ -15,7 +15,7 @@ Class UCRMain {
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0				; The current state of the application
-	Profiles := []					; A name-indexed array of instances of _Profile objects
+	Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
