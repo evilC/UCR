@@ -10,12 +10,13 @@ return
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
 	Version := "0.0.6"				; The version of the main application
-	SettingsVersion := "0.0.1"		; The version of the settings file format
+	SettingsVersion := "0.0.2"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0				; The current state of the application
-	Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
+	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
+	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
@@ -64,7 +65,7 @@ Class UCRMain {
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
 		
-		this.Profiles.Global._Activate()
+		this.Profiles.1._Activate()
 		this.ChangeProfile(p, 0)
 
 		; Watch window position and size using MessageFilter thread
@@ -116,7 +117,7 @@ Class UCRMain {
 		
 		; Profile Select DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
-		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhProfileSelect w" UCR.PLUGIN_FRAME_WIDTH - 335
+		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhProfileSelect AltSubmit w" UCR.PLUGIN_FRAME_WIDTH - 335
 		this.hProfileSelect := hProfileSelect
 		fn := this._ProfileSelectChanged.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hProfileSelect, % fn
@@ -181,8 +182,9 @@ Class UCRMain {
 	
 	; Called when hProfileSelect changes through user interaction (They selected a new profile)
 	_ProfileSelectChanged(){
-		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
-		this.ChangeProfile(name)
+		GuiControlGet, id, % this.hTopPanel ":", % this.hProfileSelect
+		id := this._ProfileSelectList[id].id
+		this.ChangeProfile(id)
 	}
 	
 	; The user clicked the "Add Plugin" button
@@ -191,19 +193,20 @@ Class UCRMain {
 	}
 	
 	; We wish to change profile. This may happen due to user input, or application changing
-	ChangeProfile(name, save := 1){
-		if (!ObjHasKey(this.Profiles, name))
+	ChangeProfile(id, save := 1){
+		if (!ObjHasKey(this.Profiles, id))
 			return 0
-		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " name
+		newprofile := this.Profiles[id]
+		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
 		if (IsObject(this.CurrentProfile)){
-			if (name = this.CurrentProfile.Name)
+			if (id = this.CurrentProfile.id)
 				return 1
 			this.CurrentProfile._Hide()
 			if (!this.CurrentProfile._IsGlobal)
 				this.CurrentProfile._DeActivate()
 		}
-		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % name
-		this.CurrentProfile := this.Profiles[name]
+		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % newprofile.Name
+		this.CurrentProfile := this.Profiles[id]
 		this.CurrentProfile._Activate()
 		this.CurrentProfile._Show()
 		if (save){
@@ -214,21 +217,21 @@ Class UCRMain {
 	
 	; Populate hProfileSelect with a list of available profiles
 	_UpdateProfileSelect(){
-		profiles := ["Global", "Default"]
-		;profiles := ["Default"]
-		for profile in this.Profiles {
-			if (profile = "Default" || profile = "Global")
+		this._ProfileSelectList := [this.Profiles[1], this.Profiles[2]]
+		for id, profile in this.Profiles {
+			if (id = 1 || id = 2)
 				continue
-			profiles.push(profile)
+			this._ProfileSelectList.push(this.Profiles[id])
 		}
 		str := "|"
-		max := profiles.length()
+		max := this._ProfileSelectList.length()
 		Loop % max {
 			if (A_Index > 1)
 				str .= "|"
-			name := this.Profiles[profiles[A_Index]].Name
+			id := this._ProfileSelectList[A_Index].id
+			name := this.Profiles[id].Name
 			str .= name
-			if (name = this.CurrentProfile.Name)
+			if (id = this.CurrentProfile.id)
 				str .= "|"
 			if (A_Index = max)
 				str .= "|"
@@ -259,10 +262,22 @@ Class UCRMain {
 		name := this._GetUniqueName()
 		if (name = 0)
 			return
-		this.Profiles[name] := new _Profile(name)
+		id := this._CreateProfile(name)
 		this._UpdateProfileSelect()
-		this.ChangeProfile(Name)
-		
+		this.ChangeProfile(id)
+	}
+	
+	; Creates a new profile and assigns it a unique ID, if needed.
+	_CreateProfile(name, id := 0){
+		if (id = 0){
+			Loop {
+				id := A_NOW
+				Sleep 10
+			} until !IsObject(this.ProfileIDs[id])
+		}
+		profile := new _Profile(id, name)
+		this.Profiles[id] := profile
+		return id
 	}
 	
 	; user clicked the Delete Profile button
@@ -329,7 +344,8 @@ Class UCRMain {
 		
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
-			j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
+			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
+			j := {"CurrentProfile":"2","Profiles":{"1":{"Name": "Global"}, "2": {"Name": "Default"}}}
 			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
@@ -459,10 +475,10 @@ Class UCRMain {
 	
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
-		obj := {CurrentProfile: this.CurrentProfile.Name, CurrentSize: this.CurrentSize, CurrentPos: this.CurrentPos}
+		obj := {CurrentProfile: this.CurrentProfile.id, CurrentSize: this.CurrentSize, CurrentPos: this.CurrentPos}
 		obj.Profiles := {}
-		for name, profile in this.Profiles {
-			obj.Profiles[name] := profile._Serialize()
+		for id, profile in this.Profiles {
+			obj.Profiles[id] := profile._Serialize()
 		}
 		return obj
 	}
@@ -470,12 +486,13 @@ Class UCRMain {
 	; Load this object from simple data strutures
 	_Deserialize(obj){
 		this.Profiles := {}
-		for name, profile in obj.Profiles {
-			this.Profiles[name] := new _Profile(name)
-			this.Profiles[name]._Deserialize(profile)
-			this.Profiles[name]._Hide()
+		for id, profile in obj.Profiles {
+			this._CreateProfile(profile.Name, id)
+			this.Profiles[id]._Deserialize(profile)
+			this.Profiles[id]._Hide()
 		}
 		;this.CurrentProfile := this.Profiles[obj.CurrentProfile]
+		
 		if (IsObject(obj.CurrentSize))
 			this.CurrentSize := obj.CurrentSize
 		if (IsObject(obj.CurrentPos))
@@ -721,8 +738,9 @@ Class _Profile {
 	PluginStateSubscriptions := {}
 	_IsGlobal := 0
 	
-	__New(name){
+	__New(id, name){
 		static fn
+		this.ID := id
 		this.Name := name
 		if (this.Name = "global"){
 			this._IsGlobal := 1
@@ -891,7 +909,7 @@ Class _Profile {
 	
 	; Save the profile to disk
 	_Serialize(){
-		obj := {}
+		obj := {Name: this.Name}
 		obj.Plugins := {}
 		obj.PluginOrder := this.PluginOrder
 		for name, plugin in this.Plugins {
