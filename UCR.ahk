@@ -61,6 +61,7 @@ Class UCRMain {
 
 		this._UpdateProfileSelect()
 		
+		this._ProfileSelect := new _ProfileSelect()	; Profile tree test
 
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
@@ -531,8 +532,47 @@ Class UCRMain {
 		if (IsObject(obj.CurrentPos))
 			this.CurrentPos := obj.CurrentPos
 	}
-	
 }
+
+; =================================================================== PROFILE TREE TEST ==========================================================
+class _ProfileSelect {
+	__New(){
+		Gui, New, HwndHwnd
+		this.hwnd := hwnd
+		Gui, Add, TreeView, w200 h200
+		Gui, Show
+		this.BuildProfileTree()
+	}
+	
+	BuildProfileTree(){
+		this.ProfileLookup := {}
+		profiles := {}
+		pc := 0
+		for id, profile in UCR.Profiles {
+			profiles[id] := {Name: profile.name, ParentProfile: profile.ParentProfile}
+			pc++
+		}
+		remaining := pc
+		foundnodes := {0: 1}
+		while (remaining){
+			for id, profile in profiles {
+				if (ObjHasKey(foundnodes, profile.ParentProfile)){
+					this.AddProfileNode(profile, profile.ParentProfile)
+					foundnodes[id] := 1
+					remaining--
+					profiles.Delete(id)
+				}
+				
+			}
+		}
+	}
+	
+	AddProfileNode(profile, parent){
+		lvid := TV_Add(profile.Name, parent)
+		this.ProfileLookup[lvid] := id
+	}
+}
+
 ; =================================================================== INPUT HANDLER ==========================================================
 ; Manages input (ie keyboard, mouse, joystick) during "normal" operation (ie when not in Bind Mode)
 ; Holds the "master list" of bound inputs and decides whether or not to allow bindings.
