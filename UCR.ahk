@@ -345,7 +345,7 @@ Class UCRMain {
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
 			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
-			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "Profiles":{"1":{"Name": "Global"}, "2": {"Name": "Default"}}}
+			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
 			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
@@ -364,7 +364,6 @@ Class UCRMain {
 		static SettingsFile, obj
 		SetTimer, Save, Off
 		obj := this._Serialize()
-		obj.SettingsVersion := this.SettingsVersion
 		SettingsFile := this._SettingsFile
 		SetTimer, Save, -1000
 		Return
@@ -396,6 +395,7 @@ Class UCRMain {
 				}
 				profile.id := id
 				profile.Name := name
+				profile.ParentProfile := 0
 				obj.Profiles[id] := profile
 			}
 			obj.SettingsVersion := "0.0.2"
@@ -765,6 +765,7 @@ class _BindModeHandler {
 ; The Gui of each plugin appears inside the Gui of this profile.
 Class _Profile {
 	Name := ""
+	ParentProfile := 0
 	Plugins := {}
 	PluginOrder := []
 	AssociatedApss := 0
@@ -943,6 +944,7 @@ Class _Profile {
 	; Save the profile to disk
 	_Serialize(){
 		obj := {Name: this.Name}
+		obj.ParentProfile := this.ParentProfile
 		obj.Plugins := {}
 		obj.PluginOrder := this.PluginOrder
 		for name, plugin in this.Plugins {
@@ -953,6 +955,7 @@ Class _Profile {
 	
 	; Load the profile from disk
 	_Deserialize(obj){
+		this.ParentProfile := obj.ParentProfile
 		Loop % obj.PluginOrder.length() {
 			name := obj.PluginOrder[A_Index]
 			this.PluginOrder.push(name)
