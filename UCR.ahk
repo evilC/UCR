@@ -554,17 +554,26 @@ class _ProfileSelect {
 	}
 	
 	BuildProfileTree(){
-		this.ProfileLookup := {}
+		this.LVToProfile := {}
+		this.ProfileToLV := {}
 		profiles := {}
 		pc := 0
 		for id, profile in UCR.Profiles {
-			profiles[id] := {Name: profile.name, ParentProfile: profile.ParentProfile}
+			profiles[id] := {Name: profile.name, id: profile.id, ParentProfile: profile.ParentProfile}
 			pc++
 		}
 		remaining := pc
 		foundnodes := {0: 1}
+		mustmatch := 1
 		while (remaining){
 			for id, profile in profiles {
+				if (mustmatch < 3){
+					; Sort Global (id 1) and Default (id 2) to start of list
+					if (profile.id != mustmatch)
+						continue
+					mustmatch++
+				}
+				name := profile.name
 				if (ObjHasKey(foundnodes, profile.ParentProfile)){
 					this.AddProfileNode(profile, profile.ParentProfile)
 					foundnodes[id] := 1
@@ -577,8 +586,12 @@ class _ProfileSelect {
 	}
 	
 	AddProfileNode(profile, parent){
+		if (parent != 0){
+			parent := this.ProfileToLV[parent]
+		}
 		lvid := TV_Add(profile.Name, parent)
-		this.ProfileLookup[lvid] := id
+		this.LVToProfile[lvid] := profile.id
+		this.ProfileToLV[profile.id] := lvid
 	}
 }
 
