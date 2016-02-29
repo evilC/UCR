@@ -345,16 +345,25 @@ Class UCRMain {
 		
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
-			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
+			; Settings file empty or not found, create new settings
 			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
-			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
 			j := JSON.Load(j)
 		}
+		
+		; Check if Settings file is a compatible version
 		if (j.SettingsVersion != this.SettingsVersion){
+			; No, try to upgrade
 			j := this._UpdateSettings(j)
+			; Did upgrade succeed?
+			if (j.SettingsVersion != this.SettingsVersion){
+				; No, warn and exit.
+				msgbox % this._SettingsFile " is incompatible with this version of UCR."
+				ExitApp
+			}
 		}
+		; Load profiles / plugins from settings file
 		this._Deserialize(j)
 		return j.CurrentProfile
 	}
@@ -509,7 +518,7 @@ Class UCRMain {
 	
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
-		obj := {CurrentProfile: this.CurrentProfile.id, CurrentSize: this.CurrentSize, CurrentPos: this.CurrentPos}
+		obj := {SettingsVersion: this.SettingsVersion, CurrentProfile: this.CurrentProfile.id, CurrentSize: this.CurrentSize, CurrentPos: this.CurrentPos}
 		obj.Profiles := {}
 		for id, profile in this.Profiles {
 			obj.Profiles[id] := profile._Serialize()
