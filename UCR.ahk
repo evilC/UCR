@@ -272,8 +272,9 @@ Class UCRMain {
 	_CreateProfile(name, id := 0){
 		if (id = 0){
 			Loop {
-				id := A_NOW
-				Sleep 10
+				;id := A_NOW
+				Random, id, 3, 2147483647
+				;Sleep 10
 			} until !IsObject(this.ProfileIDs[id])
 		}
 		profile := new _Profile(id, name)
@@ -399,8 +400,9 @@ Class UCRMain {
 					id := 2
 				} else {
 					Loop {
-						id := A_NOW
-						Sleep 10
+						;id := A_NOW
+						Random, id, 3, 2147483647
+						;Sleep 10
 					} until (!ObjHasKey(obj.Profiles, id))
 				}
 				profile.id := id
