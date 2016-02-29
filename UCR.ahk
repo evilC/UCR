@@ -556,8 +556,7 @@ class _ProfileSelect {
 	}
 	
 	BuildProfileTree(){
-		this.LVToProfile := {}
-		this.ProfileToLV := {}
+		this.ProfileIdToLvHandle := {}
 		profiles := {}
 		pc := 0
 		for id, profile in UCR.Profiles {
@@ -589,11 +588,10 @@ class _ProfileSelect {
 	
 	AddProfileNode(profile, parent){
 		if (parent != 0){
-			parent := this.ProfileToLV[parent]
+			parent := this.ProfileIdToLvHandle[parent]
 		}
-		lvid := TV_Add(profile.Name, parent)
-		this.LVToProfile[lvid] := profile.id
-		this.ProfileToLV[profile.id] := lvid
+		hnode := TV_Add(profile.Name, parent)
+		this.ProfileIdToLvHandle[profile.id] := hnode
 	}
 }
 
