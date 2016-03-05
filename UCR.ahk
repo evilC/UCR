@@ -356,12 +356,19 @@ Class UCRMain {
 	
 	; user clicked the Delete Profile button
 	_DeleteProfile(){
-		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
-		if (name = "Default" || name = "Global")
+		id := this.CurrentProfile.id
+		if (id = 1 || id = 2)
 			return
-		this.Profiles.Delete(name)
+		pp := this.CurrentProfile.ParentProfile
+		if pp != 0
+			newprofile := pp
+		else
+			newprofile := 2
+		this.Profiles.Delete(id)
 		this._UpdateProfileSelect()
-		this.ChangeProfile("Default")
+		this.ChangeProfile(newprofile)
+		this.ProfileTreeChanged()
+		this.FireProfileTreeChangeCallbacks()
 	}
 	
 	_CopyProfile(){
@@ -627,6 +634,10 @@ class _ProfileToolbox extends _ProfileSelect {
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
+		Gui, Add, Button, x+5 w80 hwndhDelete, Delete
+		fn := this.DeleteProfile.Bind(this)
+		GuiControl +g, % hDelete, % fn
+
 		Gui, Add, Button, xm w80 hwndhRename, Rename
 		fn := this.RenameProfile.Bind(this)
 		GuiControl +g, % hRename, % fn
@@ -641,17 +652,23 @@ class _ProfileToolbox extends _ProfileSelect {
 		}
 	}
 	
+	DeleteProfile(){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
+		id := this.LvHandleToProfileId[TV_GetSelection()]
+		UCR._DeleteProfile(id)
+	}
+	
 	RenameProfile(){
 		Gui, % this.hwnd ":Default"
 		Gui, TreeView, % this.hTreeview
 		id := this.LvHandleToProfileId[TV_GetSelection()]
-		OutputDebug % "Toolbox: Rename ID " id
 		UCR.RenameProfile(id)
 	}
 	
 	TV_Event(){
 		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
-			;UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
 		}
 	}
 	
