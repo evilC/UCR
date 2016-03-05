@@ -257,11 +257,11 @@ Class UCRMain {
 	}
 	
 	; User clicked add new profile button
-	_AddProfile(){
+	_AddProfile(parent := 0){
 		name := this._GetUniqueName()
 		if (name = 0)
 			return
-		id := this._CreateProfile(name)
+		id := this._CreateProfile(name, 0, parent)
 		this.ChangeProfile(id)
 		this.ProfileTreeChanged()
 		this.FireProfileTreeChangeCallbacks()
@@ -280,7 +280,7 @@ Class UCRMain {
 	}
 
 	; Creates a new profile and assigns it a unique ID, if needed.
-	_CreateProfile(name, id := 0){
+	_CreateProfile(name, id := 0, parent := 0){
 		if (id = 0){
 			Loop {
 				;id := A_NOW
@@ -288,7 +288,7 @@ Class UCRMain {
 				;Sleep 10
 			} until !IsObject(this.ProfileIDs[id])
 		}
-		profile := new _Profile(id, name)
+		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile
 		return id
 	}
@@ -545,7 +545,7 @@ Class UCRMain {
 	_Deserialize(obj){
 		this.Profiles := {}
 		for id, profile in obj.Profiles {
-			this._CreateProfile(profile.Name, id)
+			this._CreateProfile(profile.Name, id, profile.ParentProfile)
 			this.Profiles[id]._Deserialize(profile)
 			this.Profiles[id]._Hide()
 		}
@@ -583,25 +583,28 @@ class _ProfileToolbox extends _ProfileSelect {
 	}
 	
 	AddProfile(childmode){
-		if (childmode){
-			
-		} else {
-			UCR._AddProfile()
-		}
+		if (childmode)
+			parent := this.ProfileIDOfSelection()
+		else
+			parent := 0
+		UCR._AddProfile(parent)
 	}
 	
 	DeleteProfile(){
-		Gui, % this.hwnd ":Default"
-		Gui, TreeView, % this.hTreeview
-		id := this.LvHandleToProfileId[TV_GetSelection()]
+		id := this.ProfileIDOfSelection()
 		UCR._DeleteProfile(id)
 	}
 	
 	RenameProfile(){
+		id := this.ProfileIDOfSelection()
+		UCR.RenameProfile(id)
+	}
+	
+	ProfileIDOfSelection(){
 		Gui, % this.hwnd ":Default"
 		Gui, TreeView, % this.hTreeview
 		id := this.LvHandleToProfileId[TV_GetSelection()]
-		UCR.RenameProfile(id)
+		return id
 	}
 	
 	TV_Event(){
@@ -951,10 +954,11 @@ Class _Profile {
 	PluginStateSubscriptions := {}
 	_IsGlobal := 0
 	
-	__New(id, name){
+	__New(id, name, parent){
 		static fn
 		this.ID := id
 		this.Name := name
+		this.ParentProfile := parent
 		if (this.Name = "global"){
 			this._IsGlobal := 1
 		}
