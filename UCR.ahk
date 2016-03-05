@@ -27,7 +27,7 @@ Class UCRMain {
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
-	_ProfileTreeChangeSubscriptions := []		; An array of callbacks for things that wish to be notified if the profile tree changes
+	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
@@ -252,13 +252,16 @@ Class UCRMain {
 		this.FireProfileTreeChangeCallbacks()
 	}
 	
-	SubscribeToProfileTreeChange(callback){
-		this._ProfileTreeChangeSubscriptions.push(callback)
+	SubscribeToProfileTreeChange(hwnd, callback){
+		this._ProfileTreeChangeSubscriptions[hwnd] := callback
+	}
+	
+	UnSubscribeToProfileTreeChange(hwnd){
+		this._ProfileTreeChangeSubscriptions.Delete(hwnd)
 	}
 	
 	FireProfileTreeChangeCallbacks(){
-		Loop % this._ProfileTreeChangeSubscriptions.length(){
-			cb := this._ProfileTreeChangeSubscriptions[A_Index]
+		for hwnd, cb in this._ProfileTreeChangeSubscriptions {
 			if (IsObject(cb))
 				cb.Call()
 		}

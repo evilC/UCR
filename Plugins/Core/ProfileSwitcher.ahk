@@ -30,7 +30,7 @@ class ProfileSwitcher extends _Plugin {
 		this.AddControl("ProfileID", 0, "Edit", "x+5 yp w70 Disabled Hidden")
 
 		; Subscribe to profile tree change events, so that if the profile structure or names change, we can update
-		UCR.SubscribeToProfileTreeChange(this.ProfileTreeChanged.Bind(this))
+		UCR.SubscribeToProfileTreeChange(this.hwnd, this.ProfileTreeChanged.Bind(this))
 	}
 
 	; Something about the profile tree changed. Rebuild the Current Profile readout
@@ -69,6 +69,7 @@ class ProfileSwitcher extends _Plugin {
 	_KillReferences(){
 		GuiControl -g, % this.hTest
 		GuiControl -g, % this.hSelectProfile
+		UCR.UnSubscribeToProfileTreeChange(this.hwnd)
 	}
 		
 }
