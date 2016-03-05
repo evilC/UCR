@@ -65,8 +65,8 @@ Class UCRMain {
 		; Load settings. This will cause all plugins to load.
 		p := this._LoadSettings()
 
-		; new profile select
-		this.ProfileTreeChanged()
+		; Update state of Profile Toolbox
+		this.UpdateProfileToolbox()
 
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
@@ -191,6 +191,7 @@ Class UCRMain {
 		this.CurrentProfile := this.Profiles[id]
 		
 		this.UpdateCurrentProfileReadout()
+		this._ProfileToolbox.UpdateSelection(id)
 		
 		this.CurrentProfile._Activate()
 		this.CurrentProfile._Show()
@@ -201,7 +202,6 @@ Class UCRMain {
 	}
 	
 	UpdateCurrentProfileReadout(){
-		OutputDebug % "UpdateCurrentProfileReadout: " this.CurrentProfile.id
 		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentProfile.id)
 	}
 	
@@ -217,8 +217,9 @@ Class UCRMain {
 		return str
 	}
 	
-	ProfileTreeChanged(){
-		this.UpdateCurrentProfileReadout()
+	; Some aspect of the Profile Tree changed - eg structure or names of profiles in tree
+	; Rebuild the tree
+	UpdateProfileToolbox(){
 		this._ProfileToolbox.BuildProfileTree()
 		this.FireProfileTreeChangeCallbacks()
 	}
@@ -262,9 +263,8 @@ Class UCRMain {
 		if (name = 0)
 			return
 		id := this._CreateProfile(name, 0, parent)
+		this.UpdateProfileToolbox()
 		this.ChangeProfile(id)
-		this.ProfileTreeChanged()
-		this.FireProfileTreeChangeCallbacks()
 	}
 	
 	RenameProfile(id){
@@ -274,8 +274,8 @@ Class UCRMain {
 		if (name = 0)
 			return 0
 		this.Profiles[id].Name := name
-		this.ProfileTreeChanged()
-		this.FireProfileTreeChangeCallbacks()
+		this.UpdateProfileToolbox()
+		this.UpdateCurrentProfileReadout()
 		this._SaveSettings()
 	}
 
@@ -305,9 +305,8 @@ Class UCRMain {
 			newprofile := 2
 		this._DeleteChildProfiles(id)
 		this.Profiles.Delete(id)
+		this.UpdateProfileToolbox()
 		this.ChangeProfile(newprofile)
-		this.ProfileTreeChanged()
-		this.FireProfileTreeChangeCallbacks()
 	}
 	
 	_DeleteChildProfiles(id){
@@ -604,6 +603,17 @@ class _ProfileToolbox extends _ProfileSelect {
 	RenameProfile(){
 		id := this.ProfileIDOfSelection()
 		UCR.RenameProfile(id)
+	}
+	
+	UpdateSelection(id){
+		;Gui, % this.hwnd ":Default"
+		;Gui, TreeView, % this.hTreeview
+		static TVM_SELECTITEM := 0x110B, TVGN_CARET := 0x9
+ 
+		fn := this.TV_EventFn
+		GuiControl -g, % this.hTreeview, % fn
+		SendMessage_( this.hTreeview, TVM_SELECTITEM, TVGN_CARET, this.ProfileIdToLvHandle[id] )
+		GuiControl +g, % this.hTreeview, % fn
 	}
 	
 	ProfileIDOfSelection(){
