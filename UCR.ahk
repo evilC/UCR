@@ -237,6 +237,7 @@ Class UCRMain {
 	}
 	
 	UpdateCurrentProfileReadout(){
+		OutputDebug % "UpdateCurrentProfileReadout: " this.CurrentProfile.id
 		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentProfile.id)
 	}
 	
@@ -323,6 +324,8 @@ Class UCRMain {
 		id := this._CreateProfile(name)
 		this._UpdateProfileSelect()
 		this.ChangeProfile(id)
+		this.ProfileTreeChanged()
+		this.FireProfileTreeChangeCallbacks()
 	}
 	
 	RenameProfile(id){
@@ -615,9 +618,27 @@ Class UCRMain {
 class _ProfileToolbox extends _ProfileSelect {
 	__New(){
 		base.__New()
-		Gui, Add, Button, xm w100 hwndhRename, Rename
+
+		Gui, Add, Button, xm w50 hwndhAdd, Add
+		fn := this.AddProfile.Bind(this,0)
+		GuiControl +g, % hAdd, % fn
+
+		Gui, Add, Button, x+5 w80 hwndhAdd, Add Child
+		fn := this.AddProfile.Bind(this,1)
+		GuiControl +g, % hAdd, % fn
+
+		Gui, Add, Button, xm w80 hwndhRename, Rename
 		fn := this.RenameProfile.Bind(this)
 		GuiControl +g, % hRename, % fn
+		
+	}
+	
+	AddProfile(childmode){
+		if (childmode){
+			
+		} else {
+			UCR._AddProfile()
+		}
 	}
 	
 	RenameProfile(){
@@ -630,7 +651,7 @@ class _ProfileToolbox extends _ProfileSelect {
 	
 	TV_Event(){
 		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
-			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+			;UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
 		}
 	}
 	
@@ -671,8 +692,7 @@ class _ProfileSelect {
 		Gui, Add, TreeView, w200 h200 hwndhTreeview AltSubmit
 		this.hTreeview := hTreeview
 		;Gui, Show
-		fn := this.TV_Event.Bind(this)
-		GuiControl +g, % hTreeview, % fn
+		this.TV_EventFn := this.TV_Event.Bind(this)
 		;this.BuildProfileTree()
 	}
 	
@@ -690,6 +710,9 @@ class _ProfileSelect {
 		Gui, % this.hwnd ":Default"
 		Gui, TreeView, % this.hTreeview
 		TV_Delete()
+		fn := this.TV_EventFn
+		GuiControl -g, % this.hTreeview, % fn
+		
 		this.ProfileIdToLvHandle := {}
 		this.LvHandleToProfileId := {}
 		profiles := {}
@@ -719,6 +742,7 @@ class _ProfileSelect {
 				
 			}
 		}
+		GuiControl +g, % this.hTreeview, % fn
 	}
 	
 	AddProfileNode(profile, parent){
