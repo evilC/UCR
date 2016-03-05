@@ -65,9 +65,6 @@ Class UCRMain {
 		; Load settings. This will cause all plugins to load.
 		p := this._LoadSettings()
 
-		; old profile select
-		this._UpdateProfileSelect()
-		
 		; new profile select
 		this.ProfileTreeChanged()
 
@@ -126,38 +123,13 @@ Class UCRMain {
 		
 		; Profile Select DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
-		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 435
+		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 220
 		this.hCurrentProfile := hCurrentProfile
 		
 		Gui, % this.hTopPanel ":Add", Button, % "x+5 yp-1 hwndhProfileToolbox w100", Profile Toolbox
 		this.hProfileToolbox := hProfileToolbox
 		fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
 		GuiControl +g, % this.hProfileToolbox, % fn
-
-		Gui, % this.hTopPanel ":Add", DDL, % "x+5 yp hwndhProfileSelect AltSubmit w" 100
-		this.hProfileSelect := hProfileSelect
-		fn := this._ProfileSelectChanged.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hProfileSelect, % fn
-
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddProfile x+5 yp-1 w50", Add
-		this.hAddProfile := hAddProfile
-		fn := this._AddProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hAddProfile, % fn
-
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhDeleteProfile x+5 yp w50", Delete
-		this.hDeleteProfile := hDeleteProfile
-		fn := this._DeleteProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hDeleteProfile, % fn
-
-		;~ Gui, % this.hTopPanel ":Add", Button, % "hwndhRenameProfile x+5 yp w50 disabled", Rename
-		;~ this.hRenameProfile := hRenameProfile
-		;~ fn := this._RenameProfile.Bind(this)
-		;~ GuiControl % this.hTopPanel ":+g", % this.hRenameProfile, % fn
-
-		;~ Gui, % this.hTopPanel ":Add", Button, % "hwndhCopyProfile x+5 yp w50 disabled", Copy
-		;~ this.hCopyProfile := hCopyProfile
-		;~ fn := this._CopyProfile.Bind(this)
-		;~ GuiControl % this.hTopPanel ":+g", % this.hCopyProfile, % fn
 
 		; Add Plugin
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
@@ -197,13 +169,6 @@ Class UCRMain {
 		this._SaveSettings()
 	}
 	
-	; Called when hProfileSelect changes through user interaction (They selected a new profile)
-	_ProfileSelectChanged(){
-		GuiControlGet, id, % this.hTopPanel ":", % this.hProfileSelect
-		id := this._ProfileSelectList[id].id
-		this.ChangeProfile(id)
-	}
-	
 	; The user clicked the "Add Plugin" button
 	_AddPlugin(){
 		this.CurrentProfile._AddPlugin()
@@ -222,7 +187,6 @@ Class UCRMain {
 			if (!this.CurrentProfile._IsGlobal)
 				this.CurrentProfile._DeActivate()
 		}
-		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % newprofile.Name
 		
 		this.CurrentProfile := this.Profiles[id]
 		
@@ -274,30 +238,6 @@ Class UCRMain {
 		}
 	}
 	
-	; Populate hProfileSelect with a list of available profiles
-	_UpdateProfileSelect(){
-		this._ProfileSelectList := [this.Profiles[1], this.Profiles[2]]
-		for id, profile in this.Profiles {
-			if (id = 1 || id = 2)
-				continue
-			this._ProfileSelectList.push(this.Profiles[id])
-		}
-		str := "|"
-		max := this._ProfileSelectList.length()
-		Loop % max {
-			if (A_Index > 1)
-				str .= "|"
-			id := this._ProfileSelectList[A_Index].id
-			name := this.Profiles[id].Name
-			str .= name
-			if (id = this.CurrentProfile.id)
-				str .= "|"
-			if (A_Index = max)
-				str .= "|"
-		}
-		GuiControl,  % this.hTopPanel ":", % this.hProfileSelect, % str
-	}
-	
 	; Update hPluginSelect with a list of available Plugins
 	_UpdatePluginSelect(){
 		this.PluginList := []
@@ -322,7 +262,6 @@ Class UCRMain {
 		if (name = 0)
 			return
 		id := this._CreateProfile(name)
-		this._UpdateProfileSelect()
 		this.ChangeProfile(id)
 		this.ProfileTreeChanged()
 		this.FireProfileTreeChangeCallbacks()
@@ -365,7 +304,6 @@ Class UCRMain {
 		else
 			newprofile := 2
 		this.Profiles.Delete(id)
-		this._UpdateProfileSelect()
 		this.ChangeProfile(newprofile)
 		this.ProfileTreeChanged()
 		this.FireProfileTreeChangeCallbacks()
@@ -626,22 +564,22 @@ class _ProfileToolbox extends _ProfileSelect {
 	__New(){
 		base.__New()
 
-		Gui, Add, Button, xm w50 hwndhAdd, Add
+		Gui, Add, Button, xm w30 hwndhAdd, Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w80 hwndhAdd, Add Child
+		Gui, Add, Button, x+5 w60 hwndhAdd, Add Child
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w80 hwndhDelete, Delete
-		fn := this.DeleteProfile.Bind(this)
-		GuiControl +g, % hDelete, % fn
-
-		Gui, Add, Button, xm w80 hwndhRename, Rename
+		Gui, Add, Button, x+5 w50 hwndhRename, Rename
 		fn := this.RenameProfile.Bind(this)
 		GuiControl +g, % hRename, % fn
 		
+		Gui, Add, Button, x+5 w40 hwndhDelete, Delete
+		fn := this.DeleteProfile.Bind(this)
+		GuiControl +g, % hDelete, % fn
+
 	}
 	
 	AddProfile(childmode){
