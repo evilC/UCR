@@ -53,15 +53,20 @@ Class UCRMain {
 		this._BindModeHandler := new _BindModeHandler()
 		this._InputHandler := new _InputHandler()
 
+		; Add the Profile Toolbox - this is used to add and edit profiles
+		this._ProfileToolbox := new _ProfileToolbox()
+
 		; Create the Main Gui
 		this._CreateGui()
 		
 		; Load settings. This will cause all plugins to load.
 		p := this._LoadSettings()
 
+		; old profile select
 		this._UpdateProfileSelect()
 		
-		this._ProfileSelect := new _ProfileSelect()	; Profile tree test
+		; new profile select
+		this.ProfileListChanged()
 
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
@@ -120,6 +125,12 @@ Class UCRMain {
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
 		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 435
 		this.hCurrentProfile := hCurrentProfile
+		
+		Gui, % this.hTopPanel ":Add", Button, % "x+5 yp-1 hwndhProfileToolbox w100", Profile Toolbox
+		this.hProfileToolbox := hProfileToolbox
+		fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
+		GuiControl +g, % this.hProfileToolbox, % fn
+
 		Gui, % this.hTopPanel ":Add", DDL, % "x+5 yp hwndhProfileSelect AltSubmit w" 100
 		this.hProfileSelect := hProfileSelect
 		fn := this._ProfileSelectChanged.Bind(this)
@@ -135,15 +146,15 @@ Class UCRMain {
 		fn := this._DeleteProfile.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hDeleteProfile, % fn
 
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhRenameProfile x+5 yp w50 disabled", Rename
-		this.hRenameProfile := hRenameProfile
-		fn := this._RenameProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hRenameProfile, % fn
+		;~ Gui, % this.hTopPanel ":Add", Button, % "hwndhRenameProfile x+5 yp w50 disabled", Rename
+		;~ this.hRenameProfile := hRenameProfile
+		;~ fn := this._RenameProfile.Bind(this)
+		;~ GuiControl % this.hTopPanel ":+g", % this.hRenameProfile, % fn
 
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhCopyProfile x+5 yp w50 disabled", Copy
-		this.hCopyProfile := hCopyProfile
-		fn := this._CopyProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hCopyProfile, % fn
+		;~ Gui, % this.hTopPanel ":Add", Button, % "hwndhCopyProfile x+5 yp w50 disabled", Copy
+		;~ this.hCopyProfile := hCopyProfile
+		;~ fn := this._CopyProfile.Bind(this)
+		;~ GuiControl % this.hTopPanel ":+g", % this.hCopyProfile, % fn
 
 		; Add Plugin
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
@@ -226,6 +237,10 @@ Class UCRMain {
 			this._ProfileChanged(this.CurrentProfile)
 		}
 		return 1
+	}
+	
+	ProfileListChanged(){
+		this._ProfileToolbox.BuildProfileTree()
 	}
 	
 	; Populate hProfileSelect with a list of available profiles
@@ -557,23 +572,54 @@ Class UCRMain {
 	}
 }
 
-; =================================================================== PROFILE TREE TEST ==========================================================
+; =================================================================== MAIN PROFILE SELECT / ADD ==========================================================
+; The main tool that the user uses to change profile, add / remove / rename / re-order profiles etc
+class _ProfileToolbox extends _ProfileSelect {
+	TV_Event(){
+		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
+			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+		}
+	}
+	
+	ShowButtonClicked(){
+		CoordMode, Mouse, Screen
+		MouseGetPos, x, y
+		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
+	}
+}
+
+; =================================================================== PROFILE PICKER ==========================================================
+; A tool for plugins that allows users to pick a profile (eg for a profile switcher plugin). Cannot alter profile tree
+class _ProfilePicker extends _ProfileSelect {
+	TV_Event(){
+		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
+			;UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+		}
+	}
+}
+
+; =================================================================== BASE PROFILE TREE ==========================================================
+; Creates a treeview that can parse UCR's profiles and display a treeview of them
 class _ProfileSelect {
 	__New(){
 		Gui, New, HwndHwnd
 		this.hwnd := hwnd
-		Gui, Add, TreeView, w200 h200 hwndhTreeview
+		Gui, Add, TreeView, w200 h200 hwndhTreeview AltSubmit
 		this.hTreeview := hTreeview
-		Gui, Show
+		;Gui, Show
 		fn := this.TV_Event.Bind(this)
 		GuiControl +g, % hTreeview, % fn
-		this.BuildProfileTree()
+		;this.BuildProfileTree()
 	}
 	
 	TV_Event(){
-		if (A_GuiEvent == "DoubleClick"){
-			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
-		}
+		;~ if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
+			;~ UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+		;~ }
+	}
+	
+	Show(Callback){
+		SoundBeep
 	}
 	
 	BuildProfileTree(){
@@ -609,10 +655,12 @@ class _ProfileSelect {
 	}
 	
 	AddProfileNode(profile, parent){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
 		if (parent != 0){
 			parent := this.ProfileIdToLvHandle[parent]
 		}
-		hnode := TV_Add(profile.Name, parent)
+		hnode := TV_Add(profile.Name, parent, "Expand")
 		this.ProfileIdToLvHandle[profile.id] := hnode
 		this.LvHandleToProfileId[hnode] := profile.id
 	}

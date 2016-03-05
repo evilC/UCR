@@ -12,10 +12,20 @@ class ProfileSwitcher extends _Plugin {
 		Gui, Add, Text, xm, % "Change to this profile"
 		this.AddControl("MyEdit1", this.MyEditChanged.Bind(this), "Edit", "x150 yp-2 w330")
 		
-		Gui, Add, Button, x+5 yp-2 hwndhButton, Test
-		this.hButton := hButton
+		Gui, Add, Button, x+5 yp-2 hwndhTest, Test
+		this.hTest := hTest
 		fn := this.MyHkChangedState.Bind(this, 1)
-		GuiControl +g, % this.hButton, % fn
+		GuiControl +g, % this.hTest, % fn
+		
+		Gui, Add, Button, x+5 yp hwndhSelectProfile, Select Profile
+		this.hSelectProfile := hSelectProfile
+		fn := this.SelectProfile.Bind(this)
+		GuiControl +g, % this.hSelectProfile, % fn
+		
+	}
+	
+	SelectProfile(){
+		;UCR._ProfileSelect.Show()
 	}
 	
 	MyHkChangedState(e){
@@ -28,7 +38,8 @@ class ProfileSwitcher extends _Plugin {
 	
 	; In order to free memory when a plugin is closed, we must free references to this object
 	_KillReferences(){
-		GuiControl -g, % this.hButton
+		GuiControl -g, % this.hTest
+		GuiControl -g, % this.hSelectProfile
 	}
 		
 }
