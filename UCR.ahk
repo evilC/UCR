@@ -69,7 +69,7 @@ Class UCRMain {
 		this._UpdateProfileSelect()
 		
 		; new profile select
-		this.ProfileListChanged()
+		this.ProfileTreeChanged()
 
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
@@ -224,15 +224,20 @@ Class UCRMain {
 		}
 		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % newprofile.Name
 		
-		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(id)
-		
 		this.CurrentProfile := this.Profiles[id]
+		
+		this.UpdateCurrentProfileReadout()
+		
 		this.CurrentProfile._Activate()
 		this.CurrentProfile._Show()
 		if (save){
 			this._ProfileChanged(this.CurrentProfile)
 		}
 		return 1
+	}
+	
+	UpdateCurrentProfileReadout(){
+		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentProfile.id)
 	}
 	
 	BuildProfilePathName(id){
@@ -247,7 +252,8 @@ Class UCRMain {
 		return str
 	}
 	
-	ProfileListChanged(){
+	ProfileTreeChanged(){
+		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.BuildProfileTree()
 		this.FireProfileTreeChangeCallbacks()
 	}
@@ -319,6 +325,18 @@ Class UCRMain {
 		this.ChangeProfile(id)
 	}
 	
+	RenameProfile(id){
+		if (!ObjHasKey(this.Profiles, id))
+			return 0
+		name := this._GetUniqueName()
+		if (name = 0)
+			return 0
+		this.Profiles[id].Name := name
+		this.ProfileTreeChanged()
+		this.FireProfileTreeChangeCallbacks()
+		this._SaveSettings()
+	}
+
 	; Creates a new profile and assigns it a unique ID, if needed.
 	_CreateProfile(name, id := 0){
 		if (id = 0){
@@ -341,10 +359,6 @@ Class UCRMain {
 		this.Profiles.Delete(name)
 		this._UpdateProfileSelect()
 		this.ChangeProfile("Default")
-	}
-	
-	_RenameProfile(){
-		
 	}
 	
 	_CopyProfile(){
@@ -599,6 +613,21 @@ Class UCRMain {
 ; =================================================================== MAIN PROFILE SELECT / ADD ==========================================================
 ; The main tool that the user uses to change profile, add / remove / rename / re-order profiles etc
 class _ProfileToolbox extends _ProfileSelect {
+	__New(){
+		base.__New()
+		Gui, Add, Button, xm w100 hwndhRename, Rename
+		fn := this.RenameProfile.Bind(this)
+		GuiControl +g, % hRename, % fn
+	}
+	
+	RenameProfile(){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
+		id := this.LvHandleToProfileId[TV_GetSelection()]
+		OutputDebug % "Toolbox: Rename ID " id
+		UCR.RenameProfile(id)
+	}
+	
 	TV_Event(){
 		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
 			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
