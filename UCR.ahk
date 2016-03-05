@@ -118,7 +118,9 @@ Class UCRMain {
 		
 		; Profile Select DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
-		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhProfileSelect AltSubmit w" UCR.PLUGIN_FRAME_WIDTH - 335
+		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 435
+		this.hCurrentProfile := hCurrentProfile
+		Gui, % this.hTopPanel ":Add", DDL, % "x+5 yp hwndhProfileSelect AltSubmit w" 100
 		this.hProfileSelect := hProfileSelect
 		fn := this._ProfileSelectChanged.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hProfileSelect, % fn
@@ -207,6 +209,16 @@ Class UCRMain {
 				this.CurrentProfile._DeActivate()
 		}
 		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % newprofile.Name
+		
+		node := id
+		str := this.Profiles[node].Name
+		while (this.Profiles[node].ParentProfile != 0){
+			p := this.Profiles[node], pp := this.Profiles[p.ParentProfile]
+			str := pp.Name " >> " str
+			node := pp.id
+		}
+		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % str
+		
 		this.CurrentProfile := this.Profiles[id]
 		this.CurrentProfile._Activate()
 		this.CurrentProfile._Show()
@@ -550,13 +562,23 @@ class _ProfileSelect {
 	__New(){
 		Gui, New, HwndHwnd
 		this.hwnd := hwnd
-		Gui, Add, TreeView, w200 h200
+		Gui, Add, TreeView, w200 h200 hwndhTreeview
+		this.hTreeview := hTreeview
 		Gui, Show
+		fn := this.TV_Event.Bind(this)
+		GuiControl +g, % hTreeview, % fn
 		this.BuildProfileTree()
+	}
+	
+	TV_Event(){
+		if (A_GuiEvent == "DoubleClick"){
+			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+		}
 	}
 	
 	BuildProfileTree(){
 		this.ProfileIdToLvHandle := {}
+		this.LvHandleToProfileId := {}
 		profiles := {}
 		pc := 0
 		for id, profile in UCR.Profiles {
@@ -592,6 +614,7 @@ class _ProfileSelect {
 		}
 		hnode := TV_Add(profile.Name, parent)
 		this.ProfileIdToLvHandle[profile.id] := hnode
+		this.LvHandleToProfileId[hnode] := profile.id
 	}
 }
 
