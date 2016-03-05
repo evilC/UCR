@@ -27,6 +27,8 @@ Class UCRMain {
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
+	_ProfileTreeChangeSubscriptions := []		; An array of callbacks for things that wish to be notified if the profile tree changes
+	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
 		Gui +HwndHwnd
@@ -55,6 +57,7 @@ Class UCRMain {
 
 		; Add the Profile Toolbox - this is used to add and edit profiles
 		this._ProfileToolbox := new _ProfileToolbox()
+		this._ProfilePicker := new _ProfilePicker()
 
 		; Create the Main Gui
 		this._CreateGui()
@@ -221,14 +224,7 @@ Class UCRMain {
 		}
 		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % newprofile.Name
 		
-		node := id
-		str := this.Profiles[node].Name
-		while (this.Profiles[node].ParentProfile != 0){
-			p := this.Profiles[node], pp := this.Profiles[p.ParentProfile]
-			str := pp.Name " >> " str
-			node := pp.id
-		}
-		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % str
+		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(id)
 		
 		this.CurrentProfile := this.Profiles[id]
 		this.CurrentProfile._Activate()
@@ -239,8 +235,33 @@ Class UCRMain {
 		return 1
 	}
 	
+	BuildProfilePathName(id){
+		if (!ObjHasKey(this.profiles, id))
+			return ""
+		str := this.Profiles[id].Name
+		while (this.Profiles[id].ParentProfile != 0){
+			p := this.Profiles[id], pp := this.Profiles[p.ParentProfile]
+			str := pp.Name " >> " str
+			id := pp.id
+		}
+		return str
+	}
+	
 	ProfileListChanged(){
 		this._ProfileToolbox.BuildProfileTree()
+		this.FireProfileTreeChangeCallbacks()
+	}
+	
+	SubscribeToProfileTreeChange(callback){
+		this._ProfileTreeChangeSubscriptions.push(callback)
+	}
+	
+	FireProfileTreeChangeCallbacks(){
+		Loop % this._ProfileTreeChangeSubscriptions.length(){
+			cb := this._ProfileTreeChangeSubscriptions[A_Index]
+			if (IsObject(cb))
+				cb.Call()
+		}
 	}
 	
 	; Populate hProfileSelect with a list of available profiles
@@ -591,10 +612,21 @@ class _ProfileToolbox extends _ProfileSelect {
 ; =================================================================== PROFILE PICKER ==========================================================
 ; A tool for plugins that allows users to pick a profile (eg for a profile switcher plugin). Cannot alter profile tree
 class _ProfilePicker extends _ProfileSelect {
+	_CurrentCallback := 0
 	TV_Event(){
-		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
-			;UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+		if (A_GuiEvent == "DoubleClick"){
+			this._CurrentCallback.Call(this.LvHandleToProfileId[A_EventInfo])
+			Gui, % this.hwnd ":Hide"
+			this._CurrentCallback := 0
 		}
+	}
+	
+	PickProfile(callback){
+		this._CurrentCallback := callback
+		CoordMode, Mouse, Screen
+		MouseGetPos, x, y
+		this.BuildProfileTree()
+		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Picker
 	}
 }
 
@@ -623,6 +655,9 @@ class _ProfileSelect {
 	}
 	
 	BuildProfileTree(){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
+		TV_Delete()
 		this.ProfileIdToLvHandle := {}
 		this.LvHandleToProfileId := {}
 		profiles := {}
