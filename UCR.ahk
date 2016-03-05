@@ -303,14 +303,20 @@ Class UCRMain {
 			newprofile := pp
 		else
 			newprofile := 2
+		this._DeleteChildProfiles(id)
 		this.Profiles.Delete(id)
 		this.ChangeProfile(newprofile)
 		this.ProfileTreeChanged()
 		this.FireProfileTreeChangeCallbacks()
 	}
 	
-	_CopyProfile(){
-		
+	_DeleteChildProfiles(id){
+		for i, profile in this.Profiles{
+			if (profile.ParentProfile = id){
+				this._DeleteChildProfiles(profile.id)
+				this.profiles.Delete(profile.id)
+			}
+		}
 	}
 	
 	; Load a list of available plugins
