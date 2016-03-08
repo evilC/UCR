@@ -17,6 +17,7 @@ Class UCRMain {
 	_CurrentState := 0				; The current state of the application
 	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
 	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
+	ProfileTree := {}				; A lookup table for Profile order. A sparse array of Parent IDs, containing Ordered Arrays of Profile IDs
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
@@ -263,6 +264,9 @@ Class UCRMain {
 		if (name = 0)
 			return
 		id := this._CreateProfile(name, 0, parent)
+		if (!IsObject(this.ProfileTree[parent]))
+			this.ProfileTree[parent] := []
+		this.ProfileTree[parent].push(id)
 		this.UpdateProfileToolbox()
 		this.ChangeProfile(id)
 	}
@@ -304,16 +308,35 @@ Class UCRMain {
 		else
 			newprofile := 2
 		this._DeleteChildProfiles(id)
-		this.Profiles.Delete(id)
+		this.__DeleteProfile(id)
 		this.UpdateProfileToolbox()
 		this.ChangeProfile(newprofile)
 	}
 	
+	; Actually deletes a profile
+	__DeleteProfile(id){
+		; Remove profile's entry from ProfileTree
+		profile := this.Profiles[id]
+		treenode := this.ProfileTree[profile.ParentProfile]
+		for k, v in treenode {
+			if (v == id){
+				treenode.Remove(k)	; Use Remove, so indexes shuffle down.
+				; If array is empty, remove from tree
+				if (!treenode.length())
+					this.ProfileTree.Delete(profile.ParentProfile)	; Sparse array - use Delete instead of Remove
+				break
+			}
+		}
+		; Kill profile object
+		this.profiles.Delete(profile.id)
+	}
+	
+	; Recursively deletes child profiles
 	_DeleteChildProfiles(id){
 		for i, profile in this.Profiles{
 			if (profile.ParentProfile = id){
 				this._DeleteChildProfiles(profile.id)
-				this.profiles.Delete(profile.id)
+				this.__DeleteProfile(profile.id)
 			}
 		}
 	}
@@ -365,7 +388,7 @@ Class UCRMain {
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
 			; Settings file empty or not found, create new settings
-			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
+			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [1, 2]}, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
 			j := JSON.Load(j)
@@ -410,6 +433,7 @@ Class UCRMain {
 			; Convert profiles from name-indexed to unique-id indexed
 			oldprofiles := obj.Profiles.clone()
 			obj.Profiles := {}
+			obj.ProfileTree := {0: [1, 2]}
 			obj.CurrentProfile := 2
 			for name, profile in oldprofiles {
 				if (name = "global"){
@@ -422,6 +446,7 @@ Class UCRMain {
 						Random, id, 3, 2147483647
 						;Sleep 10
 					} until (!ObjHasKey(obj.Profiles, id))
+					obj.ProfileTree[0].push(id)
 				}
 				profile.id := id
 				profile.Name := name
@@ -538,8 +563,12 @@ Class UCRMain {
 	
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
-		obj := {SettingsVersion: this.SettingsVersion, CurrentProfile: this.CurrentProfile.id, CurrentSize: this.CurrentSize, CurrentPos: this.CurrentPos}
-		obj.Profiles := {}
+		obj := {SettingsVersion: this.SettingsVersion
+			, CurrentProfile: this.CurrentProfile.id
+			, CurrentSize: this.CurrentSize
+			, CurrentPos: this.CurrentPos
+			, Profiles: {}
+			, ProfileTree: this.ProfileTree}
 		for id, profile in this.Profiles {
 			obj.Profiles[id] := profile._Serialize()
 		}
@@ -549,6 +578,7 @@ Class UCRMain {
 	; Load this object from simple data strutures
 	_Deserialize(obj){
 		this.Profiles := {}
+		this.ProfileTree := obj.ProfileTree
 		for id, profile in obj.Profiles {
 			this._CreateProfile(profile.Name, id, profile.ParentProfile)
 			this.Profiles[id]._Deserialize(profile)
@@ -671,9 +701,7 @@ class _ProfileSelect {
 	}
 	
 	TV_Event(){
-		;~ if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
-			;~ UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
-		;~ }
+		; Base class - override
 	}
 	
 	Show(Callback){
@@ -689,31 +717,10 @@ class _ProfileSelect {
 		
 		this.ProfileIdToLvHandle := {}
 		this.LvHandleToProfileId := {}
-		profiles := {}
-		pc := 0
-		for id, profile in UCR.Profiles {
-			profiles[id] := {Name: profile.name, id: profile.id, ParentProfile: profile.ParentProfile}
-			pc++
-		}
-		remaining := pc
-		foundnodes := {0: 1}
-		mustmatch := 1
-		while (remaining){
-			for id, profile in profiles {
-				if (mustmatch < 3){
-					; Sort Global (id 1) and Default (id 2) to start of list
-					if (profile.id != mustmatch)
-						continue
-					mustmatch++
-				}
-				name := profile.name
-				if (ObjHasKey(foundnodes, profile.ParentProfile)){
-					this.AddProfileNode(profile, profile.ParentProfile)
-					foundnodes[id] := 1
-					remaining--
-					profiles.Delete(id)
-				}
-				
+		; Iterate sparse ProfileTree array
+		for parent, profiles in UCR.ProfileTree {
+			for i, id in profiles {
+				this.AddProfileNode(UCR.Profiles[id], parent)
 			}
 		}
 		GuiControl +g, % this.hTreeview, % fn
