@@ -705,7 +705,7 @@ class _ProfileSelect {
 	}
 	
 	Show(Callback){
-		SoundBeep
+		; Base class - override
 	}
 	
 	BuildProfileTree(){
