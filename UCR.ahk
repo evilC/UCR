@@ -286,12 +286,17 @@ Class UCRMain {
 	MoveProfile(profile_id, parent_id, after){
 		if (parent_id == "")
 			parent_id := 0
+		OutputDebug % "UCR.MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
 		; Do not allowing move of default or global profile
 		if (profile_id < 3 || !ObjHasKey(this.Profiles, profile_id))
 			return 0
 		; Make sure parent_id is 0 or a valid profile_id
 		if (parent_id != 0 && !ObjHasKey(this.Profiles, parent_id))
 			return 0
+		; Make sure requested move is valid
+		if (after = 1 || (parent_id = 0 && after == "First") || parent_id == 1 || parent_id == 2)
+			return 0
+
 		profile := this.Profiles[profile_id]
 		; Remove from old parent list
 		for k, v in this.ProfileTree[profile.ParentProfile] {
@@ -303,9 +308,19 @@ Class UCRMain {
 		; Add to new parent list
 		if (!IsObject(this.ProfileTree[parent_id]))
 			this.ProfileTree[parent_id] := []
-		this.ProfileTree[parent_id].push(profile_id)
+		if (after == ""){
+			this.ProfileTree[parent_id].push(profile_id)
+		} else if (after == "First"){
+			this.ProfileTree[parent_id].InsertAt(1, profile_id)
+		} else {
+			Loop % this.ProfileTree[parent_id].length(){
+				if (this.ProfileTree[parent_id, A_Index] = after){
+					this.ProfileTree[parent_id].InsertAt(A_Index + 1, profile_id)
+					break
+				}
+			}
+		}
 		profile.ParentProfile := parent_id
-		OutputDebug % "UCR.MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
 		this.UpdateProfileToolbox()
 		this.UpdateCurrentProfileReadout()
 		this._SaveSettings()
@@ -825,7 +840,7 @@ class _ProfileToolbox extends _ProfileSelect {
 							} else {
 								parent := hDroptarget
 							}
-							OutputDebug % "Treeview_EndDrag: this.BeforeAfter: " this.BeforeAfter
+							;OutputDebug % "Treeview_EndDrag: this.BeforeAfter: " this.BeforeAfter
 							this.MoveNode(this.hDragitem, parent, after)
 							;~ this.AddNodeToParent( this.hDragitem, parent, after )
 							;~ TV_Modify( hDropTarget, "Expand" )
