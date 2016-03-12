@@ -293,8 +293,22 @@ Class UCRMain {
 		if (parent_id != 0 && !ObjHasKey(this.Profiles, parent_id))
 			return 0
 		profile := this.Profiles[profile_id]
+		; Remove from old parent list
+		for k, v in this.ProfileTree[profile.ParentProfile] {
+			if (v == profile_id){
+				this.ProfileTree[profile.ParentProfile].Remove(k)
+				break
+			}
+		}
+		; Add to new parent list
+		if (!IsObject(this.ProfileTree[parent_id]))
+			this.ProfileTree[parent_id] := []
+		this.ProfileTree[parent_id].push(profile_id)
 		profile.ParentProfile := parent_id
 		OutputDebug % "UCR.MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
+		this.UpdateProfileToolbox()
+		this.UpdateCurrentProfileReadout()
+		this._SaveSettings()
 	}
 	
 	; Creates a new profile and assigns it a unique ID, if needed.
@@ -918,9 +932,21 @@ class _ProfileSelect {
 		this.ProfileIdToLvHandle := {}
 		this.LvHandleToProfileId := {}
 		; Iterate sparse ProfileTree array
+		ctr := 0
 		for parent, profiles in UCR.ProfileTree {
-			for i, id in profiles {
-				this.AddProfileNode(UCR.Profiles[id], parent)
+			ctr += profiles.length()
+		}
+		addedparents := {}
+		while (ctr > 0){
+			for parent, profiles in UCR.ProfileTree {
+				; Ignore profiles whose parents have not yet been added to the tree.
+				if (addedparents[parent] = 1 || (parent != 0 && !ObjHasKey(this.ProfileIdToLvHandle, parent)))
+					continue
+				addedparents[parent] := 1
+				for i, id in profiles {
+					this.AddProfileNode(UCR.Profiles[id], parent)
+					ctr--
+				}
 			}
 		}
 		GuiControl +g, % this.hTreeview, % fn
