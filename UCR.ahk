@@ -637,19 +637,19 @@ Class UCRMain {
 class _ProfileToolbox extends _ProfileSelect {
 	__New(){
 		base.__New()
-		Gui, Add, Button, xm w30 hwndhAdd, Add
+		Gui, Add, Button, xm w30 hwndhAdd y210 aya aw1/4, Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w60 hwndhAdd, Add Child
+		Gui, Add, Button, x+5 w60 hwndhAdd y210 aya axa aw1/4, Add Child
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w50 hwndhRename, Rename
+		Gui, Add, Button, x+5 w50 hwndhRename y210 aya axa aw1/4, Rename
 		fn := this.RenameProfile.Bind(this)
 		GuiControl +g, % hRename, % fn
 		
-		Gui, Add, Button, x+5 w40 hwndhDelete, Delete
+		Gui, Add, Button, x+5 w40 hwndhDelete y210 aya axa aw1/4, Delete
 		fn := this.DeleteProfile.Bind(this)
 		GuiControl +g, % hDelete, % fn
 
@@ -900,8 +900,9 @@ class _ProfileSelect {
 	__New(){
 		Gui, New, HwndHwnd
 		Gui +ToolWindow
+		Gui +Resize
 		this.hwnd := hwnd
-		Gui, Add, TreeView, w200 h200 hwndhTreeview AltSubmit
+		Gui, Add, TreeView, w200 h200 aw ah hwndhTreeview AltSubmit
 		this.hTreeview := hTreeview
 		;Gui, Show
 		this.TV_EventFn := this.TV_Event.Bind(this)
