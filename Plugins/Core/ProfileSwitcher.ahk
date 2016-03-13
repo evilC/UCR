@@ -1,6 +1,5 @@
 /*
-Demos persistent guicontrols / callbacks for change of value for a guicontrol
-Binds a hotkey to a snippet of AHK code
+Allows changing from one profile to another using a hotkey.
 */
 class ProfileSwitcher extends _Plugin {
 	Type := "Profile Switcher"
