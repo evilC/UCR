@@ -641,7 +641,6 @@ Class UCRMain {
 class _ProfileToolbox extends _ProfileSelect {
 	__New(){
 		base.__New()
-
 		Gui, Add, Button, xm w30 hwndhAdd, Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
@@ -921,6 +920,7 @@ class _ProfilePicker extends _ProfileSelect {
 class _ProfileSelect {
 	__New(){
 		Gui, New, HwndHwnd
+		Gui +ToolWindow
 		this.hwnd := hwnd
 		Gui, Add, TreeView, w200 h200 hwndhTreeview AltSubmit
 		this.hTreeview := hTreeview
