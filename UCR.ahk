@@ -260,7 +260,7 @@ Class UCRMain {
 	
 	; User clicked add new profile button
 	_AddProfile(parent := 0){
-		name := this._GetUniqueName()
+		name := this._GetProfileName()
 		if (name = 0)
 			return
 		id := this._CreateProfile(name, 0, parent)
@@ -274,7 +274,7 @@ Class UCRMain {
 	RenameProfile(id){
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
-		name := this._GetUniqueName()
+		name := this._GetProfileName()
 		if (name = 0)
 			return 0
 		this.Profiles[id].Name := name
@@ -579,29 +579,25 @@ Class UCRMain {
 		this._InputHandler.SetDeltaBinding(delta)
 	}
 	
-	_GetUniqueName(){
+	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
+	_GetProfileName(){
 		c := 1
-		; Find a unuqe name to suggest as a new name
-		while (ObjHasKey(this.Profiles, "Profile " c)){
-			c++
+		found := 0
+		while (!found){
+			found := 1
+			for id, profile in this.Profiles {
+				if (profile.Name = "Profile " c){
+					c++
+					found := 0
+					break
+				}
+			}
 		}
 		suggestedname := "Profile " c
 		; Allow user to pick name
-		choosename := 1
 		prompt := "Enter a name for the Profile"
-		while(choosename) {
-			InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
-			if (!ErrorLevel){
-				if (ObjHasKey(this.Profiles, Name)){
-					prompt := "Duplicate name chosen, please enter a unique name"
-					name := suggestedname
-				} else {
-					return name
-				}
-			} else {
-				return 0
-			}
-		}
+		InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
+		return (ErrorLevel ? 0 : name)
 	}
 	
 	; Serialize this object down to the bare essentials for loading it's state
