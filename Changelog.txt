@@ -4,6 +4,20 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.7 - 13th Mar 2016
+! Warning! Settings version has changed.
+  BACK UP your INI file before using it with this version, if you value it.
++ Profiles are now organized in a Tree instead of a flat list.
++ Added a "Profile Toolbox" to allow navigation of the profile tree.
+  Add / Add Child / Delete / Rename of profiles are all functional.
+  Dragging and dropping of items in the Profile Tree to change parenting or order is supported.
++ Profile Switcher plugin now has a "picker" that can be used to choose a profile from the tree.
+  If you later change the structure of the tree, it will still point to the same profile.
+! Both the "Profile Toolbox" and the "Profile Picker" are experimental / placeholder.
+  The Profile Picker does not close unless you pick an item or close it.
+  Neither remember position or size.
+= Multiple AxisMerge plugins can now be used together.
+
 0.0.6 - 21st Feb 2016
 = Fixed errors while switching profile at the same time as input was happening.
   The ProfileSwitcher plugin should no longer crash UCR.

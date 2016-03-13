@@ -9,13 +9,15 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.6"				; The version of the main application
-	SettingsVersion := "0.0.1"		; The version of the settings file format
+	Version := "0.0.7"				; The version of the main application
+	SettingsVersion := "0.0.2"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0				; The current state of the application
-	Profiles := []					; A name-indexed array of instances of _Profile objects
+	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
+	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
+	ProfileTree := {}				; A lookup table for Profile order. A sparse array of Parent IDs, containing Ordered Arrays of Profile IDs
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
@@ -26,6 +28,8 @@ Class UCRMain {
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
+	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
+	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
 		Gui +HwndHwnd
@@ -52,19 +56,23 @@ Class UCRMain {
 		this._BindModeHandler := new _BindModeHandler()
 		this._InputHandler := new _InputHandler()
 
+		; Add the Profile Toolbox - this is used to add and edit profiles
+		this._ProfileToolbox := new _ProfileToolbox()
+		this._ProfilePicker := new _ProfilePicker()
+
 		; Create the Main Gui
 		this._CreateGui()
 		
 		; Load settings. This will cause all plugins to load.
 		p := this._LoadSettings()
 
-		this._UpdateProfileSelect()
-		
+		; Update state of Profile Toolbox
+		this.UpdateProfileToolbox()
 
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
 		
-		this.Profiles.Global._Activate()
+		this.Profiles.1._Activate()
 		this.ChangeProfile(p, 0)
 
 		; Watch window position and size using MessageFilter thread
@@ -116,30 +124,13 @@ Class UCRMain {
 		
 		; Profile Select DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
-		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhProfileSelect w" UCR.PLUGIN_FRAME_WIDTH - 335
-		this.hProfileSelect := hProfileSelect
-		fn := this._ProfileSelectChanged.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hProfileSelect, % fn
-
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddProfile x+5 yp-1 w50", Add
-		this.hAddProfile := hAddProfile
-		fn := this._AddProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hAddProfile, % fn
-
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhDeleteProfile x+5 yp w50", Delete
-		this.hDeleteProfile := hDeleteProfile
-		fn := this._DeleteProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hDeleteProfile, % fn
-
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhRenameProfile x+5 yp w50 disabled", Rename
-		this.hRenameProfile := hRenameProfile
-		fn := this._RenameProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hRenameProfile, % fn
-
-		Gui, % this.hTopPanel ":Add", Button, % "hwndhCopyProfile x+5 yp w50 disabled", Copy
-		this.hCopyProfile := hCopyProfile
-		fn := this._CopyProfile.Bind(this)
-		GuiControl % this.hTopPanel ":+g", % this.hCopyProfile, % fn
+		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 220
+		this.hCurrentProfile := hCurrentProfile
+		
+		Gui, % this.hTopPanel ":Add", Button, % "x+5 yp-1 hwndhProfileToolbox w100", Profile Toolbox
+		this.hProfileToolbox := hProfileToolbox
+		fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
+		GuiControl +g, % this.hProfileToolbox, % fn
 
 		; Add Plugin
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
@@ -179,31 +170,30 @@ Class UCRMain {
 		this._SaveSettings()
 	}
 	
-	; Called when hProfileSelect changes through user interaction (They selected a new profile)
-	_ProfileSelectChanged(){
-		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
-		this.ChangeProfile(name)
-	}
-	
 	; The user clicked the "Add Plugin" button
 	_AddPlugin(){
 		this.CurrentProfile._AddPlugin()
 	}
 	
 	; We wish to change profile. This may happen due to user input, or application changing
-	ChangeProfile(name, save := 1){
-		if (!ObjHasKey(this.Profiles, name))
+	ChangeProfile(id, save := 1){
+		if (!ObjHasKey(this.Profiles, id))
 			return 0
-		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " name
+		newprofile := this.Profiles[id]
+		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
 		if (IsObject(this.CurrentProfile)){
-			if (name = this.CurrentProfile.Name)
+			if (id = this.CurrentProfile.id)
 				return 1
 			this.CurrentProfile._Hide()
 			if (!this.CurrentProfile._IsGlobal)
 				this.CurrentProfile._DeActivate()
 		}
-		GuiControl, % this.hTopPanel ":ChooseString", % this.hProfileSelect, % name
-		this.CurrentProfile := this.Profiles[name]
+		
+		this.CurrentProfile := this.Profiles[id]
+		
+		this.UpdateCurrentProfileReadout()
+		this._ProfileToolbox.SelectProfileByID(id)
+		
 		this.CurrentProfile._Activate()
 		this.CurrentProfile._Show()
 		if (save){
@@ -212,28 +202,42 @@ Class UCRMain {
 		return 1
 	}
 	
-	; Populate hProfileSelect with a list of available profiles
-	_UpdateProfileSelect(){
-		profiles := ["Global", "Default"]
-		;profiles := ["Default"]
-		for profile in this.Profiles {
-			if (profile = "Default" || profile = "Global")
-				continue
-			profiles.push(profile)
+	UpdateCurrentProfileReadout(){
+		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentProfile.id)
+	}
+	
+	BuildProfilePathName(id){
+		if (!ObjHasKey(this.profiles, id))
+			return ""
+		str := this.Profiles[id].Name
+		while (this.Profiles[id].ParentProfile != 0){
+			p := this.Profiles[id], pp := this.Profiles[p.ParentProfile]
+			str := pp.Name " >> " str
+			id := pp.id
 		}
-		str := "|"
-		max := profiles.length()
-		Loop % max {
-			if (A_Index > 1)
-				str .= "|"
-			name := this.Profiles[profiles[A_Index]].Name
-			str .= name
-			if (name = this.CurrentProfile.Name)
-				str .= "|"
-			if (A_Index = max)
-				str .= "|"
+		return str
+	}
+	
+	; Some aspect of the Profile Tree changed - eg structure or names of profiles in tree
+	; Rebuild the tree
+	UpdateProfileToolbox(){
+		this._ProfileToolbox.BuildProfileTree()
+		this.FireProfileTreeChangeCallbacks()
+	}
+	
+	SubscribeToProfileTreeChange(hwnd, callback){
+		this._ProfileTreeChangeSubscriptions[hwnd] := callback
+	}
+	
+	UnSubscribeToProfileTreeChange(hwnd){
+		this._ProfileTreeChangeSubscriptions.Delete(hwnd)
+	}
+	
+	FireProfileTreeChangeCallbacks(){
+		for hwnd, cb in this._ProfileTreeChangeSubscriptions {
+			if (IsObject(cb))
+				cb.Call()
 		}
-		GuiControl,  % this.hTopPanel ":", % this.hProfileSelect, % str
 	}
 	
 	; Update hPluginSelect with a list of available Plugins
@@ -255,32 +259,129 @@ Class UCRMain {
 	}
 	
 	; User clicked add new profile button
-	_AddProfile(){
-		name := this._GetUniqueName()
+	_AddProfile(parent := 0){
+		name := this._GetProfileName()
 		if (name = 0)
 			return
-		this.Profiles[name] := new _Profile(name)
-		this._UpdateProfileSelect()
-		this.ChangeProfile(Name)
-		
+		id := this._CreateProfile(name, 0, parent)
+		if (!IsObject(this.ProfileTree[parent]))
+			this.ProfileTree[parent] := []
+		this.ProfileTree[parent].push(id)
+		this.UpdateProfileToolbox()
+		this.ChangeProfile(id)
+	}
+	
+	RenameProfile(id){
+		if (!ObjHasKey(this.Profiles, id))
+			return 0
+		name := this._GetProfileName()
+		if (name = 0)
+			return 0
+		this.Profiles[id].Name := name
+		this.UpdateProfileToolbox()
+		this.UpdateCurrentProfileReadout()
+		this._SaveSettings()
+	}
+
+	MoveProfile(profile_id, parent_id, after){
+		if (parent_id == "")
+			parent_id := 0
+		OutputDebug % "UCR.MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
+		; Do not allowing move of default or global profile
+		if (profile_id < 3 || !ObjHasKey(this.Profiles, profile_id))
+			return 0
+		; Make sure parent_id is 0 or a valid profile_id
+		if (parent_id != 0 && !ObjHasKey(this.Profiles, parent_id))
+			return 0
+		; Make sure requested move is valid
+		if (after = 1 || (parent_id = 0 && after == "First") || parent_id == 1 || parent_id == 2)
+			return 0
+
+		profile := this.Profiles[profile_id]
+		; Remove from old parent list
+		for k, v in this.ProfileTree[profile.ParentProfile] {
+			if (v == profile_id){
+				this.ProfileTree[profile.ParentProfile].Remove(k)
+				break
+			}
+		}
+		; Add to new parent list
+		if (!IsObject(this.ProfileTree[parent_id]))
+			this.ProfileTree[parent_id] := []
+		if (after == ""){
+			this.ProfileTree[parent_id].push(profile_id)
+		} else if (after == "First"){
+			this.ProfileTree[parent_id].InsertAt(1, profile_id)
+		} else {
+			Loop % this.ProfileTree[parent_id].length(){
+				if (this.ProfileTree[parent_id, A_Index] = after){
+					this.ProfileTree[parent_id].InsertAt(A_Index + 1, profile_id)
+					break
+				}
+			}
+		}
+		profile.ParentProfile := parent_id
+		this.UpdateProfileToolbox()
+		this.UpdateCurrentProfileReadout()
+		this._SaveSettings()
+	}
+	
+	; Creates a new profile and assigns it a unique ID, if needed.
+	_CreateProfile(name, id := 0, parent := 0){
+		if (id = 0){
+			Loop {
+				;id := A_NOW
+				Random, id, 3, 2147483647
+				;Sleep 10
+			} until !IsObject(this.ProfileIDs[id])
+		}
+		profile := new _Profile(id, name, parent)
+		this.Profiles[id] := profile
+		return id
 	}
 	
 	; user clicked the Delete Profile button
 	_DeleteProfile(){
-		GuiControlGet, name, % this.hTopPanel ":", % this.hProfileSelect
-		if (name = "Default" || name = "Global")
+		id := this.CurrentProfile.id
+		if (id = 1 || id = 2)
 			return
-		this.Profiles.Delete(name)
-		this._UpdateProfileSelect()
-		this.ChangeProfile("Default")
+		pp := this.CurrentProfile.ParentProfile
+		if pp != 0
+			newprofile := pp
+		else
+			newprofile := 2
+		this._DeleteChildProfiles(id)
+		this.__DeleteProfile(id)
+		this.UpdateProfileToolbox()
+		this.ChangeProfile(newprofile)
 	}
 	
-	_RenameProfile(){
-		
+	; Actually deletes a profile
+	__DeleteProfile(id){
+		; Remove profile's entry from ProfileTree
+		profile := this.Profiles[id]
+		treenode := this.ProfileTree[profile.ParentProfile]
+		for k, v in treenode {
+			if (v == id){
+				treenode.Remove(k)	; Use Remove, so indexes shuffle down.
+				; If array is empty, remove from tree
+				if (!treenode.length())
+					this.ProfileTree.Delete(profile.ParentProfile)	; Sparse array - use Delete instead of Remove
+				break
+			}
+		}
+		; Kill profile object
+		this.profiles.Delete(profile.id)
 	}
 	
-	_CopyProfile(){
-		
+	; Recursively deletes child profiles
+	_DeleteChildProfiles(id){
+		for i, profile in this.Profiles{
+			if (profile.ParentProfile = id){
+				this._DeleteChildProfiles(profile.id)
+				this.__DeleteProfile(profile.id)
+			}
+		}
 	}
 	
 	; Load a list of available plugins
@@ -329,12 +430,25 @@ Class UCRMain {
 		
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
-			j := {"CurrentProfile":"Default","Profiles":{"Default":{}, "Global": {}}}
-			;j := {"CurrentProfile":"Default","Profiles":{"Default":{}}}
+			; Settings file empty or not found, create new settings
+			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [1, 2]}, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
 		} else {
 			OutputDebug % "Loading JSON from disk"
 			j := JSON.Load(j)
 		}
+		
+		; Check if Settings file is a compatible version
+		if (j.SettingsVersion != this.SettingsVersion){
+			; No, try to upgrade
+			j := this._UpdateSettings(j)
+			; Did upgrade succeed?
+			if (j.SettingsVersion != this.SettingsVersion){
+				; No, warn and exit.
+				msgbox % this._SettingsFile " is incompatible with this version of UCR."
+				ExitApp
+			}
+		}
+		; Load profiles / plugins from settings file
 		this._Deserialize(j)
 		return j.CurrentProfile
 	}
@@ -345,7 +459,6 @@ Class UCRMain {
 		static SettingsFile, obj
 		SetTimer, Save, Off
 		obj := this._Serialize()
-		obj.SettingsVersion := this.SettingsVersion
 		SettingsFile := this._SettingsFile
 		SetTimer, Save, -1000
 		Return
@@ -354,6 +467,40 @@ Class UCRMain {
 			FileReplace(JSON.Dump(obj, ,true), SettingsFile)
 		Return
 
+	}
+	
+	; If SettingsVersion changes, this handles converting the INI file to the new format
+	_UpdateSettings(obj){
+		if (obj.SettingsVersion = "0.0.1"){
+			; Upgrade from 0.0.1 to 0.0.2
+			; Convert profiles from name-indexed to unique-id indexed
+			oldprofiles := obj.Profiles.clone()
+			obj.Profiles := {}
+			obj.ProfileTree := {0: [1, 2]}
+			obj.CurrentProfile := 2
+			for name, profile in oldprofiles {
+				if (name = "global"){
+					id := 1
+				} else if (name = "default"){
+					id := 2
+				} else {
+					Loop {
+						;id := A_NOW
+						Random, id, 3, 2147483647
+						;Sleep 10
+					} until (!ObjHasKey(obj.Profiles, id))
+					obj.ProfileTree[0].push(id)
+				}
+				profile.id := id
+				profile.Name := name
+				profile.ParentProfile := 0
+				obj.Profiles[id] := profile
+			}
+			obj.SettingsVersion := "0.0.2"
+			return obj
+		}
+		; Default to making no changes
+		return obj
 	}
 	
 	; A child profile changed in some way
@@ -432,37 +579,37 @@ Class UCRMain {
 		this._InputHandler.SetDeltaBinding(delta)
 	}
 	
-	_GetUniqueName(){
+	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
+	_GetProfileName(){
 		c := 1
-		; Find a unuqe name to suggest as a new name
-		while (ObjHasKey(this.Profiles, "Profile " c)){
-			c++
+		found := 0
+		while (!found){
+			found := 1
+			for id, profile in this.Profiles {
+				if (profile.Name = "Profile " c){
+					c++
+					found := 0
+					break
+				}
+			}
 		}
 		suggestedname := "Profile " c
 		; Allow user to pick name
-		choosename := 1
 		prompt := "Enter a name for the Profile"
-		while(choosename) {
-			InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
-			if (!ErrorLevel){
-				if (ObjHasKey(this.Profiles, Name)){
-					prompt := "Duplicate name chosen, please enter a unique name"
-					name := suggestedname
-				} else {
-					return name
-				}
-			} else {
-				return 0
-			}
-		}
+		InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
+		return (ErrorLevel ? 0 : name)
 	}
 	
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
-		obj := {CurrentProfile: this.CurrentProfile.Name, CurrentSize: this.CurrentSize, CurrentPos: this.CurrentPos}
-		obj.Profiles := {}
-		for name, profile in this.Profiles {
-			obj.Profiles[name] := profile._Serialize()
+		obj := {SettingsVersion: this.SettingsVersion
+			, CurrentProfile: this.CurrentProfile.id
+			, CurrentSize: this.CurrentSize
+			, CurrentPos: this.CurrentPos
+			, Profiles: {}
+			, ProfileTree: this.ProfileTree}
+		for id, profile in this.Profiles {
+			obj.Profiles[id] := profile._Serialize()
 		}
 		return obj
 	}
@@ -470,19 +617,371 @@ Class UCRMain {
 	; Load this object from simple data strutures
 	_Deserialize(obj){
 		this.Profiles := {}
-		for name, profile in obj.Profiles {
-			this.Profiles[name] := new _Profile(name)
-			this.Profiles[name]._Deserialize(profile)
-			this.Profiles[name]._Hide()
+		this.ProfileTree := obj.ProfileTree
+		for id, profile in obj.Profiles {
+			this._CreateProfile(profile.Name, id, profile.ParentProfile)
+			this.Profiles[id]._Deserialize(profile)
+			this.Profiles[id]._Hide()
 		}
 		;this.CurrentProfile := this.Profiles[obj.CurrentProfile]
+		
 		if (IsObject(obj.CurrentSize))
 			this.CurrentSize := obj.CurrentSize
 		if (IsObject(obj.CurrentPos))
 			this.CurrentPos := obj.CurrentPos
 	}
-	
 }
+
+; =================================================================== MAIN PROFILE SELECT / ADD ==========================================================
+; The main tool that the user uses to change profile, add / remove / rename / re-order profiles etc
+class _ProfileToolbox extends _ProfileSelect {
+	__New(){
+		base.__New()
+		Gui, Add, Button, xm w30 hwndhAdd y210 aya aw1/4, Add
+		fn := this.AddProfile.Bind(this,0)
+		GuiControl +g, % hAdd, % fn
+
+		Gui, Add, Button, x+5 w60 hwndhAdd y210 aya axa aw1/4, Add Child
+		fn := this.AddProfile.Bind(this,1)
+		GuiControl +g, % hAdd, % fn
+
+		Gui, Add, Button, x+5 w50 hwndhRename y210 aya axa aw1/4, Rename
+		fn := this.RenameProfile.Bind(this)
+		GuiControl +g, % hRename, % fn
+		
+		Gui, Add, Button, x+5 w40 hwndhDelete y210 aya axa aw1/4, Delete
+		fn := this.DeleteProfile.Bind(this)
+		GuiControl +g, % hDelete, % fn
+
+		this.DragMidFn := this.Treeview_Dragging.Bind(this)
+		this.DragEndFn := this.Treeview_EndDrag.Bind(this)
+	}
+	
+	AddProfile(childmode){
+		if (childmode)
+			parent := this.ProfileIDOfSelection()
+		else
+			parent := 0
+		UCR._AddProfile(parent)
+	}
+	
+	DeleteProfile(){
+		id := this.ProfileIDOfSelection()
+		UCR._DeleteProfile(id)
+	}
+	
+	RenameProfile(){
+		id := this.ProfileIDOfSelection()
+		UCR.RenameProfile(id)
+	}
+	
+	TV_Event(){
+		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
+			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+		} else if (A_GuiEvent == "D"){
+			this.hDragitem := A_EventInfo
+			this.Treeview_BeginDrag()
+		}
+	}
+	
+	ShowButtonClicked(){
+		CoordMode, Mouse, Screen
+		MouseGetPos, x, y
+		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
+	}
+	
+	;~ DeleteNode(node){
+		;~ pid := this.LvHandleToProfileId[node]
+		;~ this.LvHandleToProfileId.Delete(node)
+		;~ this.ProfileIdToLvHandle.Delete(pid)
+	;~ }
+	
+	MoveNode(node, parent, after){
+		profile_id := this.LvHandleToProfileId[node]
+		parent_id := this.LvHandleToProfileId[parent]
+		if (ObjHasKey(this.LvHandleToProfileId, after))
+			after := this.LvHandleToProfileId[after]
+		UCR.MoveProfile(profile_id, parent_id, after)
+	}
+	
+	; A drag started on a TreeView item
+	Treeview_BeginDrag( )
+	{
+		static TVM_SELECTITEM := 0x110B, TVGN_CARET := 0x9
+ 
+		; Select the item before dragging so it's clear what you're dragging
+		SendMessage_( this.hTreeview, TVM_SELECTITEM, TVGN_CARET, this.hDragitem )
+ 
+		; Set the dragging flag
+		this.TV_is_dragging := 1	
+		OnMessage( 0x200, this.DragMidFn ) ; WM_MOUSEMOVE
+	}
+	
+	; A drag is in progress on a treeview item - called each time the mouse moves
+	Treeview_Dragging( wParam, lParam )
+	{
+		static TVM_HITTEST := 0x1111, TVM_SETINSERTMARK := 0x111A, TVM_GETITEMRECT := 0x1104
+		static TVM_SELECTITEM := 0x110B, TVGN_DROPHILITE := 0x8, TVM_GETITEMHEIGHT := 0x111C
+ 
+		If (this.TV_is_dragging)
+		{
+			if (!this.height)
+				this.height := SendMessage_( this.hTreeview, TVM_GETITEMHEIGHT, 0, 0 )
+ 
+			; Get the mouse location out of lParam
+			x := lParam & 0xFFFF
+			y := lParam >> 16
+ 
+			; Create the TVHITTESTINFO struct...
+			VarSetCapacity( tvht, 16, 0 )
+			NumPut( x, tvht, 0, "int" ), NumPut( y, tvht, 4, "int" )
+ 
+			; ... to determine whether the pointer is over an item. If it is...
+			If (hitTarget := SendMessage_( this.hTreeview, TVM_HITTEST, 0, &tvht ))
+			{
+				; ... highlight the item as a drop target, and / or ...
+				SendMessage_( this.hTreeview, TVM_SELECTITEM, TVGN_DROPHILITE, hitTarget )
+ 
+				; ... if the pointer is in the top or bottom quarter of the item,
+				; show an insertion mark before or after, respectively.
+				; This way you can decide whether to make the dragged item
+				; a child or sibling of the drop target item.	
+				;
+				; If you really wanted, you could check here to see what kind of 
+				; item hitTarget was and display the insertion mark accordingly.
+				VarSetCapacity( rcitem, 16, 0 ), NumPut( hitTarget, rcitem )
+				SendMessage_( this.hTreeview, TVM_GETITEMRECT, 1, &rcitem )
+				rcitem_top := NumGet( rcitem, 4, "int" )
+				rcitem_bottom := NumGet( rcitem, 12, "int" )
+				fAfter := -1 ; just a default that's not 0 or 1
+				fAfter := ( y - rcitem_top ) < ( this.height/4 ) ? 0 : ( rcitem_bottom - y) < ( this.height/4 ) ? 1 : fAfter
+				If ( fAfter = -1 )
+					SendMessage_( this.hTreeview, TVM_SETINSERTMARK, 0, 0 ) ; hide insertionmark
+				Else
+					SendMessage_( this.hTreeview, TVM_SETINSERTMARK, fAfter, hitTarget ) ; show insertion mark
+				this.BeforeAfter := fAfter + 1
+				;OutputDebug % "Treeview_Dragging: this.BeforeAfter: " this.BeforeAfter
+			}
+		}
+		OnMessage( 0x202, this.DragEndFn ) ; WM_LBUTTONUP
+	}
+	
+	; A drag on a treeview item ended (The mouse went up)
+	Treeview_EndDrag( wParam, lParam )
+	{
+		static TVM_SETINSERTMARK := 0x111A, TVM_SELECTITEM := 0x110B, TVGN_DROPHILITE := 0x8
+		static TVM_HITTEST := 0x1111
+ 
+		If (this.TV_is_dragging)
+		{
+			; Remove the drop-target highlighting and insertion mark
+			SendMessage_( this.hTreeview, TVM_SELECTITEM, TVGN_DROPHILITE, 0 )
+			SendMessage_( this.hTreeview, TVM_SETINSERTMARK, 1, 0 )
+ 
+			; Add code here to handle the moving of the dragged node
+			; - hDragitem is the handle to the item currently being dragged
+			; - you can use the code from the WM_MOUSEMOVE to determine 
+			;   where the pointer is and where/how the item should be inserted
+			;
+			; For the sake of simplicity, this script will always move the 
+			; dragitem to be a child of the drop target
+ 
+				; Get the mouse location out of lParam
+				x := lParam & 0xFFFF
+				y := lParam >> 16
+ 
+				; Create the TVHITTESTINFO struct...
+				VarSetCapacity( tvht, 16, 0 )
+				NumPut( x, tvht, 0, "int" ), NumPut( y, tvht, 4, "int" )
+ 
+				; ... to determine whether the pointer is over an item.
+				If (hDroptarget := SendMessage_( this.hTreeview, TVM_HITTEST, 0, &tvht ))
+				{
+					; Only do stuff if the droptarget is different from the drag item
+					If ( this.hDragitem != hDroptarget )
+					{
+						; To prevent infinite loops, first make sure "parent" isn't actually a 
+						; descendant of node (it's like going back in time and becoming your own
+						; great-grandfather: no good can come of it)
+						If (!this.IsParentADescendant( this.hDragitem, hDroptarget ))
+						{
+							after := ""
+							; 0 = dropped on target, 1 = before, 2 = after
+							if (this.BeforeAfter = 2){
+								parent := TV_GetParent(hDroptarget)
+								after := hDroptarget
+							} else if (this.BeforeAfter = 1) {
+								parent := TV_GetParent(hDroptarget)
+								after := TV_GetPrev(hDroptarget)
+								after := after ? after : "First"
+							} else {
+								parent := hDroptarget
+							}
+							;OutputDebug % "Treeview_EndDrag: this.BeforeAfter: " this.BeforeAfter
+							this.MoveNode(this.hDragitem, parent, after)
+							;~ this.AddNodeToParent( this.hDragitem, parent, after )
+							;~ TV_Modify( hDropTarget, "Expand" )
+							;~ ;this.DeleteNode(this.hDragitem)
+							;~ TV_Delete( node )
+						}
+					}				
+				}
+ 
+			; Set the dragging flag and dragitem handle to false		
+			this.TV_is_dragging := 0, this.hDragitem := 0
+		}
+		OnMessage( 0x202, this.DragEndFn, 0 ) ; WM_LBUTTONUP
+		OnMessage( 0x200, this.DragMidFn, 0 ) ; WM_MOUSEMOVE
+	}
+	
+	IsParentADescendant( node, parent )
+	{
+		dlist := this.GetDescendantsList( node )
+		Loop, parse, dlist, `,
+			If ( A_LoopField = parent )
+				return 1
+		return 0
+	}
+ 
+	; Wheeeee! Recursion is fun!
+	GetDescendantsList( node )
+	{
+		If ( kid := TV_GetChild( node ) )
+		{
+			kids .= kid . "," . this.GetDescendantsList( kid )
+			While ( kid := TV_GetNext( kid ) )
+				kids .= kid . "," . this.GetDescendantsList( kid )
+		}
+		return kids
+	}
+ 
+	; Moves a node to a new parent and/or set position amongst siblings
+	; After param:	"First" = move to start
+	;				<tv handle> = move after that item
+	AddNodeToParent( node, parent, after := "" )
+	{	
+		TV_GetText( t, node)
+		node_id := TV_Add( t, parent, "Expand " after  )
+		If ( kid := TV_GetChild( node ) )
+		{
+			this.AddNodeToParent( kid, node_id )
+			While ( kid := TV_GetNext( kid ) )
+				this.AddNodeToParent( kid, node_id )
+		}
+		return node_id
+	}
+}
+
+; =================================================================== PROFILE PICKER ==========================================================
+; A tool for plugins that allows users to pick a profile (eg for a profile switcher plugin). Cannot alter profile tree
+class _ProfilePicker extends _ProfileSelect {
+	_CurrentCallback := 0
+	TV_Event(){
+		if (A_GuiEvent == "DoubleClick"){
+			this._CurrentCallback.Call(this.LvHandleToProfileId[A_EventInfo])
+			Gui, % this.hwnd ":Hide"
+			this._CurrentCallback := 0
+		}
+	}
+	
+	PickProfile(callback, currentprofile){
+		this._CurrentCallback := callback
+		CoordMode, Mouse, Screen
+		MouseGetPos, x, y
+		this.BuildProfileTree()
+		this.SelectProfileByID(currentprofile)
+		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Picker
+	}
+}
+
+; =================================================================== BASE PROFILE TREE ==========================================================
+; Creates a treeview that can parse UCR's profiles and display a treeview of them
+class _ProfileSelect {
+	__New(){
+		Gui, New, HwndHwnd
+		Gui +ToolWindow
+		Gui +Resize
+		this.hwnd := hwnd
+		Gui, Add, TreeView, w200 h200 aw ah hwndhTreeview AltSubmit
+		this.hTreeview := hTreeview
+		;Gui, Show
+		this.TV_EventFn := this.TV_Event.Bind(this)
+		;this.BuildProfileTree()
+	}
+	
+	TV_Event(){
+		; Base class - override
+	}
+	
+	Show(Callback){
+		; Base class - override
+	}
+	
+	; Builds the treeview GuiControl, and the lookup tables ProfileIdToLvHandle and LvHandleToProfileId
+	; ... which convert to / from profile id / listview node handles
+	BuildProfileTree(){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
+		TV_Delete()
+		fn := this.TV_EventFn
+		GuiControl -g, % this.hTreeview, % fn
+		
+		this.ProfileIdToLvHandle := {}
+		this.LvHandleToProfileId := {}
+		; Iterate sparse ProfileTree array
+		ctr := 0
+		for parent, profiles in UCR.ProfileTree {
+			ctr += profiles.length()
+		}
+		addedparents := {}
+		while (ctr > 0){
+			for parent, profiles in UCR.ProfileTree {
+				; Ignore profiles whose parents have not yet been added to the tree.
+				if (addedparents[parent] = 1 || (parent != 0 && !ObjHasKey(this.ProfileIdToLvHandle, parent)))
+					continue
+				addedparents[parent] := 1
+				for i, id in profiles {
+					this.AddProfileNode(UCR.Profiles[id], parent)
+					ctr--
+				}
+			}
+		}
+		GuiControl +g, % this.hTreeview, % fn
+	}
+	
+	AddProfileNode(profile, parent){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
+		if (parent != 0){
+			parent := this.ProfileIdToLvHandle[parent]
+		}
+		hnode := TV_Add(profile.Name, parent, "Expand")
+		this.ProfileIdToLvHandle[profile.id] := hnode
+		this.LvHandleToProfileId[hnode] := profile.id
+	}
+	
+	; Select an item in the treeview from a profile ID
+	SelectProfileByID(id){
+		;Gui, % this.hwnd ":Default"
+		;Gui, TreeView, % this.hTreeview
+		static TVM_SELECTITEM := 0x110B, TVGN_CARET := 0x9
+ 
+		fn := this.TV_EventFn
+		GuiControl -g, % this.hTreeview, % fn
+		SendMessage_( this.hTreeview, TVM_SELECTITEM, TVGN_CARET, this.ProfileIdToLvHandle[id] )
+		GuiControl +g, % this.hTreeview, % fn
+	}
+	
+	; Get the profile ID of the current selection in the treeview
+	ProfileIDOfSelection(){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
+		id := this.LvHandleToProfileId[TV_GetSelection()]
+		return id
+	}
+
+}
+
 ; =================================================================== INPUT HANDLER ==========================================================
 ; Manages input (ie keyboard, mouse, joystick) during "normal" operation (ie when not in Bind Mode)
 ; Holds the "master list" of bound inputs and decides whether or not to allow bindings.
@@ -715,15 +1214,18 @@ class _BindModeHandler {
 ; The Gui of each plugin appears inside the Gui of this profile.
 Class _Profile {
 	Name := ""
+	ParentProfile := 0
 	Plugins := {}
 	PluginOrder := []
 	AssociatedApss := 0
 	PluginStateSubscriptions := {}
 	_IsGlobal := 0
 	
-	__New(name){
+	__New(id, name, parent){
 		static fn
+		this.ID := id
 		this.Name := name
+		this.ParentProfile := parent
 		if (this.Name = "global"){
 			this._IsGlobal := 1
 		}
@@ -891,7 +1393,8 @@ Class _Profile {
 	
 	; Save the profile to disk
 	_Serialize(){
-		obj := {}
+		obj := {Name: this.Name}
+		obj.ParentProfile := this.ParentProfile
 		obj.Plugins := {}
 		obj.PluginOrder := this.PluginOrder
 		for name, plugin in this.Plugins {
@@ -902,6 +1405,7 @@ Class _Profile {
 	
 	; Load the profile from disk
 	_Deserialize(obj){
+		this.ParentProfile := obj.ParentProfile
 		Loop % obj.PluginOrder.length() {
 			name := obj.PluginOrder[A_Index]
 			this.PluginOrder.push(name)
