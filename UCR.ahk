@@ -192,7 +192,7 @@ Class UCRMain {
 		this.CurrentProfile := this.Profiles[id]
 		
 		this.UpdateCurrentProfileReadout()
-		this._ProfileToolbox.UpdateSelection(id)
+		this._ProfileToolbox.SelectProfileByID(id)
 		
 		this.CurrentProfile._Activate()
 		this.CurrentProfile._Show()
@@ -675,24 +675,6 @@ class _ProfileToolbox extends _ProfileSelect {
 		UCR.RenameProfile(id)
 	}
 	
-	UpdateSelection(id){
-		;Gui, % this.hwnd ":Default"
-		;Gui, TreeView, % this.hTreeview
-		static TVM_SELECTITEM := 0x110B, TVGN_CARET := 0x9
- 
-		fn := this.TV_EventFn
-		GuiControl -g, % this.hTreeview, % fn
-		SendMessage_( this.hTreeview, TVM_SELECTITEM, TVGN_CARET, this.ProfileIdToLvHandle[id] )
-		GuiControl +g, % this.hTreeview, % fn
-	}
-	
-	ProfileIDOfSelection(){
-		Gui, % this.hwnd ":Default"
-		Gui, TreeView, % this.hTreeview
-		id := this.LvHandleToProfileId[TV_GetSelection()]
-		return id
-	}
-	
 	TV_Event(){
 		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
 			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
@@ -902,11 +884,12 @@ class _ProfilePicker extends _ProfileSelect {
 		}
 	}
 	
-	PickProfile(callback){
+	PickProfile(callback, currentprofile){
 		this._CurrentCallback := callback
 		CoordMode, Mouse, Screen
 		MouseGetPos, x, y
 		this.BuildProfileTree()
+		this.SelectProfileByID(currentprofile)
 		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Picker
 	}
 }
@@ -933,6 +916,8 @@ class _ProfileSelect {
 		; Base class - override
 	}
 	
+	; Builds the treeview GuiControl, and the lookup tables ProfileIdToLvHandle and LvHandleToProfileId
+	; ... which convert to / from profile id / listview node handles
 	BuildProfileTree(){
 		Gui, % this.hwnd ":Default"
 		Gui, TreeView, % this.hTreeview
@@ -973,6 +958,27 @@ class _ProfileSelect {
 		this.ProfileIdToLvHandle[profile.id] := hnode
 		this.LvHandleToProfileId[hnode] := profile.id
 	}
+	
+	; Select an item in the treeview from a profile ID
+	SelectProfileByID(id){
+		;Gui, % this.hwnd ":Default"
+		;Gui, TreeView, % this.hTreeview
+		static TVM_SELECTITEM := 0x110B, TVGN_CARET := 0x9
+ 
+		fn := this.TV_EventFn
+		GuiControl -g, % this.hTreeview, % fn
+		SendMessage_( this.hTreeview, TVM_SELECTITEM, TVGN_CARET, this.ProfileIdToLvHandle[id] )
+		GuiControl +g, % this.hTreeview, % fn
+	}
+	
+	; Get the profile ID of the current selection in the treeview
+	ProfileIDOfSelection(){
+		Gui, % this.hwnd ":Default"
+		Gui, TreeView, % this.hTreeview
+		id := this.LvHandleToProfileId[TV_GetSelection()]
+		return id
+	}
+
 }
 
 ; =================================================================== INPUT HANDLER ==========================================================

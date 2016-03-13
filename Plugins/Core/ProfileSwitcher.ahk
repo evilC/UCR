@@ -40,7 +40,7 @@ class ProfileSwitcher extends _Plugin {
 	
 	; The user clicked the Select Profile button
 	SelectProfile(){
-		UCR._ProfilePicker.PickProfile(this.ProfileChanged.Bind(this))
+		UCR._ProfilePicker.PickProfile(this.ProfileChanged.Bind(this), this.GuiControls.ProfileID.value)
 	}
 	
 	; A new selection was made in the Profile Picker
