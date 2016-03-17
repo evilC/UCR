@@ -29,6 +29,7 @@ Class UCRMain {
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
+	_InputActivitySubscriptions := {}
 	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
@@ -233,6 +234,25 @@ Class UCRMain {
 		this._ProfileTreeChangeSubscriptions.Delete(hwnd)
 	}
 	
+	; Request notification of input activity.
+	; Mainly for use by OneSwitch plugin
+	SubscribeToInputActivity(hwnd, callback){
+		this._InputActivitySubscriptions[hwnd] := callback
+	}
+	
+	UnSubscribeToInputActivity(hwnd){
+		this._InputActivitySubscriptions.Delete(hwnd)
+	}
+	
+	; There was input activity on a profile
+	; This is fired after the input is processed, and is solely for the purpose of UCR being able to detect that activity is happening.
+	_InputEvent(ipt, state){
+		for hwnd, cb in this._InputActivitySubscriptions {
+			if (IsObject(cb))
+				cb.Call()
+		}
+	}
+
 	FireProfileTreeChangeCallbacks(){
 		for hwnd, cb in this._ProfileTreeChangeSubscriptions {
 			if (IsObject(cb))
@@ -1072,8 +1092,9 @@ Class _InputHandler {
 		ipt.State := state
 		if (IsObject(ipt.ChangeStateCallback)){
 			ipt.ChangeStateCallback.Call(state)
-			ipt.ParentPlugin.InputEvent(ipt, state)
 		}
+		; Notify UCR that there was activity.
+		UCR._InputEvent(ipt, state)
 	}
 	
 	_DelayCallback(cb, state){
@@ -1218,7 +1239,6 @@ Class _Profile {
 	Plugins := {}
 	PluginOrder := []
 	AssociatedApss := 0
-	PluginStateSubscriptions := {}
 	_IsGlobal := 0
 	
 	__New(id, name, parent){
@@ -1427,21 +1447,6 @@ Class _Profile {
 		OutputDebug % "Profile " this.Name " --> UCR"
 		UCR._ProfileChanged(this)
 	}
-	
-	; Plugin authors can call this to allow a plugin to be notified whenever an Input in any other plugin in this profile changes state
-	; This is primarily used for temporal plugins
-	SubscribeToStateChange(plugin, callback){
-		if (!ObjHasKey(this.PluginStateSubscriptions, plugin.Name)){
-			this.PluginStateSubscriptions[plugin.Name] := callback
-		}
-	}
-	
-	InputEvent(ipt, state){
-		for name, callback in this.PluginStateSubscriptions {
-			callback.Call(ipt, state)
-		}
-	}
-	
 }
 
 ; ======================================================================== PLUGIN ===============================================================
@@ -1510,11 +1515,6 @@ Class _Plugin {
 			this.OutputAxes[name] := new _OutputAxis(this, name, ChangeValueCallback, aParams*)
 			return this.OutputAxes[name]
 		}
-	}
-	
-	; An input in this plugin changed state. This happens after the ChangeStateCallback is fired.
-	InputEvent(ipt, state){
-		this.ParentProfile.InputEvent(ipt, state)
 	}
 	
 	; === Private ===
