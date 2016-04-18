@@ -391,8 +391,7 @@ Class UCRMain {
 			}
 		}
 		; Terminate profile input thread
-		ahkthread_free(profile._InputThread)
-		profile._InputThread := ""
+		profile._StopInputThread()
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}
@@ -1243,6 +1242,7 @@ Class _Profile {
 	PluginOrder := []
 	AssociatedApss := 0
 	_IsGlobal := 0
+	_InputThread := 0
 	
 	__New(id, name, parent){
 		static fn
@@ -1252,6 +1252,11 @@ Class _Profile {
 		if (this.Name = "global"){
 			this._IsGlobal := 1
 		}
+		this._StartInputThread()
+		this._CreateGui()
+	}
+	
+	_StartInputThread(){
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
 		this._InputThread := AhkThread("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" Script)
 		While !this._InputThread.ahkgetvar.autoexecute_done
@@ -1261,7 +1266,13 @@ Class _Profile {
 		this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
 		this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
 		this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
-		this._CreateGui()
+	}
+	
+	_StopInputThread(){
+		if (this._InputThread){
+			ahkthread_free(this._InputThread)
+			this._InputThread := 0
+		}
 	}
 	
 	__Delete(){
