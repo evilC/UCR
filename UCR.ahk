@@ -1273,6 +1273,10 @@ Class _Profile {
 			ahkthread_free(this._InputThread)
 			this._InputThread := 0
 		}
+		this._SetHotkeyState := 0
+		this._SetButtonBinding := 0
+		this._SetAxisBinding := 0
+		this._SetDeltaBinding := 0
 	}
 	
 	__Delete(){
