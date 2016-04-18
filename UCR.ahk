@@ -1252,7 +1252,7 @@ Class _Profile {
 		if (this.Name = "global"){
 			this._IsGlobal := 1
 		}
-		this._StartInputThread()
+		;this._StartInputThread()
 		this._CreateGui()
 	}
 	
@@ -1301,7 +1301,15 @@ Class _Profile {
 	
 	; The profile became active
 	_Activate(){
+		if (!this._InputThread){
+			this._StartInputThread()
+			Loop % this.PluginOrder.length() {
+				plugin := this.Plugins[this.PluginOrder[A_Index]]
+				plugin._RequestBinding()
+			}
+		}
 		this._SetHotkeyState(1)
+		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
 			if (IsFunc(plugin["OnActive"])){
@@ -1618,6 +1626,16 @@ Class _Plugin {
 		}
 	}
 	
+	; Call _RequestBinding on all child controls
+	_RequestBinding(){
+		Loop % this._SerializeList.length(){
+			key := this._SerializeList[A_Index]
+			for name, ctrl in this[key] {
+				ctrl._RequestBinding()
+			}
+		}
+	}
+	
 	; The plugin was closed (deleted)
 	_Close(){
 		; ToDo: These should call UCR.RequestXxxBinding, as bindings were added that way
@@ -1762,6 +1780,12 @@ class _GuiControl {
 		}
 	}
 	
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		; do nothing
+	}
+	
 	_Serialize(){
 		obj := {value: this._value}
 		return obj
@@ -1839,6 +1863,12 @@ class _BannerCombo {
 	; Override
 	_ChangedValue(o){
 		
+	}
+	
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		; do nothing
 	}
 }
 
@@ -1963,6 +1993,12 @@ class _InputButton extends _BannerCombo {
 		}
 	}
 	
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		UCR._InputHandler.SetButtonBinding(this)
+	}
+	
 	_Serialize(){
 		return this.__value._Serialize()
 	}
@@ -1971,7 +2007,7 @@ class _InputButton extends _BannerCombo {
 		; Trigger _value setter to set gui state but not fire change event
 		this._value := new _BindObject(obj)
 		; Register hotkey on load
-		UCR._InputHandler.SetButtonBinding(this)
+		;UCR._InputHandler.SetButtonBinding(this)
 	}
 }
 ; ======================================================================== INPUT AXIS ===============================================================
@@ -2027,6 +2063,12 @@ class _InputAxis extends _BannerCombo {
 		UCR.RequestAxisBinding(this)
 	}
 	
+	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		UCR.RequestAxisBinding(this)
+	}
+
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetComboState(){
 		axis := this.__value.Axis
@@ -2107,7 +2149,7 @@ class _InputAxis extends _BannerCombo {
 	
 	_Deserialize(obj){
 		this._value := obj.value
-		UCR.RequestAxisBinding(this)
+		;UCR.RequestAxisBinding(this)
 	}
 }
 
@@ -2130,6 +2172,12 @@ class _InputDelta {
 	
 	UnRegister(){
 		this.value := 0
+		UCR.RequestDeltaBinding(this)
+	}
+
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
 		UCR.RequestDeltaBinding(this)
 	}
 	
