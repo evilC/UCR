@@ -390,6 +390,9 @@ Class UCRMain {
 				break
 			}
 		}
+		; Terminate profile input thread
+		ahkthread_free(profile._InputThread)
+		profile._InputThread := ""
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}
@@ -1294,7 +1297,8 @@ Class _Profile {
 	
 	; The profile went inactive
 	_DeActivate(){
-		this._SetHotkeyState(0)
+		if (this._InputThread)
+			this._SetHotkeyState(0)
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
 			plugin._OnInactive()
