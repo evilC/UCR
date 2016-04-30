@@ -191,13 +191,18 @@ Class UCRMain {
 				return 1
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
-			; De-Activate the current profile if it is not global
-			if (!this.CurrentProfile._IsGlobal)
+			; De-Activate the current profile if it is not global or Linked
+			if (!this.CurrentProfile._IsGlobal){
 				this.CurrentProfile._DeActivate()
+				; If the current profile is not a "Linked Profile" of the new profile, then stop it's Input Thread.
+				if (!ObjHasKey(newprofile._LinkedProfiles, this.CurrentProfile.id)){
+					this.CurrentProfile._StopInputThread()
+				}
+			}
 		}
 		
 		; Change current profile to new profile
-		this.CurrentProfile := this.Profiles[id]
+		this.CurrentProfile := newprofile
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
@@ -1256,6 +1261,7 @@ Class _Profile {
 	AssociatedApss := 0
 	_IsGlobal := 0
 	_InputThread := 0
+	_LinkedProfiles := {}	; Profiles with which this one is associated
 	
 	__New(id, name, parent){
 		static fn
@@ -1269,20 +1275,26 @@ Class _Profile {
 		this._CreateGui()
 	}
 	
+	; Starts the "Input Thread" which handles detection of input for this profile
 	_StartInputThread(){
-		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
-		this._InputThread := AhkThread("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" Script)
-		While !this._InputThread.ahkgetvar.autoexecute_done
-			Sleep 50 ; wait until variable has been set.
-		; Get thread-safe boundfunc object for thread's SetHotkeyState
-		this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
-		this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
-		this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
-		this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
+		if (this._InputThread == 0){
+			OutputDebug % "Starting Input Thread for thread #" this.id " ( " this.Name " )"
+			FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
+			this._InputThread := AhkThread("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" Script)
+			While !this._InputThread.ahkgetvar.autoexecute_done
+				Sleep 50 ; wait until variable has been set.
+			; Get thread-safe boundfunc object for thread's SetHotkeyState
+			this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
+			this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
+			this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
+			this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
+		}
 	}
 	
+	; Stops the "Input Thread" which handles detection of input for this profile
 	_StopInputThread(){
-		if (this._InputThread){
+		if (this._InputThread != 0){
+			OutputDebug % "Stopping Input Thread for thread #" this.id " ( " this.Name " )"
 			ahkthread_free(this._InputThread)
 			this._InputThread := 0
 		}
