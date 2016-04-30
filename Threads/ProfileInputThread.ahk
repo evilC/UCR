@@ -21,7 +21,7 @@ class _InputThread {
 	MouseDeltaMappings := {}
 	
 	__New(Profile, CallbackPtr){
-		OutputDebug, % "UCR| InputThread for ProfileID #" ProfileID " starting"
+		OutputDebug, % "UCR| InputThread for ProfileID #" Profile " starting"
 		this.ProfileID := Profile ; Profile ID of parent profile. So we know which profile this thread serves
 		this.Callback := ObjShare(CallbackPtr)
 		Gui, +HwndHwnd		; Get a unique hwnd so we can register for messages
