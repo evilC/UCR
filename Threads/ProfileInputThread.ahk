@@ -20,7 +20,9 @@ class _InputThread {
 	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
 	MouseDeltaMappings := {}
 	
-	__New(CallbackPtr){
+	__New(Profile, CallbackPtr){
+		OutputDebug, % "UCR| InputThread for ProfileID #" ProfileID " starting"
+		this.ProfileID := Profile ; Profile ID of parent profile. So we know which profile this thread serves
 		this.Callback := ObjShare(CallbackPtr)
 		Gui, +HwndHwnd		; Get a unique hwnd so we can register for messages
 		this.hwnd := hwnd
@@ -34,6 +36,7 @@ class _InputThread {
 		global _InterfaceSetAxisBinding := ObjShare(this.SetAxisBinding.Bind(this))
 		global _InterfaceSetDeltaBinding := ObjShare(this.SetDeltaBinding.Bind(this))
 		this.SetHotkeyState(0)
+		OutputDebug, % "UCR| InputThread for ProfileID #" this.ProfileID " is ready to accept bindings"
 	}
 	
 	; All input flows from here back to the main thread
