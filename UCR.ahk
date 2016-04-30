@@ -1266,6 +1266,7 @@ Class _Profile {
 	_IsGlobal := 0
 	_InputThread := 0
 	_LinkedProfiles := {}	; Profiles with which this one is associated
+	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
 	
 	__New(id, name, parent){
 		static fn
@@ -1277,6 +1278,28 @@ Class _Profile {
 		}
 		;this._StartInputThread()
 		this._CreateGui()
+	}
+	
+	; Updates the list of "Linked" profiles...
+	; plugin = plugin altering it's link status with a profile
+	; profile = profile that the plugin is altering it's relation to
+	; state = new state of the plugin's relation to that profile
+	UpdateLinkedProfiles(plugin, profile, state){
+		; Update plugin -> profile links
+		if (!IsObject(this.__LinkedProfiles[plugin])){
+			this.__LinkedProfiles[plugin] := {}
+		}
+		this.__LinkedProfiles[plugin, profile] := state
+		
+		; Rebuild profile -> profile links
+		this._LinkedProfiles := {}
+		for plug, profs in this.__LinkedProfiles {
+			for prof, linked in profs {
+				if (linked) {
+					this._LinkedProfiles[prof] := 1
+				}
+			}
+		}
 	}
 	
 	; Starts the "Input Thread" which handles detection of input for this profile
