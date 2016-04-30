@@ -177,26 +177,39 @@ Class UCRMain {
 	}
 	
 	; We wish to change profile. This may happen due to user input, or application changing
+	; Save param can be set to 0 to not save when changing profile ...
+	; ... eg so that when _LoadSettings() calls ChangeProfile, we do not save while loading.
 	ChangeProfile(id, save := 1){
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
 		newprofile := this.Profiles[id]
 		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
+		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
+			; Do nothing if we are changing to the currently active profile
 			if (id = this.CurrentProfile.id)
 				return 1
+			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
+			; De-Activate the current profile if it is not global
 			if (!this.CurrentProfile._IsGlobal)
 				this.CurrentProfile._DeActivate()
 		}
 		
+		; Change current profile to new profile
 		this.CurrentProfile := this.Profiles[id]
 		
+		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
 		
+		; Start running new profile
 		this.CurrentProfile._Activate()
+		
+		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
+		
+		; Save settings
 		if (save){
 			this._ProfileChanged(this.CurrentProfile)
 		}
