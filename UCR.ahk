@@ -183,7 +183,7 @@ Class UCRMain {
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
 		newprofile := this.Profiles[id]
-		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
+		OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
 		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
 			; Do nothing if we are changing to the currently active profile
@@ -324,7 +324,7 @@ Class UCRMain {
 	MoveProfile(profile_id, parent_id, after){
 		if (parent_id == "")
 			parent_id := 0
-		OutputDebug % "UCR.MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
+		OutputDebug % "UCR| MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
 		; Do not allowing move of default or global profile
 		if (profile_id < 3 || !ObjHasKey(this.Profiles, profile_id))
 			return 0
@@ -473,7 +473,7 @@ Class UCRMain {
 			; Settings file empty or not found, create new settings
 			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [1, 2]}, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
 		} else {
-			OutputDebug % "Loading JSON from disk"
+			OutputDebug % "UCR| Loading JSON from disk"
 			j := JSON.Load(j)
 		}
 		
@@ -503,7 +503,7 @@ Class UCRMain {
 		SetTimer, Save, -1000
 		Return
 		Save:
-			OutputDebug % "Saving JSON to disk"
+			OutputDebug % "UCR| Saving JSON to disk"
 			FileReplace(JSON.Dump(obj, ,true), SettingsFile)
 		Return
 
@@ -595,7 +595,7 @@ Class UCRMain {
 	; Bind Mode Ended.
 	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
 	_BindModeEnded(hk, bo){
-		OutputDebug % "Bind Mode Ended: " bo.Buttons[1].code
+		;OutputDebug % "UCR| Bind Mode Ended: " bo.Buttons[1].code
 		this._CurrentState := this._State.Normal
 		if (hk._IsOutput){
 			hk.value := bo
@@ -800,7 +800,7 @@ class _ProfileToolbox extends _ProfileSelect {
 				Else
 					SendMessage_( this.hTreeview, TVM_SETINSERTMARK, fAfter, hitTarget ) ; show insertion mark
 				this.BeforeAfter := fAfter + 1
-				;OutputDebug % "Treeview_Dragging: this.BeforeAfter: " this.BeforeAfter
+				;OutputDebug % "UCR| Treeview_Dragging: this.BeforeAfter: " this.BeforeAfter
 			}
 		}
 		OnMessage( 0x202, this.DragEndFn ) ; WM_LBUTTONUP
@@ -857,7 +857,7 @@ class _ProfileToolbox extends _ProfileSelect {
 							} else {
 								parent := hDroptarget
 							}
-							;OutputDebug % "Treeview_EndDrag: this.BeforeAfter: " this.BeforeAfter
+							;OutputDebug % "UCR| Treeview_EndDrag: this.BeforeAfter: " this.BeforeAfter
 							this.MoveNode(this.hDragitem, parent, after)
 							;~ this.AddNodeToParent( this.hDragitem, parent, after )
 							;~ TV_Modify( hDropTarget, "Expand" )
@@ -1178,7 +1178,7 @@ class _BindModeHandler {
 	
 	; The BindModeThread calls back here
 	_ProcessInput(e, type, code, deviceid){
-		;OutputDebug % "e: " e ", type: " type ", code: " code ", deviceid: " deviceid
+		;OutputDebug % "UCR| _ProcessInput: e: " e ", type: " type ", code: " code ", deviceid: " deviceid
 		; Build Key object and pass to ProcessInput
 		i := new _Button({type: type, code: code, deviceid: deviceid})
 		this.ProcessInput(i,e)
@@ -1278,7 +1278,7 @@ Class _Profile {
 	; Starts the "Input Thread" which handles detection of input for this profile
 	_StartInputThread(){
 		if (this._InputThread == 0){
-			OutputDebug % "Starting Input Thread for thread #" this.id " ( " this.Name " )"
+			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
 			FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
 			this._InputThread := AhkThread("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" Script)
 			While !this._InputThread.ahkgetvar.autoexecute_done
@@ -1294,7 +1294,7 @@ Class _Profile {
 	; Stops the "Input Thread" which handles detection of input for this profile
 	_StopInputThread(){
 		if (this._InputThread != 0){
-			OutputDebug % "Stopping Input Thread for thread #" this.id " ( " this.Name " )"
+			OutputDebug % "UCR| Stopping Input Thread for thread #" this.id " ( " this.Name " )"
 			ahkthread_free(this._InputThread)
 			this._InputThread := 0
 		}
@@ -1496,7 +1496,7 @@ Class _Profile {
 	}
 
 	_PluginChanged(plugin){
-		OutputDebug % "Profile " this.Name " --> UCR"
+		OutputDebug % "UCR| Profile " this.Name " calling UCR._ProfileChanged"
 		UCR._ProfileChanged(this)
 	}
 }
@@ -1579,7 +1579,7 @@ Class _Plugin {
 	}
 	
 	__Delete(){
-		OutputDebug % "Plugin " this.name " in profile " this.ParentProfile.name " fired destructor"
+		OutputDebug % "UCR| Plugin " this.name " in profile " this.ParentProfile.name " fired destructor"
 	}
 	
 	; Initialize the GUI
@@ -1611,7 +1611,7 @@ Class _Plugin {
 
 	; A GuiControl / Hotkey changed
 	_ControlChanged(ctrl){
-		OutputDebug % "Plugin " this.Name " --> Profile"
+		OutputDebug % "UCR| Plugin " this.Name " called ParentProfile._PluginChanged()"
 		this.ParentProfile._PluginChanged(this)
 	}
 	
@@ -1739,7 +1739,7 @@ class _GuiControl {
 	}
 	
 	__Delete(){
-		OutputDebug % "GuiControl " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| GuiControl " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	_KillReferences(){
@@ -1770,7 +1770,7 @@ class _GuiControl {
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this.__value := value
-			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -1921,7 +1921,7 @@ class _InputButton extends _BannerCombo {
 	}
 	
 	__Delete(){
-		OutputDebug % "Hotkey " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| Hotkey " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	; Kill references so destructor can fire
@@ -1938,7 +1938,7 @@ class _InputButton extends _BannerCombo {
 		
 		set {
 			this._value := value	; trigger _value setter to set value and cuebanner etc
-			OutputDebug % "Hotkey " this.Name " --> Plugin"
+			OutputDebug % "UCR| Hotkey " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -2145,7 +2145,7 @@ class _InputAxis extends _BannerCombo {
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this._value := value
-			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -2428,7 +2428,7 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	__Delete(){
-		OutputDebug % "Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	; Kill references so destructor can fire
@@ -2550,7 +2550,7 @@ class _OutputAxis extends _BannerCombo {
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this._value := value
-			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
