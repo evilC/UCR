@@ -30,11 +30,15 @@ Class UCRMain {
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
+	_InputThreadScript := ""		; Set in Ctor
 	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
 		Gui +HwndHwnd
 		this.hwnd := hwnd
+		
+		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
+		this._InputThreadScript := Script	; Cache script for profile InputThreads
 		
 		str := A_ScriptName
 		if (A_IsCompiled)
@@ -1279,10 +1283,10 @@ Class _Profile {
 	_StartInputThread(){
 		if (this._InputThread == 0){
 			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
-			FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
 			this._InputThread := AhkThread("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" Script)
 			While !this._InputThread.ahkgetvar.autoexecute_done
-				Sleep 50 ; wait until variable has been set.
+				Sleep 10 ; wait until variable has been set.
+			OutputDebug % "UCR| Input Thread for thread #" this.id " ( " this.Name " ) has started"
 			; Get thread-safe boundfunc object for thread's SetHotkeyState
 			this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
 			this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
@@ -1496,7 +1500,7 @@ Class _Profile {
 	}
 
 	_PluginChanged(plugin){
-		OutputDebug % "UCR| Profile " this.Name " calling UCR._ProfileChanged"
+		OutputDebug % "UCR| Profile " this.Name " called UCR._ProfileChanged()"
 		UCR._ProfileChanged(this)
 	}
 }
