@@ -198,10 +198,9 @@ Class UCRMain {
 			; De-Activate the current profile if it is not global or Linked
 			if (!this.CurrentProfile._IsGlobal){
 				this.CurrentProfile._DeActivate()
-				; If the current profile is not a "Linked Profile" of the new profile, then stop it's Input Thread.
-				if (!ObjHasKey(newprofile._LinkedProfiles, this.CurrentProfile.id)){
+				; If the current profile is not a "Linked Profile" of the new profile or the Global profile, then stop it's Input Thread.
+				if (! (ObjHasKey(this.Profiles[1]._LinkedProfiles, this.CurrentProfile.id) || ObjHasKey(newprofile._LinkedProfiles, this.CurrentProfile.id)))
 					this.CurrentProfile._StopInputThread()
-				}
 			}
 		}
 		
