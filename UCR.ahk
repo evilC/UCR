@@ -225,7 +225,7 @@ Class UCRMain {
 		this._ProfileToolbox.SelectProfileByID(id)
 		
 		; Start running new profile
-		this.CurrentProfile._StartInputThread()
+		this._SetProfileInputThreadState(id,1)
 		this.CurrentProfile._Activate()
 		
 		; Make the new profile's Gui visible
