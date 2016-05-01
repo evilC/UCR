@@ -1314,6 +1314,11 @@ Class _Profile {
 			this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
 			this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
 			this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
+			; Load bindings
+			Loop % this.PluginOrder.length() {
+				plugin := this.Plugins[this.PluginOrder[A_Index]]
+				plugin._RequestBinding()
+			}
 		}
 	}
 	
@@ -1354,10 +1359,6 @@ Class _Profile {
 	_Activate(){
 		if (!this._InputThread){
 			this._StartInputThread()
-			Loop % this.PluginOrder.length() {
-				plugin := this.Plugins[this.PluginOrder[A_Index]]
-				plugin._RequestBinding()
-			}
 		}
 		this._SetHotkeyState(1)
 		; Fire Activate on each plugin
