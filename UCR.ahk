@@ -182,6 +182,8 @@ Class UCRMain {
 		this.CurrentProfile._AddPlugin()
 	}
 	
+	; Turns on or off the "Input Thread" for a given profile
+	; Also maintains a list of the active threads, so they can be managed on profile change
 	_SetProfileInputThreadState(profile, state){
 		if (state){
 			this._ActiveInputThreads[profile] := 1
