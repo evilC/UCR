@@ -4,6 +4,21 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.8 - 1st May 2016
++ Added memory management for profile Input Threads
+  The "Input Threads" which handle detection of input (one for each profile)...
+  ... now start and stop dynamically as profiles change.
+  This is to limit the amount of memory UCR uses to a reasonable level.
+  A Profile's Input Thread will now be unloaded on profile change if they are a ...
+  ... "Linked Profile" of the new profile or the global profile.
+  Profile A is considered a "Linked Profile" of Profile B if eg...
+  ... a Profile Switcher plugin in Profile B is configured to point to Profile A.
+  Plugins can call UpdateLinkedProfiles() on the parent Profile...
+  ... to set their relationship to other Profiles (Add or remove a link).
+= All debug output now prefixed with UCR|
+  So if using DebugView, you can just filter for only UCR stuff using the string:
+  DBGVIEWCLEAR;UCR|*
+
 0.0.7 - 13th Mar 2016
 ! Warning! Settings version has changed.
   BACK UP your INI file before using it with this version, if you value it.

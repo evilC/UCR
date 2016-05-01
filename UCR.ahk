@@ -9,7 +9,7 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.7"				; The version of the main application
+	Version := "0.0.8"				; The version of the main application
 	SettingsVersion := "0.0.2"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
@@ -30,11 +30,16 @@ Class UCRMain {
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
+	_InputThreadScript := ""		; Set in Ctor
+	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active input threads
 	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
 		Gui +HwndHwnd
 		this.hwnd := hwnd
+		
+		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
+		this._InputThreadScript := Script	; Cache script for profile InputThreads
 		
 		str := A_ScriptName
 		if (A_IsCompiled)
@@ -73,6 +78,7 @@ Class UCRMain {
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
 		
+		this._SetProfileInputThreadState(1,1)
 		this.Profiles.1._Activate()
 		this.ChangeProfile(p, 0)
 
@@ -176,27 +182,73 @@ Class UCRMain {
 		this.CurrentProfile._AddPlugin()
 	}
 	
+	; Turns on or off the "Input Thread" for a given profile
+	; Also maintains a list of the active threads, so they can be managed on profile change
+	_SetProfileInputThreadState(profile, state){
+		if (state){
+			this._ActiveInputThreads[profile] := 1
+			this.Profiles[profile]._StartInputThread()
+		} else {
+			this._ActiveInputThreads.Delete(profile)	; Remove key entirely for "off"
+			this.Profiles[profile]._StopInputThread()
+		}
+	}
+	
 	; We wish to change profile. This may happen due to user input, or application changing
+	; Save param can be set to 0 to not save when changing profile ...
+	; ... eg so that when _LoadSettings() calls ChangeProfile, we do not save while loading.
 	ChangeProfile(id, save := 1){
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
 		newprofile := this.Profiles[id]
-		OutputDebug % "Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
+		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
+			; Do nothing if we are changing to the currently active profile
 			if (id = this.CurrentProfile.id)
 				return 1
+			OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
+			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
-			if (!this.CurrentProfile._IsGlobal)
+			
+			; De-Activate the old profile if it is not Global
+			if (!this.CurrentProfile._IsGlobal){
 				this.CurrentProfile._DeActivate()
+			}
+			
+			; Stop the InputThread of any profiles that are no longer linked
+			; _ActiveInputThreads may be modified by this operation, so iterate a cloned version.
+			activethreads := this._ActiveInputThreads.clone()
+			for profile, state in activethreads {
+				if (! (profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(newprofile._LinkedProfiles, profile))){
+					this._SetProfileInputThreadState(profile,0)
+				}
+			}
+		} else {
+			OutputDebug % "UCR| Changing Profile for first time to: " newprofile.Name
 		}
 		
-		this.CurrentProfile := this.Profiles[id]
+		; Change current profile to new profile
+		this.CurrentProfile := newprofile
 		
+		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
 		
+		; Start running new profile
+		this._SetProfileInputThreadState(id,1)
 		this.CurrentProfile._Activate()
+		
+		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
+		
+		; Start the InputThreads for any linked profiles
+		for profile, state in this.CurrentProfile._LinkedProfiles {
+			if (this.Profiles[profile]._InputThread = 0){
+				this._SetProfileInputThreadState(profile,1)
+			}
+		}
+		
+		; Save settings
 		if (save){
 			this._ProfileChanged(this.CurrentProfile)
 		}
@@ -306,7 +358,7 @@ Class UCRMain {
 	MoveProfile(profile_id, parent_id, after){
 		if (parent_id == "")
 			parent_id := 0
-		OutputDebug % "UCR.MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
+		OutputDebug % "UCR| MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
 		; Do not allowing move of default or global profile
 		if (profile_id < 3 || !ObjHasKey(this.Profiles, profile_id))
 			return 0
@@ -391,8 +443,7 @@ Class UCRMain {
 			}
 		}
 		; Terminate profile input thread
-		ahkthread_free(profile._InputThread)
-		profile._InputThread := ""
+		this._SetProfileInputThreadState(profile.id,0)
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}
@@ -456,7 +507,7 @@ Class UCRMain {
 			; Settings file empty or not found, create new settings
 			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [1, 2]}, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
 		} else {
-			OutputDebug % "Loading JSON from disk"
+			OutputDebug % "UCR| Loading JSON from disk"
 			j := JSON.Load(j)
 		}
 		
@@ -486,7 +537,7 @@ Class UCRMain {
 		SetTimer, Save, -1000
 		Return
 		Save:
-			OutputDebug % "Saving JSON to disk"
+			OutputDebug % "UCR| Saving JSON to disk"
 			FileReplace(JSON.Dump(obj, ,true), SettingsFile)
 		Return
 
@@ -578,7 +629,7 @@ Class UCRMain {
 	; Bind Mode Ended.
 	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
 	_BindModeEnded(hk, bo){
-		OutputDebug % "Bind Mode Ended: " bo.Buttons[1].code
+		;OutputDebug % "UCR| Bind Mode Ended: " bo.Buttons[1].code
 		this._CurrentState := this._State.Normal
 		if (hk._IsOutput){
 			hk.value := bo
@@ -700,7 +751,11 @@ class _ProfileToolbox extends _ProfileSelect {
 	
 	TV_Event(){
 		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
-			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+			newprofile := this.LvHandleToProfileId[A_EventInfo]
+			; ToDo: This seems to trigger twice when changing profile to the last child.
+			; Not a big issue as changing to current profile is ignored by ChangeProfile()
+			;OutputDebug % "UCR| TV Change profile: " newprofile
+			UCR.ChangeProfile(newprofile)
 		} else if (A_GuiEvent == "D"){
 			this.hDragitem := A_EventInfo
 			this.Treeview_BeginDrag()
@@ -783,7 +838,7 @@ class _ProfileToolbox extends _ProfileSelect {
 				Else
 					SendMessage_( this.hTreeview, TVM_SETINSERTMARK, fAfter, hitTarget ) ; show insertion mark
 				this.BeforeAfter := fAfter + 1
-				;OutputDebug % "Treeview_Dragging: this.BeforeAfter: " this.BeforeAfter
+				;OutputDebug % "UCR| Treeview_Dragging: this.BeforeAfter: " this.BeforeAfter
 			}
 		}
 		OnMessage( 0x202, this.DragEndFn ) ; WM_LBUTTONUP
@@ -840,7 +895,7 @@ class _ProfileToolbox extends _ProfileSelect {
 							} else {
 								parent := hDroptarget
 							}
-							;OutputDebug % "Treeview_EndDrag: this.BeforeAfter: " this.BeforeAfter
+							;OutputDebug % "UCR| Treeview_EndDrag: this.BeforeAfter: " this.BeforeAfter
 							this.MoveNode(this.hDragitem, parent, after)
 							;~ this.AddNodeToParent( this.hDragitem, parent, after )
 							;~ TV_Modify( hDropTarget, "Expand" )
@@ -1161,7 +1216,7 @@ class _BindModeHandler {
 	
 	; The BindModeThread calls back here
 	_ProcessInput(e, type, code, deviceid){
-		;OutputDebug % "e: " e ", type: " type ", code: " code ", deviceid: " deviceid
+		;OutputDebug % "UCR| _ProcessInput: e: " e ", type: " type ", code: " code ", deviceid: " deviceid
 		; Build Key object and pass to ProcessInput
 		i := new _Button({type: type, code: code, deviceid: deviceid})
 		this.ProcessInput(i,e)
@@ -1237,12 +1292,16 @@ class _BindModeHandler {
 ; The Profile's is parent to 0 or more plugins, which are each an instance of the _Plugin class.
 ; The Gui of each plugin appears inside the Gui of this profile.
 Class _Profile {
+	ID := ""				; Unique ID. Set in Ctor
 	Name := ""
 	ParentProfile := 0
 	Plugins := {}
 	PluginOrder := []
 	AssociatedApss := 0
 	_IsGlobal := 0
+	_InputThread := 0
+	_LinkedProfiles := {}	; Profiles with which this one is associated
+	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
 	
 	__New(id, name, parent){
 		static fn
@@ -1252,16 +1311,64 @@ Class _Profile {
 		if (this.Name = "global"){
 			this._IsGlobal := 1
 		}
-		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
-		this._InputThread := AhkThread("InputThread := new _InputThread(" ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" Script)
-		While !this._InputThread.ahkgetvar.autoexecute_done
-			Sleep 50 ; wait until variable has been set.
-		; Get thread-safe boundfunc object for thread's SetHotkeyState
-		this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
-		this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
-		this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
-		this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
+		;this._StartInputThread()
 		this._CreateGui()
+	}
+	
+	; Updates the list of "Linked" profiles...
+	; plugin = plugin altering it's link status with a profile
+	; profile = profile that the plugin is altering it's relation to
+	; state = new state of the plugin's relation to that profile
+	UpdateLinkedProfiles(plugin, profile, state){
+		; Update plugin -> profile links
+		if (!IsObject(this.__LinkedProfiles[plugin])){
+			this.__LinkedProfiles[plugin] := {}
+		}
+		this.__LinkedProfiles[plugin, profile] := state
+		
+		; Rebuild profile -> profile links
+		this._LinkedProfiles := {}
+		for plug, profs in this.__LinkedProfiles {
+			for prof, linked in profs {
+				if (linked) {
+					this._LinkedProfiles[prof] := 1
+				}
+			}
+		}
+	}
+	
+	; Starts the "Input Thread" which handles detection of input for this profile
+	_StartInputThread(){
+		if (this._InputThread == 0){
+			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
+			this._InputThread := AhkThread("InputThread := new _InputThread(" this.id "," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
+			While !this._InputThread.ahkgetvar.autoexecute_done
+				Sleep 10 ; wait until variable has been set.
+			;OutputDebug % "UCR| Input Thread for thread #" this.id " ( " this.Name " ) has started"
+			; Get thread-safe boundfunc object for thread's SetHotkeyState
+			this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
+			this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
+			this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
+			this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
+			; Load bindings
+			Loop % this.PluginOrder.length() {
+				plugin := this.Plugins[this.PluginOrder[A_Index]]
+				plugin._RequestBinding()
+			}
+		}
+	}
+	
+	; Stops the "Input Thread" which handles detection of input for this profile
+	_StopInputThread(){
+		if (this._InputThread != 0){
+			OutputDebug % "UCR| Stopping Input Thread for thread #" this.id " ( " this.Name " )"
+			ahkthread_free(this._InputThread)
+			this._InputThread := 0
+		}
+		this._SetHotkeyState := 0
+		this._SetButtonBinding := 0
+		this._SetAxisBinding := 0
+		this._SetDeltaBinding := 0
 	}
 	
 	__Delete(){
@@ -1286,7 +1393,12 @@ Class _Profile {
 	
 	; The profile became active
 	_Activate(){
+		if (this._InputThread == 0){
+			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
+			UCR._SetProfileInputThreadState(this.id,1)
+		}
 		this._SetHotkeyState(1)
+		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
 			if (IsFunc(plugin["OnActive"])){
@@ -1448,7 +1560,7 @@ Class _Profile {
 	}
 
 	_PluginChanged(plugin){
-		OutputDebug % "Profile " this.Name " --> UCR"
+		OutputDebug % "UCR| Profile " this.Name " called UCR._ProfileChanged()"
 		UCR._ProfileChanged(this)
 	}
 }
@@ -1531,7 +1643,7 @@ Class _Plugin {
 	}
 	
 	__Delete(){
-		OutputDebug % "Plugin " this.name " in profile " this.ParentProfile.name " fired destructor"
+		OutputDebug % "UCR| Plugin " this.name " in profile " this.ParentProfile.name " fired destructor"
 	}
 	
 	; Initialize the GUI
@@ -1563,7 +1675,7 @@ Class _Plugin {
 
 	; A GuiControl / Hotkey changed
 	_ControlChanged(ctrl){
-		OutputDebug % "Plugin " this.Name " --> Profile"
+		OutputDebug % "UCR| Plugin " this.Name " called ParentProfile._PluginChanged()"
 		this.ParentProfile._PluginChanged(this)
 	}
 	
@@ -1600,6 +1712,16 @@ Class _Plugin {
 		; Call user's OnInactive method (if it exists)
 		if (IsFunc(this["OnInactive"])){
 			plugin.OnInactive()
+		}
+	}
+	
+	; Call _RequestBinding on all child controls
+	_RequestBinding(){
+		Loop % this._SerializeList.length(){
+			key := this._SerializeList[A_Index]
+			for name, ctrl in this[key] {
+				ctrl._RequestBinding()
+			}
 		}
 	}
 	
@@ -1681,7 +1803,7 @@ class _GuiControl {
 	}
 	
 	__Delete(){
-		OutputDebug % "GuiControl " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| GuiControl " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	_KillReferences(){
@@ -1712,7 +1834,7 @@ class _GuiControl {
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this.__value := value
-			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -1745,6 +1867,12 @@ class _GuiControl {
 		if (IsObject(this.ChangeValueCallback)){
 			this.ChangeValueCallback.Call(value)
 		}
+	}
+	
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		; do nothing
 	}
 	
 	_Serialize(){
@@ -1825,6 +1953,12 @@ class _BannerCombo {
 	_ChangedValue(o){
 		
 	}
+	
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		; do nothing
+	}
 }
 
 ; ======================================================================== INPUT BUTTON ===============================================================
@@ -1851,7 +1985,7 @@ class _InputButton extends _BannerCombo {
 	}
 	
 	__Delete(){
-		OutputDebug % "Hotkey " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| Hotkey " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	; Kill references so destructor can fire
@@ -1868,7 +2002,7 @@ class _InputButton extends _BannerCombo {
 		
 		set {
 			this._value := value	; trigger _value setter to set value and cuebanner etc
-			OutputDebug % "Hotkey " this.Name " --> Plugin"
+			OutputDebug % "UCR| Hotkey " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -1948,6 +2082,12 @@ class _InputButton extends _BannerCombo {
 		}
 	}
 	
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		UCR._InputHandler.SetButtonBinding(this)
+	}
+	
 	_Serialize(){
 		return this.__value._Serialize()
 	}
@@ -1956,7 +2096,7 @@ class _InputButton extends _BannerCombo {
 		; Trigger _value setter to set gui state but not fire change event
 		this._value := new _BindObject(obj)
 		; Register hotkey on load
-		UCR._InputHandler.SetButtonBinding(this)
+		;UCR._InputHandler.SetButtonBinding(this)
 	}
 }
 ; ======================================================================== INPUT AXIS ===============================================================
@@ -2012,6 +2152,12 @@ class _InputAxis extends _BannerCombo {
 		UCR.RequestAxisBinding(this)
 	}
 	
+	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		UCR.RequestAxisBinding(this)
+	}
+
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetComboState(){
 		axis := this.__value.Axis
@@ -2063,7 +2209,7 @@ class _InputAxis extends _BannerCombo {
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this._value := value
-			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -2092,7 +2238,7 @@ class _InputAxis extends _BannerCombo {
 	
 	_Deserialize(obj){
 		this._value := obj.value
-		UCR.RequestAxisBinding(this)
+		;UCR.RequestAxisBinding(this)
 	}
 }
 
@@ -2115,6 +2261,12 @@ class _InputDelta {
 	
 	UnRegister(){
 		this.value := 0
+		UCR.RequestDeltaBinding(this)
+	}
+
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
 		UCR.RequestDeltaBinding(this)
 	}
 	
@@ -2340,7 +2492,7 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	__Delete(){
-		OutputDebug % "Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	; Kill references so destructor can fire
@@ -2462,7 +2614,7 @@ class _OutputAxis extends _BannerCombo {
 		; Fire _ControlChanged on parent so new setting can be saved
 		set {
 			this._value := value
-			OutputDebug % "GuiControl " this.Name " --> Plugin"
+			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
