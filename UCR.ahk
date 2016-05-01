@@ -184,7 +184,7 @@ Class UCRMain {
 	
 	_SetProfileInputThreadState(profile, state){
 		if (state){
-			this._ActiveInputThreads.Delete(profile)
+			this._ActiveInputThreads.Delete(profile)	; Remove key entirely for "off"
 			this.Profiles[profile]._StartInputThread()
 		} else {
 			this._ActiveInputThreads[profile] := 1
@@ -207,14 +207,19 @@ Class UCRMain {
 				return 1
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
-			; De-Activate the current profile if it is not global or Linked
+			
+			; De-Activate the old profile if it is not Global
 			if (!this.CurrentProfile._IsGlobal){
 				this.CurrentProfile._DeActivate()
-				; If the current profile is not a "Linked Profile" of the new profile or the Global profile, then stop it's Input Thread.
-				if (! (ObjHasKey(this.Profiles[1]._LinkedProfiles, this.CurrentProfile.id) || ObjHasKey(newprofile._LinkedProfiles, this.CurrentProfile.id)))
-					;this.CurrentProfile._StopInputThread()
-					this._SetProfileInputThreadState(this.CurrentProfile.id,0)
 			}
+			
+			; Stop the InputThread of any profiles that are no longer linked
+			for profile, state in this._ActiveInputThreads {
+				if (! (profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(newprofile._LinkedProfiles, profile))){
+					this._SetProfileInputThreadState(profile,0)
+				}
+			}
+			
 		}
 		
 		; Change current profile to new profile
