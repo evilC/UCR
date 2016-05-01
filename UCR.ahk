@@ -199,12 +199,12 @@ Class UCRMain {
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
 		newprofile := this.Profiles[id]
-		OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
 		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
 			; Do nothing if we are changing to the currently active profile
 			if (id = this.CurrentProfile.id)
 				return 1
+			OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
 			
@@ -219,6 +219,8 @@ Class UCRMain {
 					this._SetProfileInputThreadState(profile,0)
 				}
 			}
+		} else {
+			OutputDebug % "UCR| Changing Profile for first time to: " newprofile.Name
 		}
 		
 		; Change current profile to new profile
@@ -745,7 +747,11 @@ class _ProfileToolbox extends _ProfileSelect {
 	
 	TV_Event(){
 		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
-			UCR.ChangeProfile(this.LvHandleToProfileId[A_EventInfo])
+			newprofile := this.LvHandleToProfileId[A_EventInfo]
+			; ToDo: This seems to trigger twice when changing profile to the last child.
+			; Not a big issue as changing to current profile is ignored by ChangeProfile()
+			;OutputDebug % "UCR| TV Change profile: " newprofile
+			UCR.ChangeProfile(newprofile)
 		} else if (A_GuiEvent == "D"){
 			this.hDragitem := A_EventInfo
 			this.Treeview_BeginDrag()
