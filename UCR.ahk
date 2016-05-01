@@ -1391,8 +1391,8 @@ Class _Profile {
 	; The profile became active
 	_Activate(){
 		if (this._InputThread == 0){
-			MsgBox % "Error. Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
-			return
+			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
+			UCR._SetProfileInputThreadState(this.id,1)
 		}
 		this._SetHotkeyState(1)
 		; Fire Activate on each plugin
