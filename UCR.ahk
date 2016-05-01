@@ -219,7 +219,6 @@ Class UCRMain {
 					this._SetProfileInputThreadState(profile,0)
 				}
 			}
-			
 		}
 		
 		; Change current profile to new profile
@@ -235,6 +234,13 @@ Class UCRMain {
 		
 		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
+		
+		; Start the InputThreads for any linked profiles
+		for profile, state in this.CurrentProfile._LinkedProfiles {
+			if (this.Profiles[profile]._InputThread = 0){
+				this._SetProfileInputThreadState(profile,1)
+			}
+		}
 		
 		; Save settings
 		if (save){
