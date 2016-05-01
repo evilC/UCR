@@ -1290,6 +1290,7 @@ class _BindModeHandler {
 ; The Profile's is parent to 0 or more plugins, which are each an instance of the _Plugin class.
 ; The Gui of each plugin appears inside the Gui of this profile.
 Class _Profile {
+	ID := ""				; Unique ID. Set in Ctor
 	Name := ""
 	ParentProfile := 0
 	Plugins := {}
