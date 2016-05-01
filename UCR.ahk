@@ -214,7 +214,9 @@ Class UCRMain {
 			}
 			
 			; Stop the InputThread of any profiles that are no longer linked
-			for profile, state in this._ActiveInputThreads {
+			; _ActiveInputThreads may be modified by this operation, so iterate a cloned version.
+			activethreads := this._ActiveInputThreads.clone()
+			for profile, state in activethreads {
 				if (! (profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(newprofile._LinkedProfiles, profile))){
 					this._SetProfileInputThreadState(profile,0)
 				}
