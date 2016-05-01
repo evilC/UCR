@@ -77,6 +77,7 @@ Class UCRMain {
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
 		
+		this.Profiles.1._StartInputThread()
 		this.Profiles.1._Activate()
 		this.ChangeProfile(p, 0)
 
@@ -212,6 +213,7 @@ Class UCRMain {
 		this._ProfileToolbox.SelectProfileByID(id)
 		
 		; Start running new profile
+		this.CurrentProfile._StartInputThread()
 		this.CurrentProfile._Activate()
 		
 		; Make the new profile's Gui visible
@@ -1357,9 +1359,9 @@ Class _Profile {
 	
 	; The profile became active
 	_Activate(){
-		if (!this._InputThread){
-			this._StartInputThread()
-		}
+		;~ if (!this._InputThread){
+			;~ this._StartInputThread()
+		;~ }
 		this._SetHotkeyState(1)
 		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
