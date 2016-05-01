@@ -31,6 +31,7 @@ Class UCRMain {
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
 	_InputThreadScript := ""		; Set in Ctor
+	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active input threads
 	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
@@ -77,7 +78,7 @@ Class UCRMain {
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
 		
-		this.Profiles.1._StartInputThread()
+		this._SetProfileInputThreadState(1,1)
 		this.Profiles.1._Activate()
 		this.ChangeProfile(p, 0)
 
@@ -181,6 +182,16 @@ Class UCRMain {
 		this.CurrentProfile._AddPlugin()
 	}
 	
+	_SetProfileInputThreadState(profile, state){
+		if (state){
+			this._ActiveInputThreads.Delete(profile)
+			this.Profiles[profile]._StartInputThread()
+		} else {
+			this._ActiveInputThreads[profile] := 1
+			this.Profiles[profile]._StopInputThread()
+		}
+	}
+	
 	; We wish to change profile. This may happen due to user input, or application changing
 	; Save param can be set to 0 to not save when changing profile ...
 	; ... eg so that when _LoadSettings() calls ChangeProfile, we do not save while loading.
@@ -201,7 +212,8 @@ Class UCRMain {
 				this.CurrentProfile._DeActivate()
 				; If the current profile is not a "Linked Profile" of the new profile or the Global profile, then stop it's Input Thread.
 				if (! (ObjHasKey(this.Profiles[1]._LinkedProfiles, this.CurrentProfile.id) || ObjHasKey(newprofile._LinkedProfiles, this.CurrentProfile.id)))
-					this.CurrentProfile._StopInputThread()
+					;this.CurrentProfile._StopInputThread()
+					this._SetProfileInputThreadState(this.CurrentProfile.id,0)
 			}
 		}
 		
@@ -414,7 +426,7 @@ Class UCRMain {
 			}
 		}
 		; Terminate profile input thread
-		profile._StopInputThread()
+		this._SetProfileInputThreadState(profile.id,0)
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}
@@ -1359,9 +1371,10 @@ Class _Profile {
 	
 	; The profile became active
 	_Activate(){
-		;~ if (!this._InputThread){
-			;~ this._StartInputThread()
-		;~ }
+		if (this._InputThread == 0){
+			MsgBox % "Error. Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
+			return
+		}
 		this._SetHotkeyState(1)
 		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
