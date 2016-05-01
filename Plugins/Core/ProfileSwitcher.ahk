@@ -49,8 +49,11 @@ class ProfileSwitcher extends _Plugin {
 		this.GuiControls.ProfileID.value := id
 	}
 	
-	; Updates the GuiControl that displays the current profile
+	; Called when the currently selected profile changes
 	UpdateCurrentProfile(id){
+		OutputDebug % "UCR| Profile change called on plugin. old: " this.GuiControls.ProfileID.value ", new: " id
+		this.ParentProfile.UpdateLinkedProfiles(this.name, this.GuiControls.ProfileID.value, 0)
+		this.ParentProfile.UpdateLinkedProfiles(this.name, id, 1)
 		GuiControl, , % this.hCurrentProfile, % UCR.BuildProfilePathName(id)
 		;GuiControl, , % this.GuiControls.ProfileID.hwnd, % id
 	}
@@ -62,6 +65,10 @@ class ProfileSwitcher extends _Plugin {
 			if !(UCR.ChangeProfile(this.GuiControls.ProfileID.value))
 				SoundBeep, 300, 200
 		}
+	}
+	
+	OnDelete(){
+		this.ParentProfile.UpdateLinkedProfiles(this.name, this.GuiControls.ProfileID.value, 0)
 	}
 	
 	; In order to free memory when a plugin is closed, we must free references to this object
