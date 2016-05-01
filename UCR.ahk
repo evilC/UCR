@@ -184,10 +184,10 @@ Class UCRMain {
 	
 	_SetProfileInputThreadState(profile, state){
 		if (state){
-			this._ActiveInputThreads.Delete(profile)	; Remove key entirely for "off"
+			this._ActiveInputThreads[profile] := 1
 			this.Profiles[profile]._StartInputThread()
 		} else {
-			this._ActiveInputThreads[profile] := 1
+			this._ActiveInputThreads.Delete(profile)	; Remove key entirely for "off"
 			this.Profiles[profile]._StopInputThread()
 		}
 	}
