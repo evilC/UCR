@@ -19,6 +19,7 @@ class _InputThread {
 	JoystickTimerState := 0
 	PovMap := [[0,0,0,0], [1,0,0,0], [1,1,0,0] , [0,1,0,0], [0,1,1,0], [0,0,1,0], [0,0,1,1], [0,0,0,1], [1,0,0,1]]
 	MouseDeltaMappings := {}
+	HeldButtons := {}
 	
 	__New(ProfileID, CallbackPtr){
 		;OutputDebug, % "UCR|InputThread #" ProfileID "| Ctor: Thread is starting"
@@ -46,12 +47,7 @@ class _InputThread {
 		
 		; Simulate up events for joystick buttons
 		if (hk.__value.Type = 2){
-			;OutputDebug % "Waiting for release of bindstring " this.Bindings[hk.hwnd]
-			while (GetKeyState(this.Bindings[hk.hwnd])){
-				Sleep 10
-			}
-			;OutputDebug % "release detected of bindstring " this.Bindings[hk.hwnd]
-			this.Callback.Call(hk._Ptr,0)
+			this.HeldButtons[this.Bindings[hk.hwnd]] := hk
 		}
 	}
 
@@ -214,6 +210,13 @@ class _InputThread {
 					this.HatStates[hwnd] := state
 					this.InputEvent(HatObj, state)
 				}
+			}
+		}
+		hb := this.HeldButtons.clone()
+		for hkstring, hk in hb {
+			if (!GetKeyState(hkstring)){
+				this.HeldButtons.Delete(hkstring)
+				this.Callback.Call(hk._Ptr,0)
 			}
 		}
 	}
