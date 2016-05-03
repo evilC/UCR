@@ -9,7 +9,7 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.8"				; The version of the main application
+	Version := "0.0.9"				; The version of the main application
 	SettingsVersion := "0.0.2"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}

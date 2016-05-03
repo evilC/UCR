@@ -4,6 +4,14 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.9 - 3rd May 2016
+= Fixed Issue #83
+  The up event for a joystick button did not fire while a subsequently held button...
+  ... was down, until you released the button.
+  eg Hold button A, then B. Up event for A would not fire until B was released.
+= Fixed Issue #84
+  Output buttons were registering as Input buttons.
+
 0.0.8 - 1st May 2016
 + Added memory management for profile Input Threads
   The "Input Threads" which handle detection of input (one for each profile)...
