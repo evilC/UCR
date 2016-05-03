@@ -2491,6 +2491,10 @@ Class _OutputButton extends _InputButton {
 		this._value := new _BindObject(obj)
 	}
 	
+	_RequestBinding(){
+		; override base and do nothing
+	}
+	
 	__Delete(){
 		OutputDebug % "UCR| Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
