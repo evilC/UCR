@@ -6,7 +6,7 @@ class ProfileSwitcher extends _Plugin {
 	Description := "Changes to a named profile when you hit an Input Button"
 	Init(){
 		Gui, Add, Text, y+10, % "When I "
-		this.AddControl("UpDown", 0, "DDL", "x+5 yp-5 w70 AltSubmit", "Release|Press||")
+		this.AddControl("UpDown", 0, "DDL", "x+10 yp-5 w70 AltSubmit", "Release|Press||")
 		this.AddInputButton("MyHk1", 0, this.MyHkChangedState.Bind(this), "x150 yp w200")
 		;Gui, Add, Text, y+10, % "When I press"
 		

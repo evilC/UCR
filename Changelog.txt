@@ -4,6 +4,12 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.10 - 4th May 2016
++ The ProfileSwitcher plugin now has a "Press/Release" option.
+  This controls whether the profile switch happens on press or release of the button.
+  You can use this to switch to another profile when you press a button...
+  ... then switch back to the original profile when you release the button.
+
 0.0.9 - 3rd May 2016
 = Fixed Issue #83
   The up event for a joystick button did not fire while a subsequently held button...
