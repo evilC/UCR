@@ -5,8 +5,10 @@ class ProfileSwitcher extends _Plugin {
 	Type := "Profile Switcher"
 	Description := "Changes to a named profile when you hit an Input Button"
 	Init(){
-		Gui, Add, Text, y+10, % "When I press"
-		this.AddInputButton("MyHk1", 0, this.MyHkChangedState.Bind(this), "x150 yp-2 w200")
+		Gui, Add, Text, y+10, % "When I "
+		this.AddControl("UpDown", 0, "DDL", "x+5 yp-5 w70 AltSubmit", "Release|Press||")
+		this.AddInputButton("MyHk1", 0, this.MyHkChangedState.Bind(this), "x150 yp w200")
+		;Gui, Add, Text, y+10, % "When I press"
 		
 		Gui, Add, Text, xm, % "Change to this profile"
 		; Add Current Profile readout. It is not stored in the profile, it is rebuilt as needed
@@ -64,7 +66,7 @@ class ProfileSwitcher extends _Plugin {
 	; The hotkey was pressed to change profile
 	MyHkChangedState(e){
 		; Only run the command on the down event (e=1)
-		if (e){
+		if (e == (this.GuiControls.UpDown.value - 1) ){
 			if !(UCR.ChangeProfile(this.GuiControls.ProfileID.value))
 				SoundBeep, 300, 200
 		}
