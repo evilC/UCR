@@ -9,7 +9,7 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.10"				; The version of the main application
+	Version := "0.0.11"				; The version of the main application
 	SettingsVersion := "0.0.2"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
@@ -2728,9 +2728,14 @@ class _Button {
 	
 	; Builds the AHK key name
 	BuildKeyName(){
+		static replacements := {33: "PgUp", 34: "PgDn", 35: "End", 36: "Home", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 45: "Insert", 46: "Delete"}
 		if this.Type = 1 {
-			code := Format("{:x}", this.Code)
-			return GetKeyName("vk" code)
+			if (ObjHasKey(replacements, this.Code)){
+				return replacements[this.Code]
+			} else {
+				code := Format("{:x}", this.Code)
+				return GetKeyName("vk" code)
+			}
 		} else if (this.Type = 2){
 			return this.DeviceID "Joy" this.code
 		} else if (this.Type >= 3){

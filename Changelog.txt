@@ -4,6 +4,13 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.11 - 10th May 2016
+= The following keyboard keys are now bindable as inputs / outputs:
+  PgUp, PgDn, End, Home, Left, Up, Right, Down, Insert, Delete
+  Please note that some of your existingly configured bindings may change.
+  eg Any binding set to NumpadLeft will now be Left arrow.
+  This can be fixed by simply re-binding.
+
 0.0.10 - 4th May 2016
 + The ProfileSwitcher plugin now has a "Press/Release" option.
   This controls whether the profile switch happens on press or release of the button.

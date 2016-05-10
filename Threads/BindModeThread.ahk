@@ -41,6 +41,7 @@ class _BindMapper {
 	}
 	
 	CreateHotkeys(){
+		static replacements := {33: "PgUp", 34: "PgDn", 35: "End", 36: "Home", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 45: "Insert", 46: "Delete"}
 		static pfx := "$*"
 		static updown := [{e: 1, s: ""}, {e: 0, s: " up"}]
 		; Cycle through all keys / mouse buttons
@@ -48,7 +49,11 @@ class _BindMapper {
 			; Get the key name
 			i := A_Index
 			code := Format("{:x}", A_Index)
-			n := GetKeyName("vk" code)
+			if (ObjHasKey(replacements, A_Index)){
+				n := replacements[A_Index]
+			} else {
+				n := GetKeyName("vk" code)
+			}
 			if (n = "")
 				continue
 			; Down event, then Up event
