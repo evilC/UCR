@@ -717,11 +717,11 @@ Class UCRMain {
 class _ProfileToolbox extends _ProfileSelect {
 	__New(){
 		base.__New()
-		Gui, Add, Button, xm w30 hwndhAdd y210 aya aw1/2, Add
+		Gui, Add, Button, xm w30 hwndhAdd y110 aya aw1/2, Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w60 hwndhAdd y210 aya axa aw1/2, Add Child
+		Gui, Add, Button, x+5 w60 hwndhAdd y110 aya axa aw1/2, Add Child
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
@@ -965,8 +965,10 @@ class _ProfileToolbox extends _ProfileSelect {
 class _ProfilePicker extends _ProfileSelect {
 	__New(){
 		base.__New()
-		Gui, % this.hwnd ":+Minsize" 120 "x" 210
-		Gui, % this.hwnd ":Show", % "w120 Hide"
+		; Initialize resizing system to min size of gui
+		Gui, % this.hwnd ":Show", % "Hide"
+		
+		Gui, % this.hwnd ":+Minsize" 120 "x" 110
 	}
 	
 	_CurrentCallback := 0
@@ -984,7 +986,7 @@ class _ProfilePicker extends _ProfileSelect {
 		MouseGetPos, x, y
 		this.BuildProfileTree()
 		this.SelectProfileByID(currentprofile)
-		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5 " w200", Profile Picker
+		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5 " w200 h200", Profile Picker
 	}
 }
 
@@ -996,7 +998,7 @@ class _ProfileSelect {
 		Gui +ToolWindow
 		Gui +Resize
 		this.hwnd := hwnd
-		Gui, Add, TreeView, w100 h200 aw ah hwndhTreeview AltSubmit
+		Gui, Add, TreeView, w100 h100 aw ah hwndhTreeview AltSubmit
 		this.hTreeview := hTreeview
 		;Gui, Show
 		this.TV_EventFn := this.TV_Event.Bind(this)
