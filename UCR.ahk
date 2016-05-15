@@ -963,6 +963,11 @@ class _ProfileToolbox extends _ProfileSelect {
 ; =================================================================== PROFILE PICKER ==========================================================
 ; A tool for plugins that allows users to pick a profile (eg for a profile switcher plugin). Cannot alter profile tree
 class _ProfilePicker extends _ProfileSelect {
+	__New(){
+		base.__New()
+		Gui, % this.hwnd ":+Minsize" 220 "x" 210
+	}
+	
 	_CurrentCallback := 0
 	TV_Event(){
 		if (A_GuiEvent == "DoubleClick"){
