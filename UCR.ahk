@@ -24,7 +24,7 @@ Class UCRMain {
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	PLUGIN_WIDTH := 680				; The Width of a plugin
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
-	PROFILE_FRAME_WIDTH := 300
+	PROFILE_FRAME_WIDTH := 100
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
@@ -124,7 +124,7 @@ Class UCRMain {
 		Gui, % this.hwnd ":+Resize"
 		start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.PROFILE_FRAME_WIDTH
 		Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
-		Gui, % this.hwnd ":+Minsize" UCR.PLUGIN_FRAME_WIDTH "x" UCR.GUI_MIN_HEIGHT
+		Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
 		;Gui, % this.hwnd ":+Maxsize" start_width
 		Gui, new, HwndHwnd
 		this.hTopPanel := hwnd
@@ -717,19 +717,19 @@ Class UCRMain {
 class _ProfileToolbox extends _ProfileSelect {
 	__New(){
 		base.__New()
-		Gui, Add, Button, xm w30 hwndhAdd y210 aya aw1/4, Add
+		Gui, Add, Button, xm w30 hwndhAdd y210 aya aw1/2, Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w60 hwndhAdd y210 aya axa aw1/4, Add Child
+		Gui, Add, Button, x+5 w60 hwndhAdd y210 aya axa aw1/2, Add Child
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w50 hwndhRename y210 aya axa aw1/4, Rename
+		Gui, Add, Button, xm w50 hwndhRename y+5 aya axr aw1/2, Rename
 		fn := this.RenameProfile.Bind(this)
 		GuiControl +g, % hRename, % fn
 		
-		Gui, Add, Button, x+5 w40 hwndhDelete y210 aya axa aw1/4, Delete
+		Gui, Add, Button, x+5 w40 hwndhDelete yp aya axa aw1/2, Delete
 		fn := this.DeleteProfile.Bind(this)
 		GuiControl +g, % hDelete, % fn
 
@@ -965,7 +965,8 @@ class _ProfileToolbox extends _ProfileSelect {
 class _ProfilePicker extends _ProfileSelect {
 	__New(){
 		base.__New()
-		Gui, % this.hwnd ":+Minsize" 220 "x" 210
+		Gui, % this.hwnd ":+Minsize" 120 "x" 210
+		Gui, % this.hwnd ":Show", % "w120 Hide"
 	}
 	
 	_CurrentCallback := 0
@@ -983,7 +984,7 @@ class _ProfilePicker extends _ProfileSelect {
 		MouseGetPos, x, y
 		this.BuildProfileTree()
 		this.SelectProfileByID(currentprofile)
-		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Picker
+		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5 " w200", Profile Picker
 	}
 }
 
@@ -995,7 +996,7 @@ class _ProfileSelect {
 		Gui +ToolWindow
 		Gui +Resize
 		this.hwnd := hwnd
-		Gui, Add, TreeView, w200 h200 aw ah hwndhTreeview AltSubmit
+		Gui, Add, TreeView, w100 h200 aw ah hwndhTreeview AltSubmit
 		this.hTreeview := hTreeview
 		;Gui, Show
 		this.TV_EventFn := this.TV_Event.Bind(this)
