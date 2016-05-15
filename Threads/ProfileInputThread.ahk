@@ -37,7 +37,7 @@ class _InputThread {
 		global _InterfaceSetAxisBinding := ObjShare(this.SetAxisBinding.Bind(this))
 		global _InterfaceSetDeltaBinding := ObjShare(this.SetDeltaBinding.Bind(this))
 		this.SetHotkeyState(0)
-		OutputDebug, % "UCR|InputThread #" this.ProfileID "| Ctor: Thread started"
+		OutputDebug, % "UCR| InputThread #" this.ProfileID "| Ctor: Thread started"
 	}
 	
 	; All input flows from here back to the main thread
