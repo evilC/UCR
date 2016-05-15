@@ -154,7 +154,17 @@ Class UCRMain {
 		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
 		
 		; Add the profile toolbox
-		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.PROFILE_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
+		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.PROFILE_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
+
+		Gui, new, HwndHwnd
+		this.hSidePanel := hwnd
+		Gui % this.hSidePanel ":-Caption"
+		Gui % this.hSidePanel ":Margin", 0, 0
+		
+		Gui, % this.hSidePanel ":Add", Gui, % "x0 y0 aw ah", % this._ProfileToolbox.hwnd
+		Gui % this.hSidePanel ":Show", Hide
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.PROFILE_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
+
 
 		;Gui, % this.hwnd ":Show"
 	}
