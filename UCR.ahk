@@ -10,7 +10,7 @@ return
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
 	Version := "0.0.11"				; The version of the main application
-	SettingsVersion := "0.0.2"		; The version of the settings file format
+	SettingsVersion := "0.0.3"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
@@ -24,7 +24,7 @@ Class UCRMain {
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	PLUGIN_WIDTH := 680				; The Width of a plugin
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
-	PROFILE_FRAME_WIDTH := 100
+	SIDE_PANEL_WIDTH := 100			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
@@ -122,7 +122,7 @@ Class UCRMain {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.PROFILE_FRAME_WIDTH
+		start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.SIDE_PANEL_WIDTH
 		Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
 		Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
 		;Gui, % this.hwnd ":+Maxsize" start_width
@@ -154,7 +154,7 @@ Class UCRMain {
 		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
 		
 		; Add the profile toolbox
-		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.PROFILE_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
+		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
 
 		Gui, new, HwndHwnd
 		this.hSidePanel := hwnd
@@ -163,7 +163,7 @@ Class UCRMain {
 		
 		Gui, % this.hSidePanel ":Add", Gui, % "x0 y0 aw ah", % this._ProfileToolbox.hwnd
 		Gui % this.hSidePanel ":Show", Hide
-		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.PROFILE_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
 
 
 		;Gui, % this.hwnd ":Show"
@@ -587,12 +587,15 @@ Class UCRMain {
 				obj.Profiles[id] := profile
 			}
 			obj.SettingsVersion := "0.0.2"
-			return obj
+		}
+		
+		if (obj.SettingsVersion = "0.0.2"){
+			obj.CurrentSize.w := this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH
+			obj.SettingsVersion := "0.0.3"
 		}
 		; Default to making no changes
 		return obj
 	}
-	
 	; A child profile changed in some way
 	_ProfileChanged(profile){
 		this._SaveSettings()
