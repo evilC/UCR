@@ -9,8 +9,8 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.11"				; The version of the main application
-	SettingsVersion := "0.0.2"		; The version of the settings file format
+	Version := "0.0.12"				; The version of the main application
+	SettingsVersion := "0.0.3"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
@@ -23,7 +23,8 @@ Class UCRMain {
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	PLUGIN_WIDTH := 680				; The Width of a plugin
-	PLUGIN_FRAME_WIDTH := 720		; The width of the app
+	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
+	SIDE_PANEL_WIDTH := 100			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
@@ -121,9 +122,10 @@ Class UCRMain {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		Gui, % this.hwnd ":Show", % "Hide w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
-		Gui, % this.hwnd ":+Minsize" UCR.PLUGIN_FRAME_WIDTH "x" UCR.GUI_MIN_HEIGHT
-		Gui, % this.hwnd ":+Maxsize" UCR.PLUGIN_FRAME_WIDTH
+		start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.SIDE_PANEL_WIDTH
+		Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
+		Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
+		;Gui, % this.hwnd ":+Maxsize" start_width
 		Gui, new, HwndHwnd
 		this.hTopPanel := hwnd
 		Gui % this.hTopPanel ":-Border"
@@ -131,13 +133,13 @@ Class UCRMain {
 		
 		; Profile Select DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
-		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 220
+		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 115
 		this.hCurrentProfile := hCurrentProfile
 		
-		Gui, % this.hTopPanel ":Add", Button, % "x+5 yp-1 hwndhProfileToolbox w100", Profile Toolbox
-		this.hProfileToolbox := hProfileToolbox
-		fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
-		GuiControl +g, % this.hProfileToolbox, % fn
+		;Gui, % this.hTopPanel ":Add", Button, % "x+5 yp-1 hwndhProfileToolbox w100", Profile Toolbox
+		;this.hProfileToolbox := hProfileToolbox
+		;fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
+		;GuiControl +g, % this.hProfileToolbox, % fn
 
 		; Add Plugin
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
@@ -150,13 +152,26 @@ Class UCRMain {
 		GuiControl % this.hTopPanel ":+g", % this.hAddPlugin, % fn
 		
 		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
+		
+		; Add the profile toolbox
+		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
+
+		Gui, new, HwndHwnd
+		this.hSidePanel := hwnd
+		Gui % this.hSidePanel ":-Caption"
+		Gui % this.hSidePanel ":Margin", 0, 0
+		
+		Gui, % this.hSidePanel ":Add", Gui, % "x0 y0 aw ah", % this._ProfileToolbox.hwnd
+		Gui % this.hSidePanel ":Show", Hide
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
+
 
 		;Gui, % this.hwnd ":Show"
 	}
 	
 	_ShowGui(){
 		xy := (this.CurrentPos.x != "" && this.CurrentPos.y != "" ? "x" this.CurrentPos.x " y" this.CurrentPos.y : "")
-		Gui, % this.hwnd ":Show", % xy " h" this.CurrentSize.h
+		Gui, % this.hwnd ":Show", % xy " h" this.CurrentSize.h " w" this.Currentsize.w
 	}
 	
 	_OnMove(wParam, lParam, msg, hwnd){
@@ -174,6 +189,7 @@ Class UCRMain {
 	
 	_OnSize(wParam, lParam, msg, hwnd){
 		this.CurrentSize.h := HiWord(lParam)
+		this.CurrentSize.w := LoWord(lParam)
 		this._SaveSettings()
 	}
 	
@@ -571,12 +587,15 @@ Class UCRMain {
 				obj.Profiles[id] := profile
 			}
 			obj.SettingsVersion := "0.0.2"
-			return obj
+		}
+		
+		if (obj.SettingsVersion = "0.0.2"){
+			obj.CurrentSize.w := this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH
+			obj.SettingsVersion := "0.0.3"
 		}
 		; Default to making no changes
 		return obj
 	}
-	
 	; A child profile changed in some way
 	_ProfileChanged(profile){
 		this._SaveSettings()
@@ -711,24 +730,28 @@ Class UCRMain {
 class _ProfileToolbox extends _ProfileSelect {
 	__New(){
 		base.__New()
-		Gui, Add, Button, xm w30 hwndhAdd y210 aya aw1/4, Add
+		Gui, Add, Button, xm w30 hwndhAdd y110 aya aw1/2, Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w60 hwndhAdd y210 aya axa aw1/4, Add Child
+		Gui, Add, Button, x+5 w60 hwndhAdd y110 aya axa aw1/2, Add Child
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w50 hwndhRename y210 aya axa aw1/4, Rename
+		Gui, Add, Button, xm w50 hwndhRename y+5 aya axr aw1/2, Rename
 		fn := this.RenameProfile.Bind(this)
 		GuiControl +g, % hRename, % fn
 		
-		Gui, Add, Button, x+5 w40 hwndhDelete y210 aya axa aw1/4, Delete
+		Gui, Add, Button, x+5 w40 hwndhDelete yp aya axa aw1/2, Delete
 		fn := this.DeleteProfile.Bind(this)
 		GuiControl +g, % hDelete, % fn
 
 		this.DragMidFn := this.Treeview_Dragging.Bind(this)
 		this.DragEndFn := this.Treeview_EndDrag.Bind(this)
+		
+		Gui, % this.hwnd ":-Caption -Resize"
+		;Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
+		Gui, % this.hwnd ":Show"
 	}
 	
 	AddProfile(childmode){
@@ -762,11 +785,11 @@ class _ProfileToolbox extends _ProfileSelect {
 		}
 	}
 	
-	ShowButtonClicked(){
-		CoordMode, Mouse, Screen
-		MouseGetPos, x, y
-		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
-	}
+	;~ ShowButtonClicked(){
+		;~ CoordMode, Mouse, Screen
+		;~ MouseGetPos, x, y
+		;~ Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
+	;~ }
 	
 	;~ DeleteNode(node){
 		;~ pid := this.LvHandleToProfileId[node]
@@ -953,6 +976,14 @@ class _ProfileToolbox extends _ProfileSelect {
 ; =================================================================== PROFILE PICKER ==========================================================
 ; A tool for plugins that allows users to pick a profile (eg for a profile switcher plugin). Cannot alter profile tree
 class _ProfilePicker extends _ProfileSelect {
+	__New(){
+		base.__New()
+		; Initialize resizing system to min size of gui
+		Gui, % this.hwnd ":Show", % "Hide"
+		
+		Gui, % this.hwnd ":+Minsize" 120 "x" 110
+	}
+	
 	_CurrentCallback := 0
 	TV_Event(){
 		if (A_GuiEvent == "DoubleClick"){
@@ -968,7 +999,7 @@ class _ProfilePicker extends _ProfileSelect {
 		MouseGetPos, x, y
 		this.BuildProfileTree()
 		this.SelectProfileByID(currentprofile)
-		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Picker
+		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5 " w200 h200", Profile Picker
 	}
 }
 
@@ -980,7 +1011,7 @@ class _ProfileSelect {
 		Gui +ToolWindow
 		Gui +Resize
 		this.hwnd := hwnd
-		Gui, Add, TreeView, w200 h200 aw ah hwndhTreeview AltSubmit
+		Gui, Add, TreeView, w100 h100 aw ah hwndhTreeview AltSubmit
 		this.hTreeview := hTreeview
 		;Gui, Show
 		this.TV_EventFn := this.TV_Event.Bind(this)

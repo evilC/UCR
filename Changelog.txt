@@ -4,6 +4,10 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.12 - 17th May 2016
++ The Profile Toolbox is now integrated into the rest of the UI
+  The UI is now resizable horizontally, so you can resize the profile toolbox.
+
 0.0.11 - 10th May 2016
 = The following keyboard keys are now bindable as inputs / outputs:
   PgUp, PgDn, End, Home, Left, Up, Right, Down, Insert, Delete
