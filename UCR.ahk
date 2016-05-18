@@ -9,8 +9,8 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.12"				; The version of the main application
-	SettingsVersion := "0.0.3"		; The version of the settings file format
+	Version := "0.0.13"				; The version of the main application
+	SettingsVersion := "0.0.4"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
@@ -570,11 +570,7 @@ Class UCRMain {
 				} else if (name = "default"){
 					id := 2
 				} else {
-					Loop {
-						;id := A_NOW
-						Random, id, 3, 2147483647
-						;Sleep 10
-					} until (!ObjHasKey(obj.Profiles, id))
+					id := this.CreateGUID()
 					obj.ProfileTree[0].push(id)
 				}
 				profile.id := id
@@ -588,6 +584,24 @@ Class UCRMain {
 		if (obj.SettingsVersion = "0.0.2"){
 			obj.CurrentSize.w := this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH
 			obj.SettingsVersion := "0.0.3"
+		}
+		
+		if (obj.SettingsVersion = "0.0.3"){
+			for id, profile in obj.Profiles {
+				oldplugins := profile.Plugins.clone()
+				oldorder := profile.PluginOrder
+				profile.Plugins := {}
+				profile.PluginOrder := []
+				Loop % oldorder.length() {
+					name := oldorder[A_Index]
+					plugin := oldplugins[name]
+					plugin.name := name
+					id := this.CreateGUID()
+					profile.Plugins[id] := plugin
+					profile.PluginOrder.push(id)
+				}
+			}
+			obj.SettingsVersion := "0.0.4"
 		}
 		; Default to making no changes
 		return obj

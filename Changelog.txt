@@ -5,6 +5,9 @@ Key:
 + : Added feature
 
 0.0.13 - ????
+! INI (Settings) file format changed. UCR will attempt to upgrade for you.
+  YOU ARE ADVISED TO BACK UP YOUR UCR.INI BEFORE RUNNING THIS VERSION.
+  If you have problems, please post on the forums.
 = Plugins are now uniquely identified by IDs.
   This does not affect anything now, but it is an enabler for future features.
   eg: Renaming of plugins, moving plugins between profiles, inter-plugin communication.
