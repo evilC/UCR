@@ -27,7 +27,7 @@ Class UCRMain {
 	SIDE_PANEL_WIDTH := 100			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
-	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
+	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
