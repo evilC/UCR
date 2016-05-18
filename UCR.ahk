@@ -693,6 +693,18 @@ Class UCRMain {
 		return (ErrorLevel ? 0 : name)
 	}
 	
+	; By jNizM - https://autohotkey.com/boards/viewtopic.php?f=6&t=4732&p=87497#p87497
+	CreateGUID(){
+		VarSetCapacity(foo_guid, 16, 0)
+		if !(DllCall("ole32.dll\CoCreateGuid", "Ptr", &foo_guid))
+		{
+			VarSetCapacity(tmp_guid, 38 * 2 + 1)
+			DllCall("ole32.dll\StringFromGUID2", "Ptr", &foo_guid, "Ptr", &tmp_guid, "Int", 38 + 1)
+			fin_guid := StrGet(&tmp_guid, "UTF-16")
+		}
+		return SubStr(fin_guid, 2, 36)
+	}
+
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {SettingsVersion: this.SettingsVersion
@@ -1464,13 +1476,14 @@ Class _Profile {
 		name := this._GetUniqueName(plugin)
 		if (name = 0)
 			return
-		this.PluginOrder.push(name)
-		this.Plugins[name] := new %plugin%(this, name)
-		this.Plugins[name].Type := plugin
+		id := UCR.CreateGUID()
+		this.PluginOrder.push(id)
+		this.Plugins[id] := new %plugin%(id, name, this)
+		this.Plugins[id].Type := plugin
 		this._LayoutPlugin()
 		UCR._ProfileChanged(this)
-		if (IsFunc(this.Plugins[name, "OnActive"]))
-			this.Plugins[name].OnActive()
+		if (IsFunc(this.Plugins[id, "OnActive"]))
+			this.Plugins[id].OnActive()
 	}
 	
 	; Layout a plugin.
@@ -1480,7 +1493,7 @@ Class _Profile {
 				,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO),fMask:4})
 		GetScrollInfo(this.hwnd,true,scroll[])
 		i := (index = -1 ? this.PluginOrder.length() : index)
-		name := this.PluginOrder[i]
+		id := this.PluginOrder[i]
 		y := 0
 		if (i > 1){
 			ControlGetPos,,wy,,,,% "ahk_id " this.hwnd
@@ -1489,8 +1502,8 @@ Class _Profile {
 			y += h - wy
 		}
 		y += 5 - (index=-1 ? 0 : scroll.nPos)
-		Gui, % this.Plugins[name].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
-		ControlGetPos, , , , h, , % "ahk_id " this.Plugins[name].hFrame
+		Gui, % this.Plugins[id].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
+		ControlGetPos, , , , h, , % "ahk_id " this.Plugins[id].hFrame
 		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
 	}
 	
@@ -1520,7 +1533,7 @@ Class _Profile {
 		Gui, % plugin.hwnd ":Destroy"
 		Gui, % plugin.hFrame ":Destroy"
 		Loop % this.PluginOrder.length(){
-			if (this.PluginOrder[A_Index] = plugin.name){
+			if (this.PluginOrder[A_Index] = plugin.id){
 				this.PluginOrder.RemoveAt(A_Index)
 				break
 			}
@@ -1528,24 +1541,30 @@ Class _Profile {
 		
 		ControlGetPos, , , , height_spacer, ,% "ahk_id " this.hSpacer
 		GuiControl, Move, % this.hSpacer, % "h" height_spacer - height_frame
-		this.Plugins.Delete(plugin.name)
+		this.Plugins.Delete(plugin.id)
 		this._PluginChanged(plugin)
 		this._LayoutPlugins()
 	}
 	
-	; Obtain a profiel-unique name for the plugin
+	; Obtain a profile-unique name for the plugin, with a suggestion
+	; Name param is the base from which suggestions are generated
+	; eg passing "MyPlugin" would suggest "MyPlugin 1"
 	_GetUniqueName(name){
 		name .= " "
 		num := 1
-		while (ObjHasKey(this.Plugins, name num)){
-			num++
+		Loop {
+			this_name := name num
+			if (this._IsNameUnique(this_name))
+				break
+			else
+				num++
 		}
-		name := name num
+		name := this_name
 		prompt := "Enter a name for the Plugin"
 		Loop {
 			InputBox, name, Add Plugin, % prompt, ,,130,,,,, % name
 			if (!ErrorLevel){
-				if (ObjHasKey(this.Plugins, Name)){
+				if (!this._IsNameUnique(name)){
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {
@@ -1557,14 +1576,24 @@ Class _Profile {
 		}
 	}
 	
+	; Returns true if no profile has the name that was passed
+	_IsNameUnique(name){
+		for id, plugin in this.Plugins {
+			if (plugin.Name = name){
+				return 0
+			}
+		}
+		return 1
+	}
+
 	; Save the profile to disk
 	_Serialize(){
 		obj := {Name: this.Name}
 		obj.ParentProfile := this.ParentProfile
 		obj.Plugins := {}
 		obj.PluginOrder := this.PluginOrder
-		for name, plugin in this.Plugins {
-			obj.Plugins[name] := plugin._Serialize()
+		for id, plugin in this.Plugins {
+			obj.Plugins[id] := plugin._Serialize()
 		}
 		return obj
 	}
@@ -1573,18 +1602,18 @@ Class _Profile {
 	_Deserialize(obj){
 		this.ParentProfile := obj.ParentProfile
 		Loop % obj.PluginOrder.length() {
-			name := obj.PluginOrder[A_Index]
-			this.PluginOrder.push(name)
-			plugin := obj.Plugins[name]
+			id := obj.PluginOrder[A_Index]
+			this.PluginOrder.push(id)
+			plugin := obj.Plugins[id]
 			cls := plugin.Type
 			if (!IsObject(%cls%)){
 				msgbox % "Plugin class " cls " not found - removing from profile """ this.Name """"
 				this.PluginOrder.Pop()
-				obj.Plugins.Delete(name)
+				obj.Plugins.Delete(id)
 				continue
 			}
-			this.Plugins[name] := new %cls%(this, name)
-			this.Plugins[name]._Deserialize(plugin)
+			this.Plugins[id] := new %cls%(id, plugin.name, this)
+			this.Plugins[id]._Deserialize(plugin)
 			this._LayoutPlugin()
 		}
 	}
@@ -1601,6 +1630,7 @@ Class _Profile {
 Class _Plugin {
 	Type := "_Plugin"			; The class of the plugin
 	ParentProfile := 0			; Will point to the parent profile
+	ID := 0						; Unique ID for the plugin
 	Name := ""					; The name the user chose for the plugin
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
 	InputButtons := {}			; An associative array, indexed by name, of child Input Buttons (aka Hotkeys)
@@ -1664,8 +1694,9 @@ Class _Plugin {
 	}
 	
 	; === Private ===
-	__New(parent, name){
+	__New(id, name, parent){
 		this.ParentProfile := parent
+		this.ID := id
 		this.Name := name
 		this._CreateGui()
 		this.Init()
@@ -1711,7 +1742,7 @@ Class _Plugin {
 	
 	; Save plugin to disk
 	_Serialize(){
-		obj := {Type: this.Type}
+		obj := {Type: this.Type, name: this.Name}
 		Loop % this._SerializeList.length(){
 			key := this._SerializeList[A_Index]
 			obj[key] := {}
