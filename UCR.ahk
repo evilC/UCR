@@ -417,11 +417,7 @@ Class UCRMain {
 	; Creates a new profile and assigns it a unique ID, if needed.
 	_CreateProfile(name, id := 0, parent := 0){
 		if (id = 0){
-			Loop {
-				;id := A_NOW
-				Random, id, 3, 2147483647
-				;Sleep 10
-			} until !IsObject(this.ProfileIDs[id])
+			id := this.CreateGUID()
 		}
 		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile
