@@ -763,7 +763,7 @@ class _ProfileToolbox extends _ProfileSelect {
 		
 		Gui, % this.hwnd ":-Caption -Resize"
 		;Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
-		Gui, % this.hwnd ":Show"
+		Gui, % this.hwnd ":Show", Hide
 	}
 	
 	AddProfile(childmode){
