@@ -1324,13 +1324,12 @@ class _BindModeHandler {
 ; The Gui of each plugin appears inside the Gui of this profile.
 Class _Profile {
 	ID := ""				; Unique ID. Set in Ctor
-	Name := ""
-	ParentProfile := 0
-	Plugins := {}
-	PluginOrder := []
-	AssociatedApss := 0
-	_IsGlobal := 0
-	_InputThread := 0
+	Name := ""				; The name the user gave to the profile
+	ParentProfile := 0		; The ID of the parent profile, or 0 if no parent
+	Plugins := {}			; A ID-indexed array of Plugin instances
+	PluginOrder := []		; The order that plugins are listed in
+	_IsGlobal := 0			; 1 if this Profile is Global (Always active)
+	_InputThread := 0		; Holds the handle to the Input Thread, if active
 	_LinkedProfiles := {}	; Profiles with which this one is associated
 	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
 	
