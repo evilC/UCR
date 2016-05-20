@@ -248,7 +248,12 @@ Class UCRMain {
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
-		this._ProfileToolbox.SelectProfileByID(id)
+		;this._ProfileToolbox.SelectProfileByID(id)
+		
+		; Show which profiles are loaded
+		this._ProfileToolbox.ResetProfileColours()
+		this._ProfileToolbox.SetProfileColour(id, 0x00ff00)
+		;this._ProfileToolbox.SetProfileColour(1, 0x00cc00)
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
@@ -262,6 +267,7 @@ Class UCRMain {
 			if (this.Profiles[profile]._InputThread = 0){
 				this._SetProfileInputThreadState(profile,1)
 			}
+			this._ProfileToolbox.SetProfileColour(profile, 0x00bfff)
 		}
 		
 		; Save settings
@@ -750,6 +756,7 @@ Class UCRMain {
 ; =================================================================== MAIN PROFILE SELECT / ADD ==========================================================
 ; The main tool that the user uses to change profile, add / remove / rename / re-order profiles etc
 class _ProfileToolbox extends _ProfileSelect {
+	ProfileColours := {}
 	__New(){
 		base.__New()
 		Gui, Add, Button, xm w30 hwndhAdd y110 aya aw1/2, Add
@@ -770,10 +777,13 @@ class _ProfileToolbox extends _ProfileSelect {
 
 		this.DragMidFn := this.Treeview_Dragging.Bind(this)
 		this.DragEndFn := this.Treeview_EndDrag.Bind(this)
+		this.MsgFn := this.WM_NOTIFY.Bind(this)
 		
 		Gui, % this.hwnd ":-Caption -Resize"
 		;Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
 		Gui, % this.hwnd ":Show", Hide
+		
+		OnMessage(0x4e,this.MsgFn)
 	}
 	
 	AddProfile(childmode){
@@ -792,6 +802,27 @@ class _ProfileToolbox extends _ProfileSelect {
 	RenameProfile(){
 		id := this.ProfileIDOfSelection()
 		UCR.RenameProfile(id)
+	}
+	
+	SetProfileColour(id, col){
+		this.ProfileColours[this.ProfileIdToLvHandle[id]] := col
+		WinSet,Redraw,,A
+	}
+	
+	ResetProfileColours(){
+		this.ProfileColours := {}
+	}
+	
+	WM_NOTIFY(Param*){
+		if (NumGet(Param.2) != this.hTreeview)	; filter messages not for this treeview
+			return
+		node := numget(Param.2,A_PtrSize=4?9*A_PtrSize:7*A_PtrSize,"uint")
+		stage:=NumGet(Param.2,3*A_PtrSize,"uint")
+		if (stage=1)
+			return 0x20 ;sets CDRF_NOTIFYITEMDRAW
+		if (ObjHasKey(this.ProfileColours, node)){
+			NumPut(this.ProfileColours[node],Param.2,A_PtrSize=4?13*A_PtrSize:10.5*A_PtrSize,"int") ;sets the background
+		}
 	}
 	
 	TV_Event(){
