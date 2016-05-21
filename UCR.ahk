@@ -33,6 +33,7 @@ Class UCRMain {
 	_InputActivitySubscriptions := {}
 	_InputThreadScript := ""		; Set in Ctor
 	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active input threads
+	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	
 	__New(){
 		global UCR := this			; Set super-global UCR to point to class instance
@@ -92,11 +93,18 @@ Class UCRMain {
 		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnSize.Bind(this)) "," &matchobj "," &filterobj ")"]
 		matchobj.msg := 0x3
 		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnMove.Bind(this)) "," &matchobj "," &filterobj ")"]
+		
+		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)
 	}
 	
 	GuiClose(hwnd){
-		if (hwnd = this.hwnd)
+		if (hwnd = this.hwnd){
+			while (this._SavingToDisk){
+				; Wait for save to complete
+				sleep 100
+			}
 			ExitApp
+		}
 	}
 	
 	; Libraries can be used to easily add functionality to UCR.
@@ -564,19 +572,19 @@ Class UCRMain {
 	; Save settings to disk
 	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
 	_SaveSettings(){
-		static SettingsFile, obj
-		SetTimer, Save, Off
-		obj := this._Serialize()
-		SettingsFile := this._SettingsFile
-		SetTimer, Save, -1000
-		Return
-		Save:
-			OutputDebug % "UCR| Saving JSON to disk"
-			FileReplace(JSON.Dump(obj, ,true), SettingsFile)
-		Return
-
+		this._SavingToDisk := 1
+		fn := this.SaveSettingsTimerFn
+		SetTimer, % fn, Off
+		SetTimer, % fn, -1000
 	}
 	
+	__SaveSettings(){
+		OutputDebug % "UCR| Saving JSON to disk"
+		obj := this._Serialize()
+		SettingsFile := this._SettingsFile
+		FileReplace(JSON.Dump(obj, ,true), SettingsFile)
+		this._SavingToDisk := 0
+	}
 	; If SettingsVersion changes, this handles converting the INI file to the new format
 	_UpdateSettings(obj){
 		if (obj.SettingsVersion = "0.0.1"){
