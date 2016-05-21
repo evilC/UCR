@@ -14,6 +14,7 @@ Key:
 = All IDs (Profile and Plugin) are now GUIDs generated via windows APIs
 + Status of Input Threads is now show in the Profile Toolbox.
   Blue = current profile, Green = active (eg global), Amber = Loaded but paused
+= Fixes to logic for loading / unloading of Input Threads
 = Up event for joystick buttons should now properly trigger...
   ... when entering a profile with the button already held.
 + UCR should now wait until done saving if you close the GUI mid-save.
