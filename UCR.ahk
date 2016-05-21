@@ -1430,13 +1430,18 @@ Class _Profile {
 	; plugin = plugin altering it's link status with a profile
 	; profile = profile that the plugin is altering it's relation to
 	; state = new state of the plugin's relation to that profile
-	UpdateLinkedProfiles(plugin, profile, state){
-		; Update plugin -> profile links
-		if (!IsObject(this.__LinkedProfiles[plugin])){
-			this.__LinkedProfiles[plugin] := {}
+	UpdateLinkedProfiles(plugin_id, profile_id, state){
+		; Update plugin_id -> profile_id links
+		if (!IsObject(this.__LinkedProfiles[plugin_id])){
+			this.__LinkedProfiles[plugin_id] := {}
 		}
-		this.__LinkedProfiles[plugin, profile] := state
+		this.__LinkedProfiles[plugin_id, profile_id] := state
 		
+		this._RebuildLinkedProfiles()
+		UCR.ProfileLinksChanged()
+	}
+	
+	_RebuildLinkedProfiles(){
 		; Rebuild profile -> profile links
 		this._LinkedProfiles := {}
 		for plug, profs in this.__LinkedProfiles {
@@ -1446,6 +1451,11 @@ Class _Profile {
 				}
 			}
 		}
+	}
+	
+	RemovePluginLinks(id){
+		this.__LinkedProfiles.Delete(id)
+		this._RebuildLinkedProfiles()
 		UCR.ProfileLinksChanged()
 	}
 	
@@ -1609,6 +1619,7 @@ Class _Profile {
 			}
 		}
 		
+		this.RemovePluginLinks(plugin.id)
 		ControlGetPos, , , , height_spacer, ,% "ahk_id " this.hSpacer
 		GuiControl, Move, % this.hSpacer, % "h" height_spacer - height_frame
 		this.Plugins.Delete(plugin.id)
