@@ -241,8 +241,7 @@ Class UCRMain {
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
-		; I no longer use the default selection box, as it changes appearance when focus is lost.
-		;this._ProfileToolbox.SelectProfileByID(id)
+		this._ProfileToolbox.SelectProfileByID(id)
 		
 		; Show which profiles are loaded
 		this._ProfileToolbox.ResetProfileColours()
