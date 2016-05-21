@@ -11,7 +11,8 @@ autoexecute_done := 1
 return
 
 class _InputThread {
-	Bindings := {}			; List of current Button bindings, indexed by HWND of hotkey GuiControl
+	Bindings := {}			; List of current Button bindings (in hotkey format, eg "^!a"), indexed by HWND of hotkey GuiControl
+	BindingHKs := {}		; The Hotkey objects of Bindings currently in effect, indexed by HWND of hotkey GuiControl
 	Axes := {}				; Holds all information regarding bound axes {AxisObj: axis object, state: current state, bindstring: eg "2joyX"}
 	Hats := {}				; ToDo: collapse hat data into one object like axes
 	HatBindstrings := {}
@@ -56,6 +57,13 @@ class _InputThread {
 	SetHotkeyState(state){
 		if (state){
 			Suspend, Off
+			for hwnd, hk in this.BindingHKs {
+				if (hk.__value.Type = 2 && GetKeyState(this.Bindings[hwnd])){
+					; joystick button - check if button already down
+					; Add to list of held buttons, so up event will fire
+					this.HeldButtons[this.Bindings[hwnd]] := hk
+				}
+			}
 			if (MouseDeltaMappings != {})
 				this.RegisterMouse()
 		} else {
@@ -128,6 +136,7 @@ class _InputThread {
 				}
 			}
 			this.Bindings[hwnd] := hkstring
+			this.BindingHKs[hwnd] := hk
 			;OutputDebug % "Binding " hkstring
 			fn := this.InputEvent.Bind(this, hk, 1)
 			hotkey, % hkstring, % fn, On
