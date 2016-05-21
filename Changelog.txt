@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.13 - ????
+0.0.13 - 21st May 2016
 ! INI (Settings) file format changed. UCR will attempt to upgrade for you.
   YOU ARE ADVISED TO BACK UP YOUR UCR.INI BEFORE RUNNING THIS VERSION.
   If you have problems, please post on the forums.
