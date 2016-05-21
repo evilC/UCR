@@ -9,8 +9,8 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.12"				; The version of the main application
-	SettingsVersion := "0.0.3"		; The version of the settings file format
+	Version := "0.0.13"				; The version of the main application
+	SettingsVersion := "0.0.4"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
@@ -27,7 +27,7 @@ Class UCRMain {
 	SIDE_PANEL_WIDTH := 100			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
-	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
+	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
 	CurrentPos := {x: "", y: ""}										; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
@@ -248,7 +248,13 @@ Class UCRMain {
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
-		this._ProfileToolbox.SelectProfileByID(id)
+		; I no longer use the default selection box, as it changes appearance when focus is lost.
+		;this._ProfileToolbox.SelectProfileByID(id)
+		
+		; Show which profiles are loaded
+		this._ProfileToolbox.ResetProfileColours()
+		this._ProfileToolbox.SetProfileColour(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+		this._ProfileToolbox.SetProfileColour(1, {fore: 0x0, back: 0x00ff00})
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
@@ -262,6 +268,7 @@ Class UCRMain {
 			if (this.Profiles[profile]._InputThread = 0){
 				this._SetProfileInputThreadState(profile,1)
 			}
+			this._ProfileToolbox.SetProfileColour(profile, {fore: 0x0, back: 0x00bfff})
 		}
 		
 		; Save settings
@@ -417,11 +424,7 @@ Class UCRMain {
 	; Creates a new profile and assigns it a unique ID, if needed.
 	_CreateProfile(name, id := 0, parent := 0){
 		if (id = 0){
-			Loop {
-				;id := A_NOW
-				Random, id, 3, 2147483647
-				;Sleep 10
-			} until !IsObject(this.ProfileIDs[id])
+			id := this.CreateGUID()
 		}
 		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile
@@ -574,11 +577,7 @@ Class UCRMain {
 				} else if (name = "default"){
 					id := 2
 				} else {
-					Loop {
-						;id := A_NOW
-						Random, id, 3, 2147483647
-						;Sleep 10
-					} until (!ObjHasKey(obj.Profiles, id))
+					id := this.CreateGUID()
 					obj.ProfileTree[0].push(id)
 				}
 				profile.id := id
@@ -592,6 +591,24 @@ Class UCRMain {
 		if (obj.SettingsVersion = "0.0.2"){
 			obj.CurrentSize.w := this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH
 			obj.SettingsVersion := "0.0.3"
+		}
+		
+		if (obj.SettingsVersion = "0.0.3"){
+			for id, profile in obj.Profiles {
+				oldplugins := profile.Plugins.clone()
+				oldorder := profile.PluginOrder
+				profile.Plugins := {}
+				profile.PluginOrder := []
+				Loop % oldorder.length() {
+					name := oldorder[A_Index]
+					plugin := oldplugins[name]
+					plugin.name := name
+					id := this.CreateGUID()
+					profile.Plugins[id] := plugin
+					profile.PluginOrder.push(id)
+				}
+			}
+			obj.SettingsVersion := "0.0.4"
 		}
 		; Default to making no changes
 		return obj
@@ -693,6 +710,18 @@ Class UCRMain {
 		return (ErrorLevel ? 0 : name)
 	}
 	
+	; By jNizM - https://autohotkey.com/boards/viewtopic.php?f=6&t=4732&p=87497#p87497
+	CreateGUID(){
+		VarSetCapacity(foo_guid, 16, 0)
+		if !(DllCall("ole32.dll\CoCreateGuid", "Ptr", &foo_guid))
+		{
+			VarSetCapacity(tmp_guid, 38 * 2 + 1)
+			DllCall("ole32.dll\StringFromGUID2", "Ptr", &foo_guid, "Ptr", &tmp_guid, "Int", 38 + 1)
+			fin_guid := StrGet(&tmp_guid, "UTF-16")
+		}
+		return SubStr(fin_guid, 2, 36)
+	}
+
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {SettingsVersion: this.SettingsVersion
@@ -728,6 +757,7 @@ Class UCRMain {
 ; =================================================================== MAIN PROFILE SELECT / ADD ==========================================================
 ; The main tool that the user uses to change profile, add / remove / rename / re-order profiles etc
 class _ProfileToolbox extends _ProfileSelect {
+	ProfileColours := {}
 	__New(){
 		base.__New()
 		Gui, Add, Button, xm w30 hwndhAdd y110 aya aw1/2, Add
@@ -748,10 +778,13 @@ class _ProfileToolbox extends _ProfileSelect {
 
 		this.DragMidFn := this.Treeview_Dragging.Bind(this)
 		this.DragEndFn := this.Treeview_EndDrag.Bind(this)
+		this.MsgFn := this.WM_NOTIFY.Bind(this)
 		
 		Gui, % this.hwnd ":-Caption -Resize"
 		;Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5, Profile Toolbox
-		Gui, % this.hwnd ":Show"
+		Gui, % this.hwnd ":Show", Hide
+		
+		OnMessage(0x4e,this.MsgFn)
 	}
 	
 	AddProfile(childmode){
@@ -772,8 +805,37 @@ class _ProfileToolbox extends _ProfileSelect {
 		UCR.RenameProfile(id)
 	}
 	
+	SetProfileColour(id, cols){
+		this.ProfileColours[this.ProfileIdToLvHandle[id]] := cols
+		WinSet,Redraw,,A
+	}
+	
+	ResetProfileColours(){
+		this.ProfileColours := {}
+	}
+	
+	; Sets colours for treeview items.
+	; ToDo: Move to separate thread
+	; Thanks to Maestrith for working out this technique - https://autohotkey.com/boards/viewtopic.php?f=6&t=2632
+	WM_NOTIFY(Param*){
+		static o_hwndFrom := 0, o_code := 2*A_PtrSize, o_dwDrawStage := 3*A_PtrSize, o_dwItemSpec := 16+(5*A_PtrSize), o_fg := 16+(8*A_PtrSize), o_bg := o_fg+4
+		if (NumGet(Param.2, o_hwndFrom) != this.hTreeview )	; filter messages not for this TreeView
+			return
+		stage := NumGet(Param.2, o_dwDrawStage, "uint")
+		if (stage == 1 && NumGet(Param.2, o_code, "int") == -12)
+			return 0x20 ;sets CDRF_NOTIFYITEMDRAW
+		node := numget(Param.2, o_dwItemSpec, "uint")
+		if (stage == 0x10001 && ObjHasKey(this.ProfileColours, node)){
+			if (this.ProfileColours[node].back)
+				NumPut(this.ProfileColours[node].back,Param.2, o_bg,"int") ;sets the background
+			if (this.ProfileColours[node].fore)
+				NumPut(this.ProfileColours[node].fore,Param.2, o_fg,"int") ;sets the foreground
+		}
+	}
+	
+	; G-label for treeview
 	TV_Event(){
-		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
+		if (A_GuiEvent == "Normal"){
 			newprofile := this.LvHandleToProfileId[A_EventInfo]
 			; ToDo: This seems to trigger twice when changing profile to the last child.
 			; Not a big issue as changing to current profile is ignored by ChangeProfile()
@@ -1324,13 +1386,12 @@ class _BindModeHandler {
 ; The Gui of each plugin appears inside the Gui of this profile.
 Class _Profile {
 	ID := ""				; Unique ID. Set in Ctor
-	Name := ""
-	ParentProfile := 0
-	Plugins := {}
-	PluginOrder := []
-	AssociatedApss := 0
-	_IsGlobal := 0
-	_InputThread := 0
+	Name := ""				; The name the user gave to the profile
+	ParentProfile := 0		; The ID of the parent profile, or 0 if no parent
+	Plugins := {}			; A ID-indexed array of Plugin instances
+	PluginOrder := []		; The order that plugins are listed in
+	_IsGlobal := 0			; 1 if this Profile is Global (Always active)
+	_InputThread := 0		; Holds the handle to the Input Thread, if active
 	_LinkedProfiles := {}	; Profiles with which this one is associated
 	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
 	
@@ -1465,13 +1526,14 @@ Class _Profile {
 		name := this._GetUniqueName(plugin)
 		if (name = 0)
 			return
-		this.PluginOrder.push(name)
-		this.Plugins[name] := new %plugin%(this, name)
-		this.Plugins[name].Type := plugin
+		id := UCR.CreateGUID()
+		this.PluginOrder.push(id)
+		this.Plugins[id] := new %plugin%(id, name, this)
+		this.Plugins[id].Type := plugin
 		this._LayoutPlugin()
 		UCR._ProfileChanged(this)
-		if (IsFunc(this.Plugins[name, "OnActive"]))
-			this.Plugins[name].OnActive()
+		if (IsFunc(this.Plugins[id, "OnActive"]))
+			this.Plugins[id].OnActive()
 	}
 	
 	; Layout a plugin.
@@ -1481,7 +1543,7 @@ Class _Profile {
 				,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO),fMask:4})
 		GetScrollInfo(this.hwnd,true,scroll[])
 		i := (index = -1 ? this.PluginOrder.length() : index)
-		name := this.PluginOrder[i]
+		id := this.PluginOrder[i]
 		y := 0
 		if (i > 1){
 			ControlGetPos,,wy,,,,% "ahk_id " this.hwnd
@@ -1490,8 +1552,8 @@ Class _Profile {
 			y += h - wy
 		}
 		y += 5 - (index=-1 ? 0 : scroll.nPos)
-		Gui, % this.Plugins[name].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
-		ControlGetPos, , , , h, , % "ahk_id " this.Plugins[name].hFrame
+		Gui, % this.Plugins[id].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
+		ControlGetPos, , , , h, , % "ahk_id " this.Plugins[id].hFrame
 		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
 	}
 	
@@ -1521,7 +1583,7 @@ Class _Profile {
 		Gui, % plugin.hwnd ":Destroy"
 		Gui, % plugin.hFrame ":Destroy"
 		Loop % this.PluginOrder.length(){
-			if (this.PluginOrder[A_Index] = plugin.name){
+			if (this.PluginOrder[A_Index] = plugin.id){
 				this.PluginOrder.RemoveAt(A_Index)
 				break
 			}
@@ -1529,24 +1591,30 @@ Class _Profile {
 		
 		ControlGetPos, , , , height_spacer, ,% "ahk_id " this.hSpacer
 		GuiControl, Move, % this.hSpacer, % "h" height_spacer - height_frame
-		this.Plugins.Delete(plugin.name)
+		this.Plugins.Delete(plugin.id)
 		this._PluginChanged(plugin)
 		this._LayoutPlugins()
 	}
 	
-	; Obtain a profiel-unique name for the plugin
+	; Obtain a profile-unique name for the plugin, with a suggestion
+	; Name param is the base from which suggestions are generated
+	; eg passing "MyPlugin" would suggest "MyPlugin 1"
 	_GetUniqueName(name){
 		name .= " "
 		num := 1
-		while (ObjHasKey(this.Plugins, name num)){
-			num++
+		Loop {
+			this_name := name num
+			if (this._IsNameUnique(this_name))
+				break
+			else
+				num++
 		}
-		name := name num
+		name := this_name
 		prompt := "Enter a name for the Plugin"
 		Loop {
 			InputBox, name, Add Plugin, % prompt, ,,130,,,,, % name
 			if (!ErrorLevel){
-				if (ObjHasKey(this.Plugins, Name)){
+				if (!this._IsNameUnique(name)){
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {
@@ -1558,14 +1626,24 @@ Class _Profile {
 		}
 	}
 	
+	; Returns true if no profile has the name that was passed
+	_IsNameUnique(name){
+		for id, plugin in this.Plugins {
+			if (plugin.Name = name){
+				return 0
+			}
+		}
+		return 1
+	}
+
 	; Save the profile to disk
 	_Serialize(){
 		obj := {Name: this.Name}
 		obj.ParentProfile := this.ParentProfile
 		obj.Plugins := {}
 		obj.PluginOrder := this.PluginOrder
-		for name, plugin in this.Plugins {
-			obj.Plugins[name] := plugin._Serialize()
+		for id, plugin in this.Plugins {
+			obj.Plugins[id] := plugin._Serialize()
 		}
 		return obj
 	}
@@ -1574,18 +1652,18 @@ Class _Profile {
 	_Deserialize(obj){
 		this.ParentProfile := obj.ParentProfile
 		Loop % obj.PluginOrder.length() {
-			name := obj.PluginOrder[A_Index]
-			this.PluginOrder.push(name)
-			plugin := obj.Plugins[name]
+			id := obj.PluginOrder[A_Index]
+			this.PluginOrder.push(id)
+			plugin := obj.Plugins[id]
 			cls := plugin.Type
 			if (!IsObject(%cls%)){
 				msgbox % "Plugin class " cls " not found - removing from profile """ this.Name """"
 				this.PluginOrder.Pop()
-				obj.Plugins.Delete(name)
+				obj.Plugins.Delete(id)
 				continue
 			}
-			this.Plugins[name] := new %cls%(this, name)
-			this.Plugins[name]._Deserialize(plugin)
+			this.Plugins[id] := new %cls%(id, plugin.name, this)
+			this.Plugins[id]._Deserialize(plugin)
 			this._LayoutPlugin()
 		}
 	}
@@ -1602,6 +1680,7 @@ Class _Profile {
 Class _Plugin {
 	Type := "_Plugin"			; The class of the plugin
 	ParentProfile := 0			; Will point to the parent profile
+	ID := 0						; Unique ID for the plugin
 	Name := ""					; The name the user chose for the plugin
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
 	InputButtons := {}			; An associative array, indexed by name, of child Input Buttons (aka Hotkeys)
@@ -1665,8 +1744,9 @@ Class _Plugin {
 	}
 	
 	; === Private ===
-	__New(parent, name){
+	__New(id, name, parent){
 		this.ParentProfile := parent
+		this.ID := id
 		this.Name := name
 		this._CreateGui()
 		this.Init()
@@ -1712,7 +1792,7 @@ Class _Plugin {
 	
 	; Save plugin to disk
 	_Serialize(){
-		obj := {Type: this.Type}
+		obj := {Type: this.Type, name: this.Name}
 		Loop % this._SerializeList.length(){
 			key := this._SerializeList[A_Index]
 			obj[key] := {}
