@@ -248,12 +248,13 @@ Class UCRMain {
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
+		; I no longer use the default selection box, as it changes appearance when focus is lost.
 		;this._ProfileToolbox.SelectProfileByID(id)
 		
 		; Show which profiles are loaded
 		this._ProfileToolbox.ResetProfileColours()
-		this._ProfileToolbox.SetProfileColour(id, 0x00ff00)
-		;this._ProfileToolbox.SetProfileColour(1, 0x00cc00)
+		this._ProfileToolbox.SetProfileColour(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+		this._ProfileToolbox.SetProfileColour(1, {fore: 0x0, back: 0x00ff00})
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
@@ -267,7 +268,7 @@ Class UCRMain {
 			if (this.Profiles[profile]._InputThread = 0){
 				this._SetProfileInputThreadState(profile,1)
 			}
-			this._ProfileToolbox.SetProfileColour(profile, 0x00bfff)
+			this._ProfileToolbox.SetProfileColour(profile, {fore: 0x0, back: 0x00bfff})
 		}
 		
 		; Save settings
@@ -804,8 +805,8 @@ class _ProfileToolbox extends _ProfileSelect {
 		UCR.RenameProfile(id)
 	}
 	
-	SetProfileColour(id, col){
-		this.ProfileColours[this.ProfileIdToLvHandle[id]] := col
+	SetProfileColour(id, cols){
+		this.ProfileColours[this.ProfileIdToLvHandle[id]] := cols
 		WinSet,Redraw,,A
 	}
 	
@@ -813,20 +814,28 @@ class _ProfileToolbox extends _ProfileSelect {
 		this.ProfileColours := {}
 	}
 	
+	; Sets colours for treeview items.
+	; ToDo: Move to separate thread
+	; Thanks to Maestrith for working out this technique - https://autohotkey.com/boards/viewtopic.php?f=6&t=2632
 	WM_NOTIFY(Param*){
-		if (NumGet(Param.2) != this.hTreeview)	; filter messages not for this treeview
+		static o_hwndFrom := 0, o_code := 2*A_PtrSize, o_dwDrawStage := 3*A_PtrSize, o_dwItemSpec := 16+(5*A_PtrSize), o_fg := 16+(8*A_PtrSize), o_bg := o_fg+4
+		if (NumGet(Param.2, o_hwndFrom) != this.hTreeview )	; filter messages not for this TreeView
 			return
-		node := numget(Param.2,A_PtrSize=4?9*A_PtrSize:7*A_PtrSize,"uint")
-		stage:=NumGet(Param.2,3*A_PtrSize,"uint")
-		if (stage=1)
+		stage := NumGet(Param.2, o_dwDrawStage, "uint")
+		if (stage == 1 && NumGet(Param.2, o_code, "int") == -12)
 			return 0x20 ;sets CDRF_NOTIFYITEMDRAW
-		if (ObjHasKey(this.ProfileColours, node)){
-			NumPut(this.ProfileColours[node],Param.2,A_PtrSize=4?13*A_PtrSize:10.5*A_PtrSize,"int") ;sets the background
+		node := numget(Param.2, o_dwItemSpec, "uint")
+		if (stage == 0x10001 && ObjHasKey(this.ProfileColours, node)){
+			if (this.ProfileColours[node].back)
+				NumPut(this.ProfileColours[node].back,Param.2, o_bg,"int") ;sets the background
+			if (this.ProfileColours[node].fore)
+				NumPut(this.ProfileColours[node].fore,Param.2, o_fg,"int") ;sets the foreground
 		}
 	}
 	
+	; G-label for treeview
 	TV_Event(){
-		if (A_GuiEvent == "Normal" || A_GuiEvent == "S"){
+		if (A_GuiEvent == "Normal"){
 			newprofile := this.LvHandleToProfileId[A_EventInfo]
 			; ToDo: This seems to trigger twice when changing profile to the last child.
 			; Not a big issue as changing to current profile is ignored by ChangeProfile()
