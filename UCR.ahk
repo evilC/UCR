@@ -168,8 +168,8 @@ Class UCRMain {
 		this.hSidePanel := hwnd
 		Gui % this.hSidePanel ":-Caption"
 		Gui % this.hSidePanel ":Margin", 0, 0
-		
-		Gui, % this.hSidePanel ":Add", Gui, % "x0 y0 aw ah", % this._ProfileToolbox.hwnd
+		Gui, % this.hSidePanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Profile ToolBox
+		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah", % this._ProfileToolbox.hwnd
 		Gui % this.hSidePanel ":Show", Hide
 		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
 

@@ -18,6 +18,7 @@ Key:
 = Up event for joystick buttons should now properly trigger...
   ... when entering a profile with the button already held.
 + UCR should now wait until done saving if you close the GUI mid-save.
++ Profile Toolbox now has a title in the GUI
 
 0.0.12 - 17th May 2016
 + The Profile Toolbox is now integrated into the rest of the UI
