@@ -59,8 +59,7 @@ class _InputThread {
 			Suspend, Off
 			for hwnd, hk in this.BindingHKs {
 				if (hk.__value.Type = 2 && GetKeyState(this.Bindings[hwnd])){
-					; joystick button - check if button already down
-					; Add to list of held buttons, so up event will fire
+					; mapped joystick button is held, add to list of held buttons, so up event will fire
 					this.HeldButtons[this.Bindings[hwnd]] := hk
 				}
 			}
