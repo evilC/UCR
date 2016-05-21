@@ -12,6 +12,8 @@ Key:
   This does not affect anything now, but it is an enabler for future features.
   eg: Renaming of plugins, moving plugins between profiles, inter-plugin communication.
 = All IDs (Profile and Plugin) are now GUIDs generated via windows APIs
++ Status of Input Threads is now show in the Profile Toolbox.
+  Blue = current profile, Green = active (eg global), Amber = Loaded but paused
 
 0.0.12 - 17th May 2016
 + The Profile Toolbox is now integrated into the rest of the UI
