@@ -231,14 +231,7 @@ Class UCRMain {
 				this.CurrentProfile._DeActivate()
 			}
 			
-			; Stop the InputThread of any profiles that are no longer linked
-			; _ActiveInputThreads may be modified by this operation, so iterate a cloned version.
-			activethreads := this._ActiveInputThreads.clone()
-			for profile, state in activethreads {
-				if (! (profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(newprofile._LinkedProfiles, profile))){
-					this._SetProfileInputThreadState(profile,0)
-				}
-			}
+			this.StopThreadsNotLinkedToProfileId(this.CurrentProfile.id)
 		} else {
 			OutputDebug % "UCR| Changing Profile for first time to: " newprofile.Name
 		}
@@ -263,6 +256,29 @@ Class UCRMain {
 		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
 		
+		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
+		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
+		
+		; Save settings
+		if (save){
+			this._ProfileChanged(this.CurrentProfile)
+		}
+		return 1
+	}
+	
+	StopThreadsNotLinkedToProfileId(id){
+		; Stop the InputThread of any profiles that are no longer linked
+		; _ActiveInputThreads may be modified by this operation, so iterate a cloned version.
+		activethreads := this._ActiveInputThreads.clone()
+		for profile, state in activethreads {
+			if (! (profile == id || profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(this.Profiles[id]._LinkedProfiles, profile))){
+				this._SetProfileInputThreadState(profile,0)
+				this._ProfileToolbox.UnSetProfileColour(profile)
+			}
+		}
+	}
+	
+	StartThreadsLinkedToProfileId(id){
 		; Start the InputThreads for any linked profiles
 		for profile, state in this.CurrentProfile._LinkedProfiles {
 			if (this.Profiles[profile]._InputThread = 0){
@@ -270,12 +286,12 @@ Class UCRMain {
 			}
 			this._ProfileToolbox.SetProfileColour(profile, {fore: 0x0, back: 0x00bfff})
 		}
-		
-		; Save settings
-		if (save){
-			this._ProfileChanged(this.CurrentProfile)
-		}
-		return 1
+	}
+	
+	ProfileLinksChanged(){
+		this.StopThreadsNotLinkedToProfileId(this.CurrentProfile.id)
+		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
+		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 	}
 	
 	UpdateCurrentProfileReadout(){
@@ -807,7 +823,10 @@ class _ProfileToolbox extends _ProfileSelect {
 	
 	SetProfileColour(id, cols){
 		this.ProfileColours[this.ProfileIdToLvHandle[id]] := cols
-		WinSet,Redraw,,A
+	}
+
+	UnSetProfileColour(id){
+		this.ProfileColours.Delete(this.ProfileIdToLvHandle[id])
 	}
 	
 	ResetProfileColours(){
@@ -1427,6 +1446,7 @@ Class _Profile {
 				}
 			}
 		}
+		UCR.ProfileLinksChanged()
 	}
 	
 	; Starts the "Input Thread" which handles detection of input for this profile
