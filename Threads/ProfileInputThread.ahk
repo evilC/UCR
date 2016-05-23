@@ -46,9 +46,13 @@ class _InputThread {
 		; ToDo: Fix bug - The below line seems to be firing with empty event - even when no keys are pressed.
 		this.Callback.Call(hk._Ptr,event)
 		
+		keys := hk.__value
 		; Simulate up events for joystick buttons
-		if (hk.__value.Type = 2){
+		if (keys.Type = 2){
 			this.HeldButtons[this.Bindings[hk.hwnd]] := hk
+		} else if (keys.Type = 1 && (keys.Buttons[1].code >= 156 && keys.Buttons[1].code <= 159)){
+			; Simulate up events for mouse wheel
+			this.Callback.Call(hk._Ptr,0)
 		}
 	}
 
