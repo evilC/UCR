@@ -1318,8 +1318,10 @@ class _BindModeHandler {
 		
 		Gui, new, +HwndHwnd
 		Gui +ToolWindow -Border
+		Gui, Font, S15
+		Gui, Color, Red
 		this.hBindModePrompt := hwnd
-		Gui, Add, Text, Center, Press the button(s) you wish to bind to this input.`n`nBind Mode will end when you release a key.
+		Gui, Add, Text, Center, Press the button(s) you wish to bind to this control.`n`nBind Mode will end when you release a key.
 	}
 	
 	StartBindMode(hk, callback){
