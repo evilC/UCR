@@ -745,6 +745,19 @@ Class UCRMain {
 		return SubStr(fin_guid, 2, 36)
 	}
 
+	; Positions the specified window in the middle of the UCR GUI
+	MoveWindowToCenterOfGui(hwnd){
+		if (!WinExist("ahk_id " hwnd))
+			return
+		WinGetPos, cx, cy, cw, ch, % "ahk_id " hwnd
+		WinGetPos, ux, uy, uw, uh, % "ahk_id " this.hwnd
+		ux_mid := ux + (uw / 2), uy_mid := uy + (uh / 2)
+		ox := (cw >= uw ? ux : (ux_mid - (cw / 2)))
+		oy := (ch >= uh ? uy : (uy_mid - (ch / 2)))
+		;Gui, % hwnd ":Show", % "x" ox " y" oy
+		WinMove, % "ahk_id " hwnd,, ox, oy
+	}
+	
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {SettingsVersion: this.SettingsVersion
@@ -1327,6 +1340,7 @@ class _BindModeHandler {
 	SetHotkeyState(state, enablejoystick := 1){
 		if (state){
 			Gui, % this.hBindModePrompt ":Show"
+			UCR.MoveWindowToCenterOfGui(this.hBindModePrompt)
 		} else {
 			Gui, % this.hBindModePrompt ":Hide"
 		}
