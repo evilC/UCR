@@ -252,9 +252,9 @@ Class UCRMain {
 		this._ProfileToolbox.SelectProfileByID(id)
 		
 		; Show which profiles are loaded
-		this._ProfileToolbox.ResetProfileColours()
-		this._ProfileToolbox.SetProfileColour(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
-		this._ProfileToolbox.SetProfileColour(1, {fore: 0x0, back: 0x00ff00})
+		this._ProfileToolbox.ResetProfileColors()
+		this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
@@ -280,7 +280,7 @@ Class UCRMain {
 		for profile, state in activethreads {
 			if (! (profile == id || profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(this.Profiles[id]._LinkedProfiles, profile))){
 				this._SetProfileInputThreadState(profile,0)
-				this._ProfileToolbox.UnSetProfileColour(profile)
+				this._ProfileToolbox.UnSetProfileColor(profile)
 			}
 		}
 	}
@@ -291,7 +291,7 @@ Class UCRMain {
 			if (this.Profiles[profile]._InputThread = 0){
 				this._SetProfileInputThreadState(profile,1)
 			}
-			this._ProfileToolbox.SetProfileColour(profile, {fore: 0x0, back: 0x00bfff})
+			this._ProfileToolbox.SetProfileColor(profile, {fore: 0x0, back: 0x00bfff})
 		}
 	}
 	
@@ -793,7 +793,7 @@ Class UCRMain {
 ; =================================================================== MAIN PROFILE SELECT / ADD ==========================================================
 ; The main tool that the user uses to change profile, add / remove / rename / re-order profiles etc
 class _ProfileToolbox extends _ProfileSelect {
-	ProfileColours := {}
+	ProfileColors := {}
 	__New(){
 		base.__New()
 		Gui, Add, Button, xm w30 hwndhAdd y110 aya aw1/2, Add
@@ -841,19 +841,19 @@ class _ProfileToolbox extends _ProfileSelect {
 		UCR.RenameProfile(id)
 	}
 	
-	SetProfileColour(id, cols){
-		this.ProfileColours[this.ProfileIdToLvHandle[id]] := cols
+	SetProfileColor(id, cols){
+		this.ProfileColors[this.ProfileIdToLvHandle[id]] := cols
 	}
 
-	UnSetProfileColour(id){
-		this.ProfileColours.Delete(this.ProfileIdToLvHandle[id])
+	UnSetProfileColor(id){
+		this.ProfileColors.Delete(this.ProfileIdToLvHandle[id])
 	}
 	
-	ResetProfileColours(){
-		this.ProfileColours := {}
+	ResetProfileColors(){
+		this.ProfileColors := {}
 	}
 	
-	; Sets colours for treeview items.
+	; Sets colors for treeview items.
 	; ToDo: Move to separate thread
 	; Thanks to Maestrith for working out this technique - https://autohotkey.com/boards/viewtopic.php?f=6&t=2632
 	WM_NOTIFY(Param*){
@@ -864,11 +864,11 @@ class _ProfileToolbox extends _ProfileSelect {
 		if (stage == 1 && NumGet(Param.2, o_code, "int") == -12)
 			return 0x20 ;sets CDRF_NOTIFYITEMDRAW
 		node := numget(Param.2, o_dwItemSpec, "uint")
-		if (stage == 0x10001 && ObjHasKey(this.ProfileColours, node)){
-			if (this.ProfileColours[node].back)
-				NumPut(this.ProfileColours[node].back,Param.2, o_bg,"int") ;sets the background
-			if (this.ProfileColours[node].fore)
-				NumPut(this.ProfileColours[node].fore,Param.2, o_fg,"int") ;sets the foreground
+		if (stage == 0x10001 && ObjHasKey(this.ProfileColors, node)){
+			if (this.ProfileColors[node].back)
+				NumPut(this.ProfileColors[node].back,Param.2, o_bg,"int") ;sets the background
+			if (this.ProfileColors[node].fore)
+				NumPut(this.ProfileColors[node].fore,Param.2, o_fg,"int") ;sets the foreground
 		}
 	}
 	
