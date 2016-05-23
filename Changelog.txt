@@ -4,6 +4,11 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.14 - ????
+= Bindings to Mouse Wheel now properly simulate the up (release) event.
+  Without this, if you remap mouse wheel to a key, that key is never released
++ All pop-up windows / dialogs now appear in the center of the GUI.
+
 0.0.13 - 21st May 2016
 ! INI (Settings) file format changed. UCR will attempt to upgrade for you.
   YOU ARE ADVISED TO BACK UP YOUR UCR.INI BEFORE RUNNING THIS VERSION.
