@@ -1101,6 +1101,7 @@ class _ProfilePicker extends _ProfileSelect {
 		this.BuildProfileTree()
 		this.SelectProfileByID(currentprofile)
 		Gui, % this.hwnd ":Show", % "x" x - 110 " y" y - 5 " w200 h200", Profile Picker
+		UCR.MoveWindowToCenterOfGui(this.hwnd)
 	}
 }
 
@@ -2583,6 +2584,7 @@ Class _OutputButton extends _InputButton {
 	; Present a menu to allow the user to select vJoy output
 	_SelectvJoy(){
 		Gui, % this.hVjoySelect ":Show"
+		UCR.MoveWindowToCenterOfGui(this.hVjoySelect)
 		dev := this.__value.Buttons[1].DeviceId + 1
 		GuiControl, % this.hVjoySelect ":Choose", % this.hVjoyDevice, % dev
 		if (this.__value.Buttons[1].Type >= 3){
