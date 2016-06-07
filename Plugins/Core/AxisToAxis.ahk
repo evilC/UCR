@@ -14,7 +14,8 @@ class AxisToAxis extends _Plugin {
 		Gui, Add, Text, % "x+5 yp w40 Center", Invert
 		Gui, Add, Text, % "x+5 yp w40 Center", Deadzone
 		Gui, Add, Text, % "x+5 yp w40 Center", Sensitivity
-		Gui, Add, Text, % "x+5 yp w125 Center", Output Virtual Axis
+		Gui, Add, Text, % "x+5 yp w30 Center", Linear
+		Gui, Add, Text, % "x+10 yp w125 Center", Output Virtual Axis
 		Gui, Add, Text, % "x+5 yp w100 Center", Output Preview
 		
 		this.AddInputAxis("InputAxis", 0, this.MyInputChangedState.Bind(this), "xm w125")
@@ -25,7 +26,8 @@ class AxisToAxis extends _Plugin {
 		Gui, Add, Text, % "x+0 yp+3", `%
 		this.AddControl("Sensitivity", 0, "Edit", "x+10 yp-3 w30", "100")
 		Gui, Add, Text, % "x+0 yp+3", `%
-		this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+15 yp-3 w125")
+		this.AddControl("Linear", 0, "Checkbox", "x+18 yp w30")
+		this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
 		this.hSliderOut := hwnd
 	}
@@ -47,7 +49,11 @@ class AxisToAxis extends _Plugin {
 				value := StickOps.Deadzone(value, this.GuiControls.Deadzone.value)
 			}
 			if (this.GuiControls.Sensitivity.value){
-				value := StickOps.Sensitivity(value, this.GuiControls.Sensitivity.value)
+				if (this.GuiControls.Linear.value)
+					value *= (this.GuiControls.Sensitivity.value / 100)
+				else
+					value := StickOps.Sensitivity(value, this.GuiControls.Sensitivity.value)
+				
 			}
 			if (this.GuiControls.Invert.value){
 				value := StickOps.Invert(value)
