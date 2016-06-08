@@ -347,7 +347,7 @@ Class UCRMain {
 	_InputEvent(ipt, state){
 		for hwnd, cb in this._InputActivitySubscriptions {
 			if (IsObject(cb))
-				cb.Call()
+				cb.Call(ipt, state)
 		}
 	}
 
@@ -2935,6 +2935,7 @@ class _Button {
 
 ; ======================================================================== AXIS ===============================================================
 class _Axis {
+	Type := 4	; Axis Type
 	DeviceID := 0
 	Axis := 0
 }
