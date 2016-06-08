@@ -8,8 +8,8 @@ Will then listen for activity and return to the parent profile...
 */
 
 ; All plugins must derive from the _Plugin class
-class OneSwitchPulse extends _Plugin {
-	Type := "OneSwitch Pulse"
+class OneSwitchProfileSwitcher extends _Plugin {
+	Type := "OneSwitch Profile Switcher"
 	Description := "Profile switcher for use by disabled OneSwitch users. Add to Global profile"
 	; The Init() method of a plugin is called when one is added. Use it to create your Gui etc
 	Init(){
