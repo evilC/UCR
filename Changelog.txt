@@ -10,6 +10,7 @@ Key:
 = You can now control multiple vJoy sticks properly.
   Previously, UCR would only control one stick at a time, resulting in weird behaviour.
 + All pop-up windows / dialogs now appear in the center of the GUI.
+= Numpad Enter is now bindable
 
 0.0.13 - 21st May 2016
 ! INI (Settings) file format changed. UCR will attempt to upgrade for you.
