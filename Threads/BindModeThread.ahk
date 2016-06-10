@@ -54,9 +54,9 @@ class _BindMapper {
 		Loop 256 {
 			; Get the key name
 			i := A_Index
-			code := Format("{:x}", A_Index)
-			if (ObjHasKey(replacements, A_Index)){
-				n := replacements[A_Index]
+			code := Format("{:x}", i)
+			if (ObjHasKey(replacements, i)){
+				n := replacements[i]
 			} else {
 				n := GetKeyName("vk" code)
 			}
