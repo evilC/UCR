@@ -40,6 +40,12 @@ class _BindMapper {
 		}
 	}
 	
+	; Binds a key to every key on the keyboard and mouse
+	; Passes VK codes to GetKeyName() to obtain names for all keys
+	; List of VKs: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+	; Keys are stored in the settings file by VK number, not by name.
+	; AHK returns non-standard names for some VKs, these are patched to Standard values
+	; Numpad Enter appears to have no VK, it is synonymous with Enter (VK0xD). Seeing as VKs 0xE to 0xF are Undefined by MSDN, we use 0xE for Numpad Enter.
 	CreateHotkeys(){
 		static replacements := {33: "PgUp", 34: "PgDn", 35: "End", 36: "Home", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 45: "Insert", 46: "Delete"}
 		static pfx := "$*"
@@ -63,7 +69,12 @@ class _BindMapper {
 				hotkey, % pfx blk n updown[A_Index].s, % fn, % "On"
 			}
 		}
-		
+		i := 14, n := "NumpadEnter"	; Use 0xE for Nupad Enter
+		Loop 2 {
+			blk := this.DebugMode = 2 || (this.DebugMode = 1 && i <= 2) ? "~" : ""
+			fn := this.HotkeyEvent.Bind(this, updown[A_Index].e, 1, i, 0)
+			hotkey, % pfx blk n updown[A_Index].s, % fn, % "On"
+		}
 		; Cycle through all Joystick Buttons
 		Loop 8 {
 			j := A_Index

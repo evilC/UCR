@@ -2896,9 +2896,12 @@ class _Button {
 	; Builds the AHK key name
 	BuildKeyName(){
 		static replacements := {33: "PgUp", 34: "PgDn", 35: "End", 36: "Home", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 45: "Insert", 46: "Delete"}
+		static additions := {14: "NumpadEnter"}
 		if this.Type = 1 {
 			if (ObjHasKey(replacements, this.Code)){
 				return replacements[this.Code]
+			} else if (ObjHasKey(additions, this.Code)){
+				return additions[this.Code]
 			} else {
 				code := Format("{:x}", this.Code)
 				return GetKeyName("vk" code)
