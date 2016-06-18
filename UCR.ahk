@@ -10,7 +10,7 @@ return
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
 	Version := "0.0.13"				; The version of the main application
-	SettingsVersion := "0.0.4"		; The version of the settings file format
+	SettingsVersion := "0.0.5"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
@@ -256,6 +256,7 @@ Class UCRMain {
 		this._ProfileToolbox.ResetProfileColors()
 		this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
 		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
+		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
@@ -294,6 +295,11 @@ Class UCRMain {
 			}
 			this._ProfileToolbox.SetProfileColor(profile, {fore: 0x0, back: 0x00bfff})
 		}
+	}
+	
+	SetProfileInheritsState(id, state){
+		this.profiles[id].InheritsFromParent := state
+		this._SaveSettings()
 	}
 	
 	ProfileLinksChanged(){
@@ -634,6 +640,12 @@ Class UCRMain {
 			}
 			obj.SettingsVersion := "0.0.4"
 		}
+		if (obj.SettingsVersion = "0.0.4"){
+			for id, profile in obj.Profiles {
+				profile.InheritsFromParent := 0
+			}
+			obj.SettingsVersion := "0.0.5"
+		}
 		; Default to making no changes
 		return obj
 	}
@@ -797,11 +809,16 @@ class _ProfileToolbox extends _ProfileSelect {
 	ProfileColors := {}
 	__New(){
 		base.__New()
-		Gui, Add, Button, xm w30 hwndhAdd y110 aya aw1/2, Add
+		Gui, Add, CheckBox, xm y110 aya hwndhInherits, Inherits from parent
+		this.hInheritsFromParent := hInherits
+		fn := this.InheritToggled.Bind(this)
+		GuiControl +g, % hInherits, % fn
+		
+		Gui, Add, Button, xm w30 hwndhAdd y130 aya aw1/2, Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w60 hwndhAdd y110 aya axa aw1/2, Add Child
+		Gui, Add, Button, x+5 w60 hwndhAdd y130 aya axa aw1/2, Add Child
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
@@ -824,6 +841,12 @@ class _ProfileToolbox extends _ProfileSelect {
 		OnMessage(0x4e,this.MsgFn)
 	}
 	
+	InheritToggled(){
+		GuiControlGet, state, , % this.hInheritsFromParent
+		id := this.ProfileIDOfSelection()
+		UCR.SetProfileInheritsState(id, state)
+	}
+	
 	AddProfile(childmode){
 		if (childmode)
 			parent := this.ProfileIDOfSelection()
@@ -840,6 +863,10 @@ class _ProfileToolbox extends _ProfileSelect {
 	RenameProfile(){
 		id := this.ProfileIDOfSelection()
 		UCR.RenameProfile(id)
+	}
+	
+	SetProfileInherit(state){
+		GuiControl, , % this.hInheritsFromParent, % state
 	}
 	
 	SetProfileColor(id, cols){
@@ -1438,6 +1465,7 @@ Class _Profile {
 	_InputThread := 0		; Holds the handle to the Input Thread, if active
 	_LinkedProfiles := {}	; Profiles with which this one is associated
 	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
+	InheritsFromParent := 0	
 	
 	__New(id, name, parent){
 		static fn
@@ -1696,6 +1724,7 @@ Class _Profile {
 	_Serialize(){
 		obj := {Name: this.Name}
 		obj.ParentProfile := this.ParentProfile
+		obj.InheritsFromParent := this.InheritsFromParent
 		obj.Plugins := {}
 		obj.PluginOrder := this.PluginOrder
 		for id, plugin in this.Plugins {
@@ -1707,6 +1736,7 @@ Class _Profile {
 	; Load the profile from disk
 	_Deserialize(obj){
 		this.ParentProfile := obj.ParentProfile
+		this.InheritsFromParent := obj.InheritsFromParent
 		Loop % obj.PluginOrder.length() {
 			id := obj.PluginOrder[A_Index]
 			this.PluginOrder.push(id)

@@ -5,6 +5,8 @@ Key:
 + : Added feature
 
 0.0.14 - ????
+! INI (Settings) file format changed to 0.0.5. UCR will attempt to upgrade for you.
+  YOU ARE ADVISED TO BACK UP YOUR UCR.INI BEFORE RUNNING THIS VERSION.
 = Bindings to Mouse Wheel now properly simulate the up (release) event.
   Without this, if you remap mouse wheel to a key, that key is never released
 = You can now control multiple vJoy sticks properly.
@@ -13,7 +15,7 @@ Key:
 = Numpad Enter is now bindable
 
 0.0.13 - 21st May 2016
-! INI (Settings) file format changed. UCR will attempt to upgrade for you.
+! INI (Settings) file format changed to 0.0.4. UCR will attempt to upgrade for you.
   YOU ARE ADVISED TO BACK UP YOUR UCR.INI BEFORE RUNNING THIS VERSION.
   If you have problems, please post on the forums.
 = Plugins are now uniquely identified by IDs.
