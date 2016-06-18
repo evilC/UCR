@@ -240,6 +240,7 @@ Class UCRMain {
 			}
 			
 			this.StopThreadsNotLinkedToProfileId(this.CurrentProfile.id)
+			this.StopThreadsNotLinkedToProfileId(id)
 		} else {
 			OutputDebug % "UCR| Changing Profile for first time to: " newprofile.Name
 		}
