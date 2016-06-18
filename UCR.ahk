@@ -1613,6 +1613,7 @@ Class _Profile {
 			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
 			UCR._SetProfileInputThreadState(this.id,1)
 		}
+		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
 		this._SetHotkeyState(1)
 		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
@@ -1625,6 +1626,7 @@ Class _Profile {
 	
 	; The profile went inactive
 	_DeActivate(){
+		OutputDebug % "UCR| DeActivating input thread for profile # " this.id " (" this.name " )"
 		if (this._InputThread)
 			this._SetHotkeyState(0)
 		Loop % this.PluginOrder.length() {
