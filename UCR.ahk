@@ -32,7 +32,7 @@ Class UCRMain {
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
 	_InputThreadScript := ""		; Set in Ctor
-	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active input threads
+	_LoadedInputThreads := {}		; ProfileID-indexed sparse array of loaded input threads
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	
 	__New(){
@@ -210,10 +210,10 @@ Class UCRMain {
 	; Also maintains a list of the active threads, so they can be managed on profile change
 	_SetProfileInputThreadState(profile, state){
 		if (state){
-			this._ActiveInputThreads[profile] := 1
+			this._LoadedInputThreads[profile] := 1
 			this.Profiles[profile]._StartInputThread()
 		} else {
-			this._ActiveInputThreads.Delete(profile)	; Remove key entirely for "off"
+			this._LoadedInputThreads.Delete(profile)	; Remove key entirely for "off"
 			this.Profiles[profile]._StopInputThread()
 		}
 	}
@@ -227,20 +227,18 @@ Class UCRMain {
 		newprofile := this.Profiles[id]
 		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
-			; Do nothing if we are changing to the currently active profile
-			if (id = this.CurrentProfile.id)
-				return 1
+			;~ ; Do nothing if we are changing to the currently active profile
+			;~ if (id = this.CurrentProfile.id)
+				;~ return 1
 			OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
 			
-			; De-Activate the old profile if it is not Global
-			if (!this.CurrentProfile._IsGlobal){
-				this.CurrentProfile._DeActivate()
-			}
-			
-			this.StopThreadsNotLinkedToProfileId(this.CurrentProfile.id)
+			; Stop threads which are no longer required
 			this.StopThreadsNotLinkedToProfileId(id)
+			
+			; De-Activate profiles which are no longer required
+			this.DeactivatePofilesNotInheritedBy(id)
 		} else {
 			OutputDebug % "UCR| Changing Profile for first time to: " newprofile.Name
 		}
@@ -260,7 +258,8 @@ Class UCRMain {
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
-		this.CurrentProfile._Activate()
+		this.ActivateProfilesInheritedBy(id)
+		;this.CurrentProfile._Activate()
 		
 		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
@@ -275,11 +274,19 @@ Class UCRMain {
 		return 1
 	}
 	
+	ActivateProfilesInheritedBy(id){
+		
+	}
+	
+	DeactivatePofilesNotInheritedBy(id){
+		;if (!this.CurrentProfile._IsGlobal){
+	}
+	
 	StopThreadsNotLinkedToProfileId(id){
 		; Stop the InputThread of any profiles that are no longer linked
-		; _ActiveInputThreads may be modified by this operation, so iterate a cloned version.
-		activethreads := this._ActiveInputThreads.clone()
-		for profile, state in activethreads {
+		; _LoadedInputThreads may be modified by this operation, so iterate a cloned version.
+		loaded_threads := this._LoadedInputThreads.clone()
+		for profile, state in loaded_threads {
 			if (! (profile == id || profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(this.Profiles[id]._LinkedProfiles, profile))){
 				this._SetProfileInputThreadState(profile,0)
 				this._ProfileToolbox.UnSetProfileColor(profile)
