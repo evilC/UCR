@@ -33,6 +33,7 @@ Class UCRMain {
 	_InputActivitySubscriptions := {}
 	_InputThreadScript := ""		; Set in Ctor
 	_LoadedInputThreads := {}		; ProfileID-indexed sparse array of loaded input threads
+	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	
 	__New(){
@@ -258,8 +259,10 @@ Class UCRMain {
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
+		this.CurrentProfile._Activate()
+		
+		; Start running profiles which are inherited
 		this.ActivateProfilesInheritedBy(id)
-		;this.CurrentProfile._Activate()
 		
 		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
@@ -275,32 +278,63 @@ Class UCRMain {
 	}
 	
 	ActivateProfilesInheritedBy(id){
-		
+		if (this.profiles[id].InheritsfromParent){
+			pp_id := this.profiles[id].ParentProfile
+			pp := this.profiles[pp_id]
+			pp._Activate()
+			this._ActiveInputThreads[pp_id] := pp
+			this._ProfileToolbox.SetProfileColor(pp_id, {fore: 0x0, back: 0x00ff00})
+		}
 	}
 	
 	DeactivatePofilesNotInheritedBy(id){
-		;if (!this.CurrentProfile._IsGlobal){
+		for p_id, p in this._ActiveInputThreads {
+			if (p._IsGlobal || (p.InheritsfromParent && p.ParentProfle == id))
+				continue
+			this.profiles[p_id]._Deactivate()
+			this._ActiveInputThreads.Delete(p_id)
+		}
 	}
 	
 	StopThreadsNotLinkedToProfileId(id){
 		; Stop the InputThread of any profiles that are no longer linked
 		; _LoadedInputThreads may be modified by this operation, so iterate a cloned version.
 		loaded_threads := this._LoadedInputThreads.clone()
-		for profile, state in loaded_threads {
-			if (! (profile == id || profile == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, profile) || ObjHasKey(this.Profiles[id]._LinkedProfiles, profile))){
-				this._SetProfileInputThreadState(profile,0)
-				this._ProfileToolbox.UnSetProfileColor(profile)
+		profile := this.Profiles[id]
+		if (profile.InheritsFromParent && profile.ParentProfile){
+			inc_ids := {profile.ParentProfile: 1}
+			for p_id, p in this.profiles[profile.ParentProfile]._LinkedProfiles {
+				inc_ids[p_id] := 1
+			}
+		} else {
+			inc_ids := {}
+		}
+		for p_id, state in loaded_threads {
+			if (! (p_id == id || p_id == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, p_id) || ObjHasKey(this.Profiles[id]._LinkedProfiles, p_id) || ObjHasKey(inc_ids, p_id))){
+				OutputDebug % "UCR| StopThreadsNotLinkedToProfileId stopping thread"
+				this._SetProfileInputThreadState(p_id,0)
+				this._ProfileToolbox.UnSetProfileColor(p_id)
 			}
 		}
 	}
 	
 	StartThreadsLinkedToProfileId(id){
 		; Start the InputThreads for any linked profiles
-		for profile, state in this.CurrentProfile._LinkedProfiles {
-			if (this.Profiles[profile]._InputThread = 0){
-				this._SetProfileInputThreadState(profile,1)
+		profile := this.profiles[id]
+		profile_list := [this.CurrentProfile._LinkedProfiles]
+		if (profile.InheritsFromParent && profile.ParentProfile){
+			profile_list.push(this.profiles[profile.ParentProfile]._LinkedProfiles)
+		}
+		Loop % profile_list.length() {
+			for p_id, state in profile_list[A_Index] {
+				if (p_id = id)
+					continue
+				p := this.Profiles[p_id]
+				if (p._InputThread = 0){
+					this._SetProfileInputThreadState(p_id,1)
+				}
+				this._ProfileToolbox.SetProfileColor(p_id, {fore: 0x0, back: 0x00bfff})
 			}
-			this._ProfileToolbox.SetProfileColor(profile, {fore: 0x0, back: 0x00bfff})
 		}
 	}
 	
