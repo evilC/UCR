@@ -9,7 +9,7 @@ return
 
 ; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain {
-	Version := "0.0.13"				; The version of the main application
+	Version := "0.0.14"				; The version of the main application
 	SettingsVersion := "0.0.5"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
@@ -24,7 +24,7 @@ Class UCRMain {
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	PLUGIN_WIDTH := 680				; The Width of a plugin
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
-	SIDE_PANEL_WIDTH := 100			; The default width of the side panel
+	SIDE_PANEL_WIDTH := 150			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
 	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
@@ -251,7 +251,7 @@ Class UCRMain {
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
 		
-		; Show which profiles are loaded
+		; Clear Profile Toolbox colours and start setting new ones
 		this._ProfileToolbox.ResetProfileColors()
 		this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
 		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
@@ -259,15 +259,17 @@ Class UCRMain {
 		
 		; Start running new profile
 		this._SetProfileInputThreadState(id,1)
-		this.CurrentProfile._Activate()
-		
-		; Start running profiles which are inherited
-		this.ActivateProfilesInheritedBy(id)
+		this.ActivateInputThread(this.CurrentProfile.id)
 		
 		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
 		
+		; Make sure all linked or inherited profiles have active input threads
 		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
+		
+		; Activate profiles which are inherited
+		this.ActivateProfilesInheritedBy(id)
+		
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 		
 		; Save settings
@@ -277,22 +279,34 @@ Class UCRMain {
 		return 1
 	}
 	
+	ActivateInputThread(id){
+		profile := this.profiles[id]
+		;OutputDebug % "UCR| Activating " id " (" profile.name ")"
+		profile._Activate()
+		this._ActiveInputThreads[id] := profile
+	}
+	
+	DeActivateInputThread(id){
+		profile := this.profiles[id]
+		;OutputDebug % "UCR| Deactivating " id " (" profile.name ")"
+		profile._DeActivate()
+		this._ActiveInputThreads.Delete(id)
+	}
+	
 	ActivateProfilesInheritedBy(id){
-		if (this.profiles[id].InheritsfromParent){
-			pp_id := this.profiles[id].ParentProfile
-			pp := this.profiles[pp_id]
-			pp._Activate()
-			this._ActiveInputThreads[pp_id] := pp
-			this._ProfileToolbox.SetProfileColor(pp_id, {fore: 0x0, back: 0x00ff00})
+		pp_id := this.profiles[id].ParentProfile
+		if (this.profiles[id].InheritsfromParent && pp_id != id){
+			this._ProfileToolbox.SetProfileColor(pp_id, {fore: 0x0, back: 0x00ffaa})
+			this.ActivateInputThread(pp_id)
 		}
 	}
 	
 	DeactivatePofilesNotInheritedBy(id){
 		for p_id, p in this._ActiveInputThreads {
-			if (p._IsGlobal || (p.InheritsfromParent && p.ParentProfle == id))
+			if (p_id == id || p._IsGlobal || (p.InheritsfromParent && p.ParentProfle == id)){
 				continue
-			this.profiles[p_id]._Deactivate()
-			this._ActiveInputThreads.Delete(p_id)
+			}
+			this.DeActivateInputThread(p_id)
 		}
 	}
 	
@@ -321,8 +335,10 @@ Class UCRMain {
 	StartThreadsLinkedToProfileId(id){
 		; Start the InputThreads for any linked profiles
 		profile := this.profiles[id]
-		profile_list := [this.CurrentProfile._LinkedProfiles]
+		profile_list := [profile._LinkedProfiles]
+		; If this profile Inherits from parent, then add the parent's _LinkedProfiles to the list
 		if (profile.InheritsFromParent && profile.ParentProfile){
+			this._SetProfileInputThreadState(profile.ParentProfile,1)	; Start the parent also
 			profile_list.push(this.profiles[profile.ParentProfile]._LinkedProfiles)
 		}
 		Loop % profile_list.length() {
@@ -344,6 +360,8 @@ Class UCRMain {
 	}
 	
 	ProfileLinksChanged(){
+		if (!this.CurrentProfile.id)
+			return
 		this.StopThreadsNotLinkedToProfileId(this.CurrentProfile.id)
 		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
@@ -850,24 +868,25 @@ class _ProfileToolbox extends _ProfileSelect {
 	ProfileColors := {}
 	__New(){
 		base.__New()
-		Gui, Add, CheckBox, xm y110 aya hwndhInherits, Inherits from parent
+		half_width := round(UCR.SIDE_PANEL_WIDTH / 2) - 5
+		Gui, Add, CheckBox, xm y110 aya w150 hwndhInherits Center, Profile Inherits Plugins`nfrom parent
 		this.hInheritsFromParent := hInherits
 		fn := this.InheritToggled.Bind(this)
 		GuiControl +g, % hInherits, % fn
 		
-		Gui, Add, Button, xm w30 hwndhAdd y130 aya aw1/2, Add
+		Gui, Add, Button, % "xm w" half_width " hwndhAdd y140 aya aw1/2", Add
 		fn := this.AddProfile.Bind(this,0)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, x+5 w60 hwndhAdd y130 aya axa aw1/2, Add Child
+		Gui, Add, Button, % "x+5 w" half_width " hwndhAdd y140 aya axa aw1/2", Add Child
 		fn := this.AddProfile.Bind(this,1)
 		GuiControl +g, % hAdd, % fn
 
-		Gui, Add, Button, xm w50 hwndhRename y+5 aya axr aw1/2, Rename
+		Gui, Add, Button, % "xm w" half_width " hwndhRename y+5 aya axr aw1/2", Rename
 		fn := this.RenameProfile.Bind(this)
 		GuiControl +g, % hRename, % fn
 		
-		Gui, Add, Button, x+5 w40 hwndhDelete yp aya axa aw1/2, Delete
+		Gui, Add, Button, % "x+5 w" half_width " hwndhDelete yp aya axa aw1/2", Delete
 		fn := this.DeleteProfile.Bind(this)
 		GuiControl +g, % hDelete, % fn
 
@@ -1182,7 +1201,7 @@ class _ProfileSelect {
 		Gui +ToolWindow
 		Gui +Resize
 		this.hwnd := hwnd
-		Gui, Add, TreeView, w100 h100 aw ah hwndhTreeview AltSubmit
+		Gui, Add, TreeView, % "w" UCR.SIDE_PANEL_WIDTH " h100 aw ah hwndhTreeview AltSubmit"
 		this.hTreeview := hTreeview
 		;Gui, Show
 		this.TV_EventFn := this.TV_Event.Bind(this)
@@ -1503,10 +1522,11 @@ Class _Profile {
 	Plugins := {}			; A ID-indexed array of Plugin instances
 	PluginOrder := []		; The order that plugins are listed in
 	_IsGlobal := 0			; 1 if this Profile is Global (Always active)
-	_InputThread := 0		; Holds the handle to the Input Thread, if active
+	_InputThread := 0		; Holds the handle to the Input Thread, if loaded
 	_LinkedProfiles := {}	; Profiles with which this one is associated
 	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
 	InheritsFromParent := 0	
+	_HotkeysActive := 0
 	
 	__New(id, name, parent){
 		static fn
@@ -1609,12 +1629,15 @@ Class _Profile {
 	
 	; The profile became active
 	_Activate(){
+		if (this._HotkeysActive)
+			return
 		if (this._InputThread == 0){
 			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
 			UCR._SetProfileInputThreadState(this.id,1)
 		}
 		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
 		this._SetHotkeyState(1)
+		this._HotkeysActive := 1
 		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
@@ -1626,9 +1649,12 @@ Class _Profile {
 	
 	; The profile went inactive
 	_DeActivate(){
+		if (!this._HotkeysActive)
+			return
 		OutputDebug % "UCR| DeActivating input thread for profile # " this.id " (" this.name " )"
 		if (this._InputThread)
 			this._SetHotkeyState(0)
+		this._HotkeysActive := 0
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
 			plugin._OnInactive()

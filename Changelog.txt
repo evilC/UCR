@@ -4,9 +4,18 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.14 - ????
+0.0.14 - 19th June 2016
 ! INI (Settings) file format changed to 0.0.5. UCR will attempt to upgrade for you.
   YOU ARE ADVISED TO BACK UP YOUR UCR.INI BEFORE RUNNING THIS VERSION.
++ Adds new "Profile Inherits Plugins from parent" option to profiles.
+  There is a new checkbox in the Profile Toolbox to turn this on or off for the current profile.
+  If this option is on for a given profile, then when the profile is active...
+  ... the profile's parent profile (if it has one) will also be active.
+  This is useful when doing "Shift States", as it removes the need to duplicate plugins...
+  ...in the "normal" and "shifted" profiles for things that don't change when shift is held.
+= The Profile Switcher plugin now allows you to pick a profile for press and release.
+  This was needed because two plugins in the same profile cannot be bound to the same button...
+  ... so two profile pickers (one for press, one for release) bound tot he same button didn't work.
 = Bindings to Mouse Wheel now properly simulate the up (release) event.
   Without this, if you remap mouse wheel to a key, that key is never released
 = You can now control multiple vJoy sticks properly.
