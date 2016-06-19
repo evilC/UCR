@@ -1557,7 +1557,7 @@ Class _Profile {
 	_StartInputThread(){
 		if (this._InputThread == 0){
 			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
-			this._InputThread := AhkThread("InputThread := new _InputThread(" this.id "," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
+			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
 			While !this._InputThread.ahkgetvar.autoexecute_done
 				Sleep 10 ; wait until variable has been set.
 			;OutputDebug % "UCR| Input Thread for thread #" this.id " ( " this.Name " ) has started"
