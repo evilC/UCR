@@ -4,6 +4,14 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.15 - ???
+! All ProfileSwitcher plugins will no longer be bound to a profile.
+  You are advised to delete and re-add the plugin.
+= A new custom GuiControl - the ProfileSelect is now available for Plugin Authors to use.
+  This allows you to provide a guicontrol for users to choose a profile.
+= The code of the ProfileSwitcher plugin is now vastly simplified.
+  Most of it's code was moved into the ProfileSelect GuiControl.
+
 0.0.14 - 19th June 2016
 ! INI (Settings) file format changed to 0.0.5. UCR will attempt to upgrade for you.
   YOU ARE ADVISED TO BACK UP YOUR UCR.INI BEFORE RUNNING THIS VERSION.
