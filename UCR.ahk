@@ -2304,7 +2304,11 @@ class _ProfileSelect extends _BannerCombo {
 		
 		; Parent class told this hotkey what it's value is. Set value, but do not fire ParentPlugin._ControlChanged
 		set {
+			if (this.__value)
+				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, this.__value, 0)
 			this.__value := value
+			if (value)
+				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, value, 1)
 			this.SetComboState()
 		}
 	}
