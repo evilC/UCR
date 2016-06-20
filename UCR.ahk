@@ -1844,7 +1844,7 @@ Class _Plugin {
 	InputAxes := {}				; An associative array, indexed by name, of child Input Axes
 	OutputAxes := {}			; An associative array, indexed by name, of child Output (virtual) Axes
 	ProfileSelects := {}		; An associative array, indexed by name, of Profile Select GuiControls
-	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes"]
+	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -2028,6 +2028,9 @@ Class _Plugin {
 			obj._KillReferences()
 		}
 		for name, obj in this.GuiControls {
+			obj._KillReferences()
+		}
+		for name, obj in this.ProfileSelects {
 			obj._KillReferences()
 		}
 		this.ParentProfile._RemovePlugin(this)
@@ -2304,6 +2307,15 @@ class _ProfileSelect extends _BannerCombo {
 			this.__value := value
 			this.SetComboState()
 		}
+	}
+	
+	_Serialize(){
+		obj := {value: this._value}
+		return obj
+	}
+	
+	_Deserialize(obj){
+		this._value := obj.value
 	}
 }
 
