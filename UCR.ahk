@@ -2257,6 +2257,7 @@ class _ProfileSelect extends _BannerCombo {
 		
 		;this.__value := new _BindObject()
 		this.SetComboState()
+		UCR.SubscribeToProfileTreeChange(this.hwnd, this.SetComboState.Bind(this))
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
@@ -2311,6 +2312,12 @@ class _ProfileSelect extends _BannerCombo {
 				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, value, 1)
 			this.SetComboState()
 		}
+	}
+	
+	; Kill references so destructor can fire
+	_KillReferences(){
+		this.ChangeValueCallback := ""
+		UCR.UnSubscribeToProfileTreeChange(this.hwnd)
 	}
 	
 	_Serialize(){
