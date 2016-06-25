@@ -31,16 +31,29 @@ Valid inputs are: Keyboard, Mouse, Joystick.
 Valid outputs are: Keyboard, Mouse, vJoy Virtual Joystick  
 
 ##Requirements
-If you are a typical end-user of UCR, you just need to download the installer package. 
+If you are a typical end-user of UCR, you just need to download the installer package, unzip it and double-click UCR.exe. No installation is required, and you do not need to install AutoHotkey.  
 
 
-In order to run UCR un-compiled, you will need to replace your AutoHotkey EXE with one from [AHK_H v1](https://github.com/HotKeyIt/ahkdll-v1-release/archive/master.zip).  
-Alternately, rename Autohotkey.exe (An AHK_H v1 one) to UCR.exe and place it in the same folder as UCR.ahk, then double-click UCR.exe to run UCR un-compiled.
+In order to run UCR un-compiled:
+Install AutoHotkey, then take a copy of UCR.exe from the download zip, rename it AutoHotkey.exe and place it in your AutoHotkey install folder. Optionally back up the old AutoHotkey.exe, but the files named like AutoHotkeyA32.exe in your AHK folder are already backups of the normal AHK executables.  
 
-##Debugging
+##Debugging UCR
 A major design goal of UCR is to make it (and plugins) debuggable. 
 Development is currently done using Scite4AutoHotkey, so if you wish to debug UCR or a plugin, that is the advised solution.  
 UCR's code avoids the use of SetTimer, OnMessage etc in the main thread wherever possible, so that "stepping in" in the debugger does not end up dropping you into some random timer pseudo-thread. In general, it works around these situations by offloading any code that might interfere with the debugging process to a worker thread.
+
+##Debugging Plugins
+If you wish to be able to set breakpoints within a plugin, then you must do the following:  
+Place the plugin file in the same folder as UCR.ahk.  
+Add the following code to the start of the plugin:  
+```
+UCRDebugPlugin := "MyPlugin"
+#include UCR.ahk
+```
+Where "MyPlugin" is the class name of your plugin.  
+Then you can simply run or debug the plugin from Scite4AHK and it will start up UCR - any breakpoints that you set will trigger, and you can step into the UCR code if you desire.  
+When UCR runs in this way, it will use a settings file named for the plugin, eg `MyPlugin.ini', it will not alter the main UCR.ini settings file while you are debuggging a plugin.  
+You can only debug one plugin at a time.  
 
 ##Documentation
 Documentation is forthcoming.
