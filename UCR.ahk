@@ -568,12 +568,14 @@ Class UCRMain {
 	
 	; Load a list of available plugins
 	_LoadPluginList(){
+		global UCRDebugPlugin
 		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", FR
 		{
 			FileRead,plugincode,% A_LoopFileFullPath
 			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
-			
-			
+			if (classname = UCRDebugPlugin){
+				continue
+			}
 			; Check if the classname already exists.
 			if (IsObject(%classname1%)){
 				cls := %classname1%
@@ -602,6 +604,13 @@ Class UCRMain {
 			}
 			this.PluginDetails[Type] := {Description: Description, ClassName: classname1}
 			AddFile(A_LoopFileFullPath, 1)
+		}
+		if (UCRDebugPlugin){
+			; Debug mode for a plugin - class is already part of code, so just populate Plugin DDL
+			cls := %UCRDebugPlugin%
+			if (IsObject(cls)){
+				this.PluginDetails[cls.Type] := {Description: cls.Description, ClassName: UCRDebugPlugin}
+			}
 		}
 	}
 	
