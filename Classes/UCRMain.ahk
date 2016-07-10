@@ -55,27 +55,27 @@ Class UCRMain {
 		; Start the input detection system
 		this._BindModeHandler := new _BindModeHandler()
 		this._InputHandler := new _InputHandler()
-
+		
 		; Add the Profile Toolbox - this is used to add and edit profiles
 		this._ProfileToolbox := new _ProfileToolbox()
 		this._ProfilePicker := new _ProfilePicker()
-
+		
 		; Create the Main Gui
 		this._CreateGui()
 		
 		; Load settings. This will cause all plugins to load.
 		p := this._LoadSettings()
-
+		
 		; Update state of Profile Toolbox
 		this.UpdateProfileToolbox()
-
+		
 		; Now we have settings from disk, move the window to it's last position and size
 		this._ShowGui()
 		
 		this._SetProfileInputThreadState(1,1)
 		this.Profiles.1._Activate()
 		this.ChangeProfile(p, 0)
-
+		
 		; Watch window position and size using MessageFilter thread
 		this._MessageFilterThread := AhkThread(A_ScriptDir "\Threads\MessageFilterThread.ahk",,1)
 		While !this._MessageFilterThread.ahkgetvar.autoexecute_done
@@ -140,12 +140,12 @@ Class UCRMain {
 		;this.hProfileToolbox := hProfileToolbox
 		;fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
 		;GuiControl +g, % this.hProfileToolbox, % fn
-
+		
 		; Add Plugin
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
 		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect AltSubmit w" UCR.PLUGIN_FRAME_WIDTH - 150
 		this.hPluginSelect := hPluginSelect
-
+		
 		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddPlugin x+5 yp-1", Add
 		this.hAddPlugin := hAddPlugin
 		fn := this._AddPlugin.Bind(this)
@@ -155,7 +155,7 @@ Class UCRMain {
 		
 		; Add the profile toolbox
 		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
-
+		
 		Gui, new, HwndHwnd
 		this.hSidePanel := hwnd
 		Gui % this.hSidePanel ":-Caption"
@@ -164,8 +164,8 @@ Class UCRMain {
 		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah", % this._ProfileToolbox.hwnd
 		Gui % this.hSidePanel ":Show", Hide
 		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
-
-
+		
+		
 		;Gui, % this.hwnd ":Show"
 	}
 	
@@ -407,7 +407,7 @@ Class UCRMain {
 				cb.Call(ipt, state)
 		}
 	}
-
+	
 	FireProfileTreeChangeCallbacks(){
 		for hwnd, cb in this._ProfileTreeChangeSubscriptions {
 			if (IsObject(cb))
@@ -457,7 +457,7 @@ Class UCRMain {
 		this.UpdateCurrentProfileReadout()
 		this._SaveSettings()
 	}
-
+	
 	MoveProfile(profile_id, parent_id, after){
 		if (parent_id == "")
 			parent_id := 0
@@ -471,7 +471,7 @@ Class UCRMain {
 		; Make sure requested move is valid
 		if (after = 1 || (parent_id = 0 && after == "First") || parent_id == 1 || parent_id == 2)
 			return 0
-
+		
 		profile := this.Profiles[profile_id]
 		; Remove from old parent list
 		for k, v in this.ProfileTree[profile.ParentProfile] {
@@ -559,21 +559,18 @@ Class UCRMain {
 	
 	; Load a list of available plugins
 	_LoadPluginList(){
-		global UCRDebugPlugin
 		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", FR
 		{
 			FileRead,plugincode,% A_LoopFileFullPath
 			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
-			if (classname = UCRDebugPlugin){
-				continue
-			}
+			already_loaded := 0
 			; Check if the classname already exists.
 			if (IsObject(%classname1%)){
 				cls := %classname1%
 				if (cls.base.__Class = "_Plugin"){
 					; Existing class extends plugin
 					; Class has been included via other means (eg to debug it), so do not try to include again.
-					continue
+					already_loaded := 1
 				}
 			}
 			dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
@@ -594,14 +591,8 @@ Class UCRMain {
 				continue
 			}
 			this.PluginDetails[Type] := {Description: Description, ClassName: classname1}
-			AddFile(A_LoopFileFullPath, 1)
-		}
-		if (UCRDebugPlugin){
-			; Debug mode for a plugin - class is already part of code, so just populate Plugin DDL
-			cls := %UCRDebugPlugin%
-			if (IsObject(cls)){
-				this.PluginDetails[cls.Type] := {Description: cls.Description, ClassName: UCRDebugPlugin}
-			}
+			if (!already_loaded)
+				AddFile(A_LoopFileFullPath, 1)
 		}
 	}
 	
@@ -816,7 +807,7 @@ Class UCRMain {
 		}
 		return SubStr(fin_guid, 2, 36)
 	}
-
+	
 	; Positions the specified window in the middle of the UCR GUI
 	MoveWindowToCenterOfGui(hwnd){
 		if (!WinExist("ahk_id " hwnd))
@@ -833,17 +824,17 @@ Class UCRMain {
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {SettingsVersion: this.SettingsVersion
-			, CurrentProfile: this.CurrentProfile.id
-			, CurrentSize: this.CurrentSize
-			, CurrentPos: this.CurrentPos
-			, Profiles: {}
-			, ProfileTree: this.ProfileTree}
+		, CurrentProfile: this.CurrentProfile.id
+		, CurrentSize: this.CurrentSize
+		, CurrentPos: this.CurrentPos
+		, Profiles: {}
+		, ProfileTree: this.ProfileTree}
 		for id, profile in this.Profiles {
 			obj.Profiles[id] := profile._Serialize()
 		}
 		return obj
 	}
-
+	
 	; Load this object from simple data strutures
 	_Deserialize(obj){
 		this.Profiles := {}

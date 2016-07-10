@@ -1,6 +1,6 @@
 ﻿; =================================================================== PROFILE PICKER ==========================================================
 ; A tool for plugins that allows users to pick a profile (eg for a profile switcher plugin). Cannot alter profile tree
-class _ProfilePicker extends _ProfileBase {
+class _ProfilePicker extends _ProfileTreeBase {
 	__New(){
 		base.__New()
 		; Initialize resizing system to min size of gui
