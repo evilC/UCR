@@ -12,3 +12,4 @@ msvcr100.dll
 /Plugins/*
 !.gitignore
 !/Plugins/Core
+backup
