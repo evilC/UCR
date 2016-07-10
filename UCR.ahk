@@ -49,6 +49,10 @@ return
 	#Include Threads\MessageFilterThread.ahk
 	#Include Threads\ProfileInputThread.ahk
 	
+	; Libraries
+	#Include Libraries\StickOps\StickOps.ahk
+	#Include Libraries\vJoy\vjoy.ahk
+	
 	; Include Plugins in case they are not in UCRDebug.ahk
 	#include Plugins\Core\AxisMerge.ahk
 	#include Plugins\Core\AxisToAxis.ahk
