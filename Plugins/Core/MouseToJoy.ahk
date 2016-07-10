@@ -92,7 +92,6 @@ class MouseToJoy extends _Plugin {
 		;OutputDebug % "Plugin - X: " x ", Y: " y
 		; The "Range" for a given axis is -50 to +50
 		static curr_x := 0, curr_y := 0
-		static StickOps := UCR.Libraries.StickOps
 		
 		if (this.Mode = 1){
 			curr_x := x * this.AbsoluteThresholdFactor.X
@@ -114,14 +113,14 @@ class MouseToJoy extends _Plugin {
 			else if (curr_y < -50)
 				curr_y := -50
 		}
-		;OutputDebug, % "x: " curr_x " (" StickOps.InternalToAHK(curr_x) "), y: " curr_y
+		;OutputDebug, % "UCR| x: " curr_x " (" UCR.Libraries.StickOps.InternalToAHK(curr_x) "), y: " curr_y
 		if (this.OutputAxes.OutputAxisX.value.DeviceID && this.OutputAxes.OutputAxisX.value.Axis){
-			this.OutputAxes.OutputAxisX.SetState(StickOps.InternalToVjoy(curr_x))
-			GuiControl, , % this.hSliderX, % StickOps.InternalToAHK(curr_x)
+			this.OutputAxes.OutputAxisX.SetState(UCR.Libraries.StickOps.InternalToVjoy(curr_x))
+			GuiControl, , % this.hSliderX, % UCR.Libraries.StickOps.InternalToAHK(curr_x)
 		}
 		if (this.OutputAxes.OutputAxisY.value.DeviceID && this.OutputAxes.OutputAxisY.value.Axis){
-			this.OutputAxes.OutputAxisY.SetState(StickOps.InternalToVjoy(curr_y))
-			GuiControl, , % this.hSliderY, % StickOps.InternalToAHK(curr_y)
+			this.OutputAxes.OutputAxisY.SetState(UCR.Libraries.StickOps.InternalToVjoy(curr_y))
+			GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(curr_y)
 		}
 	}
 	

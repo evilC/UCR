@@ -51,17 +51,15 @@ class AxisMerge extends _Plugin {
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
-		static StickOps := UCR.Libraries.StickOps
-
 		outval := 0
-		value1 := StickOps.AHKToInternal(this.InputAxes.InputAxis1.State)
-		value2 := StickOps.AHKToInternal(this.InputAxes.InputAxis2.State)
+		value1 := UCR.Libraries.StickOps.AHKToInternal(this.InputAxes.InputAxis1.State)
+		value2 := UCR.Libraries.StickOps.AHKToInternal(this.InputAxes.InputAxis2.State)
 		
 		; Apply input axis inversions
 		if (this.GuiControls.Invert1.value)
-			value1 := StickOps.Invert(value1)
+			value1 := UCR.Libraries.StickOps.Invert(value1)
 		if (this.GuiControls.Invert2.value)
-			value2 := StickOps.Invert(value2)
+			value2 := UCR.Libraries.StickOps.Invert(value2)
 		
 		; Do the merge
 		if (this.GuiControls.MergeMode.value = 1){
@@ -82,15 +80,15 @@ class AxisMerge extends _Plugin {
 		if (this.vAxis && this.vDevice){
 			; Apply Deadzone / Sensitivity
 			if (this.GuiControls.Deadzone.value)
-				outval := StickOps.Deadzone(outval, this.GuiControls.Deadzone.value)
+				outval := UCR.Libraries.StickOps.Deadzone(outval, this.GuiControls.Deadzone.value)
 			if (this.GuiControls.Sensitivity.value)
-				outval := StickOps.Sensitivity(outval, this.GuiControls.Sensitivity.value)
-			outval := StickOps.InternalToAHK(outval)
+				outval := UCR.Libraries.StickOps.Sensitivity(outval, this.GuiControls.Sensitivity.value)
+			outval := UCR.Libraries.StickOps.InternalToAHK(outval)
 			GuiControl, , % this.hSliderOut, % outval
-			outval := StickOps.AHKToVjoy(outval)
+			outval := UCR.Libraries.StickOps.AHKToVjoy(outval)
 			this.OutAxis.SetState(outval)
 		}
-		GuiControl, , % this.hSliderIn1, % StickOps.InternalToAHK(value1)
-		GuiControl, , % this.hSliderIn2, % StickOps.InternalToAHK(value2)
+		GuiControl, , % this.hSliderIn1, % UCR.Libraries.StickOps.InternalToAHK(value1)
+		GuiControl, , % this.hSliderIn2, % UCR.Libraries.StickOps.InternalToAHK(value2)
 	}
 }

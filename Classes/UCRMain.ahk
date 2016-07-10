@@ -113,10 +113,13 @@ Class UCRMain {
 				AddFile(filename, 1)
 				lib := new %A_LoopFileName%()
 				res := lib._UCR_LoadLibrary()
-				if (res == 1)
+				if (res == 1){
+					OutputDebug % "UCR| Loading Library " A_LoopFileName
 					this.Libraries[A_LoopFileName] := lib
+				}
 			}
 		}
+		OutputDebug % "UCR| StickOps test: " this.Libraries.StickOps.AHKToInternal(100)
 	}
 	
 	_CreateGui(){
