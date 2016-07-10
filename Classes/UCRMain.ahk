@@ -119,7 +119,6 @@ Class UCRMain {
 				}
 			}
 		}
-		OutputDebug % "UCR| StickOps test: " this.Libraries.StickOps.AHKToInternal(100)
 	}
 	
 	_CreateGui(){
