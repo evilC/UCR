@@ -49,6 +49,9 @@ Class UCRMain {
 			;~ MsgBox Error Loading \Resources\JoystickOEMName.dll. Exiting...
 			;~ ExitApp
 		;~ }
+		
+		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
+		
 		; Provide a common repository of libraries for plugins (vJoy, HID libs etc)
 		this._LoadLibraries()
 		
@@ -85,8 +88,6 @@ Class UCRMain {
 		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnSize.Bind(this)) "," &matchobj "," &filterobj ")"]
 		matchobj.msg := 0x3
 		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnMove.Bind(this)) "," &matchobj "," &filterobj ")"]
-		
-		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)
 	}
 	
 	GuiClose(hwnd){
