@@ -6,10 +6,10 @@ Class UCRMain {
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0				; The current state of the application
-	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
+	;Profiles := []				; A hwnd-indexed sparse array of instances of _Profile objects
 	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
 	ProfileTree := {}				; A lookup table for Profile order. A sparse array of Parent IDs, containing Ordered Arrays of Profile IDs
-	Libraries := {}					; A name indexed array of instances of library objects
+	Libraries := {}				; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
@@ -756,7 +756,6 @@ Class UCRMain {
 	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
 	_BindModeEnded(hk, bo){
 		;OutputDebug % "UCR| Bind Mode Ended: " bo.Buttons[1].code
-		this._CurrentState := this._State.Normal
 		if (hk._IsOutput){
 			hk.value := bo
 		} else {
@@ -767,6 +766,7 @@ Class UCRMain {
 		}
 		this.Profiles.Global._SetHotkeyState(1)
 		hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
+		this._CurrentState := this._State.Normal
 	}
 	
 	; Request an axis binding.
