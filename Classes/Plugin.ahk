@@ -19,7 +19,7 @@ Class _Plugin {
 	Init(){
 		
 	}
-
+	
 	; === Plugins can call these commands to add various GuiControls to their Gui ===
 	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
 	AddControl(name, ChangeValueCallback, aParams*){
@@ -59,7 +59,7 @@ Class _Plugin {
 			return this.OutputButtons[name]
 		}
 	}
-
+	
 	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an output
 	AddOutputAxis(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.OutputAxes,name)){
@@ -116,7 +116,7 @@ Class _Plugin {
 		Gui, % this.hFrame ":Add", Gui, x0 y30, % this.hwnd
 		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
 	}
-
+	
 	; A GuiControl / Hotkey changed
 	_ControlChanged(ctrl){
 		OutputDebug % "UCR| Plugin " this.Name " called ParentProfile._PluginChanged()"
@@ -147,6 +147,13 @@ Class _Plugin {
 		}
 	}
 	
+	_OnActive(){
+		; Call user's OnInactive method (if it exists)
+		if (IsFunc(this["OnActive"])){
+			this.OnActive()
+		}
+	}
+	
 	; Called when a plugin becomes inactive (eg profile changed)
 	_OnInActive(){
 		for k, v in this.OutputButtons{
@@ -154,8 +161,8 @@ Class _Plugin {
 				v.SetState(0)
 		}
 		; Call user's OnInactive method (if it exists)
-		if (IsFunc(this["OnInactive"])){
-			plugin.OnInactive()
+		if (IsFunc(this["OnInActive"])){
+			this.OnInActive()
 		}
 	}
 	

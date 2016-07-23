@@ -730,9 +730,8 @@ Class UCRMain {
 			; Change Buttons requested - start Bind Mode.
 			if (this._CurrentState == this._State.Normal){
 				this._CurrentState := this._State.InputBind
-				; ToDo: Now that profiles can "Inherit" other profiles, this does not disable all hotkeys that could be active
-				this.Profiles.Global._SetHotkeyState(0)
-				hk.ParentPlugin.ParentProfile._SetHotkeyState(0)
+				; De-Activate all active profiles, to make sure they do not interfere with the bind process
+				this._DeActivateProfiles()
 				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
 				return 1
 			}
@@ -747,8 +746,6 @@ Class UCRMain {
 				hk.value := bo
 				this._InputHandler.SetButtonBinding(hk)
 			}
-			hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
-			this.Profiles.Global._SetHotkeyState(1)
 		}
 	}
 	
@@ -764,8 +761,8 @@ Class UCRMain {
 				this._InputHandler.SetButtonBinding(hk)
 			}
 		}
-		this.Profiles.Global._SetHotkeyState(1)
-		hk.ParentPlugin.ParentProfile._SetHotkeyState(1)
+		; Re-Activate profiles that were deactivated
+		this._ActivateProfiles()
 		this._CurrentState := this._State.Normal
 	}
 	
@@ -777,6 +774,23 @@ Class UCRMain {
 	; Request a Mouse Axis Delta binding
 	RequestDeltaBinding(delta){
 		this._InputHandler.SetDeltaBinding(delta)
+	}
+	
+	; Activates all profiles in the _ActiveInputThreads array.
+	_ActivateProfiles(){
+		for p_id, p in this._ActiveInputThreads {
+			outputdebug % "UCR| Activating profile " p.name
+			p._Activate()
+		}
+	}
+	
+	; DeActivates all profiles in the _ActiveInputThreads array
+	; We don't want hotkeys or plugins active while in Bind Mode...
+	_DeActivateProfiles(){
+		for p_id, p in this._ActiveInputThreads {
+			outputdebug % "UCR| DeActivating profile " p.name
+			p._DeActivate()
+		}
 	}
 	
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
