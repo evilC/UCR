@@ -730,6 +730,7 @@ Class UCRMain {
 			; Change Buttons requested - start Bind Mode.
 			if (this._CurrentState == this._State.Normal){
 				this._CurrentState := this._State.InputBind
+				; ToDo: Now that profiles can "Inherit" other profiles, this does not disable all hotkeys that could be active
 				this.Profiles.Global._SetHotkeyState(0)
 				hk.ParentPlugin.ParentProfile._SetHotkeyState(0)
 				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
