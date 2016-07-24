@@ -40,27 +40,25 @@ class AxisToAxis extends _Plugin {
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
-		static StickOps := UCR.Libraries.StickOps
-		
 		GuiControl, , % this.hSliderIn, % value
-		value := StickOps.AHKToInternal(value)
+		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		if (this.vAxis && this.vDevice){
 			if (this.GuiControls.Deadzone.value){
-				value := StickOps.Deadzone(value, this.GuiControls.Deadzone.value)
+				value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.value)
 			}
 			if (this.GuiControls.Sensitivity.value){
 				if (this.GuiControls.Linear.value)
 					value *= (this.GuiControls.Sensitivity.value / 100)
 				else
-					value := StickOps.Sensitivity(value, this.GuiControls.Sensitivity.value)
+					value := UCR.Libraries.StickOps.Sensitivity(value, this.GuiControls.Sensitivity.value)
 				
 			}
 			if (this.GuiControls.Invert.value){
-				value := StickOps.Invert(value)
+				value := UCR.Libraries.StickOps.Invert(value)
 			}
-			value := StickOps.InternalToAHK(value)
+			value := UCR.Libraries.StickOps.InternalToAHK(value)
 			GuiControl, , % this.hSliderOut, % value
-			value := StickOps.AHKToVjoy(value)
+			value := UCR.Libraries.StickOps.AHKToVjoy(value)
 			this.OutputAxes.OutputAxis.SetState(value)
 		}
 	}

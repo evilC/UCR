@@ -27,16 +27,14 @@ class AxisToButton extends _Plugin {
 	
 	; The user moved the selected input axis. Manipulate the output buttons accordingly
 	MyInputChangedState(value){
-		static StickOps := UCR.Libraries.StickOps
-		
 		GuiControl, , % this.hSliderIn, % value
 		
-		value := StickOps.AHKToInternal(value)
+		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		if (this.GuiControls.Deadzone.value){
-			value := StickOps.Deadzone(value, this.GuiControls.Deadzone.value)
+			value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.value)
 		}
 		if (this.GuiControls.Invert.value){
-			value := StickOps.Invert(value)
+			value := UCR.Libraries.StickOps.Invert(value)
 		}
 		
 		if (value < 0)

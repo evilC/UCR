@@ -38,10 +38,7 @@ class ButtonToAxis extends _Plugin {
 	
 	; One of the input buttons was pressed or released
 	AxisInput(axis, direction, value){
-		static StickOps := UCR.Libraries.StickOps
-		;static axis_lookup := {x: "OutputAxisX", y: "OutputAxisY"}
-		
-		OutputDebug % "Axis: " axis ", Direction: " direction ", value: " value
+		;OutputDebug % "UCR| Axis: " axis ", Direction: " direction ", value: " value
 		if (this.AxisButtonStates[axis, direction] = value)
 			return	; filter repeats
 		
@@ -56,7 +53,7 @@ class ButtonToAxis extends _Plugin {
 				out := 50
 			}
 		}
-		this.OutputAxes["OutputAxis" axis].SetState(StickOps.InternalToVjoy(out))
-		GuiControl, , % this["hSlider" axis], % StickOps.InternalToAHK(out)
+		this.OutputAxes["OutputAxis" axis].SetState(UCR.Libraries.StickOps.InternalToVjoy(out))
+		GuiControl, , % this["hSlider" axis], % UCR.Libraries.StickOps.InternalToAHK(out)
 	}
 }

@@ -4,11 +4,23 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.15 - ???
+0.0.15 - 24th July 2016
 ! All ProfileSwitcher plugins will no longer be bound to a profile.
   You are advised to delete and re-add the plugin.
-= A new custom GuiControl - the ProfileSelect is now available for Plugin Authors to use.
++ Dialogs to choose name of new Profile / Plugin now appear in the center of the UCR GUI.
++ A new custom GuiControl - the ProfileSelect is now available for Plugin Authors to use.
   This allows you to provide a guicontrol for users to choose a profile.
++ There is now a Text-To-Speech library provided in UCR.Libraries.TTS
++ Added Profile Speaker plugin.
+  This can be used to speak something when a profile becomes active.
++ The OneSwitch Pulse plugin now makes a beep on toggle on/off.
++ The OneSwitch Pulse plugin now has a "Timeout Warning" setting.
+= The recommended development environment for UCR is now AHK Studio
+  Debugging of UCR and it's plugins is now much simpler.
+  See the UCR wiki for info on debugging plugins.
+  The code is now also split out into one file per class, so should be easier to work with.
+= When you enter Bind Mode, the OnInActive() method is now called on all active plugins.
+  All plugins should cease all activity on OnInActive() and resume on OnActive()
 = The code of the ProfileSwitcher plugin is now vastly simplified.
   Most of it's code was moved into the ProfileSelect GuiControl.
 

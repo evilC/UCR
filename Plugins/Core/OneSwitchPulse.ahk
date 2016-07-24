@@ -24,7 +24,7 @@ class OneSwitchPulse extends _Plugin {
 		Gui, % this.hwnd ":Add", Text, xs y+10, % "Timeout Button"
 		this.AddOutputButton("TimeoutButton", 0, "xs+100 yp-2 w200")
 		
-		Gui, % this.hwnd ":Add", GroupBox, xm yp+40 w440 h100 Section, Timer Settings (All in MilliSeconds)
+		Gui, % this.hwnd ":Add", GroupBox, xm yp+40 w440 h130 Section, Timer Settings (All in MilliSeconds)
 		
 		Gui, % this.hwnd ":Add", Text, xm+5 yp+20, % "Pulse Rate (How often to hit the Pulse Button)"
 		this.AddControl("PulseRate", 0, "Edit", "x400 yp-2 w40", 500)
@@ -35,7 +35,10 @@ class OneSwitchPulse extends _Plugin {
 		Gui, % this.hwnd ":Add", Text, xm+5 y+10, % "Timeout (If no input activity for this time, hit Timeout Button)"
 		this.AddControl("TimeOut", 0, "Edit", "x400 yp-2 w40", 5000)
 
-		Gui, % this.hwnd ":Add", Text, x+10 ys+10 Center w200 h100 hwndhStatus
+		Gui, % this.hwnd ":Add", Text, xm+5 y+10, % "Timeout Warning (If no input activity for this time, play warning)"
+		this.AddControl("TimeOutWarning", 0, "Edit", "x400 yp-2 w40", 4000)
+
+		Gui, % this.hwnd ":Add", Text, x+10 ys+20 Center w200 h100 hwndhStatus
 		Gui, % this.hwnd ":Font"
 		this.hStatus := hStatus
 
@@ -44,6 +47,7 @@ class OneSwitchPulse extends _Plugin {
 		
 		this.PulseFn := this.Pulse.Bind(this)
 		this.TimeoutFn := this.Timeout.Bind(this)
+		this.TimeoutWarningFn := this.TimeoutWarning.Bind(this)
 		this.ResumePulseFn := this.SetTimerState.Bind(this, 1)
 	}
 	
@@ -52,9 +56,10 @@ class OneSwitchPulse extends _Plugin {
 		if (e){
 			this.Enabled := !this.Enabled
 			this.ShowStatus()
-			OutputDebug % "Setting State - " this.Enabled
+			OutputDebug % "UCR| Setting State - " this.Enabled
 			this.SetSubscriptionState(this.Enabled)
 			this.SetTimerState(this.Enabled)
+			this.AsynchBeep((this.Enabled * 500) + 500)
 		}
 	}
 	
@@ -71,12 +76,12 @@ class OneSwitchPulse extends _Plugin {
 		if (ipt == this.InputButtons.Toggle)
 			return	; ignore input from the Toggle Button
 		if (ipt.value.type == 4){
-			OutputDebug % "InputActivity (Axis)"
+			OutputDebug % "UCR| InputActivity (Axis)"
 			;this.DelayTimers()
 			this.ScheduleTimers()
 		} else {
 			; Button type input - stop timers while button is down, call DelayTimers() on up
-			OutputDebug % "InputActivity (Button) - state: " state
+			OutputDebug % "UCR| InputActivity (Button) - state: " state
 			if (state){
 				this.SetTimerState(0)
 			} else {
@@ -93,7 +98,7 @@ class OneSwitchPulse extends _Plugin {
 	
 	; Send a pulse to J2K
 	Pulse(){
-		OutputDebug % "Pulse " round(A_TickCount / 1000, 2)
+		OutputDebug % "UCR| Pulse " round(A_TickCount / 1000, 2)
 		this.OutputButtons.PulseButton.SetState(1)
 		Sleep 50
 		this.OutputButtons.PulseButton.SetState(0)
@@ -101,12 +106,18 @@ class OneSwitchPulse extends _Plugin {
 	
 	; Send a timeout to J2K
 	Timeout(){
-		OutputDebug % "Timeout " round(A_TickCount / 1000, 2)
+		OutputDebug % "UCR| Pulse Timeout " round(A_TickCount / 1000, 2)
 		this.SetTimerState(0)
 		this.OutputButtons.TimeoutButton.SetState(1)
 		Sleep 50
 		this.OutputButtons.TimeoutButton.SetState(0)
 		this.SetTimerState(1)
+	}
+	
+	TimeoutWarning(){
+		OutputDebug % "UCR| Pulse Timeout Warning"
+		this.AsynchBeep(750,50)
+		this.AsynchBeep(750,50)
 	}
 	
 	; Called when the Choice button changes state (key is pressed or released)
@@ -142,17 +153,32 @@ class OneSwitchPulse extends _Plugin {
 	
 	; Turns on or off the timers
 	SetTimerState(state){
-		OutputDebug % "Changing Timer state to: " state
+		OutputDebug % "UCR| Changing Timer state to: " state
 		pfn := this.PulseFn
 		tfn := this.TimeoutFn
+		wfn := this.TimeoutWarningFn
 		rfn := this.ResumePulseFn
 		if (state && this.Enabled){
 			SetTimer, % pfn, % this.GuiControls.PulseRate.Value
 			SetTimer, % tfn, % "-" this.GuiControls.TimeOut.Value
+			if (warn := this.GuiControls.TimeOutWarning.Value)
+				SetTimer, % wfn, % "-" warn
 		} else if (!state){
-			SetTimer, % pfn, Off
-			SetTimer, % tfn, Off
-			SetTimer, % rfn, Off
+			try {
+				SetTimer, % pfn, Off
+				SetTimer, % tfn, Off
+				SetTimer, % wfn, Off
+				SetTimer, % rfn, Off
+			}
 		}
+	}
+	
+	AsynchBeep(freq, dur := 250){
+		fn := this._AsynchBeep.Bind(this, freq, dur)
+		SetTimer, % fn, -0
+	}
+	
+	_AsynchBeep(freq, dur){
+		SoundBeep, % freq, % dur
 	}
 }
