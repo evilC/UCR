@@ -2,7 +2,7 @@
 
 ![ScreenShot](http://i.imgur.com/pSBxCbc.png)
 #[MAIN UCR DOWNLOAD LINK](http://evilc.com/files/ahk/ucr/UCR.zip)
-#[Forum thread for news and discussion](https://autohotkey.com/boards/viewtopic.php?f=19&t=12249)
+#[Forum thread for news and discussion](http://tiny.cc/ucr)
 ##[Historical releases](https://github.com/evilC/UCR/releases)
 
 ##About
