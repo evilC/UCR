@@ -245,6 +245,8 @@ Class UCRMain {
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
 		
+		;UCR.Libraries.TTS.Speak(this.CurrentProfile.Name)
+		
 		; Clear Profile Toolbox colours and start setting new ones
 		this._ProfileToolbox.ResetProfileColors()
 		this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box

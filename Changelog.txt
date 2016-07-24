@@ -7,8 +7,15 @@ Key:
 0.0.15 - ???
 ! All ProfileSwitcher plugins will no longer be bound to a profile.
   You are advised to delete and re-add the plugin.
-= A new custom GuiControl - the ProfileSelect is now available for Plugin Authors to use.
++ A new custom GuiControl - the ProfileSelect is now available for Plugin Authors to use.
   This allows you to provide a guicontrol for users to choose a profile.
++ There is now a Text-To-Speech library provided in UCR.Libraries.TTS
+= The recommended development environment for UCR is now AHK Studio
+  Debugging of UCR and it's plugins is now much simpler.
+  See the UCR wiki for info on debugging plugins.
+  The code is now also split out into one file per class, so should be easier to work with.
+= When you enter Bind Mode, the OnInActive() method is now called on all active plugins.
+  All plugins should cease all activity on OnInActive() and resume on OnActive()
 = The code of the ProfileSwitcher plugin is now vastly simplified.
   Most of it's code was moved into the ProfileSelect GuiControl.
 
