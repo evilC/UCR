@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.15 - ???
+0.0.15 - 24th July 2016
 ! All ProfileSwitcher plugins will no longer be bound to a profile.
   You are advised to delete and re-add the plugin.
 + Dialogs to choose name of new Profile / Plugin now appear in the center of the UCR GUI.
