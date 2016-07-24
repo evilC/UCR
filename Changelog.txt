@@ -10,6 +10,8 @@ Key:
 + A new custom GuiControl - the ProfileSelect is now available for Plugin Authors to use.
   This allows you to provide a guicontrol for users to choose a profile.
 + There is now a Text-To-Speech library provided in UCR.Libraries.TTS
++ Added Profile Speaker plugin.
+  This can be used to speak something when a profile becomes active.
 = The recommended development environment for UCR is now AHK Studio
   Debugging of UCR and it's plugins is now much simpler.
   See the UCR wiki for info on debugging plugins.

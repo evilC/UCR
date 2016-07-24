@@ -67,6 +67,7 @@ return
 	#include Plugins\Core\OneSwitchProfileSwitcher.ahk
 	#include Plugins\Core\OneSwitchPulse.ahk
 	#include Plugins\Core\ProfileSwitcher.ahk
+	#include Plugins\Core\ProfileSpeaker.ahk
 */
 
 ; Called if the user closes the GUI
