@@ -7,6 +7,7 @@ Key:
 0.0.15 - ???
 ! All ProfileSwitcher plugins will no longer be bound to a profile.
   You are advised to delete and re-add the plugin.
++ Dialogs to choose name of new Profile / Plugin now appear in the center of the UCR GUI.
 + A new custom GuiControl - the ProfileSelect is now available for Plugin Authors to use.
   This allows you to provide a guicontrol for users to choose a profile.
 + There is now a Text-To-Speech library provided in UCR.Libraries.TTS

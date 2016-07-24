@@ -812,7 +812,9 @@ Class UCRMain {
 		suggestedname := "Profile " c
 		; Allow user to pick name
 		prompt := "Enter a name for the Profile"
-		InputBox, name, Add Profile, % prompt, ,,130,,,,, % suggestedname
+		coords := this.GetCenteredCoordinates(375, 130)
+		InputBox, name, Add Profile, % prompt, ,,130,% coords.x,% coords.y,,, % suggestedname
+		
 		return (ErrorLevel ? 0 : name)
 	}
 	
@@ -839,6 +841,15 @@ Class UCRMain {
 		oy := (ch >= uh ? uy : (uy_mid - (ch / 2)))
 		;Gui, % hwnd ":Show", % "x" ox " y" oy
 		WinMove, % "ahk_id " hwnd,, ox, oy
+	}
+	
+	; Given a width and height, returns coordinates that would center the window within the UCR window
+	GetCenteredCoordinates(w,h){
+		cw := w / 2, ch := h / 2
+		WinGetPos, ux, uy, uw, uh, % "ahk_id " this.hwnd
+		cx := ((uw / 2) - cw) + ux
+		cy := ((uh / 2) - ch) + uy
+		return {x: cx, y: cy}
 	}
 	
 	; Serialize this object down to the bare essentials for loading it's state

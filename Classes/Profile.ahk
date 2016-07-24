@@ -253,7 +253,8 @@ Class _Profile {
 		name := this_name
 		prompt := "Enter a name for the Plugin"
 		Loop {
-			InputBox, name, Add Plugin, % prompt, ,,130,,,,, % name
+			coords := UCR.GetCenteredCoordinates(375, 130)
+			InputBox, name, Add Plugin, % prompt, ,,130,% coords.x,% coords.y,,, % name
 			if (!ErrorLevel){
 				if (!this._IsNameUnique(name)){
 					prompt := "Duplicate name chosen, please enter a unique name"
