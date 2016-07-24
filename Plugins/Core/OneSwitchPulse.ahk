@@ -55,6 +55,7 @@ class OneSwitchPulse extends _Plugin {
 			OutputDebug % "Setting State - " this.Enabled
 			this.SetSubscriptionState(this.Enabled)
 			this.SetTimerState(this.Enabled)
+			this.AsynchBeep((this.Enabled * 500) + 500)
 		}
 	}
 	
@@ -154,5 +155,14 @@ class OneSwitchPulse extends _Plugin {
 			SetTimer, % tfn, Off
 			SetTimer, % rfn, Off
 		}
+	}
+	
+	AsynchBeep(freq, dur := 250){
+		fn := this._AsynchBeep.Bind(this, freq, dir)
+		SetTimer, % fn, -0
+	}
+	
+	_AsynchBeep(freq, dur){
+		SoundBeep, % freq, % dur
 	}
 }
