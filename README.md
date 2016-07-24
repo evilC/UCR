@@ -44,9 +44,10 @@ UCR's code avoids the use of SetTimer, OnMessage etc in the main thread wherever
 
 ##Debugging Plugins
 If you wish to be able to set breakpoints within a plugin, then you must do the following:  
-Edit `UCRDebug.ahk` and place a line like `#include Plugins\User\MyPlugin.ahk` at the end.
-This makes the debugger aware of the plugin, and allows you to place breakpoints within it.
-You may debug any number of plugins in this way.
+Edit `UCRDebug.ahk` and place a line like `#include Plugins\User\MyPlugin.ahk` at the end.  
+Also, make sure the line `#Include *iUCRDebug.ahk` in `UCR.ahk` is not commented out.  
+This makes the debugger aware of the plugin, and allows you to place breakpoints within it.  
+You may debug any number of plugins in this way.  
 
 ##Documentation
 Documentation is forthcoming.
