@@ -32,7 +32,7 @@ class AxisMerge extends _Plugin {
 		Gui, Add, Text, % "x+0 yp w125 Center", Output Virtual Axis
 		Gui, Add, Text, % "x+5 yp w100 Center", Output Preview
 		
-		this.AddControl("MergeMode", this.MyEditChanged.Bind(this), "DDL", "x270 yp+20 w70 AltSubmit", "Average||Greatest")
+		this.AddControl("MergeMode", this.MyEditChanged.Bind(this), "DDL", "x270 yp+20 w70 AltSubmit", "Average||Greatest||Sum")
 		this.AddControl("Deadzone", this.MyEditChanged.Bind(this), "Edit", "x+15 yp w30", "0")
 		Gui, Add, Text, % "x+0 yp+3", `%
 		this.AddControl("Sensitivity", this.MyEditChanged.Bind(this), "Edit", "x+15 yp-3 w30", "100")
@@ -76,8 +76,10 @@ class AxisMerge extends _Plugin {
 				outval := v1 / 2
 			else
 				outval := v2 / 2
+		} else if (this.GuiControls.MergeMode.value = 3){
+			; Sum
+			outval := value1 + value2
 		}
-		
 		; Set the output axis
 		if (this.vAxis && this.vDevice){
 			; Apply Deadzone / Sensitivity
