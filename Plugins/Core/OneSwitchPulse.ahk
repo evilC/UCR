@@ -6,6 +6,7 @@ OneSwitch pulse (J2K version) for UCR
 class OneSwitchPulse extends _Plugin {
 	Type := "OneSwitch Pulse"
 	Description := "OneSwitch Pulse for UCR. Designed to be used with JoyToKey. Add to Global profile."
+	TimerRunning := 0
 	; The Init() method of a plugin is called when one is added. Use it to create your Gui etc
 	Init(){
 		; Create the GUI
@@ -23,6 +24,14 @@ class OneSwitchPulse extends _Plugin {
 		
 		Gui, % this.hwnd ":Add", Text, xs y+10, % "Timeout Button"
 		this.AddOutputButton("TimeoutButton", 0, "xs+100 yp-2 w200")
+		
+		Gui, % this.hwnd ":Add", GroupBox, xm y+20 w630 h45 Section, Special Features
+		
+		;Gui, % this.hwnd ":Add", Text, xs y+10, % "Hold Button"
+		this.AddControl("HoldButtonEnabled", this.HoldButtonChanged.Bind(this), "CheckBox", "xp+5 yp+20 w200", "Hold HoldButton while Pulse is active")
+		
+		Gui, % this.hwnd ":Add", Text, x335 yp, % "HoldButton"
+		this.AddOutputButton("HoldButton", 0, "xp+100 yp-2 w200")
 		
 		Gui, % this.hwnd ":Add", GroupBox, xm yp+40 w440 h130 Section, Timer Settings (All in MilliSeconds)
 		
@@ -70,6 +79,14 @@ class OneSwitchPulse extends _Plugin {
 		Gui, % this.hwnd ":Font"
 	}
 	
+	; Called when the Choice button changes state (key is pressed or released)
+	; Does nothing, the choice button is handled by InputActivity() like all other input
+	ChoiceChangedState(e){
+		;~ OutputDebug, % "Choice changed state to: " (e ? "Down" : "Up")
+		;~ this.DelayTimers()
+	}
+
+
 	; One of the Input Button / Axis bindings in UCR changed state
 	; even ones in other profiles / plugins
 	InputActivity(ipt, state){
@@ -90,6 +107,15 @@ class OneSwitchPulse extends _Plugin {
 		}
 	}
 
+	HoldButtonChanged(e){
+		if (e){
+			if (this.TimerRunning)
+				this.OutputButtons.HoldButton.SetState(1)
+		} else {
+			this.OutputButtons.HoldButton.SetState(0)
+		}
+	}
+	
 	; Schedules the timers to restart after the amount of time specified by the SuspendTime GuiControl
 	ScheduleTimers(){
 		fn := this.ResumePulseFn
@@ -120,13 +146,6 @@ class OneSwitchPulse extends _Plugin {
 		this.AsynchBeep(750,50)
 	}
 	
-	; Called when the Choice button changes state (key is pressed or released)
-	; Does nothing, the choice button is handled by InputActivity() like all other input
-	ChoiceChangedState(e){
-		;~ OutputDebug, % "Choice changed state to: " (e ? "Down" : "Up")
-		;~ this.DelayTimers()
-	}
-
 	; Called when plugin (ie profile) becomes active
 	OnActive(){
 		if (this.Enabled){
@@ -163,6 +182,8 @@ class OneSwitchPulse extends _Plugin {
 			SetTimer, % tfn, % "-" this.GuiControls.TimeOut.Value
 			if (warn := this.GuiControls.TimeOutWarning.Value)
 				SetTimer, % wfn, % "-" warn
+			if (this.GuiControls.HoldButtonEnabled.value)
+				this.OutputButtons.HoldButton.SetState(1)
 		} else if (!state){
 			try {
 				SetTimer, % pfn, Off
@@ -170,7 +191,10 @@ class OneSwitchPulse extends _Plugin {
 				SetTimer, % wfn, Off
 				SetTimer, % rfn, Off
 			}
+			if (this.GuiControls.HoldButtonEnabled.value)
+				this.OutputButtons.HoldButton.SetState(0)
 		}
+		this.TimerRunning := state
 	}
 	
 	AsynchBeep(freq, dur := 250){
