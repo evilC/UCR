@@ -91,7 +91,13 @@ class MouseToJoy extends _Plugin {
 	
 	;MouseEvent(x := 0, y := 0){
 	MouseEvent(value){
-		x := value.x, y := value.y
+		try {
+			x := value.x, y := value.y
+		} catch {
+			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
+			; This seems to fix it, but this should probably be properly investigated.
+			return
+		}
 		;OutputDebug % "Plugin - X: " x ", Y: " y
 		; The "Range" for a given axis is -50 to +50
 		static curr_x := 0, curr_y := 0
