@@ -145,9 +145,9 @@ class OneSwitchPulse extends _Plugin {
 	; Turns on or off the listening of input activity
 	SetSubscriptionState(state){
 		if (state){
-			UCR.SubscribeToInputActivity(this.hwnd, this.InputActivity.Bind(this))
+			UCR.SubscribeToInputActivity(this.hwnd, this.ParentProfile.id, this.InputActivity.Bind(this))
 		} else {
-			UCR.UnSubscribeToInputActivity(this.hwnd)
+			UCR.UnSubscribeToInputActivity(this.hwnd, this.ParentProfile.id)
 		}
 	}
 	

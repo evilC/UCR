@@ -396,24 +396,26 @@ Class UCRMain {
 	
 	; Request notification of input activity.
 	; Mainly for use by OneSwitch plugin
-	SubscribeToInputActivity(hwnd, callback){
-		this._InputActivitySubscriptions[hwnd] := callback
+	SubscribeToInputActivity(hwnd, profile_id, callback){
+		this._InputActivitySubscriptions[hwnd] := {callback: callback, profile_id: profile_id}
 	}
 	
-	UnSubscribeToInputActivity(hwnd){
+	UnSubscribeToInputActivity(hwnd, profile_id){
 		this._InputActivitySubscriptions.Delete(hwnd)
 	}
 	
 	; There was input activity on a profile
 	; This is fired after the input is processed, and is solely for the purpose of UCR being able to detect that activity is happening.
 	_InputEvent(ipt, state){
-		for hwnd, cb in this._InputActivitySubscriptions {
-			if (IsObject(cb))
-				cb.Call(ipt, state)
+		for hwnd, obj in this._InputActivitySubscriptions {
+			cb := obj.callback, profile_id := obj.pro
+			if (IsObject(obj.callback)  && ObjHasKey(this._ActiveInputThreads, obj.profile_id))
+				obj.callback.Call(ipt, state)
 		}
 	}
 	
 	FireProfileTreeChangeCallbacks(){
+		; ToDo, ProfileTreeChangeSubscriptions should not fire if the profile is not active
 		for hwnd, cb in this._ProfileTreeChangeSubscriptions {
 			if (IsObject(cb))
 				cb.Call()

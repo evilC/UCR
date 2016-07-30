@@ -111,12 +111,12 @@ class OneSwitchProfileSwitcher extends _Plugin {
 
 	OnActive(){
 		;this.SetPulseState(0)
-		UCR.SubscribeToInputActivity(this.hwnd, this.ResetTimeOut.Bind(this))
+		UCR.SubscribeToInputActivity(this.hwnd, this.ParentProfile.id, this.ResetTimeOut.Bind(this))
 	}
 	
 	OnInActive(){
 		this.SetPulseState(0)
-		UCR.UnSubscribeToInputActivity(this.hwnd)
+		UCR.UnSubscribeToInputActivity(this.hwnd, this.ParentProfile.id)
 	}
 	
 	Toggle(e){
