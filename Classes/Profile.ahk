@@ -151,7 +151,7 @@ Class _Profile {
 	
 	; Show the GUI
 	_Show(){
-		Gui, % this.hwnd ":Show"
+		Gui, % this.hwnd ":Show", % "h" UCR.CurrentSize.h - UCR.TOP_PANEL_HEIGHT
 	}
 	
 	; Hide the GUI
