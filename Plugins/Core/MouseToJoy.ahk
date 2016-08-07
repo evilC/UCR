@@ -49,6 +49,10 @@ class MouseToJoy extends _Plugin {
 		this.AddControl("InvertX", 0, "CheckBox", "xp+5 y" x_row+3, "", 0)
 		this.AddControl("InvertY", 0, "CheckBox", "xp y" y_row+3, "", 0)
 		
+		Gui, Add, GroupBox, % "x305 ym w105 Section h" y_row+25, % "Multi-Mouse"
+		Gui, Add, Text, % "hwndhMouseID xs+5 y" title_row
+		this.hMouseID := hMouseID
+		
 		; Outputs
 		this.AddOutputAxis("OutputAxisX", 0, "x420 w125 y" x_row)
 		this.AddOutputAxis("OutputAxisY", 0, "x420 w125 y" y_row)
@@ -63,7 +67,7 @@ class MouseToJoy extends _Plugin {
 		this.AddInputDelta("MouseDelta", this.MouseEvent.Bind(this))
 		
 		;this.MouseTimeoutFn := this.OnMouseTimeout.Bind(this)
-		this.MouseTimeoutFn := this.MouseEvent.Bind(this, {x: 0, y: 0})
+		;this.MouseTimeoutFn := this.MouseEvent.Bind(this, {x: 0, y: 0})
 	}
 	
 	OnActive(){
@@ -92,7 +96,7 @@ class MouseToJoy extends _Plugin {
 	;MouseEvent(x := 0, y := 0){
 	MouseEvent(value){
 		try {
-			x := value.x, y := value.y
+			x := value.x, y := value.y, MouseID := value.MouseID
 		} catch {
 			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
 			; This seems to fix it, but this should probably be properly investigated.
@@ -132,8 +136,10 @@ class MouseToJoy extends _Plugin {
 			GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(curr_y)
 		}
 		
+		GuiControl, , % this.hMouseID, % MouseID
 		if (this.Mode = 1 && (x != 0 || y != 0)){
-			fn := this.MouseTimeoutFn
+			;fn := this.MouseTimeoutFn
+			fn := this.MouseEvent.Bind(this, {x: 0, y: 0, MouseID: MouseID})
 			SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.value
 		}
 	}
