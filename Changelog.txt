@@ -5,6 +5,8 @@ Key:
 + : Added feature
 
 0.0.16 - ??
++ The MouseToJoy plugin can now be configured to only take input from a specific mouse.
+You can now use multiple MouseToJoy plugins if you have more than one pointing device.
 = The Timeout value for Absolute mode in the Mouse to Joystick plugin now works.
 + Added "HoldButton" functionality to OneSwitch Pulse plugin.
 + InputActivity subscriptions no longer fire if the plugin is not active.

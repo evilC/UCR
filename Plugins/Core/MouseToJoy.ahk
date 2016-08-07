@@ -10,6 +10,7 @@ class MouseToJoy extends _Plugin {
 	RelativeTimeout := {x: 10, y: 10}
 	RelativeScaleFactor := {x: 1, y: 1}
 	Mode := 2	; 1 = Absolute, 2 = Relative
+	SeenMice := {}
 	
 	Init(){
 		title_row := 25
@@ -49,9 +50,17 @@ class MouseToJoy extends _Plugin {
 		this.AddControl("InvertX", 0, "CheckBox", "xp+5 y" x_row+3, "", 0)
 		this.AddControl("InvertY", 0, "CheckBox", "xp y" y_row+3, "", 0)
 		
+		; Mouse Selection
 		Gui, Add, GroupBox, % "x305 ym w105 Section h" y_row+25, % "Multi-Mouse"
-		Gui, Add, Text, % "hwndhMouseID xs+5 y" title_row
-		this.hMouseID := hMouseID
+		Gui, Add, Text, % "xs+5 Center w90 y" title_row - 5, Mouse Picker
+		Gui, Add, DDL, hwndhSelectMouse xs+5 yp+15 w90, Any||
+		fn := this.MouseSelectChanged.Bind(this)
+		this.MouseSelectChangedFn := fn
+		GuiControl, +g, % hSelectMouse, % fn
+		this.hSelectMouse := hSelectMouse
+		
+		Gui, Add, Text, % "xs+5 Center w90 y+2", Current Mouse
+		this.AddControl("MouseID", 0, "Edit", "xs+5 y+2 w90", "")
 		
 		; Outputs
 		this.AddOutputAxis("OutputAxisX", 0, "x420 w125 y" x_row)
@@ -84,6 +93,15 @@ class MouseToJoy extends _Plugin {
 		;this.MouseDelta := ""
 	}
 	
+	MouseSelectChanged(){
+		GuiControlGet, val,, % this.hSelectMouse
+		if (val == "Any" || val == 0){
+			val := ""
+		}
+		this.GuiControls.MouseID.value := val
+		GuiControl, , % this.GuiControls.MouseID.hwnd, % val
+	}
+	
 	;~ Calibrate(axis){
 		;~ static state := 0
 		;~ if (axis = "x"){
@@ -102,7 +120,9 @@ class MouseToJoy extends _Plugin {
 			; This seems to fix it, but this should probably be properly investigated.
 			return
 		}
-		;OutputDebug % "Plugin - X: " x ", Y: " y
+		m_id := this.GuiControls.MouseID.value
+		if (m_id && m_id != value.MouseID)
+			return
 		; The "Range" for a given axis is -50 to +50
 		static curr_x := 0, curr_y := 0
 		
@@ -136,7 +156,11 @@ class MouseToJoy extends _Plugin {
 			GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(curr_y)
 		}
 		
-		GuiControl, , % this.hMouseID, % MouseID
+		if (!ObjHasKey(this.SeenMice, MouseID)){
+			this.SeenMice[MouseID] := 1
+			GuiControl, , % this.hSelectMouse, % MouseID
+		}
+		
 		if (this.Mode = 1 && (x != 0 || y != 0)){
 			;fn := this.MouseTimeoutFn
 			fn := this.MouseEvent.Bind(this, {x: 0, y: 0, MouseID: MouseID})
