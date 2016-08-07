@@ -277,6 +277,10 @@ class _InputThread {
 		static DeviceSize := 2 * A_PtrSize, iSize := 0, sz := 0, offsets := {x: (20+A_PtrSize*2), y: (24+A_PtrSize*2)}, uRawInput
  
 		static axes := {x: 1, y: 2}
+		VarSetCapacity(raw, 40, 0)
+		If (!DllCall("GetRawInputData",uint,lParam,uint,0x10000003,uint,&raw,"uint*",40,uint, 16) or ErrorLevel)
+			Return 0
+		ThisMouse := NumGet(raw, 8)
  
 		; Find size of rawinput data - only needs to be run the first time.
 		if (!iSize){
@@ -291,7 +295,7 @@ class _InputThread {
 		y := NumGet(&uRawInput, offsets.y, "Int")
  
 		for hwnd, obj in this.MouseDeltaMappings {
-			this.InputEvent(obj, {x: x, y: y})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
+			this.InputEvent(obj, {x: x, y: y, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
 		}
  
 		; There is no message for "Stopped", so simulate one
