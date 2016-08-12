@@ -11,6 +11,10 @@ class MouseToJoy extends _Plugin {
 	RelativeScaleFactor := {x: 1, y: 1}
 	Mode := 2	; 1 = Absolute, 2 = Relative
 	SeenMice := {}
+	CurrX := 0
+	CurrY := 0
+	TimerX := 0
+	TimerY := 0
 	
 	Init(){
 		title_row := 25
@@ -113,8 +117,9 @@ class MouseToJoy extends _Plugin {
 	
 	;MouseEvent(x := 0, y := 0){
 	MouseEvent(value){
+		; The "Range" for a given axis is -50 to +50
 		try {
-			x := value.x, y := value.y, MouseID := value.MouseID
+			x := value.axes.x, y := value.axes.y, MouseID := value.MouseID, dox := (x != ""), doy := (y != "")
 		} catch {
 			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
 			; This seems to fix it, but this should probably be properly investigated.
@@ -123,48 +128,72 @@ class MouseToJoy extends _Plugin {
 		m_id := this.GuiControls.MouseID.value
 		if (m_id && m_id != value.MouseID)
 			return
-		; The "Range" for a given axis is -50 to +50
-		static curr_x := 0, curr_y := 0
 		
 		if (this.Mode = 1){
-			curr_x := x * this.AbsoluteThresholdFactor.X
-			curr_y := y * this.AbsoluteThresholdFactor.Y
+			if (dox)
+				this.CurrX := x * this.AbsoluteThresholdFactor.X
+			if (doy)
+				this.CurrY := y * this.AbsoluteThresholdFactor.Y
 		} else {
-			if (this.GuiControls.InvertX.value)
-				x *= -1
-			curr_x += ( x * this.RelativeScaleFactor.X )
-			if (curr_x > 50)
-				curr_x := 50
-			else if (curr_x < -50)
-				curr_x := -50
+			if (dox){
+				if (this.GuiControls.InvertX.value)
+					x *= -1
+				this.CurrX += ( x * this.RelativeScaleFactor.X )
+				if (this.CurrX > 50)
+					this.CurrX := 50
+				else if (this.CurrX < -50)
+					this.CurrX := -50
+			}
 			
-			if (this.GuiControls.InvertY.value)
-				y *= -1
-			curr_y += ( y * this.RelativeScaleFactor.Y )
-			if (curr_y > 50)
-				curr_y := 50
-			else if (curr_y < -50)
-				curr_y := -50
+			if (doy){
+				if (this.GuiControls.InvertY.value)
+					y *= -1
+				this.CurrY += ( y * this.RelativeScaleFactor.Y )
+				if (this.CurrY > 50)
+					this.CurrY := 50
+				else if (this.CurrY < -50)
+					this.CurrY := -50
+			}
 		}
-		;OutputDebug, % "UCR| x: " curr_x " (" UCR.Libraries.StickOps.InternalToAHK(curr_x) "), y: " curr_y
-		if (this.OutputAxes.OutputAxisX.value.DeviceID && this.OutputAxes.OutputAxisX.value.Axis){
-			this.OutputAxes.OutputAxisX.SetState(UCR.Libraries.StickOps.InternalToVjoy(curr_x))
-			GuiControl, , % this.hSliderX, % UCR.Libraries.StickOps.InternalToAHK(curr_x)
-		}
-		if (this.OutputAxes.OutputAxisY.value.DeviceID && this.OutputAxes.OutputAxisY.value.Axis){
-			this.OutputAxes.OutputAxisY.SetState(UCR.Libraries.StickOps.InternalToVjoy(curr_y))
-			GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(curr_y)
+		if (dox){
+			;OutputDebug, % "UCR| x: " this.CurrX " (" UCR.Libraries.StickOps.InternalToAHK(this.CurrX) "), y: " this.CurrY
+			if (this.OutputAxes.OutputAxisX.value.DeviceID && this.OutputAxes.OutputAxisX.value.Axis){
+				this.OutputAxes.OutputAxisX.SetState(UCR.Libraries.StickOps.InternalToVjoy(this.CurrX))
+				GuiControl, , % this.hSliderX, % UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
+			}
 		}
 		
+		if (doy){
+			if (this.OutputAxes.OutputAxisY.value.DeviceID && this.OutputAxes.OutputAxisY.value.Axis){
+				this.OutputAxes.OutputAxisY.SetState(UCR.Libraries.StickOps.InternalToVjoy(this.CurrY))
+				GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(this.CurrY)
+			}
+		}
 		if (!ObjHasKey(this.SeenMice, MouseID)){
 			this.SeenMice[MouseID] := 1
 			GuiControl, , % this.hSelectMouse, % MouseID
 		}
 		
-		if (this.Mode = 1 && (x != 0 || y != 0)){
-			;fn := this.MouseTimeoutFn
-			fn := this.MouseEvent.Bind(this, {x: 0, y: 0, MouseID: MouseID})
-			SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.value
+		; In Absolute mode, emulate centering with a timeout
+		if (this.Mode = 1){
+			if (dox && x != 0){
+				if (this.TimerX != 0){
+					fn := this.TimerX
+					SetTimer, % fn, Off
+				}
+				fn := this.MouseEvent.Bind(this, {axes: {x: 0}, MouseID: MouseID})
+				this.TimerX := fn
+				SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.value
+			}
+			if (doy && y != 0){
+				if (this.TimerY != 0){
+					fn := this.TimerY
+					SetTimer, % fn, Off
+				}
+				fn := this.MouseEvent.Bind(this, {axes: {y: 0}, MouseID: MouseID})
+				this.TimerY := fn
+				SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.value
+			}
 		}
 	}
 	

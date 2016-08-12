@@ -293,9 +293,17 @@ class _InputThread {
  
 		x := NumGet(&uRawInput, offsets.x, "Int")
 		y := NumGet(&uRawInput, offsets.y, "Int")
- 
+		
+		xy := {}
+		if (x){
+			xy.x := x
+		}
+		if (y){
+			xy.y := y
+		}
+
 		for hwnd, obj in this.MouseDeltaMappings {
-			this.InputEvent(obj, {x: x, y: y, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
+			this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
 		}
  
 		; There is no message for "Stopped", so simulate one
