@@ -5,7 +5,7 @@ Features Absolute and Relative modes
 class MouseToJoy extends _Plugin {
 	Type := "Remapper (Mouse Axis To Joystick Axis)"
 	Description := "Converts mouse input delta information into two joystick axes"
-	AbsoluteThresholdFactor := {x: 10, y: 10}
+	AbsoluteScaleFactor := {x: 10, y: 10}
 	AbsoluteTimeout := {x: 10, y: 10}
 	RelativeTimeout := {x: 10, y: 10}
 	RelativeScaleFactor := {x: 1, y: 1}
@@ -20,21 +20,20 @@ class MouseToJoy extends _Plugin {
 		title_row := 25
 		x_row := 45
 		y_row := x_row + 25
-		;Gui, Add, Text, y+5 , Absolute Mode threshold
 		Gui, Add, Text, % "xm y" x_row+3, X AXIS
 		Gui, Add, Text, % "xm y" y_row+3, Y AXIS
 		
 		; Absolute mode
 		Gui, Add, GroupBox, % "x50 ym w125 Section h" y_row+25, % "Absolute Mode"
-		Gui, Add, Text, % "xs+10 y" title_row, Threshold
-		this.AddControl("AbsoluteThresholdX", this.ThresholdChanged.Bind(this, "X"), "Edit", "x70 w30 y" x_row, 10)
+		Gui, Add, Text, % "xs+5 y" title_row, Scale Factor
+		this.AddControl("AbsoluteScaleX", this.AbsoluteScaleChanged.Bind(this, "X"), "Edit", "x70 w30 y" x_row, 10)
 		;~ Gui, Add, Button, % "x+5 yp hwndhwnd", Calibrate
 		;~ fn := this.Calibrate.Bind(this, "X")
 		;~ GuiControl +g, % hwnd, % fn
 		Gui, Add, Text, % "x120 w40 center y" title_row, Timeout
 		this.AddControl("AbsoluteTimeout", this.TimeoutChanged.Bind(this, "X"), "Edit", "x120 w40 y" x_row + 10, 50)
 		
-		this.AddControl("AbsoluteThresholdY", this.ThresholdChanged.Bind(this, "Y"), "Edit", "x70 w30 y" y_row, 10)
+		this.AddControl("AbsoluteScaleY", this.AbsoluteScaleChanged.Bind(this, "Y"), "Edit", "x70 w30 y" y_row, 10)
 		;~ Gui, Add, Button, % "x+5 yp hwndhwnd", Calibrate
 		;~ fn := this.Calibrate.Bind(this, "Y")
 		;~ GuiControl +g, % hwnd, % fn
@@ -46,8 +45,8 @@ class MouseToJoy extends _Plugin {
 		;this.AddControl("RelativeTimeoutX", this.TimeoutChanged.Bind(this, 2, "X"), "Edit", "x200 w40 y" x_row, 10)
 		;this.AddControl("RelativeTimeoutY", this.TimeoutChanged.Bind(this, 2, "Y"), "Edit", "x200 w40 y" y_row, 10)
 		Gui, Add, Text, % "xs+5 center y" title_row, Scale Factor
-		this.AddControl("RelativeScaleFactorX", this.ScaleFactorChanged.Bind(this, "X"), "Edit", "xs+5 w45 y" x_row, 1)
-		this.AddControl("RelativeScaleFactorY", this.ScaleFactorChanged.Bind(this, "Y"), "Edit", "xs+5 w45 y" y_row, 1)
+		this.AddControl("RelativeScaleFactorX", this.RelativeScaleChanged.Bind(this, "X"), "Edit", "xs+5 w45 y" x_row, 1)
+		this.AddControl("RelativeScaleFactorY", this.RelativeScaleChanged.Bind(this, "Y"), "Edit", "xs+5 w45 y" y_row, 1)
 		
 		; Tweaks
 		Gui, Add, Text, % "x+25 w20 center y" title_row, Invert
@@ -131,9 +130,9 @@ class MouseToJoy extends _Plugin {
 		
 		if (this.Mode = 1){
 			if (dox)
-				this.CurrX := x * this.AbsoluteThresholdFactor.X
+				this.CurrX := x * this.AbsoluteScaleFactor.X
 			if (doy)
-				this.CurrY := y * this.AbsoluteThresholdFactor.Y
+				this.CurrY := y * this.AbsoluteScaleFactor.Y
 		} else {
 			if (dox){
 				if (this.GuiControls.InvertX.value)
@@ -206,8 +205,9 @@ class MouseToJoy extends _Plugin {
 	}
 	
 	; === Absolute Mode variable changed
-	ThresholdChanged(axis, value){
-		this.AbsoluteThresholdFactor[axis] := 100 / value
+	AbsoluteScaleChanged(axis, value){
+		;this.AbsoluteScaleFactor[axis] := 100 / value
+		this.AbsoluteScaleFactor[axis] := value
 	}
 	
 	TimeoutChanged(axis, value){
@@ -216,7 +216,7 @@ class MouseToJoy extends _Plugin {
 	}
 	
 	; === Relative Mode variable changed
-	ScaleFactorChanged(axis, value){
+	RelativeScaleChanged(axis, value){
 		this.RelativeScaleFactor[axis] := value
 	}
 }
