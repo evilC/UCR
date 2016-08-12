@@ -64,6 +64,8 @@ class OneSwitchPulse extends _Plugin {
 	Toggle(e){
 		if (e){
 			this.Enabled := !this.Enabled
+			if (this.GuiControls.HoldButtonEnabled.value)
+				this.OutputButtons.HoldButton.SetState(this.Enabled)
 			this.ShowStatus()
 			OutputDebug % "UCR| Setting State - " this.Enabled
 			this.SetSubscriptionState(this.Enabled)
@@ -182,8 +184,6 @@ class OneSwitchPulse extends _Plugin {
 			SetTimer, % tfn, % "-" this.GuiControls.TimeOut.Value
 			if (warn := this.GuiControls.TimeOutWarning.Value)
 				SetTimer, % wfn, % "-" warn
-			if (this.GuiControls.HoldButtonEnabled.value)
-				this.OutputButtons.HoldButton.SetState(1)
 		} else if (!state){
 			try {
 				SetTimer, % pfn, Off
@@ -191,8 +191,6 @@ class OneSwitchPulse extends _Plugin {
 				SetTimer, % wfn, Off
 				SetTimer, % rfn, Off
 			}
-			if (this.GuiControls.HoldButtonEnabled.value)
-				this.OutputButtons.HoldButton.SetState(0)
 		}
 		this.TimerRunning := state
 	}
