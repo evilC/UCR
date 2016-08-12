@@ -5,8 +5,12 @@ Key:
 + : Added feature
 
 0.0.16 - ??
-+ The MouseToJoy plugin can now be configured to only take input from a specific mouse.
-You can now use multiple MouseToJoy plugins if you have more than one pointing device.
++ Numerous fixes and tweaks to the The MouseToJoy plugin:
+  Renamed Threshold in Absolute mode to Scale Factor.
+  You may lose your setting for this GuiControl as it was renamed.
+  Fixed numerous bugs which made Absolute mode center the stick way too much.
+  It can now be configured to only take input from a specific mouse.
+  You can now use multiple MouseToJoy plugins if you have more than one pointing device.
 = The Timeout value for Absolute mode in the Mouse to Joystick plugin now works.
 + Added "HoldButton" functionality to OneSwitch Pulse plugin.
 + InputActivity subscriptions no longer fire if the plugin is not active.
