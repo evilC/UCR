@@ -414,7 +414,6 @@ Class UCRMain {
 	}
 	
 	FireProfileTreeChangeCallbacks(){
-		; ToDo, ProfileTreeChangeSubscriptions should not fire if the profile is not active
 		for hwnd, cb in this._ProfileTreeChangeSubscriptions {
 			if (IsObject(cb))
 				cb.Call()
