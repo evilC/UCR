@@ -73,7 +73,6 @@ Class _OutputButton extends _InputButton {
 					UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
 				} else if (key.Type >= 3 && key.IsVirtual){
 					; Virtual Joystick POV Hat
-					; ToDo: Make hat number selection actually work
 					device := UCR.Libraries.vJoy.Devices[key.DeviceID]
 					if (!IsObject(device.PovState))
 						device.PovState := {x: 0, y: 0}
