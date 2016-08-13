@@ -10,21 +10,24 @@ Class _InputHandler {
 	}
 	
 	; Set a Button Binding
-	SetButtonBinding(BtnObj){
+	SetButtonBinding(BtnObj, delete := 0){
 		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
-		bindstring := this.BuildHotkeyString(BtnObj.value)
+		if (delete)
+			bindstring := ""
+		else
+			bindstring := this.BuildHotkeyString(BtnObj.value)
 		; Set binding in Profile's InputThread
 		BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
 		return 1
 	}
 	
 	; Set an Axis Binding
-	SetAxisBinding(AxisObj){
-		AxisObj.ParentPlugin.ParentProfile._SetAxisBinding(ObjShare(AxisObj))
+	SetAxisBinding(AxisObj, delete := 0){
+		AxisObj.ParentPlugin.ParentProfile._SetAxisBinding(ObjShare(AxisObj), delete)
 	}
 	
-	SetDeltaBinding(DeltaObj){
-		DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj))
+	SetDeltaBinding(DeltaObj, delete := 0){
+		DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj), delete)
 	}
 	
 	; Check InputButtons for duplicates etc

@@ -97,7 +97,7 @@ class _InputThread {
 	
 	; Removes the binding for an InputButton GUIControl
 	RemoveButtonBinding(hwnd){
-		if (this.Bindings[hwnd]){
+		if (ObjHasKey(this.Bindings, hwnd)){
 			hotkey, % this.Bindings[hwnd], Dummy
 			hotkey, % this.Bindings[hwnd], Off
 			try {
@@ -106,7 +106,10 @@ class _InputThread {
 			}
 			this.Bindings.Delete(hwnd)
 		}
-		if (this.Hats[hwnd]){
+		if (ObjHasKey(this.BindingHKs, hwnd)){
+			this.BindingHKs.delete(hwnd)
+		}
+		if (ObjHasKey(this.Hats, hwnd)){
 			; Remove existing binding
 			this.Hats.Delete(hwnd)
 			this.HatBindstrings.Delete(hwnd)
@@ -124,19 +127,19 @@ class _InputThread {
 			;OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code ", bindstring: " hkstring
 			oldstate := this.JoystickTimerState
 			this.SetJoystickTimerState(0)
-			this.RemoveButtonBinding()
+			this.RemoveButtonBinding(hwnd)
 			this.Hats[hwnd] := hk
 			this.HatBindstrings[hwnd] := hkstring
 			this.HatStates[hwnd] := 0
 			if (oldstate)
-				this.SetJoystickTimerState(1)
+				this.SetJoystickTimerState(oldstate)
 		} else {
 			;OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
 			this.RemoveButtonBinding(hwnd)
-			this.Bindings[hwnd] := hkstring
-			this.BindingHKs[hwnd] := hk
 			;OutputDebug % "Binding " hkstring
 			if (hkstring){
+				this.Bindings[hwnd] := hkstring
+				this.BindingHKs[hwnd] := hk
 				fn := this.InputEvent.Bind(this, hk, 1)
 				hotkey, % hkstring, % fn, On
 				; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)

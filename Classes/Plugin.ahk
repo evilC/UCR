@@ -178,7 +178,6 @@ Class _Plugin {
 	
 	; The plugin was closed (deleted)
 	_Close(){
-		; ToDo: These should call UCR.RequestXxxBinding, as bindings were added that way
 		; Call plugin's OnDelete method, if it exists
 		if (IsFunc(this["OnDelete"])){
 			this.OnDelete()
@@ -186,18 +185,18 @@ Class _Plugin {
 		; Remove input bindings etc here
 		; Some attempt is also made to free resources so destructors fire, though this is a WIP
 		for name, obj in this.InputButtons {
-			this.ParentProfile._SetButtonBinding(ObjShare(obj))
+			UCR._InputHandler.SetButtonBinding(obj, 1)
 			obj._KillReferences()
 		}
 		for Name, obj in this.InputAxes {
-			this.ParentProfile._SetAxisBinding(ObjShare(obj),1)
-			obj._KillReferences()
-		}
-		for name, obj in this.OutputButtons {
+			UCR._InputHandler.SetAxisBinding(obj, 1)
 			obj._KillReferences()
 		}
 		for name, obj in this.InputDeltas {
-			this.ParentProfile._SetDeltaBinding(ObjShare(obj),1)
+			UCR._InputHandler.SetDeltaBinding(obj, 1)
+			obj._KillReferences()
+		}
+		for name, obj in this.OutputButtons {
 			obj._KillReferences()
 		}
 		for name, obj in this.OutputAxes {

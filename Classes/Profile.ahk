@@ -28,6 +28,19 @@ Class _Profile {
 		this._CreateGui()
 	}
 	
+	SetButtonBinding(BtnObj, delete := 0){
+		UCR._InputHandler.SetButtonBinding(BtnObj, delete)
+	}
+	
+	SetAxisBinding(AxisObj, delete := 0){
+		this._SetAxisBinding(AxisObj, delete)
+	}
+	
+	SetDeltaBinding(DeltaObj, delete := 0){
+		UCR._InputHandler.SetDeltaBinding(DeltaObj, delete)
+	}
+	
+	
 	; Updates the list of "Linked" profiles...
 	; plugin = plugin altering it's link status with a profile
 	; profile = profile that the plugin is altering it's relation to
