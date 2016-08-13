@@ -43,7 +43,6 @@ class _InputThread {
 	
 	; All input flows from here back to the main thread
 	InputEvent(hk, event){
-		; ToDo: Fix bug - The below line seems to be firing with empty event - even when no keys are pressed.
 		this.Callback.Call(hk._Ptr,event)
 		
 		keys := hk.__value
