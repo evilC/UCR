@@ -138,14 +138,19 @@ Class _OutputButton extends _InputButton {
 	_SelectvJoy(){
 		Gui, % this.hVjoySelect ":Show"
 		UCR.MoveWindowToCenterOfGui(this.hVjoySelect)
-		dev := this.__value.Buttons[1].DeviceId + 1
-		GuiControl, % this.hVjoySelect ":Choose", % this.hVjoyDevice, % dev
-		if (this.__value.Buttons[1].Type >= 3){
+		dev := this.__value.Buttons[1].DeviceId
+		type := this.__value.Buttons[1].Type
+		if (type > 1){
+			if (dev){
+				GuiControl, % this.hVjoySelect ":Choose", % this.hVjoyDevice, % dev + 1
+				if (type == 2)
+					GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyButton, % this.__value.Buttons[1].code + 1
+			}
+		}
+		if (type >= 3){
 			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatNumber, % this.__value.Buttons[1].Type - 1
 			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatDir, % this.__value.Buttons[1].code + 1
-		} else {
-			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyButton, % this.__value.Buttons[1].code + 1
-		}
+		} 
 	}
 	
 	vJoyOptionSelected(what){
