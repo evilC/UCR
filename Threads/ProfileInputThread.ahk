@@ -181,14 +181,16 @@ class _InputThread {
 	
 	; Subscribes to "delta" mouse movement
 	SetDeltaBindingCallBack(DeltaObj, delete := 0){
-		if (DeltaObj.value == "")	; ToDo: bit of a bodge. Fix. Remove delete param?
-			delete := 1
 		if (delete){
 			this.MouseDeltaMappings.Delete(DeltaObj.hwnd)
-		} else {
+		} else if (!ObjHasKey(this.MouseDeltaMappings, DeltaObj.hwnd)){
 			this.MouseDeltaMappings[DeltaObj.hwnd] := DeltaObj
 		}
-		if (this.MouseDeltaMappings == {}){
+		for k in this.MouseDeltaMappings {
+			count := 1
+			break
+		}
+		if (!count){
 			this.UnRegisterMouse()
 		} else {
 			this.RegisterMouse()

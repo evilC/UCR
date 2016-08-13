@@ -11,19 +11,17 @@ class _InputDelta {
 	}
 	
 	Register(){
-		this.value := 1
-		UCR.RequestDeltaBinding(this)
+		UCR._InputHandler.SetDeltaBinding(this)
 	}
 	
 	UnRegister(){
-		this.value := 0
-		UCR.RequestDeltaBinding(this)
+		UCR._InputHandler.SetDeltaBinding(this, 1)
 	}
 	
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
-		UCR.RequestDeltaBinding(this)
+		this.Register()
 	}
 	
 	_Serialize(){
