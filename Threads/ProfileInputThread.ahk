@@ -95,23 +95,36 @@ class _InputThread {
 		SetTimer,% fn,-1
 	}
 	
+	; Removes the binding for an InputButton GUIControl
+	RemoveButtonBinding(hwnd){
+		if (this.Bindings[hwnd]){
+			hotkey, % this.Bindings[hwnd], Dummy
+			hotkey, % this.Bindings[hwnd], Off
+			try {
+				hotkey, % this.Bindings[hwnd] " up", Dummy
+				hotkey, % this.Bindings[hwnd] " up", Off
+			}
+			this.Bindings.Delete(hwnd)
+		}
+		if (this.Hats[hwnd]){
+			; Remove existing binding
+			this.Hats.Delete(hwnd)
+			this.HatBindstrings.Delete(hwnd)
+			this.HatStates.Delete(hwnd)
+		}
+	}
+	
 	; Sets a button binding.
 	; This can either be using AHK hotkeys (for regular keyboard, mouse, joystick button down events etc)...
 	; ... or for "emulated" events such as joystick hat direction press/release, or simulating "proper" up events for joystick buttons
 	SetButtonBindingCallback(hk, hkstring := ""){
 		hwnd := hk.hwnd
-		; ToDo: Fix bug: If old binding was a different type, it will not get removed
 		if (hk.__value.Type = 3){
 			; joystick hat
 			;OutputDebug % "bind stick " hk.__value.Buttons[1].deviceid ", hat dir " hk.__value.Buttons[1].code ", bindstring: " hkstring
 			oldstate := this.JoystickTimerState
 			this.SetJoystickTimerState(0)
-			if (hkstring == "" || this.Hats[hwnd]){
-				; Remove existing binding
-				this.Hats.Delete(hwnd)
-				this.HatBindstrings.Delete(hwnd)
-				this.HatStates.Delete(hwnd)
-			}
+			this.RemoveButtonBinding()
 			this.Hats[hwnd] := hk
 			this.HatBindstrings[hwnd] := hkstring
 			this.HatStates[hwnd] := 0
@@ -119,34 +132,18 @@ class _InputThread {
 				this.SetJoystickTimerState(1)
 		} else {
 			;OutputDebug % "Setting Binding for hotkey " hk.name " to " hkstring
-			if (!hkstring){
-				;OutputDebug % "Deleting hotkey " this.Bindings[hwnd]
-				if (this.Bindings[hwnd]){
-					hotkey, % this.Bindings[hwnd], Dummy
-					hotkey, % this.Bindings[hwnd], Off
-					try {
-						hotkey, % this.Bindings[hwnd] " up", Dummy
-						hotkey, % this.Bindings[hwnd] " up", Off
-					}
-				}
-				this.Bindings.Delete(hwnd)
-				return
-			}
-			if (ObjHasKey(this.Bindings, hwnd)){
-				hotkey, % this.Bindings[hwnd], Off
-				try {
-					hotkey, % this.Bindings[hwnd] " up", Off
-				}
-			}
+			this.RemoveButtonBinding(hwnd)
 			this.Bindings[hwnd] := hkstring
 			this.BindingHKs[hwnd] := hk
 			;OutputDebug % "Binding " hkstring
-			fn := this.InputEvent.Bind(this, hk, 1)
-			hotkey, % hkstring, % fn, On
-			; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
-			if (hk.__value.Type = 1){
-				fn := this.InputEvent.Bind(this, hk, 0)
-				hotkey, % hkstring " up", % fn, On
+			if (hkstring){
+				fn := this.InputEvent.Bind(this, hk, 1)
+				hotkey, % hkstring, % fn, On
+				; Do not bind up events for joystick buttons as they fire straight after the down event (are inaccurate)
+				if (hk.__value.Type = 1){
+					fn := this.InputEvent.Bind(this, hk, 0)
+					hotkey, % hkstring " up", % fn, On
+				}
 			}
 		}
 	}
