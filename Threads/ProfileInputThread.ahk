@@ -29,7 +29,7 @@ class _InputThread {
 		Gui, +HwndHwnd		; Get a unique hwnd so we can register for messages
 		this.hwnd := hwnd
 		this.JoystickWatcherFn := this.JoystickWatcher.Bind(this)
-		;this.MouseTimeOutDuration := 10	; ToDo: Allow changing
+		;this.MouseTimeOutDuration := 10
 		;this.MouseTimeoutFn := this.OnMouseTimeout.Bind(this)
 		this.MouseMoveFn := this.OnMouseMove.Bind(this)
 		; Add interfaces so main thread can call methods in a thread-safe manner
