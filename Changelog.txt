@@ -15,7 +15,7 @@ Key:
 + OneSwitch Pulse now properly holds the HoldButton when pulse is on.
 + Added "HoldButton" functionality to OneSwitch Pulse plugin.
 + InputActivity subscriptions no longer fire if the plugin is not active.
-This only really affects OneSwitch Pulse or any custom plugins using InputActivity.
+  This only really affects OneSwitch Pulse or any custom plugins using InputActivity.
 
 0.0.15 - 24th July 2016
 ! All ProfileSwitcher plugins will no longer be bound to a profile.
