@@ -81,7 +81,6 @@ Class _InputHandler {
 	InputEvent(ipt, state){
 		ipt := Object(ipt)	; Resolve input object back from pointer
 		if (ipt.__value.Suppress && state && ipt.State > 0){
-			; ToDo: don't do this check for axes
 			; Suppress repeats option
 			return
 		}
