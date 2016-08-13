@@ -180,8 +180,7 @@ Class UCRMain {
 	_OnMove(wParam, lParam, msg, hwnd){
 		;this.CurrentPos := {x: LoWord(lParam), y: HiWord(lParam)}
 		; Use WinGetPos rather than pos in message, as this is the top left of the Gui, not the client rect
-		; ToDo: andle minimize / maximize better
-		if (IsIconic(this.hwnd))
+		if (IsIconic(this.hwnd))	; do not update coords if window minimized
 			return
 		WinGetPos, x, y, , , % "ahk_id " this.hwnd
 		if (x != "" && y != ""){
