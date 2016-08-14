@@ -5,23 +5,24 @@ Key:
 + : Added feature
 
 0.0.16 - ??
++ The ButtonToButton plugin now has a Toggle mode
++ MouseToJoy plugin enhancements:
+  Renamed Threshold in Absolute mode to Scale Factor.
+  You may lose your setting for this GuiControl as it was renamed.
+  Plugin can now be configured to only take input from a specific mouse.
+  You can now use multiple MouseToJoy plugins if you have more than one pointing device.
++ Added "HoldButton" functionality to OneSwitch Pulse plugin.
+= InputActivity subscriptions no longer fire if the plugin is not active.
+  This only really affects OneSwitch Pulse or any custom plugins using InputActivity.
 = Fixed bug that occurred when changing an InputButton plugin from button to hat:
   The old binding was remaining active, this is now fixed.
 = Fixed bug that occurred when changing an InputButton from keyboard to vJoy:
   The vJoy selection UI would change selection of various elements in odd ways.
 = A bunch of behind-the-scenes changes and fixes.
   Please let me know if stuff that used to work now doesn't.
-+ Numerous fixes and tweaks to the The MouseToJoy plugin:
-  Renamed Threshold in Absolute mode to Scale Factor.
-  You may lose your setting for this GuiControl as it was renamed.
+= MouseToJoy plugin fixes:
   Fixed numerous bugs which made Absolute mode center the stick way too much.
-  It can now be configured to only take input from a specific mouse.
-  You can now use multiple MouseToJoy plugins if you have more than one pointing device.
-= The Timeout value for Absolute mode in the Mouse to Joystick plugin now works.
-+ OneSwitch Pulse now properly holds the HoldButton when pulse is on.
-+ Added "HoldButton" functionality to OneSwitch Pulse plugin.
-+ InputActivity subscriptions no longer fire if the plugin is not active.
-  This only really affects OneSwitch Pulse or any custom plugins using InputActivity.
+  The Timeout value for Absolute mode now works.
 
 0.0.15 - 24th July 2016
 ! All ProfileSwitcher plugins will no longer be bound to a profile.

@@ -1,6 +1,7 @@
 ﻿; ======================================================================== OUTPUT BUTTON ===============================================================
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
 Class _OutputButton extends _InputButton {
+	State := 0
 	_DefaultBanner := "Drop down the list to select an Output"
 	_IsOutput := 1
 	_OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
