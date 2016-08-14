@@ -30,8 +30,11 @@ class MouseToJoy extends _Plugin {
 		;~ Gui, Add, Button, % "x+5 yp hwndhwnd", Calibrate
 		;~ fn := this.Calibrate.Bind(this, "X")
 		;~ GuiControl +g, % hwnd, % fn
-		Gui, Add, Text, % "x120 w40 center y" title_row, Timeout
-		this.AddControl("AbsoluteTimeout", this.TimeoutChanged.Bind(this, "X"), "Edit", "x120 w40 y" x_row + 10, 50)
+		Gui, Add, Text, % "x120 w40 center y" title_row-5, Timeout
+		this.AddControl("AbsoluteTimeout", this.TimeoutChanged.Bind(this, "X"), "Edit", "x120 w40 y" x_row - 10, 50)
+		
+		Gui, Add, Text, % "x120 w40 center y" y_row - 10, Threshold
+		this.AddControl("AbsoluteThreshold", this.TimeoutChanged.Bind(this, "X"), "Edit", "x120 w40 y" y_row + 5, 2)
 		
 		this.AddControl("AbsoluteScaleY", this.AbsoluteScaleChanged.Bind(this, "Y"), "Edit", "x70 w30 y" y_row, 10)
 		;~ Gui, Add, Button, % "x+5 yp hwndhwnd", Calibrate
@@ -118,7 +121,7 @@ class MouseToJoy extends _Plugin {
 	MouseEvent(value){
 		; The "Range" for a given axis is -50 to +50
 		try {
-			x := value.axes.x, y := value.axes.y, MouseID := value.MouseID, dox := (x != ""), doy := (y != "")
+			x := value.axes.x, y := value.axes.y, ax := Abs(x), ay := Abs(y), MouseID := value.MouseID, dox := (x != ""), doy := (y != "")
 		} catch {
 			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
 			; This seems to fix it, but this should probably be properly investigated.
@@ -129,11 +132,20 @@ class MouseToJoy extends _Plugin {
 			return
 		
 		if (this.Mode = 1){
-			if (dox)
+			; Absolute
+			threshold := this.GuiControls.AbsoluteThreshold.value
+			if (dox && ax && ax <= threshold)
+				dox := 0
+			if (doy && ay && ay <= threshold)
+				doy := 0
+			if (dox){
 				this.CurrX := x * this.AbsoluteScaleFactor.X
-			if (doy)
+			}
+			if (doy){
 				this.CurrY := y * this.AbsoluteScaleFactor.Y
+			}
 		} else {
+			; Relative
 			if (dox){
 				if (this.GuiControls.InvertX.value)
 					x *= -1
