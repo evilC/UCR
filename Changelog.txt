@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.16 - ??
+0.0.16 - 14th Aug 2016
 + The ButtonToButton plugin now has a Toggle mode
 + MouseToJoy plugin enhancements:
   Added Scale Factor to Absolute mode.
