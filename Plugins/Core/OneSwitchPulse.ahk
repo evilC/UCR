@@ -7,6 +7,7 @@ class OneSwitchPulse extends _Plugin {
 	Type := "OneSwitch Pulse"
 	Description := "OneSwitch Pulse for UCR. Designed to be used with JoyToKey. Add to Global profile."
 	TimerRunning := 0
+	HeldButtons := {}
 	; The Init() method of a plugin is called when one is added. Use it to create your Gui etc
 	Init(){
 		; Create the GUI
@@ -97,14 +98,23 @@ class OneSwitchPulse extends _Plugin {
 		if (ipt.value.type == 4){
 			OutputDebug % "UCR| InputActivity (Axis)"
 			;this.DelayTimers()
+			this.SetTimerState(0)
 			this.ScheduleTimers()
 		} else {
 			; Button type input - stop timers while button is down, call DelayTimers() on up
 			OutputDebug % "UCR| InputActivity (Button) - state: " state
 			if (state){
+				this.HeldButtons[ipt.id] := 1
 				this.SetTimerState(0)
 			} else {
-				this.ScheduleTimers()
+				this.HeldButtons.Delete(ipt.id)
+				held := 0
+				for k in this.HeldButtons{
+					held := 1
+					break
+				}
+				if (!held)
+					this.ScheduleTimers()
 			}
 		}
 	}

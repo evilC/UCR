@@ -6,6 +6,7 @@ class _InputDelta {
 		this.ChangeStateCallback := ChangeStateCallback
 		this.ParentPlugin := parent
 		this.Name := name
+		this.ID := UCR.CreateGUID()
 		this.hwnd := parent.hwnd	; no gui for this input, so use hwnd of parent for unique id
 		this.value := 0
 	}

@@ -14,6 +14,7 @@ class _InputButton extends _BannerCombo {
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
 		this.Name := name
+		this.ID := UCR.CreateGUID()
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
 		
