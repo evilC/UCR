@@ -4,6 +4,15 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.17 - ???
++ All Input / Output GuiControls now have a GUID at run-time
+  This GUID is currently not saved between runs, but it can be if needed.
+  This allows plugins that subscribe to InputActivity to detect how many buttons are held.
+= OneSwitch Pulse plugin fixes:
+  Now correctly stops pulsing if a second button is pressed and released...
+  while one button is held.
+  Now correctly suspends pulsing for the <Choice Delay> time on joystick axis activity.
+
 0.0.16 - 14th Aug 2016
 + The ButtonToButton plugin now has a Toggle mode
 + MouseToJoy plugin enhancements:
