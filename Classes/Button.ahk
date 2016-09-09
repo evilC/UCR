@@ -54,7 +54,10 @@ class _Button {
 		if (this.Type = 1) {
 			return this.BuildKeyName()
 		} else if (this.Type = 2){
-			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
+			if (this.code)
+				return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
+			else
+				return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", No Button Selected"
 		} else if (this.Type >= 3){
 			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Hat " this.Type - 2 " " hat_directions[this.code]
 		}
