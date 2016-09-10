@@ -57,13 +57,14 @@ class _BannerCombo extends _Menu {
 		base.__New()
 		Gui, Add, Button, % "hwndhReadout " aParams[1]
 		this.hReadout := hReadout
-		fn := this._ControlClicked.Bind(this)
+		fn := this.OpenMenu.Bind(this)
 		GuiControl, +g, % this.hReadout, % fn
 
 		this.hwnd := hReadout	; all classes that represent Gui objects should have a unique hwnd property
 	}
 	
-	_ControlClicked(){
+	; Shows the menu
+	OpenMenu(){
 		ControlGetPos, cX, cY, cW, cH,, % "ahk_id " this.hReadout
 		Menu, % this.id, Show, % cX+1, % cY + cH
 	}
@@ -369,7 +370,7 @@ Class _OutputButton extends _InputButton {
 				this._value := bo
 				; Re-open the menu if we just changed to stick
 				if (reopen)
-					this._ControlClicked()
+					this.OpenMenu()
 			} else if (o > 1000 && o < 1129){
 				o -= 1000
 				bo := this.__value.clone()
