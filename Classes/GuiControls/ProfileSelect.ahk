@@ -15,8 +15,8 @@ class _ProfileSelect extends _BannerMenu {
 		
 		this._BuildMenu()
 		
-		this.SetComboState()
-		UCR.SubscribeToProfileTreeChange(this.hwnd, this.SetComboState.Bind(this))
+		this.SetControlState()
+		UCR.SubscribeToProfileTreeChange(this.hwnd, this.SetControlState.Bind(this))
 	}
 	
 	_BuildMenu(){
@@ -25,7 +25,7 @@ class _ProfileSelect extends _BannerMenu {
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
-	SetComboState(){
+	SetControlState(){
 		if (this.__value){
 			; Has current binding
 			this.SetOptions(this._Options)
@@ -74,7 +74,7 @@ class _ProfileSelect extends _BannerMenu {
 			this.__value := value
 			if (value)
 				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, value, 1)
-			this.SetComboState()
+			this.SetControlState()
 		}
 	}
 	

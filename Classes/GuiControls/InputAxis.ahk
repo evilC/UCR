@@ -13,7 +13,7 @@ class _InputAxis extends _BannerMenu {
 		this.ChangeStateCallback := ChangeStateCallback
 		
 		this._BuildMenu()
-		this.SetComboState()
+		this.SetControlState()
 	}
 	
 	_BuildMenu(){
@@ -28,9 +28,6 @@ class _InputAxis extends _BannerMenu {
 			}
 		}
 		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
-	}
-	
-	_BuildOptions(){
 	}
 	
 	; The Axis Select DDL changed value
@@ -52,7 +49,7 @@ class _InputAxis extends _BannerMenu {
 		}
 		this.__value.Axis := axis
 		this.__value.DeviceID := DeviceID
-		this.SetComboState()
+		this.SetControlState()
 		this.value := this.__value
 		UCR.RequestAxisBinding(this)
 	}
@@ -64,7 +61,7 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
-	SetComboState(){
+	SetControlState(){
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
 		this._OptionMap := []
@@ -129,7 +126,7 @@ class _InputAxis extends _BannerMenu {
 		; Parent has told child state to be in, child does not need to notify parent of change in state
 		set {
 			this.__value := value
-			this.SetComboState()
+			this.SetControlState()
 			if (IsObject(this.ChangeValueCallback)){
 				this.ChangeValueCallback.Call(this.__value)
 			}

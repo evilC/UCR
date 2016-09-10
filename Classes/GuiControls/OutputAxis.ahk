@@ -10,7 +10,7 @@ class _OutputAxis extends _BannerMenu {
 		this.ChangeValueCallback := ChangeValueCallback
 		
 		this._BuildMenu()
-		this.SetComboState()
+		this.SetControlState()
 	}
 	
 	_BuildMenu(){
@@ -22,10 +22,6 @@ class _OutputAxis extends _BannerMenu {
 			}
 		}
 		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
-	}
-	
-	_BuildOptions(){
-		
 	}
 	
 	; Plugin Authors call this to set the state of the output axis
@@ -42,7 +38,7 @@ class _OutputAxis extends _BannerMenu {
 		}
 	}
 	
-	SetComboState(){
+	SetControlState(){
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
 		this._OptionMap := []
@@ -99,7 +95,7 @@ class _OutputAxis extends _BannerMenu {
 		this.__value.Axis := axis
 		this.__value.DeviceID := DeviceID
 		
-		this.SetComboState()
+		this.SetControlState()
 		this.value := this.__value
 	}
 	
@@ -129,7 +125,7 @@ class _OutputAxis extends _BannerMenu {
 		; Parent has told child state to be in, child does not need to notify parent of change in state
 		set {
 			this.__value := value
-			this.SetComboState()
+			this.SetControlState()
 			if (IsObject(this.ChangeValueCallback)){
 				this.ChangeValueCallback.Call(this.__value)
 			}

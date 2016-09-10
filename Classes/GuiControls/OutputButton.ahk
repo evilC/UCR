@@ -57,7 +57,8 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	; Builds the list of options in the DropDownList
-	_BuildOptions(){
+	SetControlState(){
+		base.SetControlState()
 		joy := (this.__value.Type >= 2 && this.__value.Type <= 6)
 		for n, opt in this.JoyMenus {
 			opt.SetEnableState(joy)

@@ -22,7 +22,7 @@ class _InputButton extends _BannerMenu {
 
 		this._BuildMenu()
 		
-		this.SetComboState()
+		this.SetControlState()
 	}
 	
 	__Delete(){
@@ -56,7 +56,7 @@ class _InputButton extends _BannerMenu {
 		; Parent class told this hotkey what it's value is. Set value, but do not fire ParentPlugin._ControlChanged
 		set {
 			this.__value := value
-			this.SetComboState()
+			this.SetControlState()
 		}
 	}
 
@@ -69,18 +69,13 @@ class _InputButton extends _BannerMenu {
 		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 5))
 	}
 	
-	; Builds the list of options in the DropDownList
-	_BuildOptions(){
+	; Set the state of the GuiControl (Inc Cue Banner)
+	SetControlState(){
 		ko := (this.__value.Type == 1 && this.__value.Buttons.length())
 		for n, opt in this._KeyOnlyOptions {
 			opt.SetEnableState(ko)
 			opt.SetCheckState(this.__value[n])
 		}
-	}
-
-	; Set the state of the GuiControl (Inc Cue Banner)
-	SetComboState(){
-		this._BuildOptions()
 		if ( this.__value.Buttons.length()) {
 			Text := this.__value.BuildHumanReadable()
 		} else {
