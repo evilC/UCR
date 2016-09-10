@@ -31,6 +31,7 @@ Class UCRMain extends _UCRBase {
 		global UCR := this			; Set super-global UCR to point to class instance
 		Gui +HwndHwnd
 		this.hwnd := hwnd
+		this.Minimizer := new _Minimizer(this.hwnd)
 		
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
 		this._InputThreadScript := Script	; Cache script for profile InputThreads
@@ -62,6 +63,9 @@ Class UCRMain extends _UCRBase {
 		; Add the Profile Toolbox - this is used to add and edit profiles
 		this._ProfileToolbox := new _ProfileToolbox()
 		this._ProfilePicker := new _ProfilePicker()
+		
+		; Create the Main Menu
+		this._CreateMainMenu()
 		
 		; Create the Main Gui
 		this._CreateGui()
@@ -122,12 +126,21 @@ Class UCRMain extends _UCRBase {
 		}
 	}
 	
+	_CreateMainMenu(){
+		this.MainMenu := new _Menu()
+		this.MainMenu.AddSubMenu("&View", "View")
+			.AddMenuItem("Start Minimized", this.MenuHandler.Bind(this)).Disable()
+			.parent.AddMenuItem("Minimize to Tray", this.MenuHandler.Bind(this)).Check().Disable()
+		Gui, % this.hwnd ":Menu", % this.MainMenu.id
+	}
+	
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
 		start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.SIDE_PANEL_WIDTH
 		Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
 		Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
+		
 		;Gui, % this.hwnd ":+Maxsize" start_width
 		Gui, new, HwndHwnd
 		this.hTopPanel := hwnd
@@ -168,8 +181,11 @@ Class UCRMain extends _UCRBase {
 		Gui % this.hSidePanel ":Show", Hide
 		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
 		
-		
 		;Gui, % this.hwnd ":Show"
+	}
+	
+	MenuHandler(){
+		
 	}
 	
 	_ShowGui(){

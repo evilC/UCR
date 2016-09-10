@@ -19,6 +19,7 @@ return
 ; Include the main classes
 #Include Classes\UCRMain.ahk
 #Include Classes\Menu.ahk
+#Include Classes\Minimizer.ahk
 #Include Classes\ProfileToolbox.ahk
 #Include Classes\ProfilePicker.ahk
 #Include Classes\ProfileTreeBase.ahk

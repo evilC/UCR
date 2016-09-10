@@ -5,8 +5,10 @@ Key:
 + : Added feature
 
 0.0.17 - ???
-+ New menu system for Binding GuiControls.
-  It is now much quicker to select Inputs / Outputs.
++ UCR Now minimizes to the tray.
++ New menu system implemented.
+  BindControls got an overhaul, it is now much quicker to select Inputs / Outputs.
+  There is now a "Main Menu" in UCR, though it is not currently functional.
 + Added AxisInitializer plugin.
   This can be used to initialize a virtual axis to a specified position.
   Whenever the profile containing the plugin activates, it will set the axis position.
