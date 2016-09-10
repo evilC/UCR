@@ -1,6 +1,7 @@
 ﻿; ======================================================================== INPUT AXIS ===============================================================
 class _InputAxis extends _BannerMenu {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
+	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	__value := new _Axis()
 	_OptionMap := []
 	
@@ -24,7 +25,11 @@ class _InputAxis extends _BannerMenu {
 			offset := A_Index * 10
 			menu := this.AddSubMenu("Stick " A_index, "Stick" A_index)
 			Loop 6 {
-				menu.AddMenuItem(A_Index " (" this.AHKAxisList[A_Index] ")", this._ChangedValue.Bind(this, offset + A_Index))
+				str := this.AHKAxisList[A_Index]
+				if (this.AHKAxisList[A_Index] != this.vJoyAxisList[A_Index]){
+					str .= " / " this.vJoyAxisList[A_Index]
+				}
+				menu.AddMenuItem(A_Index " (" str ")", this._ChangedValue.Bind(this, offset + A_Index))
 			}
 		}
 		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
