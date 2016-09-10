@@ -41,7 +41,7 @@ Class MockPlugin extends _UCRBase {
 #include MockUCR.ahk
 
 ; The new menu system
-#include Menu.ahk
+#include ..\Classes\Menu.ahk
 
 ; Normal UCR classes that are needed
 #include ..\Classes\GuiControls\BindObject.ahk
