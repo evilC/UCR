@@ -28,6 +28,8 @@ Class MockPlugin extends _UCRBase {
 		ib := new _InputButton(this, "TestIB", 0, 0, "w300")
 		
 		ob := new _OutputButton(this, "TestOB", 0, "w300")
+		
+		ia := new _InputAxis(this, "TestIA", 0, 0, "w300")
 	}
 }
 
@@ -40,11 +42,13 @@ Class MockPlugin extends _UCRBase {
 ; Normal UCR classes that are needed
 #include ..\Classes\GuiControls\BindObject.ahk
 #include ..\Classes\Button.ahk
+#include ..\Classes\Axis.ahk
 
 ; Classes that are being worked on
 ;#include ..\Classes\GuiControls\BannerCombo.ahk
 ;#include ..\Classes\GuiControls\InputButton.ahk
 ;#include ..\Classes\GuiControls\OutputButton.ahk
+;#include ..\Classes\GuiControls\InputAxis.ahk
 
 
 ; ======================================================================== BANNER COMBO ===============================================================
@@ -245,15 +249,16 @@ Class _OutputButton extends _InputButton {
 	
 	_BuildMenu(){
 		static HatDirections := ["Up", "Right", "Down", "Left"]
+		static XBoxButtons := ["A", "B", "X", "Y", "LB", "RB", "LS", "RS", "Back", "Start", "Guide"]
 		this.AddMenuItem("Select Keyboard / Mouse Binding", this._ChangedValue.Bind(this, 1))
-		menu := this.AddSubMenu("vJoy Stick", this._ChangedValue.Bind(this, 1))
+		menu := this.AddSubMenu("vJoy Stick", "vJoy Stick")
 		Loop 8 {
 			menu.AddMenuItem(A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
 		}
 		chunksize := 16
 		Loop % round(128 / chunksize) {
 			offset := (A_Index-1) * chunksize
-			menu := this.AddSubMenu("vJoy Buttons " offset + 1 "-" offset + chunksize, "Btns" A_Index)
+			menu := this.AddSubMenu("vJoy Buttons " offset + 1 "-" offset + chunksize, "vJoyBtns" A_Index)
 			this.JoyMenus.Push(menu)
 			Loop % chunksize {
 				btn := A_Index + offset
@@ -262,13 +267,27 @@ Class _OutputButton extends _InputButton {
 		}
 
 		Loop 4 {
-			menu := this.AddSubMenu("vJoy Hat " A_Index, "Hat" A_Index)
+			menu := this.AddSubMenu("vJoy Hat " A_Index, "vJoyHat" A_Index)
 			offset := (1 + A_Index) * 1000
 			this.JoyMenus.Push(menu)
 			Loop 4 {
 				menu.AddMenuItem(HatDirections[A_Index], this._ChangedValue.Bind(this, offset + A_Index))	; Set the callback when selected
 			}
 		}
+		
+		/*
+		menu := this.AddSubMenu("vXBox Pad", "vXBoxPad")
+		Loop 4 {
+			menu.AddMenuItem(A_Index, this._ChangedValue.Bind(this, 200 + A_Index))
+		}
+
+		menu := this.AddSubMenu("vXBox Buttons", "vXBoxBtns")
+		this.JoyMenus.Push(menu)
+		Loop 11 {
+			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", this._ChangedValue.Bind(this, 6000 + A_Index))
+		}
+		*/
+
 		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
@@ -417,5 +436,146 @@ Class _OutputButton extends _InputButton {
 		;~ GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
 		;~ this.ChangeValueCallback := ""
 		;~ this.ChangeStateCallback := ""
+	}
+}
+
+; ======================================================================== INPUT AXIS ===============================================================
+class _InputAxis extends _BannerCombo {
+	AHKAxisList := ["X","Y","Z","R","U","V"]
+	__value := new _Axis()
+	_OptionMap := []
+	
+	State := -1
+	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		base.__New(parent.hwnd, aParams*)
+		this._BuildOptions()
+		this.SetComboState()
+	}
+	
+	_BuildOptions(){
+		Loop 8 {
+			ji := GetKeyState( A_Index "JoyInfo")
+			if (!ji)
+				continue
+			offset := A_Index * 10
+			menu := this.AddSubMenu("Stick " A_index, "Stick" A_index)
+			Loop 6 {
+				menu.AddMenuItem(A_Index " (" this.AHKAxisList[A_Index] ")", this._ChangedValue.Bind(this, offset + A_Index))
+			}
+		}
+		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
+	}
+	
+	; The Axis Select DDL changed value
+	_ChangedValue(o){
+		axis := this.__value.Axis
+		DeviceID := this.__value.DeviceID
+		
+		if (o > 10){
+			o -= 10
+			DeviceID := 1
+			while (o > 10){
+				DeviceID++
+				o -= 10
+			}
+			axis := o
+		} else if (o == 2){
+			; Clear Selected
+			axis := DeviceID := 0
+		}
+		this.__value.Axis := axis
+		this.__value.DeviceID := DeviceID
+		this.SetComboState()
+		this.value := this.__value
+		UCR.RequestAxisBinding(this)
+	}
+	
+	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		UCR.RequestAxisBinding(this)
+	}
+	
+	; Set the state of the GuiControl (Inc Cue Banner)
+	SetComboState(){
+		axis := this.__value.Axis
+		DeviceID := this.__value.DeviceID
+		this._OptionMap := []
+		opts := []
+		if (DeviceID){
+			; Show Sticks and Axes
+			max := 14
+			index_offset := 0
+			if (!Axis)
+				str := "Pick an Axis (Stick " DeviceID ")"
+		} else {
+			str := "Click to select an Input Axis"
+			max := 8
+			index_offset := 6
+		}
+		Loop % max {
+			map_index := A_Index + index_offset
+			if ((map_index > 6 && map_index <= 14))
+				joyinfo := GetKeyState( map_index - 6 "JoyInfo")
+			else
+				joyinfo := 0
+			if ((map_index > 6 && map_index <= 14) && !JoyInfo)
+				continue
+			opts.push(this._Options[map_index])
+			this._OptionMap.push(map_index)
+		}
+		if (DeviceID || axis){
+			opts.push(this._Options[15])
+			this._OptionMap.push(15)
+		}
+		
+		if (DeviceID && Axis)
+			str := "Stick " DeviceID ", Axis " axis " (" this.AHKAxisList[axis] ")"
+		
+		this.SetOptions(opts)
+		this.SetCueBanner(str)
+	}
+	
+	; Get / Set of .value
+	value[]{
+		; Read of current contents of GuiControl
+		get {
+			return this.__value
+		}
+		
+		; When the user types something in a guicontrol, this gets called
+		; Fire _ControlChanged on parent so new setting can be saved
+		set {
+			this._value := value
+			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
+			this.ParentPlugin._ControlChanged(this)
+		}
+	}
+	
+	; Get / Set of ._value
+	_value[]{
+		; this will probably not get called
+		get {
+			return this.__value
+		}
+		; Update contents of GuiControl, but do not fire _ControlChanged
+		; Parent has told child state to be in, child does not need to notify parent of change in state
+		set {
+			this.__value := value
+			this.SetComboState()
+			if (IsObject(this.ChangeValueCallback)){
+				this.ChangeValueCallback.Call(this.__value)
+			}
+		}
+	}
+	
+	_Serialize(){
+		obj := {value: this._value}
+		return obj
+	}
+	
+	_Deserialize(obj){
+		this._value := obj.value
+		;UCR.RequestAxisBinding(this)
 	}
 }
