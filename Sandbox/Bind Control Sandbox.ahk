@@ -58,7 +58,7 @@ Class MockPlugin extends _UCRBase {
 
 ; ======================================================================== BANNER COMBO ===============================================================
 ; Wraps a ComboBox GuiControl to turn it into a DDL with a "Cue Banner" 1st item, that is re-selected after every choice.
-class _BannerCombo extends _Menu {
+class _BannerMenu extends _Menu {
 	__New(ParentHwnd, aParams*){
 		this._ParentHwnd := ParentHwnd
 		this._Ptr := &this
@@ -97,7 +97,7 @@ class _BannerCombo extends _Menu {
 
 ; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
-class _InputButton extends _BannerCombo {
+class _InputButton extends _BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
@@ -444,7 +444,7 @@ Class _OutputButton extends _InputButton {
 }
 
 ; ======================================================================== INPUT AXIS ===============================================================
-class _InputAxis extends _BannerCombo {
+class _InputAxis extends _BannerMenu {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
 	__value := new _Axis()
 	_OptionMap := []
@@ -588,7 +588,7 @@ class _InputAxis extends _BannerCombo {
 }
 
 ; ======================================================================== OUTPUT AXIS ===============================================================
-class _OutputAxis extends _BannerCombo {
+class _OutputAxis extends _BannerMenu {
 	;__value := {DeviceID: 0, axis: 0}
 	__value := new _Axis()
 	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
@@ -733,7 +733,7 @@ class _OutputAxis extends _BannerCombo {
 }
 
 ; ======================================================================== PROFILE SLECT ===============================================================
-class _ProfileSelect extends _BannerCombo {
+class _ProfileSelect extends _BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
