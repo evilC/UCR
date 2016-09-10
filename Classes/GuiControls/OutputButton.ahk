@@ -2,54 +2,66 @@
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
 Class _OutputButton extends _InputButton {
 	State := 0
-	_DefaultBanner := "Drop down the list to select an Output"
+	_DefaultBanner := "Select an Output Button"
 	_IsOutput := 1
-	_OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
+	;_OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
+	JoyMenus := []
+	
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
 		; Create Select vJoy Button / Hat Select GUI
-		Gui, new, HwndHwnd
-		Gui -Border
-		this.hVjoySelect := hwnd
-		Gui, Add, Text, w50 xm Center, vJoy Stick
-		Gui, Add, Text, w50 xp+55 Center, Button
-		Gui, Add, Text, w50 xp+55 Center, Hat
-		Gui, Add, ListBox, R11 xm w50 AltSubmit HwndHwnd , None||1|2|3|4|5|6|7|8
-		this.hVjoyDevice := hwnd
-		fn := this.vJoyOptionSelected.Bind(this, "dev")
-		GuiControl +g, % hwnd, % fn
-		Gui, Add, ListBox, R11 w50 xp+55 AltSubmit HwndHwnd , None||01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107|108|109|110|111|112|113|114|115|116|117|118|119|120|121|122|123|124|125|126|127|128|
-		this.hVJoyButton := hwnd
-		fn := this.vJoyOptionSelected.Bind(this, "but")
-		GuiControl +g, % hwnd, % fn
-		Gui, Add, ListBox, R5 w50 xp+55 AltSubmit HwndHwnd , None||Hat 1|Hat 2|Hat 3|Hat 4
-		this.hVJoyHatNumber := hwnd
-		fn := this.vJoyOptionSelected.Bind(this, "hn")
-		GuiControl +g, % hwnd, % fn
-		Gui, Add, ListBox, R5 w50 xp y+9 AltSubmit HwndHwnd , None||Up|Right|Down|Left
-		this.hVJoyHatDir := hwnd
-		fn := this.vJoyOptionSelected.Bind(this, "hd")
-		GuiControl +g, % hwnd, % fn
-		Gui, Add, Button, xm w75 Center HwndHwnd, Cancel
-		this.hVJoyCancel := hwnd
-		fn := this.vJoyInputCancelled.Bind(this)
-		GuiControl +g, % this.hVJoyCancel, % fn
-		Gui, Add, Button, xp+85 w75 Center HwndHwnd, Ok
-		this.hVjoyOK := hwnd
-		fn := this.vJoyOutputSelected.Bind(this)
-		GuiControl +g, % this.hVjoyOK, % fn
+	}
+	
+	_BuildMenu(){
+		static HatDirections := ["Up", "Right", "Down", "Left"]
+		static XBoxButtons := ["A", "B", "X", "Y", "LB", "RB", "LS", "RS", "Back", "Start", "Guide"]
+		this.AddMenuItem("Select Keyboard / Mouse Binding", this._ChangedValue.Bind(this, 1))
+		menu := this.AddSubMenu("vJoy Stick", "vJoy Stick")
+		Loop 8 {
+			menu.AddMenuItem(A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
+		}
+		chunksize := 16
+		Loop % round(128 / chunksize) {
+			offset := (A_Index-1) * chunksize
+			menu := this.AddSubMenu("vJoy Buttons " offset + 1 "-" offset + chunksize, "vJoyBtns" A_Index)
+			this.JoyMenus.Push(menu)
+			Loop % chunksize {
+				btn := A_Index + offset
+					menu.AddMenuItem(btn, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
+			}
+		}
+
+		Loop 4 {
+			menu := this.AddSubMenu("vJoy Hat " A_Index, "vJoyHat" A_Index)
+			offset := (1 + A_Index) * 1000
+			this.JoyMenus.Push(menu)
+			Loop 4 {
+				menu.AddMenuItem(HatDirections[A_Index], this._ChangedValue.Bind(this, offset + A_Index))	; Set the callback when selected
+			}
+		}
+		
+		/*
+		menu := this.AddSubMenu("vXBox Pad", "vXBoxPad")
+		Loop 4 {
+			menu.AddMenuItem(A_Index, this._ChangedValue.Bind(this, 200 + A_Index))
+		}
+
+		menu := this.AddSubMenu("vXBox Buttons", "vXBoxBtns")
+		this.JoyMenus.Push(menu)
+		Loop 11 {
+			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", this._ChangedValue.Bind(this, 6000 + A_Index))
+		}
+		*/
+
+		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Builds the list of options in the DropDownList
 	_BuildOptions(){
-		opts := []
-		this._CurrentOptionMap := [this._OptionMap["Select"]]
-		opts.push("Select New Keyboard / Mouse Output")
-		this._CurrentOptionMap.push(this._OptionMap["vJoyButton"])
-		opts.push("Select New vJoy Button / Hat")
-		this._CurrentOptionMap.push(this._OptionMap["Clear"])
-		opts.push("Clear Output")
-		this.SetOptions(opts)
+		joy := (this.__value.Type >= 2 && this.__value.Type <= 6)
+		for n, opt in this.JoyMenus {
+			opt.SetEnableState(joy)
+		}
 	}
 	
 	; Used by script authors to set the state of this output
@@ -111,7 +123,7 @@ Class _OutputButton extends _InputButton {
 	; An option was selected from the list
 	_ChangedValue(o){
 		if (o){
-			o := this._CurrentOptionMap[o]
+			;o := this._CurrentOptionMap[o]
 			
 			; Option selected from list
 			if (o = 1){
@@ -119,95 +131,55 @@ Class _OutputButton extends _InputButton {
 				UCR._RequestBinding(this)
 				return
 			} else if (o = 2){
-				; vJoy
-				this._SelectvJoy()
-			} else if (o = 3){
 				; Clear Binding
-				mod := {Buttons: []}
-			} else {
-				; not one of the options from the list, user must have typed in box
-				return
+				mod := {Buttons: [], type: 0}
+			} else if (o > 100 && o < 109) {
+				; Stick ID
+				o -= 100
+				reopen := 0
+				if (this.__value.type >= 2 && this.__value.type <= 6){
+					; stick already selected
+					bo := this.__value.clone()
+				} else {
+					reopen := 1
+					bo := new _BindObject()
+					bo.Type := 2
+					btn := new _Button()
+					btn.Type := 2
+					btn.IsVirtual := 1
+					bo.Buttons.push(btn)
+				}
+				
+				bo.Buttons[1].DeviceID := o
+				this._value := bo
+				; Re-open the menu if we just changed to stick
+				if (reopen)
+					this.OpenMenu()
+			} else if (o > 1000 && o < 1129){
+				o -= 1000
+				bo := this.__value.clone()
+				bo.Buttons[1].code := o
+				bo.Buttons[1].type := 2
+				bo.Type := 2
+				this._value := bo
+			} else if (o > 2000 && o < 6000){
+				o -= 2000
+				hat := 1
+				while (o > 1000){
+					o -= 1000
+					hat++
+				}
+				bo := this.__value.clone()
+				bo.Buttons[1].code := o
+				bo.Buttons[1].type := 2 + hat
+				bo.Type := 2 + hat
+				this._value := bo
 			}
 			if (IsObject(mod)){
 				UCR._RequestBinding(this, mod)
 				return
 			}
 		}
-	}
-	
-	; Present a menu to allow the user to select vJoy output
-	_SelectvJoy(){
-		Gui, % this.hVjoySelect ":Show"
-		UCR.MoveWindowToCenterOfGui(this.hVjoySelect)
-		dev := this.__value.Buttons[1].DeviceId
-		type := this.__value.Buttons[1].Type
-		if (type > 1){
-			if (dev){
-				GuiControl, % this.hVjoySelect ":Choose", % this.hVjoyDevice, % dev + 1
-				if (type == 2)
-					GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyButton, % this.__value.Buttons[1].code + 1
-			}
-		}
-		if (type >= 3){
-			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatNumber, % this.__value.Buttons[1].Type - 1
-			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatDir, % this.__value.Buttons[1].code + 1
-		} 
-	}
-	
-	vJoyOptionSelected(what){
-		GuiControlGet, dev, % this.hVjoySelect ":" , % this.hVjoyDevice
-		dev--
-		GuiControlGet, but, % this.hVjoySelect ":" , % this.hVJoyButton
-		but--
-		GuiControlGet, hn, % this.hVjoySelect ":" , % this.hVJoyHatNumber
-		hn--
-		GuiControlGet, hd, % this.hVjoySelect ":" , % this.hVJoyHatDir
-		hd--
-		if (what = "but" && but){
-			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatNumber, 1
-			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyHatDir, 1
-		} else if (what != "dev" && %what%){
-			GuiControl, % this.hVjoySelect ":Choose", % this.hVJoyButton, 1
-		}
-	}
-	
-	vJoyOutputSelected(){
-		Gui, % this.hVjoySelect ":Submit"
-		GuiControlGet, device, % this.hVjoySelect ":" , % this.hVjoyDevice
-		device--
-		GuiControlGet, button, % this.hVjoySelect ":" , % this.hVJoyButton
-		button--
-		GuiControlGet, hn, % this.hVjoySelect ":" , % this.hVJoyHatNumber
-		hn--
-		GuiControlGet, hd, % this.hVjoySelect ":" , % this.hVJoyHatDir
-		hd--
-		
-		bo := new _BindObject()
-		
-		if (device && button){
-			t := 2
-		} else if (device && hn && hd) {
-			t := 2 + hn
-		} else {
-			return
-		}
-		bo.Type := t
-		
-		key := new _Button()
-		key.DeviceID := device
-		if (t = 2)
-			key.code := button
-		else
-			key.code := hd
-		key.IsVirtual := 1
-		key.Type := t
-		
-		bo.Buttons := [key]
-		this.value := bo
-	}
-	
-	vJoyInputCancelled(){
-		Gui, % this.hVjoySelect ":Submit"
 	}
 	
 	_Deserialize(obj){

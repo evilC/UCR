@@ -1,22 +1,27 @@
 ﻿; ======================================================================== PROFILE SLECT ===============================================================
-class _ProfileSelect extends _BannerCombo {
+class _ProfileSelect extends _BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
 	__value := 0		; Holds the Profile ID
 	; Other internal vars
-	_DefaultBanner := "Drop down the list to select a profile"
-	_Options := ["Select Profile", "Clear Profile"]
+	_DefaultBanner := "Select a profile"
 	
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
-		this.Name := name
+		this.name := name
 		this.ChangeValueCallback := ChangeValueCallback
 		
-		;this.__value := new _BindObject()
+		this._BuildMenu()
+		
 		this.SetComboState()
 		UCR.SubscribeToProfileTreeChange(this.hwnd, this.SetComboState.Bind(this))
+	}
+	
+	_BuildMenu(){
+		this.AddMenuItem("Select Profile", this._ChangedValue.Bind(this, 1))
+		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)

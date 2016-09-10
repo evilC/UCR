@@ -1,24 +1,31 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
-class _OutputAxis extends _BannerCombo {
+class _OutputAxis extends _BannerMenu {
 	;__value := {DeviceID: 0, axis: 0}
 	__value := new _Axis()
 	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
-		this.Name := name
-		this.ID := UCR.CreateGUID()
+		this.name := name
 		this.ChangeValueCallback := ChangeValueCallback
 		
-		this._Options := []
-		Loop 8 {
-			this._Options.push("Axis " A_Index " (" this.vJoyAxisList[A_Index] ")" )
-		}
-		Loop 8 {
-			this._Options.push("vJoy Stick " A_Index )
-		}
-		this._Options.push("Clear Binding")
+		this._BuildMenu()
 		this.SetComboState()
+	}
+	
+	_BuildMenu(){
+		Loop 8 {
+			menu := this.AddSubMenu("vJoy Stick " A_Index, "vJoy Stick" A_Index)
+			offset := A_Index * 10
+			Loop 8 {
+				menu.AddMenuItem(A_Index " (" this.vJoyAxisList[A_Index] ")", this._ChangedValue.Bind(this, offset + A_Index))
+			}
+		}
+		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
+	}
+	
+	_BuildOptions(){
+		
 	}
 	
 	; Plugin Authors call this to set the state of the output axis
@@ -47,7 +54,7 @@ class _OutputAxis extends _BannerCombo {
 			if (!Axis)
 				str := "Pick an Axis (Stick " DeviceID ")"
 		} else {
-			str := "Pick a virtual Stick"
+			str := "Select an Output Axis"
 			max := 10
 			index_offset := 8
 		}
@@ -67,7 +74,7 @@ class _OutputAxis extends _BannerCombo {
 		}
 		
 		if (DeviceID && Axis)
-			str := "Stick " DeviceID ", Axis " axis " (" this.vJoyAxisList[axis] ")"
+			str := "Virtual Stick " DeviceID ", Axis " axis " (" this.vJoyAxisList[axis] ")"
 		
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
@@ -77,16 +84,14 @@ class _OutputAxis extends _BannerCombo {
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
 		
-		; Resolve result of selection to index of full option list
-		o := this._OptionMap[o]
-		
-		if (o <= 8){
-			; Axis Selected
+		if (o > 10){
+			o -= 10
+			DeviceID := 1
+			while (o > 10){
+				o -= 10
+				DeviceID++
+			}
 			axis := o
-		} else if (o <= 16){
-			; Stick Selected
-			o -= 8
-			DeviceID := o
 		} else {
 			; Clear Selected
 			axis := DeviceID := 0

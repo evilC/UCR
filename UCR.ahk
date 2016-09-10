@@ -18,6 +18,7 @@ return
 
 ; Include the main classes
 #Include Classes\UCRMain.ahk
+#Include Classes\Menu.ahk
 #Include Classes\ProfileToolbox.ahk
 #Include Classes\ProfilePicker.ahk
 #Include Classes\ProfileTreeBase.ahk
@@ -26,7 +27,7 @@ return
 #Include Classes\Profile.ahk
 #Include Classes\Plugin.ahk
 #Include Classes\GuiControls\GuiControl.ahk
-#Include Classes\GuiControls\BannerCombo.ahk
+#Include Classes\GuiControls\BannerMenu.ahk
 #Include Classes\GuiControls\ProfileSelect.ahk
 #Include Classes\GuiControls\InputButton.ahk
 #Include Classes\GuiControls\InputAxis.ahk

@@ -1,13 +1,13 @@
 ﻿; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
-class _InputButton extends _BannerCombo {
+class _InputButton extends _BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
 	__value := ""		; Holds the BindObject class
 	; Other internal vars
 	_IsOutput := 0
-	_DefaultBanner := "Drop down the list to select a binding"
+	_DefaultBanner := "Select an Input Button"
 	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
@@ -19,6 +19,9 @@ class _InputButton extends _BannerCombo {
 		this.ChangeStateCallback := ChangeStateCallback
 		
 		this.__value := new _BindObject()
+
+		this._BuildMenu()
+		
 		this.SetComboState()
 	}
 	
@@ -57,29 +60,28 @@ class _InputButton extends _BannerCombo {
 		}
 	}
 
+	_BuildMenu(){
+		this.AddMenuItem("Select Binding", this._ChangedValue.Bind(this, 1))
+		wild := this.AddMenuItem("Wild", this._ChangedValue.Bind(this, 2))
+		block := this.AddMenuItem("Block", this._ChangedValue.Bind(this, 3))
+		suppress := this.AddMenuItem("Suppress Repeats", this._ChangedValue.Bind(this, 4))
+		this._KeyOnlyOptions := {wild: wild, block: block, suppress: suppress}
+		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 5))
+	}
+	
 	; Builds the list of options in the DropDownList
 	_BuildOptions(){
-		opts := []
-		this._CurrentOptionMap := [this._OptionMap["Select"]]
-		opts.push("Select New Binding")
-		if (this.__value.Type = 1){
-			; Joystick buttons do not have these options
-			opts.push("Wild: " (this.__value.wild ? "On" : "Off"))
-			this._CurrentOptionMap.push(this._OptionMap["Wild"])
-			opts.push("Block: " (this.__value.block ? "On" : "Off"))
-			this._CurrentOptionMap.push(this._OptionMap["Block"])
-			opts.push("Suppress Repeats: " (this.__value.suppress ? "On" : "Off"))
-			this._CurrentOptionMap.push(this._OptionMap["Suppress"])
+		ko := (this.__value.Type == 1 && this.__value.Buttons.length())
+		for n, opt in this._KeyOnlyOptions {
+			opt.SetEnableState(ko)
+			opt.SetCheckState(this.__value[n])
 		}
-		opts.push("Clear Binding")
-		this._CurrentOptionMap.push(this._OptionMap["Clear"])
-		this.SetOptions(opts)
 	}
 
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetComboState(){
 		this._BuildOptions()
-		if (this.__value.Buttons.length()) {
+		if ( this.__value.Buttons.length()) {
 			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner			
@@ -90,7 +92,7 @@ class _InputButton extends _BannerCombo {
 	; An option was selected from the list
 	_ChangedValue(o){
 		if (o){
-			o := this._CurrentOptionMap[o]
+			;o := this._CurrentOptionMap[o]
 			
 			; Option selected from list
 			if (o = 1){

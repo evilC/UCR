@@ -1,5 +1,5 @@
 ﻿; ======================================================================== INPUT AXIS ===============================================================
-class _InputAxis extends _BannerCombo {
+class _InputAxis extends _BannerMenu {
 	AHKAxisList := ["X","Y","Z","R","U","V"]
 	__value := new _Axis()
 	_OptionMap := []
@@ -8,22 +8,29 @@ class _InputAxis extends _BannerCombo {
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
-		this.Name := name
-		this.ID := UCR.CreateGUID()
+		this.name := name
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
 		
-		this._Options := []
-		Loop 6 {
-			this._Options.push("Axis " A_Index " (" this.AHKAxisList[A_Index] ")" )
-		}
-		Loop 8 {
-			;this._Options.push("Stick " A_Index )
-			;~ this._Options.push(A_Index ": " DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr"))
-			this._Options.push(A_Index ": " joystick_OEM_name(A_Index))
-		}
-		this._Options.push("Clear Binding")
+		this._BuildMenu()
 		this.SetComboState()
+	}
+	
+	_BuildMenu(){
+		Loop 8 {
+			ji := GetKeyState( A_Index "JoyInfo")
+			if (!ji)
+				continue
+			offset := A_Index * 10
+			menu := this.AddSubMenu("Stick " A_index, "Stick" A_index)
+			Loop 6 {
+				menu.AddMenuItem(A_Index " (" this.AHKAxisList[A_Index] ")", this._ChangedValue.Bind(this, offset + A_Index))
+			}
+		}
+		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
+	}
+	
+	_BuildOptions(){
 	}
 	
 	; The Axis Select DDL changed value
@@ -31,17 +38,15 @@ class _InputAxis extends _BannerCombo {
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
 		
-		; Resolve result of selection to index of full option list
-		o := this._OptionMap[o]
-		
-		if (o <= 6){
-			; Axis Selected
+		if (o > 10){
+			o -= 10
+			DeviceID := 1
+			while (o > 10){
+				DeviceID++
+				o -= 10
+			}
 			axis := o
-		} else if (o <= 14){
-			; Stick Selected
-			o -= 6
-			DeviceID := o
-		} else {
+		} else if (o == 2){
 			; Clear Selected
 			axis := DeviceID := 0
 		}
@@ -71,7 +76,7 @@ class _InputAxis extends _BannerCombo {
 			if (!Axis)
 				str := "Pick an Axis (Stick " DeviceID ")"
 		} else {
-			str := "Pick a Stick"
+			str := "Select an Input Axis"
 			max := 8
 			index_offset := 6
 		}

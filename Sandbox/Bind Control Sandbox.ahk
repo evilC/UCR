@@ -56,8 +56,8 @@ Class MockPlugin extends _UCRBase {
 ;#include ..\Classes\GuiControls\OutputAxis.ahk
 ;#include ..\Classes\GuiControls\ProfileSelect.ahk
 
-; ======================================================================== BANNER COMBO ===============================================================
-; Wraps a ComboBox GuiControl to turn it into a DDL with a "Cue Banner" 1st item, that is re-selected after every choice.
+; ======================================================================== BANNER MENU ===============================================================
+; A compound GuiControl with a Readout (Shows current state) and a menu
 class _BannerMenu extends _Menu {
 	__New(ParentHwnd, aParams*){
 		this._ParentHwnd := ParentHwnd
