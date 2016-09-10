@@ -56,6 +56,7 @@ return
 	#Include Libraries\TTS\TTS.ahk
 	
 	; Include Plugins in case they are not in UCRDebug.ahk
+	#include Plugins\Core\AxisInitializer.ahk
 	#include Plugins\Core\AxisMerge.ahk
 	#include Plugins\Core\AxisToAxis.ahk
 	#include Plugins\Core\AxisToButton.ahk

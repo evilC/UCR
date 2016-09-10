@@ -5,6 +5,11 @@ Key:
 + : Added feature
 
 0.0.17 - ???
++ New menu system for Binding GuiControls.
+  It is now much quicker to select Inputs / Outputs.
++ Added AxisInitializer plugin.
+  This can be used to initialize a virtual axis to a specified position.
+  Whenever the profile containing the plugin activates, it will set the axis position.
 + All Input / Output GuiControls now have a GUID at run-time
   This GUID is currently not saved between runs, but it can be if needed.
   This allows plugins that subscribe to InputActivity to detect how many buttons are held.
