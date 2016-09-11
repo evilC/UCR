@@ -15,8 +15,8 @@ class OneSwitchPulse extends _Plugin {
 		Gui, % this.hwnd ":Add", Text, xm+5 yp+20, % "Toggle On/Off"
 		this.AddInputButton("Toggle", 0, this.Toggle.Bind(this), "x100 yp-2 w200")
 		
-		Gui, % this.hwnd ":Add", Text, xm+5 y+10, % "Choice"
-		this.AddInputButton("Choice1", 0, this.ChoiceChangedState.Bind(this), "x100 yp-2 w200")
+		;Gui, % this.hwnd ":Add", Text, xm+5 y+10, % "Choice"
+		;this.AddInputButton("Choice1", 0, this.ChoiceChangedState.Bind(this), "x100 yp-2 w200")
 		
 		Gui, % this.hwnd ":Add", GroupBox, x+30 ym w310 h75, Outputs
 		

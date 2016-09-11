@@ -21,8 +21,11 @@ Key:
   This GUID is currently not saved between runs, but it can be if needed.
   This allows plugins that subscribe to InputActivity to detect how many buttons are held.
 = OneSwitch Pulse plugin fixes:
+  The "Choice" InputButton has been removed, as any UCR input coulds as a Choice...
+  ... so it served no useful purpose, and could cause problems...
+  ... if it and a ButtonToButton in the same profile were both mapped to the same thing.
   Now correctly stops pulsing if a second button is pressed and released...
-  while one button is held.
+  ...while one button is held.
   Now correctly suspends pulsing for the <Choice Delay> time on joystick axis activity.
 
 0.0.16 - 14th Aug 2016
