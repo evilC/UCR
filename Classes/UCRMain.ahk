@@ -212,13 +212,13 @@ Class UCRMain extends _UCRBase {
 	; Creates the objects for the Main Menu
 	_CreateMainMenu(){
 		this.MainMenu := new _Menu()
+		this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
+			.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
 		this.MainMenu.AddSubMenu("&View", "View")
 			.AddMenuItem("Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized"))
 			.parent.AddMenuItem("Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
-		this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
-			.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
 		this.MainMenu.AddSubMenu("&Debug", "Debug")
-			.AddMenuItem("Show vJoy Log", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
+			.AddMenuItem("Show vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
