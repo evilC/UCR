@@ -47,6 +47,8 @@ Class UCRMain extends _UCRBase {
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
 		; Load the settings file into an object, but do nothing with it for now
 		SettingsObj := this._LoadSettings()
+		; Merge the User Settings onto the default settings
+		this.MergeObject(this.UserSettings, SettingsObj.UserSettings)
 		; ======================= End of init ==============================
 		
 		this.Minimizer := new _Minimizer(this.hwnd, this._GuiMinimized.Bind(this))
@@ -54,13 +56,16 @@ Class UCRMain extends _UCRBase {
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
 		this._InputThreadScript := Script	; Cache script for profile InputThreads
 		
-		; Load the Joystick OEM name DLL
-		#DllImport,joystick_OEM_name,%A_ScriptDir%\Resources\JoystickOEMName.dll\joystick_OEM_name,double,,CDecl AStr
-		;~ DllCall("LoadLibrary", Str, A_ScriptDir "\Resources\JoystickOEMName.dll")
-		;~ if (ErrorLevel != 0){
-			;~ MsgBox Error Loading \Resources\JoystickOEMName.dll. Exiting...
-			;~ ExitApp
-		;~ }
+		if (this.UserSettings.GuiControls.ShowJoystickNames){
+			; Load the Joystick OEM name DLL
+			msgbox
+			#DllImport,joystick_OEM_name,%A_ScriptDir%\Resources\JoystickOEMName.dll\joystick_OEM_name,double,,CDecl AStr
+			;~ DllCall("LoadLibrary", Str, A_ScriptDir "\Resources\JoystickOEMName.dll")
+			;~ if (ErrorLevel != 0){
+				;~ MsgBox Error Loading \Resources\JoystickOEMName.dll. Exiting...
+				;~ ExitApp
+			;~ }
+		}
 		
 		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
 		
@@ -208,8 +213,10 @@ Class UCRMain extends _UCRBase {
 	_CreateMainMenu(){
 		this.MainMenu := new _Menu()
 		this.MainMenu.AddSubMenu("&View", "View")
-			.AddMenuItem("Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized")).SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
+			.AddMenuItem("Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized"))
 			.parent.AddMenuItem("Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
+		this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
+			.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
@@ -217,12 +224,20 @@ Class UCRMain extends _UCRBase {
 		for k, v in this.UserSettings.MinimizeOptions {
 			this.MainMenu.MenusByName["View"].ItemsByName[k].SetCheckState(v)
 		}
+		
+		for k, v in this.UserSettings.GuiControls {
+			this.MainMenu.MenusByName["GuiControls"].ItemsByName[k].SetCheckState(v)
+		}
+		
 	}
 	
 	_MenuHandler(name){
 		if (name = "MinimizeToTray" || name = "StartMinimized"){
 			this.UserSettings.MinimizeOptions[name] := !this.UserSettings.MinimizeOptions[name]
 			this.MainMenu.MenusByName["View"].ItemsByName[name].ToggleCheck()
+		} else if (name = "ShowJoystickNames"){
+			this.UserSettings.GuiControls[name] := !this.UserSettings.GuiControls[name]
+			this.MainMenu.MenusByName["GuiControls"].ItemsByName[name].ToggleCheck()
 		}
 		this._SaveSettings()
 	}
@@ -907,7 +922,6 @@ Class UCRMain extends _UCRBase {
 	
 	; Load this object from simple data strutures
 	_Deserialize(obj){
-		this.MergeObject(this.UserSettings, obj.UserSettings)
 		this._SetMenuState()
 		this.Profiles := {}
 		this.ProfileTree := obj.ProfileTree
@@ -924,12 +938,12 @@ Class UCRMain extends _UCRBase {
 			this.CurrentPos := obj.CurrentPos
 	}
 	
-	MergeObject(src, dest){
-		for k, v in dest { ;*[UCR]
+	MergeObject(base, patch){
+		for k, v in patch {
 			if (IsObject(v)){
-				this.MergeObject(src[k], v)
+				this.MergeObject(base[k], v)
 			} else {
-				src[k] := v
+				base[k] := v
 			}
 			
 		}
