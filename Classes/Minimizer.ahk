@@ -10,7 +10,6 @@ class _Minimizer {
 	}
 	
 	WM_SYSCOMMAND(wParam){
-		OutputDebug % "UCR| HERE"
 		If ( wParam = 61472 ) {
 			fn := this.callback
 			SetTimer, % fn, -1
