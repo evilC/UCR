@@ -246,7 +246,8 @@ Class _Profile {
 		ControlGetPos, , , , height_spacer, ,% "ahk_id " this.hSpacer
 		GuiControl, Move, % this.hSpacer, % "h" height_spacer - height_frame
 		this.Plugins.Delete(plugin.id)
-		this._PluginChanged(plugin)
+		plugin := ""
+		this._PluginChanged()
 		this._LayoutPlugins()
 	}
 	
@@ -325,7 +326,7 @@ Class _Profile {
 		}
 	}
 
-	_PluginChanged(plugin){
+	_PluginChanged(){
 		OutputDebug % "UCR| Profile " this.Name " called UCR._ProfileChanged()"
 		UCR._ProfileChanged(this)
 	}

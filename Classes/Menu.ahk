@@ -93,6 +93,24 @@ class _Menu extends _UCRBase {
 			Menu, % this.parent.id, Disable, % this.text
 		return this
 	}
+	
+	_KillReferences(){
+		for id, menu in this.MenusByID {
+			menu._KillReferences()
+		}
+		for id, item in this.ItemsByID {
+			item._KillReferences()
+		}
+		Menu, % this.id, Delete
+		this.ItemsByID := {}
+		this.ItemsByName := {}
+		this.MenusByID := {}
+		this.MenusByName := {}
+	}
+	
+	__Delete(){
+		;OutputDebug % "UCR| Menu " this.text " fired destructor"
+	}
 
 	class MenuItem extends _UCRBase {
 		Checked := 0
@@ -175,6 +193,10 @@ class _Menu extends _UCRBase {
 		AddSubMenu(aParams*){
 			; Route to parent
 			return this.parent.AddSubMenu(aParams*)
+		}
+		
+		_KillReferences(){
+			
 		}
 	}
 }

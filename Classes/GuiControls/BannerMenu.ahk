@@ -9,6 +9,7 @@ class _BannerMenu extends _Menu {
 		Gui, Add, Button, % "hwndhReadout " aParams[1]
 		this.hReadout := hReadout
 		fn := this.OpenMenu.Bind(this)
+		this.OpenMenuFn := fn
 		GuiControl, +g, % this.hReadout, % fn
 
 		this.hwnd := hReadout	; all classes that represent Gui objects should have a unique hwnd property
@@ -34,5 +35,12 @@ class _BannerMenu extends _Menu {
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
 		; do nothing
+	}
+	
+	_KillReferences(){
+		base._KillReferences()
+		fn := this.OpenMenuFn
+		GuiControl, -g, % this.hReadout, % fn
+		this.OpenMenuFn := ""
 	}
 }

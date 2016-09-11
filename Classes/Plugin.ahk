@@ -120,7 +120,7 @@ Class _Plugin {
 	; A GuiControl / Hotkey changed
 	_ControlChanged(ctrl){
 		OutputDebug % "UCR| Plugin " this.Name " called ParentProfile._PluginChanged()"
-		this.ParentProfile._PluginChanged(this)
+		this.ParentProfile._PluginChanged()
 	}
 	
 	; Save plugin to disk
@@ -188,30 +188,35 @@ Class _Plugin {
 			UCR._InputHandler.SetButtonBinding(obj, 1)
 			obj._KillReferences()
 		}
+		this.InputButtons := ""
 		for Name, obj in this.InputAxes {
 			UCR._InputHandler.SetAxisBinding(obj, 1)
 			obj._KillReferences()
 		}
+		this.InputAxes := ""
 		for name, obj in this.InputDeltas {
 			UCR._InputHandler.SetDeltaBinding(obj, 1)
 			obj._KillReferences()
 		}
+		this.InputDeltas := ""
 		for name, obj in this.OutputButtons {
 			obj._KillReferences()
 		}
+		this.OutputButtons := ""
 		for name, obj in this.OutputAxes {
 			obj._KillReferences()
 		}
 		for name, obj in this.GuiControls {
 			obj._KillReferences()
 		}
+		this.GuiControls := ""
 		for name, obj in this.ProfileSelects {
 			obj._KillReferences()
 		}
+		this.ProfileSelects := ""
 		this.ParentProfile._RemovePlugin(this)
 		try {
 			this._KillReferences()
 		}
-		this.InputButtons := this.OutputButtons := this.GuiControls := ""
 	}
 }

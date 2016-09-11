@@ -26,14 +26,16 @@ class _InputButton extends _BannerMenu {
 	}
 	
 	__Delete(){
-		OutputDebug % "UCR| Hotkey " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| InputButton " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	; Kill references so destructor can fire
 	_KillReferences(){
+		base._KillReferences()
 		GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
 		this.ChangeValueCallback := ""
 		this.ChangeStateCallback := ""
+		this._KeyOnlyOptions := ""
 	}
 	
 	value[]{

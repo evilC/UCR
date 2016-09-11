@@ -199,6 +199,7 @@ Class _OutputButton extends _InputButton {
 	; Kill references so destructor can fire
 	_KillReferences(){
 		base._KillReferences()
+		this.JoyMenus := []
 		;~ GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
 		;~ this.ChangeValueCallback := ""
 		;~ this.ChangeStateCallback := ""
