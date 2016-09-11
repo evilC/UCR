@@ -27,7 +27,7 @@ Class UCRMain extends _UCRBase {
 	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	; Default User Settings
-	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, StartMinimized: 0}}
+	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, StartMinimized: 0}, GuiControls: {ShowJoystickNames: 1}}
 	
 	__New(){
 		; ============== Init section - This needs to be done first ========

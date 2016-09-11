@@ -33,7 +33,10 @@ class _InputAxis extends _BannerMenu {
 			if (!ji)
 				continue
 			offset := A_Index * 10
-			menu := this.AddSubMenu("Stick " A_index, "Stick" A_index)
+			if (UCR.UserSettings.GuiControls.ShowJoystickNames){
+				name := " (" DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr") ")"
+			}
+			menu := this.AddSubMenu("Stick " A_index name, "Stick" A_index)
 			Loop 6 {
 				str := this.AHKAxisList[A_Index]
 				if (this.AHKAxisList[A_Index] != this.vJoyAxisList[A_Index]){
