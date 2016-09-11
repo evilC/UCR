@@ -193,7 +193,7 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	__Delete(){
-		OutputDebug % "UCR| Output " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| OutputButton " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	; Kill references so destructor can fire

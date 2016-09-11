@@ -19,6 +19,10 @@ class _ProfileSelect extends _BannerMenu {
 		UCR.SubscribeToProfileTreeChange(this.hwnd, this.SetControlState.Bind(this))
 	}
 	
+	__Delete(){
+		OutputDebug % "UCR| ProfileSelect " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+	}
+	
 	_BuildMenu(){
 		this.AddMenuItem("Select Profile", this._ChangedValue.Bind(this, 1))
 		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
@@ -80,6 +84,7 @@ class _ProfileSelect extends _BannerMenu {
 	
 	; Kill references so destructor can fire
 	_KillReferences(){
+		base._KillReferences()
 		this.ChangeValueCallback := ""
 		UCR.UnSubscribeToProfileTreeChange(this.hwnd)
 	}

@@ -206,6 +206,7 @@ Class _Plugin {
 		for name, obj in this.OutputAxes {
 			obj._KillReferences()
 		}
+		this.OutputAxes := ""
 		for name, obj in this.GuiControls {
 			obj._KillReferences()
 		}

@@ -17,6 +17,16 @@ class _InputAxis extends _BannerMenu {
 		this.SetControlState()
 	}
 	
+	__Delete(){
+		OutputDebug % "UCR| InputAxis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+	}
+	
+	_KillReferences(){
+		base._KillReferences()
+		this.ChangeValueCallback := ""
+		this.ChangeStateCallback := ""
+	}
+	
 	_BuildMenu(){
 		Loop 8 {
 			ji := GetKeyState( A_Index "JoyInfo")

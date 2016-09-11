@@ -13,6 +13,15 @@ class _OutputAxis extends _BannerMenu {
 		this.SetControlState()
 	}
 	
+	__Delete(){
+		OutputDebug % "UCR| OutputAxis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+	}
+	
+	_KillReferences(){
+		base._KillReferences()
+		this.ChangeValueCallback := ""
+	}
+	
 	_BuildMenu(){
 		Loop 8 {
 			menu := this.AddSubMenu("vJoy Stick " A_Index, "vJoy Stick" A_Index)
