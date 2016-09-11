@@ -209,6 +209,7 @@ Class UCRMain extends _UCRBase {
 		;Gui, % this.hwnd ":Show"
 	}
 	
+	; Creates the objects for the Main Menu
 	_CreateMainMenu(){
 		this.MainMenu := new _Menu()
 		this.MainMenu.AddSubMenu("&View", "View")
@@ -216,9 +217,12 @@ Class UCRMain extends _UCRBase {
 			.parent.AddMenuItem("Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
 		this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
 			.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
+		this.MainMenu.AddSubMenu("&Debug", "Debug")
+			.AddMenuItem("Show vJoy Log", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
+	; Called once at Startup to synch state of Main Menu with the INI file
 	_SetMenuState(){
 		for k, v in this.UserSettings.MinimizeOptions {
 			this.MainMenu.MenusByName["View"].ItemsByName[k].SetCheckState(v)
@@ -230,6 +234,7 @@ Class UCRMain extends _UCRBase {
 		
 	}
 	
+	; When an option is chose in the main menu, this is called
 	_MenuHandler(name){
 		if (name = "MinimizeToTray" || name = "StartMinimized"){
 			this.UserSettings.MinimizeOptions[name] := !this.UserSettings.MinimizeOptions[name]
@@ -237,6 +242,8 @@ Class UCRMain extends _UCRBase {
 		} else if (name = "ShowJoystickNames"){
 			this.UserSettings.GuiControls[name] := !this.UserSettings.GuiControls[name]
 			this.MainMenu.MenusByName["GuiControls"].ItemsByName[name].ToggleCheck()
+		} else if (name = "ShowvJoyLog"){
+			this.ShowvJoyLog()
 		}
 		this._SaveSettings()
 	}
@@ -903,7 +910,23 @@ Class UCRMain extends _UCRBase {
 		cy := ((uh / 2) - ch) + uy
 		return {x: cx, y: cy}
 	}
+
+	ShowvJoyLog(){
+		Clipboard := this.Libraries.vJoy.LoadLibraryLog
+		msgbox % this.Libraries.vJoy.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
+	}
 	
+	MergeObject(base, patch){
+		for k, v in patch {
+			if (IsObject(v)){
+				this.MergeObject(base[k], v)
+			} else {
+				base[k] := v
+			}
+			
+		}
+	}
+
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {SettingsVersion: this.SettingsVersion
@@ -935,17 +958,6 @@ Class UCRMain extends _UCRBase {
 			this.CurrentSize := obj.CurrentSize
 		if (IsObject(obj.CurrentPos))
 			this.CurrentPos := obj.CurrentPos
-	}
-	
-	MergeObject(base, patch){
-		for k, v in patch {
-			if (IsObject(v)){
-				this.MergeObject(base[k], v)
-			} else {
-				base[k] := v
-			}
-			
-		}
 	}
 }
 

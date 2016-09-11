@@ -54,6 +54,7 @@ return
 	; Libraries
 	#Include Libraries\StickOps\StickOps.ahk
 	#Include Libraries\vJoy\vjoy.ahk
+	#Include Libraries\vJoy\CvJoyInterface.ahk
 	#Include Libraries\TTS\TTS.ahk
 	
 	; Include Plugins in case they are not in UCRDebug.ahk

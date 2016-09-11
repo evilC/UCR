@@ -7,11 +7,13 @@ Key:
 0.0.17 - 11th Sept 2016
 + There is now a "Main Menu" at the top of the UCR GUI.
   It has limited functionality for now, namely:
-  Minimize To Tray - Hides the Taskbar icon when UCR is minimized
-  Start Minimized - Minimizes UCR when it starts up.
-  Show Joystick Names - Attempts to get the names for your connected sticks.
-     This was crashing for some users, so now it is optional and disabled by default.
+  * Minimize To Tray - Hides the Taskbar icon when UCR is minimized
+  * Start Minimized - Minimizes UCR when it starts up.
+  * Show Joystick Names - Attempts to get the names for your connected sticks.
+     Trying to get joystick names was causing a crash for some users...
+     ...so now it is optional and disabled by default.
      This option requires restarting UCR to take effect.
+  * Show vJoy Log - Shows a log of the vJoy API loading process.
 + New menu system implemented for Bind Controls.
   It is now much quicker to select Inputs / Outputs, and easier for me to add new options.
 + Added AxisInitializer plugin.
