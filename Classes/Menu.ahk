@@ -39,7 +39,7 @@ class _Menu extends _UCRBase {
 		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
-		item := new this.MenuItem(this, text, callback)
+		item := new this.MenuItem(this, text, ItemName, callback)
 		this.ItemsByID[item.id] := item
 		if (text != "")
 			this.ItemsByName[ItemName] := item
@@ -105,9 +105,14 @@ class _Menu extends _UCRBase {
 	}
 
 	class MenuItem extends _UCRBase {
+		parent := 0		; Pointer to parent menu
+		name := ""		; Name that this item is referred to by
+		text := ""		; The text of the menu entry
+		callback := 0		; The BoundFunc to call when the item is selected
+		
 		Checked := 0
-		__New(parent, text, callback){
-			this.parent := parent, this.text := text, this.callback := callback
+		__New(parent, text, name, callback){
+			this.parent := parent, this.text := text, this.callback := callback, this.name := name
 			this.id := Menu.CreateGUID()
 			Menu, % parent.id, Add, % text, % callback
 		}
