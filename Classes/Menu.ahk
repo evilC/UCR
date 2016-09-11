@@ -39,10 +39,10 @@ class _Menu extends _UCRBase {
 		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
-		item := new this.MenuItem(this, text, ItemName, callback)
+		item := new this.MenuItem(this, text, callback)
 		this.ItemsByID[item.id] := item
 		if (text != "")
-			this.ItemsByName[text] := item
+			this.ItemsByName[ItemName] := item
 		return item
 	}
 	
@@ -62,18 +62,6 @@ class _Menu extends _UCRBase {
 			return 1
 		}
 		return 0
-	}
-	
-	
-	ChangeItemName(item, NewName){
-		if (this.CheckForDuplicateItemName(NewName)){
-			return 0
-		}
-		this.ItemsByName.Delete(name)
-		this.ItemsByName[NewName] := item
-		Menu, % this.id, Rename, % item.name, % NewName
-		item.name := NewName
-		return 1
 	}
 	
 	SetEnableState(state){
@@ -118,33 +106,32 @@ class _Menu extends _UCRBase {
 
 	class MenuItem extends _UCRBase {
 		Checked := 0
-		__New(parent, name, ItemName, callback){
-			this.parent := parent, this.name := name, this.callback := callback
+		__New(parent, text, callback){
+			this.parent := parent, this.text := text, this.callback := callback
 			this.id := Menu.CreateGUID()
-			this.name := name
-			Menu, % parent.id, Add, % name, % callback
+			Menu, % parent.id, Add, % text, % callback
 		}
 		
 		Icon(FileName, IconNumber := "", IconWidth := ""){
-			Menu, % this.parent.id, Icon, % this.name, % FileName, % IconNumber, % IconWidth
+			Menu, % this.parent.id, Icon, % this.text, % FileName, % IconNumber, % IconWidth
 			return this
 		}
 		
 		Check(){
 			this.Checked := 1
-			Menu, % this.parent.id, Check, % this.name
+			Menu, % this.parent.id, Check, % this.text
 			return this
 		}
 		
 		UnCheck(){
 			this.Checked := 0
-			Menu, % this.parent.id, UnCheck, % this.name
+			Menu, % this.parent.id, UnCheck, % this.text
 			return this
 		}
 		
 		ToggleCheck(){
 			this.Checked := !this.Checked
-			Menu, % this.parent.id, ToggleCheck, % this.name
+			Menu, % this.parent.id, ToggleCheck, % this.text
 			return this
 		}
 		
@@ -166,27 +153,20 @@ class _Menu extends _UCRBase {
 		
 		Enable(){
 			this.Enabled := 1
-			Menu, % this.parent.id, Enable, % this.name
+			Menu, % this.parent.id, Enable, % this.text
 			return this
 		}
 		
 		Disable(){
 			this.Enabled := 0
-			Menu, % this.parent.id, Disable, % this.name
+			Menu, % this.parent.id, Disable, % this.text
 			return this
 		}
 		
 		ToggleEnable(){
 			this.Enabled := !this.Enabled
-			Menu, % this.parent.id, ToggleEnable, % this.name
+			Menu, % this.parent.id, ToggleEnable, % this.text
 			return this
-		}
-		
-		Rename(NewName := ""){
-			if (this.parent.ChangeItemName(this, NewName)){
-				return this
-			}
-			return 0
 		}
 		
 		Add(aParams*){

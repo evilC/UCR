@@ -214,17 +214,14 @@ Class UCRMain extends _UCRBase {
 	}
 	
 	_SetMenuState(){
-		this.MainMenu.MenusByName["View"].ItemsByName["Minimize To Tray"].SetCheckState(this.UserSettings.MinimizeOptions.MinimizeToTray)
-		this.MainMenu.MenusByName["View"].ItemsByName["Start Minimized"].SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
+		this.MainMenu.MenusByName["View"].ItemsByName["MinimizeToTray"].SetCheckState(this.UserSettings.MinimizeOptions.MinimizeToTray)
+		this.MainMenu.MenusByName["View"].ItemsByName["StartMinimized"].SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
 	}
 	
 	_MenuHandler(name){
-		if (name = "MinimizeToTray"){
-			this.UserSettings.MinimizeOptions.MinimizeToTray := !this.UserSettings.MinimizeOptions.MinimizeToTray
-			this.MainMenu.MenusByName["View"].ItemsByName["Minimize To Tray"].ToggleCheck()
-		} else if (name = "StartMinimized"){
-			this.UserSettings.MinimizeOptions.StartMinimized := !this.UserSettings.MinimizeOptions.StartMinimized
-			this.MainMenu.MenusByName["View"].ItemsByName["Start Minimized"].ToggleCheck()
+		if (name = "MinimizeToTray" || name = "StartMinimized"){
+			this.UserSettings.MinimizeOptions[name] := !this.UserSettings.MinimizeOptions[name]
+			this.MainMenu.MenusByName["View"].ItemsByName[name].ToggleCheck()
 		}
 		this._SaveSettings()
 	}
