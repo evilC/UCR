@@ -58,7 +58,6 @@ Class UCRMain extends _UCRBase {
 		
 		if (this.UserSettings.GuiControls.ShowJoystickNames){
 			; Load the Joystick OEM name DLL
-			msgbox
 			#DllImport,joystick_OEM_name,%A_ScriptDir%\Resources\JoystickOEMName.dll\joystick_OEM_name,double,,CDecl AStr
 			;~ DllCall("LoadLibrary", Str, A_ScriptDir "\Resources\JoystickOEMName.dll")
 			;~ if (ErrorLevel != 0){
