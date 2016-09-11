@@ -26,6 +26,8 @@ Class UCRMain extends _UCRBase {
 	_LoadedInputThreads := {}		; ProfileID-indexed sparse array of loaded input threads
 	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
+	; Default User Settings
+	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, MinimizeOnStart: 1}}
 	
 	__New(){
 		; ============== Init section - This needs to be done first ========
@@ -47,7 +49,7 @@ Class UCRMain extends _UCRBase {
 		SettingsObj := this._LoadSettings()
 		; ======================= End of init ==============================
 		
-		this.Minimizer := new _Minimizer(this.hwnd)
+		this.Minimizer := new _Minimizer(this.hwnd, this._GuiMinimized.Bind(this))
 		
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
 		this._InputThreadScript := Script	; Cache script for profile InputThreads
@@ -91,6 +93,9 @@ Class UCRMain extends _UCRBase {
 		
 		; Move the window to it's last position and size
 		this._ShowGui()
+		if (this.UserSettings.MinimizeOptions.MinimizeOnStart){
+			this.Minimizer.MinimizeGuiToTray()
+		}
 		
 		; Start the Global Profile
 		this._SetProfileInputThreadState(1,1)
@@ -117,6 +122,14 @@ Class UCRMain extends _UCRBase {
 				sleep 100
 			}
 			ExitApp
+		}
+	}
+	
+	_GuiMinimized(){
+		if (this.UserSettings.MinimizeOptions.MinimizeToTray){
+			this.Minimizer.MinimizeGuiToTray()
+		} else {
+			WinMinimize, % "ahk_id " this.hwnd
 		}
 	}
 	
