@@ -28,20 +28,29 @@ Class UCRMain extends _UCRBase {
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	
 	__New(){
-		global UCR := this			; Set super-global UCR to point to class instance
+		; ============== Init section - This needs to be done first ========
+		; Set super-global UCR to point to class instance
+		global UCR := this
+		
+		; Get the HWND of the default GUI
 		Gui +HwndHwnd
 		this.hwnd := hwnd
-		this.Minimizer := new _Minimizer(this.hwnd)
 		
-		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
-		this._InputThreadScript := Script	; Cache script for profile InputThreads
-		
+		; Work out the name of the INI file
 		str := A_ScriptName
 		if (A_IsCompiled)
 			str := StrSplit(str, ".exe")
 		else
 			str := StrSplit(str, ".ahk")
 		this._SettingsFile := A_ScriptDir "\" str.1 ".ini"
+		; Load the settings file into an object, but do nothing with it for now
+		SettingsObj := this._LoadSettings()
+		; ======================= End of init ==============================
+		
+		this.Minimizer := new _Minimizer(this.hwnd)
+		
+		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
+		this._InputThreadScript := Script	; Cache script for profile InputThreads
 		
 		; Load the Joystick OEM name DLL
 		#DllImport,joystick_OEM_name,%A_ScriptDir%\Resources\JoystickOEMName.dll\joystick_OEM_name,double,,CDecl AStr
@@ -70,18 +79,25 @@ Class UCRMain extends _UCRBase {
 		; Create the Main Gui
 		this._CreateGui()
 		
-		; Load settings. This will cause all plugins to load.
-		p := this._LoadSettings()
+		; Load list of plugins and update Plugin Select
+		this._LoadPluginList()
+		this._UpdatePluginSelect()
+
+		; Load the profiles and plugins from the settings file
+		this._Deserialize(SettingsObj)
 		
 		; Update state of Profile Toolbox
 		this.UpdateProfileToolbox()
 		
-		; Now we have settings from disk, move the window to it's last position and size
+		; Move the window to it's last position and size
 		this._ShowGui()
 		
+		; Start the Global Profile
 		this._SetProfileInputThreadState(1,1)
 		this.Profiles.1._Activate()
-		this.ChangeProfile(p, 0)
+		
+		; Start the Current Profile
+		this.ChangeProfile(SettingsObj.CurrentProfile, 0)
 		
 		; Watch window position and size using MessageFilter thread
 		this._MessageFilterThread := AhkThread(A_ScriptDir "\Threads\MessageFilterThread.ahk",,1)
@@ -619,9 +635,6 @@ Class UCRMain extends _UCRBase {
 	
 	; Load settings from disk
 	_LoadSettings(){
-		this._LoadPluginList()
-		this._UpdatePluginSelect()
-		
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
 			; Settings file empty or not found, create new settings
@@ -642,9 +655,7 @@ Class UCRMain extends _UCRBase {
 				ExitApp
 			}
 		}
-		; Load profiles / plugins from settings file
-		this._Deserialize(j)
-		return j.CurrentProfile
+		return j
 	}
 	
 	; Save settings to disk
