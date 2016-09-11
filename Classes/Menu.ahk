@@ -16,7 +16,7 @@ class _Menu extends _UCRBase {
 	
 	; text = What text will appear as in the parent menu
 	AddMenuItem(text, ItemName, callback := ""){
-		return this._AddItem(text, callback)
+		return this._AddItem(text, ItemName, callback)
 	}
 	
 	; text = What text will appear as in the parent menu 
@@ -35,11 +35,11 @@ class _Menu extends _UCRBase {
 	}
 	
 	; 
-	_AddItem(text, callback){
+	_AddItem(text, ItemName, callback){
 		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
-		item := new this.MenuItem(this, text, callback)
+		item := new this.MenuItem(this, text, ItemName, callback)
 		this.ItemsByID[item.id] := item
 		if (text != "")
 			this.ItemsByName[text] := item
@@ -118,7 +118,7 @@ class _Menu extends _UCRBase {
 
 	class MenuItem extends _UCRBase {
 		Checked := 0
-		__New(parent, name, callback){
+		__New(parent, name, ItemName, callback){
 			this.parent := parent, this.name := name, this.callback := callback
 			this.id := Menu.CreateGUID()
 			this.name := name
