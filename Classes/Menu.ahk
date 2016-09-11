@@ -15,7 +15,7 @@ class _Menu extends _UCRBase {
 	}
 	
 	; text = What text will appear as in the parent menu
-	AddMenuItem(text := "", callback := ""){
+	AddMenuItem(text, ItemName, callback := ""){
 		return this._AddItem(text, callback)
 	}
 	

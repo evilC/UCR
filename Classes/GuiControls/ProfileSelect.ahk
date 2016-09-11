@@ -24,8 +24,8 @@ class _ProfileSelect extends _BannerMenu {
 	}
 	
 	_BuildMenu(){
-		this.AddMenuItem("Select Profile", this._ChangedValue.Bind(this, 1))
-		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
+		this.AddMenuItem("Select Profile", "SelectProfile", this._ChangedValue.Bind(this, 1))
+		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)

@@ -27,10 +27,10 @@ class _OutputAxis extends _BannerMenu {
 			menu := this.AddSubMenu("vJoy Stick " A_Index, "vJoy Stick" A_Index)
 			offset := A_Index * 10
 			Loop 8 {
-				menu.AddMenuItem(A_Index " (" this.vJoyAxisList[A_Index] ")", this._ChangedValue.Bind(this, offset + A_Index))
+				menu.AddMenuItem(A_Index " (" this.vJoyAxisList[A_Index] ")", A_Index, this._ChangedValue.Bind(this, offset + A_Index))
 			}
 		}
-		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
+		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Plugin Authors call this to set the state of the output axis

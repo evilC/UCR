@@ -15,10 +15,10 @@ Class _OutputButton extends _InputButton {
 	_BuildMenu(){
 		static HatDirections := ["Up", "Right", "Down", "Left"]
 		static XBoxButtons := ["A", "B", "X", "Y", "LB", "RB", "LS", "RS", "Back", "Start", "Guide"]
-		this.AddMenuItem("Select Keyboard / Mouse Binding", this._ChangedValue.Bind(this, 1))
+		this.AddMenuItem("Select Keyboard / Mouse Binding", "Select", this._ChangedValue.Bind(this, 1))
 		menu := this.AddSubMenu("vJoy Stick", "vJoy Stick")
 		Loop 8 {
-			menu.AddMenuItem(A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
 		}
 		chunksize := 16
 		Loop % round(128 / chunksize) {
@@ -27,7 +27,7 @@ Class _OutputButton extends _InputButton {
 			this.JoyMenus.Push(menu)
 			Loop % chunksize {
 				btn := A_Index + offset
-					menu.AddMenuItem(btn, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
+					menu.AddMenuItem(btn, btn, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
 			}
 		}
 
@@ -36,24 +36,24 @@ Class _OutputButton extends _InputButton {
 			offset := (1 + A_Index) * 1000
 			this.JoyMenus.Push(menu)
 			Loop 4 {
-				menu.AddMenuItem(HatDirections[A_Index], this._ChangedValue.Bind(this, offset + A_Index))	; Set the callback when selected
+				menu.AddMenuItem(HatDirections[A_Index], HatDirections[A_Index], this._ChangedValue.Bind(this, offset + A_Index))	; Set the callback when selected
 			}
 		}
 		
 		/*
 		menu := this.AddSubMenu("vXBox Pad", "vXBoxPad")
 		Loop 4 {
-			menu.AddMenuItem(A_Index, this._ChangedValue.Bind(this, 200 + A_Index))
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 200 + A_Index))
 		}
 
 		menu := this.AddSubMenu("vXBox Buttons", "vXBoxBtns")
 		this.JoyMenus.Push(menu)
 		Loop 11 {
-			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", this._ChangedValue.Bind(this, 6000 + A_Index))
+			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", A_Index, this._ChangedValue.Bind(this, 6000 + A_Index))
 		}
 		*/
 
-		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
+		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Builds the list of options in the DropDownList

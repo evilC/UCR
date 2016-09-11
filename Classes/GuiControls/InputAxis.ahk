@@ -42,10 +42,10 @@ class _InputAxis extends _BannerMenu {
 				if (this.AHKAxisList[A_Index] != this.vJoyAxisList[A_Index]){
 					str .= " / " this.vJoyAxisList[A_Index]
 				}
-				menu.AddMenuItem(A_Index " (" str ")", this._ChangedValue.Bind(this, offset + A_Index))
+				menu.AddMenuItem(A_Index " (" str ")", A_Index, this._ChangedValue.Bind(this, offset + A_Index))
 			}
 		}
-		this.AddMenuItem("Clear", this._ChangedValue.Bind(this, 2))
+		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; The Axis Select DDL changed value

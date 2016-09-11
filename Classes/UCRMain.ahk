@@ -208,8 +208,8 @@ Class UCRMain extends _UCRBase {
 	_CreateMainMenu(){
 		this.MainMenu := new _Menu()
 		this.MainMenu.AddSubMenu("&View", "View")
-			.AddMenuItem("Start Minimized", this._MenuHandler.Bind(this, "StartMinimized")).SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
-			.parent.AddMenuItem("Minimize to Tray", this._MenuHandler.Bind(this, "MinimizeToTray"))
+			.AddMenuItem("Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized")).SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
+			.parent.AddMenuItem("Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
