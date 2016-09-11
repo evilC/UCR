@@ -214,8 +214,9 @@ Class UCRMain extends _UCRBase {
 	}
 	
 	_SetMenuState(){
-		this.MainMenu.MenusByName["View"].ItemsByName["MinimizeToTray"].SetCheckState(this.UserSettings.MinimizeOptions.MinimizeToTray)
-		this.MainMenu.MenusByName["View"].ItemsByName["StartMinimized"].SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
+		for k, v in this.UserSettings.MinimizeOptions {
+			this.MainMenu.MenusByName["View"].ItemsByName[k].SetCheckState(v)
+		}
 	}
 	
 	_MenuHandler(name){
