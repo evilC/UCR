@@ -14,10 +14,13 @@ class _Menu extends _UCRBase {
 		Menu, % this.id, Add
 	}
 	
-	AddMenuItem(name := "", callback := ""){
-		return this._AddItem(name, callback)
+	; text = What text will appear as in the parent menu
+	AddMenuItem(text := "", callback := ""){
+		return this._AddItem(text, callback)
 	}
 	
+	; text = What text will appear as in the parent menu 
+	; MenuName = the name that code uses to refer to the menu
 	AddSubMenu(text, MenuName){
 		if (this.CheckForDuplicateMenuName(MenuName)){
 			return 0
@@ -31,14 +34,15 @@ class _Menu extends _UCRBase {
 		return child
 	}
 	
-	_AddItem(name, callback){
-		if (name != "" && this.CheckForDuplicateItemName(name)){
+	; 
+	_AddItem(text, callback){
+		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
-		item := new this.MenuItem(this, name, callback)
+		item := new this.MenuItem(this, text, callback)
 		this.ItemsByID[item.id] := item
-		if (name != "")
-			this.ItemsByName[name] := item
+		if (text != "")
+			this.ItemsByName[text] := item
 		return item
 	}
 	
