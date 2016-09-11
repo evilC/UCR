@@ -27,7 +27,7 @@ Class UCRMain extends _UCRBase {
 	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	; Default User Settings
-	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, MinimizeOnStart: 1}}
+	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, StartMinimized: 0}}
 	
 	__New(){
 		; ============== Init section - This needs to be done first ========
@@ -93,8 +93,8 @@ Class UCRMain extends _UCRBase {
 		
 		; Move the window to it's last position and size
 		this._ShowGui()
-		if (this.UserSettings.MinimizeOptions.MinimizeOnStart){
-			this.Minimizer.MinimizeGuiToTray()
+		if (this.UserSettings.MinimizeOptions.StartMinimized){
+			this._GuiMinimized()
 		}
 		
 		; Start the Global Profile
@@ -155,14 +155,6 @@ Class UCRMain extends _UCRBase {
 		}
 	}
 	
-	_CreateMainMenu(){
-		this.MainMenu := new _Menu()
-		this.MainMenu.AddSubMenu("&View", "View")
-			.AddMenuItem("Start Minimized", this.MenuHandler.Bind(this)).Disable()
-			.parent.AddMenuItem("Minimize to Tray", this.MenuHandler.Bind(this)).Check().Disable()
-		Gui, % this.hwnd ":Menu", % this.MainMenu.id
-	}
-	
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
@@ -213,8 +205,28 @@ Class UCRMain extends _UCRBase {
 		;Gui, % this.hwnd ":Show"
 	}
 	
-	MenuHandler(){
-		
+	_CreateMainMenu(){
+		this.MainMenu := new _Menu()
+		this.MainMenu.AddSubMenu("&View", "View")
+			.AddMenuItem("Start Minimized", this._MenuHandler.Bind(this, "StartMinimized")).SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
+			.parent.AddMenuItem("Minimize to Tray", this._MenuHandler.Bind(this, "MinimizeToTray"))
+		Gui, % this.hwnd ":Menu", % this.MainMenu.id
+	}
+	
+	_SetMenuState(){
+		this.MainMenu.MenusByName["View"].ItemsByName["Minimize To Tray"].SetCheckState(this.UserSettings.MinimizeOptions.MinimizeToTray)
+		this.MainMenu.MenusByName["View"].ItemsByName["Start Minimized"].SetCheckState(this.UserSettings.MinimizeOptions.StartMinimized)
+	}
+	
+	_MenuHandler(name){
+		if (name = "MinimizeToTray"){
+			this.UserSettings.MinimizeOptions.MinimizeToTray := !this.UserSettings.MinimizeOptions.MinimizeToTray
+			this.MainMenu.MenusByName["View"].ItemsByName["Minimize To Tray"].ToggleCheck()
+		} else if (name = "StartMinimized"){
+			this.UserSettings.MinimizeOptions.StartMinimized := !this.UserSettings.MinimizeOptions.StartMinimized
+			this.MainMenu.MenusByName["View"].ItemsByName["Start Minimized"].ToggleCheck()
+		}
+		this._SaveSettings()
 	}
 	
 	_ShowGui(){
@@ -886,6 +898,7 @@ Class UCRMain extends _UCRBase {
 		, CurrentProfile: this.CurrentProfile.id
 		, CurrentSize: this.CurrentSize
 		, CurrentPos: this.CurrentPos
+		, UserSettings: this.UserSettings
 		, Profiles: {}
 		, ProfileTree: this.ProfileTree}
 		for id, profile in this.Profiles {
@@ -896,6 +909,8 @@ Class UCRMain extends _UCRBase {
 	
 	; Load this object from simple data strutures
 	_Deserialize(obj){
+		this.MergeObject(this.UserSettings, obj.UserSettings)
+		this._SetMenuState()
 		this.Profiles := {}
 		this.ProfileTree := obj.ProfileTree
 		for id, profile in obj.Profiles {
@@ -909,6 +924,17 @@ Class UCRMain extends _UCRBase {
 			this.CurrentSize := obj.CurrentSize
 		if (IsObject(obj.CurrentPos))
 			this.CurrentPos := obj.CurrentPos
+	}
+	
+	MergeObject(src, dest){
+		for k, v in dest { ;*[UCR]
+			if (IsObject(v)){
+				this.MergeObject(src[k], v)
+			} else {
+				src[k] := v
+			}
+			
+		}
 	}
 }
 

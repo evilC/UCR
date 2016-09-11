@@ -4,11 +4,13 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.0.17 - ???
-+ UCR Now minimizes to the tray.
-+ New menu system implemented.
-  BindControls got an overhaul, it is now much quicker to select Inputs / Outputs.
-  There is now a "Main Menu" in UCR, though it is not currently functional.
+0.0.17 - 11th Sept 2016
++ There is now a "Main Menu" at the top of the UCR GUI.
+  It has limited functionality for now, namely:
+  Minimize To Tray - Hides the Taskbar icon when UCR is minimized
+  Start Minimized - Minimizes UCR when it starts up.
++ New menu system implemented for Bind Controls.
+  It is now much quicker to select Inputs / Outputs, and easier for me to add new options.
 + Added AxisInitializer plugin.
   This can be used to initialize a virtual axis to a specified position.
   Whenever the profile containing the plugin activates, it will set the axis position.

@@ -77,6 +77,7 @@ class _Menu extends _UCRBase {
 			this.Enable()
 		else
 			this.Disable()
+		return this
 	}
 	
 	Enable(){
@@ -130,6 +131,7 @@ class _Menu extends _UCRBase {
 				this.Check()
 			else
 				this.UnCheck()
+			return this
 		}
 		
 		SetEnableState(state){
@@ -137,6 +139,7 @@ class _Menu extends _UCRBase {
 				this.Enable()
 			else
 				this.Disable()
+			return this
 		}
 		
 		Enable(){
