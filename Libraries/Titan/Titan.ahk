@@ -96,29 +96,37 @@ class Titan {
 	; Class for the XBox 360 type output
 	; Derived from the base output class
 	class xb360_output extends Titan.output {
-		; Button Indexes are same as DI button indexes. XBox button is 11
-		;                             1  2  3  4  5  6  7  8  9 10 11
-		static ButtonIdentifiers := [19,18,20,17, 6, 3, 1, 2, 8, 5, 0]
+		;                             1  2  3  4  5  6  7  8  9 10 11 12 13 14
+		;static ButtonIdentifiers := [19,18,20,17, 6, 3, 1, 2, 8, 5, 0]
+		static ButtonIdentifiers := [19,18,20,17, 6, 3, "", "", 8, 5, 1, 2, 0]
 		static AxisIdentifiers   := [11,12, 9,10, 7, 4]
 		static POVIdentifiers := [[13,16,14,15]]	; 1 POV, Order is U, R, D, L
 		
-		static ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back", "Start", "LS", "RS", "Xbox"]
-		static ButtonIndexes := {A:1, B:2, X:3, Y:4, LB:5, RB:6, Back:7, Start:8, LS:9, RS:10, XBox:11}
+		static ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "", "", "LS", "RS", "Back", "Start", "Xbox"]
+		static ButtonIndexes := {A:1, B:2, X:3, Y:4, LB:5, RB:6, Back:11, Start:12, LS:9, RS:10, XBox:13}
 		static AxisNames := ["LX", "LY", "RX", "RY", "LT", "RT"]
 		static AxisIndexes := {LX:1, LY:2, RX:3, RY:4, LT:5, RT:6}
 	}
 
+	class xb1_output extends Titan.xb360_output {
+		
+	}
+	
 	class ps3_output extends Titan.output {
-		; Button Indexes are same as DI button indexes when using a PS3 PC adapter
-		; I got the indexes from here: http://forum.unity3d.com/threads/ps3-button-map.89288/
-		; Shifted to 1-based not 0-based
 		;                             1  2  3  4  5  6  7  8  9 10 11 12
-		static ButtonIdentifiers := [17,18,19,20, 7, 4, 6, 3, 1, 2, 8, 5]
+		static ButtonIdentifiers := [19,18,20,17, 6, 3, 7 ,4, 8, 5, 1, 2, 0]
 		static AxisIdentifiers   := [11,12,9,10]
 		static POVIdentifiers := [[13,16,14,15]]	; 1 POV, Order is U, R, D, L
 		
-		static ButtonNames := ["Triangle", "Circle", "Cross", "Square", "L2", "R2", "L1", "R1", "Select", "Start", "LS", "RS"]
-		static ButtonIndexes := {Triangle:1, Circle:2, Cross:3, Square:4, L2:5, R2:6, L1:7, R1:8, Select:9, Start:10, LS:11, RS: 12}
+		static ButtonNames := ["Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "LS", "RS", "Select", "Start", "Playstation"]
+		static ButtonIndexes := {Triangle:4, Circle:2, Cross:1, Square:3, L2:7, R2:8, L1:5, R1:6, Select:11, Start:12, LS:9, RS: 10}
+		static AxisNames := ["LX", "LY", "RX", "RY"]
+		static AxisIndexes := {LX:1, LY:2, RX:3, RY:4}
+	}
+	
+	class ps4_output extends Titan.ps3_output {
+		static ButtonNames := ["Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "LS", "RS", "Share", "Options", "Playstation"]
+		static ButtonIndexes := {Triangle:4, Circle:2, Cross:1, Square:3, L2:7, R2:8, L1:5, R1:6, Share:11, Options:12, LS:9, RS: 10}
 		static AxisNames := ["LX", "LY", "RX", "RY"]
 		static AxisIndexes := {LX:1, LY:2, RX:3, RY:4}
 	}
