@@ -4,6 +4,11 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.0.18 - 16th Sept 2016
++ Added Console output via Titan One GCDAPI
+  You can now output to consoles like you would output to vJoy.
+  Hardware device (Titan One) required!
+
 0.0.17 - 11th Sept 2016
 + There is now a "Main Menu" at the top of the UCR GUI.
   It has limited functionality for now, namely:
