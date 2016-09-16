@@ -15,6 +15,7 @@ Class _OutputButton extends _InputButton {
 	_BuildMenu(){
 		static HatDirections := ["Up", "Right", "Down", "Left"]
 		static XBoxButtons := ["A", "B", "X", "Y", "LB", "RB", "LS", "RS", "Back", "Start", "Guide"]
+		static TitanButtons := {XB360: XBoxButtons, PS3: ["Triangle", "Circle", "Cross", "Square", "L2", "R2", "L1", "R1", "Select", "Start", "LS", "RS"]}
 		this.AddMenuItem("Select Keyboard / Mouse Binding", "Select", this._ChangedValue.Bind(this, 1))
 		menu := this.AddSubMenu("vJoy Stick", "vJoy Stick")
 		Loop 8 {
@@ -52,10 +53,22 @@ Class _OutputButton extends _InputButton {
 			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", A_Index, this._ChangedValue.Bind(this, 6000 + A_Index))
 		}
 		*/
-		
-		menu := this.AddSubMenu("Titan", "Titan" A_Index)
-		Loop 1 {
-			menu.AddMenuItem("Button " A_Index, "Button" A_Index, this._ChangedValue.Bind(this, 10000 + A_Index))
+		TitanButtons := UCR.Libraries.Titan.GetButtonNames() ;*[UCR]
+		menu := this.AddSubMenu("Titan Buttons", "TitanButtons" A_Index)
+		Loop 12 {
+			btn := A_Index
+			str := " ( ", i := 0
+			for console, buttons in TitanButtons {
+				if (!buttons[btn])
+					continue
+				if (i){
+					str .= " / "
+				}
+				str .= console " " buttons[btn]
+				i++
+			}
+			str .= ")"
+			menu.AddMenuItem(A_Index str, "Button" A_Index, this._ChangedValue.Bind(this, 10000 + A_Index))
 		}
 		
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
@@ -191,7 +204,7 @@ Class _OutputButton extends _InputButton {
 				btn.IsVirtual := 1
 				bo.Buttons.push(btn)
 				bo.Buttons[1].DeviceID := 1
-				bo.Buttons[1].code := 1
+				bo.Buttons[1].code := o
 				this._value := bo
 				
 			}

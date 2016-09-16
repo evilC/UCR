@@ -4,10 +4,21 @@ class Titan {
 	Loaded := 0
 	Acquired := 0
 	
-	InputCodes := {ps3: 0x10, xb360: 0x20, wii: 0x30, ps4: 0x40, xb1: 0x50}
-	InputNames := {0x10: "ps3", 0x20: "xb360", 0x30: "wii", 0x40: "ps4", 0x50: "xb1"}
-	OutputCodes := {ps3: 0x1, xb360: 0x2, ps4: 0x3, xb1: 0x4}
-	OutputNames := {0x1: "ps3", 0x2: "xb360", 0x3: "ps4", 0x4: "xb1"}
+	InputCodes := {PS3: 0x10, XB360: 0x20, Wii: 0x30, PS4: 0x40, XB1: 0x50}
+	InputNames := {0x10: "PS3", 0x20: "XB360", 0x30: "Wii", 0x40: "PS4", 0x50: "XB1"}
+	OutputCodes := {PS3: 0x1, XB360: 0x2, PS4: 0x3, XB1: 0x4}
+	OutputNames := {0x1: "PS3", 0x2: "XB360", 0x3: "PS4", 0x4: "XB1"}
+	
+	GetButtonNames(){
+		names := {}
+		for console, unused in this.OutputCodes {
+			cls := this[console "_output"]
+			if (cls.ButtonNames.Length()){
+				names[console] := cls.ButtonNames.clone()
+			}
+		}
+		return names
+	}
 	
 	__New(){
 		this.hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll")
@@ -181,7 +192,7 @@ class Titan {
 		; Sets a button by Index.
 		; Use when you want to press buttons in a device-agnostic manner
 		SetButtonByIndex(btn, state){
-			if (btn > 10){
+			if (btn > this.ButtonNames.Length()){
 				return 0
 			}
 			this.SetIdentifier(this.ButtonIdentifiers[btn], state * 100)
