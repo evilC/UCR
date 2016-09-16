@@ -24,11 +24,16 @@ class _OutputAxis extends _BannerMenu {
 	
 	_BuildMenu(){
 		Loop 8 {
-			menu := this.AddSubMenu("vJoy Stick " A_Index, "vJoy Stick" A_Index)
+			menu := this.AddSubMenu("vJoy Stick " A_Index, "vJoyStick" A_Index)
 			offset := A_Index * 10
 			Loop 8 {
 				menu.AddMenuItem(A_Index " (" this.vJoyAxisList[A_Index] ")", A_Index, this._ChangedValue.Bind(this, offset + A_Index))
 			}
+		}
+		menu := this.AddSubMenu("Titan Axis", "TitanAxis")
+		offset := 100
+		Loop 6 {
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, offset + A_Index))
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
@@ -42,7 +47,12 @@ class _OutputAxis extends _BannerMenu {
 			SetTimer, % fn, % -UCR._GameBindDuration
 		} else {
 			this.State := state
-			UCR.Libraries.vJoy.Devices[this.__value.DeviceID].SetAxisByIndex(state, this.__value.Axis)
+			if (this.type == 4){
+				UCR.Libraries.vJoy.Devices[this.__value.DeviceID].SetAxisByIndex(state, this.__value.Axis)
+			} else {
+				state := Round(state/327.67)
+				UCR.Libraries.Titan.SetAxisByIndex(this.__value.Axis, state)
+			}
 			;UCR.Libraries.vJoy.SetAxis(state, this.__value.DeviceID, this.__value.Axis)
 		}
 	}
@@ -78,8 +88,13 @@ class _OutputAxis extends _BannerMenu {
 			this._OptionMap.push(17)
 		}
 		
-		if (DeviceID && Axis)
-			str := "Virtual Stick " DeviceID ", Axis " axis " (" this.vJoyAxisList[axis] ")"
+		if (DeviceID && Axis){
+			if (type == 4){
+				str := "vJoy Stick " DeviceID ", Axis " axis " (" this.vJoyAxisList[axis] ")"
+			} else {
+				str := "Titan Axis " axis
+			}
+		}
 		
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
@@ -89,7 +104,7 @@ class _OutputAxis extends _BannerMenu {
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
 		
-		if (o > 10){
+		if (o > 10 && o < 100){
 			o -= 10
 			DeviceID := 1
 			while (o > 10){
@@ -97,12 +112,19 @@ class _OutputAxis extends _BannerMenu {
 				DeviceID++
 			}
 			axis := o
+			type := 4
+		} else if (o > 100 && o < 107){
+			o -= 100
+			DeviceID := 1
+			axis := o
+			type := 5
 		} else {
 			; Clear Selected
 			axis := DeviceID := 0
 		}
 		this.__value.Axis := axis
 		this.__value.DeviceID := DeviceID
+		this.__value.type := type
 		
 		this.SetControlState()
 		this.value := this.__value
