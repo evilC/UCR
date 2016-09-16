@@ -17,3 +17,4 @@ ie you will be able to place breakpoints inside these files and they will trigge
 #include Plugins\Core\OneSwitchProfileSwitcher.ahk
 #include Plugins\Core\OneSwitchPulse.ahk
 #include Plugins\Core\ProfileSwitcher.ahk
+#include Libraries\Titan\Titan.ahk

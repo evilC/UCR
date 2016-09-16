@@ -53,9 +53,10 @@ Class _OutputButton extends _InputButton {
 			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", A_Index, this._ChangedValue.Bind(this, 6000 + A_Index))
 		}
 		*/
+		
 		TitanButtons := UCR.Libraries.Titan.GetButtonNames()
 		menu := this.AddSubMenu("Titan Buttons", "TitanButtons")
-		Loop 12 {
+		Loop 13 {
 			btn := A_Index
 			str := " ( ", i := 0
 			for console, buttons in TitanButtons {
