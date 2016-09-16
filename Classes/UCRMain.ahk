@@ -219,6 +219,8 @@ Class UCRMain extends _UCRBase {
 			.parent.AddMenuItem("&Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
 		this.MainMenu.AddSubMenu("&Debug", "Debug")
 			.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
+		this.MainMenu.AddSubMenu("&Titan Device", "Titan")
+			.AddMenuItem("Detect current output type...", "DetectType", this._MenuHandler.Bind(this, "DetectTitanType"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
@@ -244,6 +246,12 @@ Class UCRMain extends _UCRBase {
 			this.MainMenu.MenusByName["GuiControls"].ItemsByName[name].ToggleCheck()
 		} else if (name = "ShowvJoyLog"){
 			this.ShowvJoyLog()
+		} else if (name = "DetectTitanType"){
+			this.Libraries.Titan.Acquire()
+			type := this.Libraries.Titan.OutputNames[this.Libraries.Titan.Connections.output]
+			if (!type)
+				type := "Not connected"
+			msgbox % "Currently plugged in as type: "type
 		}
 		this._SaveSettings()
 	}
