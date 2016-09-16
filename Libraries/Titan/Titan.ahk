@@ -93,8 +93,7 @@ class Titan {
 			if (!this.Acquire())
 				return 0
 		}
-		this.output.SetAxisByIndex(axis, state)
-		return 1
+		return this.output.SetAxisByIndex(axis, state)
 	}
 	
 	; Sets POV from a value you would get by reading a hat switch using GetKeyState()
@@ -103,7 +102,16 @@ class Titan {
 			if (!this.Acquire())
 				return 0
 		}
-		this.output.SetPovAHK(index, state)
+		return this.output.SetPovAHK(index, state)
+	}
+	
+	SetPovAngle(index, state){
+		if (!this.Acquired){
+			if (!this.Acquire())
+				return 0
+		}
+		return this.output.SetPovAngle(index, state)
+		this.POVArray[index].SetState(state)
 	}
 		
 	; Class for the XBox 360 type output
@@ -241,10 +249,6 @@ class Titan {
 		; State is -1 for center, 1 for north, 2 for ne, 3 for e, 4 for se etc...
 		; If mapping from a physical POV read via GetKeyState(), divide by 4500 (unless it's -1)
 		SetPovAngle(index, state){
-			if (!this.Acquired){
-				if (!this.Acquire())
-					return 0
-			}
 			this.POVArray[index].SetState(state)
 		}
 		

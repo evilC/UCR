@@ -66,6 +66,8 @@ class _Button {
 			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Hat " this.Type - 2 " " hat_directions[this.code]
 		} else if (this.Type == 9){
 			return "Titan Button " this.code
+		} else if (this.Type == 10){
+			return "Titan Hat " hat_directions[this.code]
 		}
 	}
 	

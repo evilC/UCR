@@ -53,8 +53,8 @@ Class _OutputButton extends _InputButton {
 			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", A_Index, this._ChangedValue.Bind(this, 6000 + A_Index))
 		}
 		*/
-		TitanButtons := UCR.Libraries.Titan.GetButtonNames() ;*[UCR]
-		menu := this.AddSubMenu("Titan Buttons", "TitanButtons" A_Index)
+		TitanButtons := UCR.Libraries.Titan.GetButtonNames()
+		menu := this.AddSubMenu("Titan Buttons", "TitanButtons")
 		Loop 12 {
 			btn := A_Index
 			str := " ( ", i := 0
@@ -70,7 +70,12 @@ Class _OutputButton extends _InputButton {
 			str .= ")"
 			menu.AddMenuItem(A_Index str, "Button" A_Index, this._ChangedValue.Bind(this, 10000 + A_Index))
 		}
-		
+
+		menu := this.AddSubMenu("Titan Hat", "TitanHat")
+		Loop 4 {
+			menu.AddMenuItem(HatDirections[A_Index], HatDirections[A_Index], this._ChangedValue.Bind(this, 10210 + A_Index))	; Set the callback when selected
+		}
+
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
@@ -100,7 +105,11 @@ Class _OutputButton extends _InputButton {
 				i := max
 			Loop % max{
 				key := this.__value.Buttons[i]
-				if (key.Type = 2 && key.IsVirtual){
+				if key.Type == 1 {
+					; Keyboard / Mouse
+					name := key.BuildKeyName()
+					Send % "{" name (state ? " Down" : " Up") "}"
+				} else if (key.Type = 2 && key.IsVirtual){
 					; Virtual Joystick Button
 					UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
 				} else if (key.Type > 2 && key.Type < 7 && key.IsVirtual){
@@ -127,11 +136,20 @@ Class _OutputButton extends _InputButton {
 					device.SetContPov(PovAngles[new_state.x,new_state.y], key.Type - 2)
 					device.PovState := new_state
 				} else if (key.Type == 9 && key.IsVirtual){
+					; Titan Button
 					UCR.Libraries.Titan.SetButtonByIndex(key.code, state)
-				} else {
-					; Keyboard / Mouse
-					name := key.BuildKeyName()
+				} else if key.Type == 10 {
+					; Titan Hat
+					; ToDo: This probably won't work for hat to hat mapping.
+					; Need to be able to toggle on/off cardinals
+					if (state)
+						angle := (key.code-1)*2
+					else
+						angle := -1
+					UCR.Libraries.Titan.SetPOVAngle(1, angle)
 					Send % "{" name (state ? " Down" : " Up") "}"
+				} else {
+					return 0
 				}
 				if (state)
 					i++
@@ -177,13 +195,15 @@ Class _OutputButton extends _InputButton {
 				if (reopen)
 					this.OpenMenu()
 			} else if (o > 1000 && o < 1129){
+				; vJoy button
 				o -= 1000
 				bo := this.__value.clone()
 				bo.Buttons[1].code := o
 				bo.Buttons[1].type := 2
 				bo.Type := 2
-				this._value := bo
+				this.value := bo
 			} else if (o > 2000 && o < 6000){
+				; vJoy hat
 				o -= 2000
 				hat := 1
 				while (o > 1000){
@@ -194,8 +214,9 @@ Class _OutputButton extends _InputButton {
 				bo.Buttons[1].code := o
 				bo.Buttons[1].type := 2 + hat
 				bo.Type := 2 + hat
-				this._value := bo
+				this.value := bo
 			} else if (o > 10000 && o < 10200){
+				; Titan Buttons
 				o -= 10000
 				bo := new _BindObject()
 				bo.Type := 9
@@ -205,8 +226,18 @@ Class _OutputButton extends _InputButton {
 				bo.Buttons.push(btn)
 				bo.Buttons[1].DeviceID := 1
 				bo.Buttons[1].code := o
-				this._value := bo
-				
+				this.value := bo
+			} else if (o > 10200 && o < 10300){
+				; Titan Hat
+				o -= 10210
+				bo := new _BindObject()
+				bo.Type := 10
+				btn := new _Button()
+				btn.Type := 10
+				btn.code := o
+				btn.IsVirtual := 1
+				bo.Buttons.push(btn)
+				this.value := bo
 			}
 			if (IsObject(mod)){
 				UCR._RequestBinding(this, mod)
