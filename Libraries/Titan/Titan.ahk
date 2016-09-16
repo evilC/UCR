@@ -225,9 +225,6 @@ class Titan {
 		
 		; Sets a pov direction on or off
 		SetPovDirectionState(index, dir, state){
-			if (!state){ ;*[UCR]
-				a := 1
-			}
 			state_entry := this.PovStates[index, dir]
 			if (state_entry != state){
 				this.PovStates[index, dir] := state
