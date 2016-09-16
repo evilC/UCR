@@ -21,24 +21,12 @@ class Titan {
 	}
 	
 	__New(){
-		this.hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll")
-		if (!this.hModule){
+		if (!this.hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll")){
 			return
 		}
 		
 		; Initialize the API
-		ret := DllCall("gcdapi\gcdapi_Load", "char")
-		
-		; Ensure that the API is responding - sometimes we seem to have to wait to get connection info
-		;t := A_TickCount + 2000
-		;while (A_TickCount < t && (!IsObject(this.Connections := this.GetConnections()))){
-		;	sleep 10
-		;}
-		;if (this.Connections == 0){
-		;	return
-		;}
-		
-		this.Loaded := ret
+		this.Loaded := DllCall("gcdapi\gcdapi_Load", "char")
 		return this
 	}
 	
@@ -96,22 +84,13 @@ class Titan {
 		return this.output.SetAxisByIndex(axis, state)
 	}
 	
-	; Sets POV from a value you would get by reading a hat switch using GetKeyState()
-	SetPovAHK(index, state){
+	SetPovDirectionState(index, dir, state){
 		if (!this.Acquired){
 			if (!this.Acquire())
 				return 0
 		}
-		return this.output.SetPovAHK(index, state)
-	}
-	
-	SetPovAngle(index, state){
-		if (!this.Acquired){
-			if (!this.Acquire())
-				return 0
-		}
-		return this.output.SetPovAngle(index, state)
-		this.POVArray[index].SetState(state)
+		return this.output.SetPovDirectionState(index, dir, state)
+		;this.POVArray[index].SetState(state)
 	}
 		
 	; Class for the XBox 360 type output
@@ -169,11 +148,11 @@ class Titan {
 		static AxisIndexes := {LX:1, LY:2, RX:3,RY:4,LT:5,RT:6}
 		; ========== End of configuration section  ==========================
 		WriteArray := {}	; Holds the Identifier Array
-		POVArray := []
+		PovStates := []
 		__New(){
 			this.POVCount := this.POVIdentifiers.Length()
 			Loop % this.POVCount {
-				this.POVArray.Push(new this.POV(this, this.POVIdentifiers[A_Index]))
+				this.PovStates[A_Index] := [0,0,0,0]
 			}
 			; Set Capacity for Write Array, and get a pointer to it
 			this.WriteArray.SetCapacity("GCINPUT", 36)
@@ -244,51 +223,18 @@ class Titan {
 			}
 		}
 		
-		; Sets state of POVs (D-Pads).
-		; Index is POV number - This will probably be 1
-		; State is -1 for center, 1 for north, 2 for ne, 3 for e, 4 for se etc...
-		; If mapping from a physical POV read via GetKeyState(), divide by 4500 (unless it's -1)
-		SetPovAngle(index, state){
-			this.POVArray[index].SetState(state)
-		}
-		
-		; Sets POV from a value you would get by reading a hat switch using GetKeyState()
-		SetPovAHK(index, state){
-			if (state != -1){
-				state := round(state/4500)
+		; Sets a pov direction on or off
+		SetPovDirectionState(index, dir, state){
+			if (!state){ ;*[UCR]
+				a := 1
 			}
-			this.POVArray[index].SetState(state)
-		}
-		
-		Class POV {
-			static StateMap := {-1:[],0:[1],1:[1,2],2:[2],3:[2,3],4:[3],5:[3,4],6:[4],7:[4,1]}
-			CurrentAngle := -1
-			__New(parent, Identifiers){
-				this.parent := parent
-				this.Identifiers := Identifiers
+			state_entry := this.PovStates[index, dir]
+			if (state_entry != state){
+				this.PovStates[index, dir] := state
+				id := this.POVIdentifiers[index, dir]
+				this.SetIdentifier(id, state * 100)
 			}
-			
-			SetState(state){
-				if (state != this.CurrentAngle){
-					new_buttons := this.StateMap[state]
-					if (this.CurrentAngle != -1){
-						old_buttons := this.StateMap[this.CurrentAngle]
-						Loop % old_buttons.Length(){
-							dir := old_buttons[A_Index]
-							if dir not in new_buttons
-							{
-								this.parent.SetIdentifier(this.Identifiers[dir], 0)
-							}
-						}
-					}
-					Loop % new_buttons.Length(){
-						dir := new_buttons[A_Index]
-						this.parent.SetIdentifier(this.Identifiers[dir], 100)
-					}
-					this.CurrentAngle := state
-					this.parent.Write()
-				}
-			}
+			this.Write()
 		}
 	}
 }

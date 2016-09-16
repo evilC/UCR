@@ -142,11 +142,13 @@ Class _OutputButton extends _InputButton {
 					; Titan Hat
 					; ToDo: This probably won't work for hat to hat mapping.
 					; Need to be able to toggle on/off cardinals
-					if (state)
-						angle := (key.code-1)*2
-					else
-						angle := -1
-					UCR.Libraries.Titan.SetPOVAngle(1, angle)
+					;if (state)
+					;	angle := (key.code-1)*2
+					;else
+					;	angle := -1
+					;UCR.Libraries.Titan.SetPOVAngle(1, angle)
+					UCR.Libraries.Titan.SetPovDirectionState(1, key.code, state)
+					
 					Send % "{" name (state ? " Down" : " Up") "}"
 				} else {
 					return 0
