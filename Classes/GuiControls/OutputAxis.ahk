@@ -33,7 +33,23 @@ class _OutputAxis extends _BannerMenu {
 		menu := this.AddSubMenu("Titan Axis", "TitanAxis")
 		offset := 100
 		Loop 6 {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, offset + A_Index))
+			str := ""
+			TitanAxes := UCR.Libraries.Titan.GetAxisNames()
+			axis := A_Index
+			str := " ( ", i := 0
+			for console, axes in TitanAxes {
+				if (!axes[axis])
+					continue
+				if (i){
+					str .= " / "
+				}
+				str .= console " " axes[axis]
+				i++
+			}
+			str .= ")"
+
+			;names := GetAxisNames
+			menu.AddMenuItem(A_Index str, A_Index, this._ChangedValue.Bind(this, offset + A_Index))
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
@@ -53,7 +69,6 @@ class _OutputAxis extends _BannerMenu {
 				state := Round(state/327.67)
 				UCR.Libraries.Titan.SetAxisByIndex(this.__value.Axis, state)
 			}
-			;UCR.Libraries.vJoy.SetAxis(state, this.__value.DeviceID, this.__value.Axis)
 		}
 	}
 	

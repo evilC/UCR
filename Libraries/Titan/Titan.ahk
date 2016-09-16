@@ -19,7 +19,21 @@ class Titan {
 				Loop % max {
 					names[console].push(cls.ButtonMappings[A_Index].name)
 				}
-				;names[console] := cls.ButtonMappings.clone()
+			}
+		}
+		return names
+	}
+	
+	GetAxisNames(){
+		names := {}
+		for console, unused in this.OutputCodes {
+			cls := this[console "_output"]
+			max := cls.AxisMappings.Length()
+			if (max){
+				names[console] := []
+				Loop % max {
+					names[console].push(cls.AxisMappings[A_Index].name)
+				}
 			}
 		}
 		return names
@@ -112,11 +126,12 @@ class Titan {
 			, {name: "Back", id: 1}
 			, {name: "Start", id: 2}
 			, {name: "XBox", id: 0}]
-		static AxisIdentifiers   := [11,12, 9,10, 7, 4]
-		static POVIdentifiers := [[13,16,14,15]]	; 1 POV, Order is U, R, D, L
-		
-		static AxisNames := ["LX", "LY", "RX", "RY", "LT", "RT"]
-		static AxisIndexes := {LX:1, LY:2, RX:3, RY:4, LT:5, RT:6}
+		static AxisMappings := [{name: "LX", id: 11}
+			,{name: "LY", id: 12}
+			,{name: "RX", id: 9}
+			,{name: "RY", id: 10}
+			,{name: "LT", id: 7}
+			,{name: "RT", id: 4}]
 	}
 
 	class xb1_output extends Titan.xb360_output {
@@ -137,11 +152,10 @@ class Titan {
 			, {name: "Select", id: 1}
 			, {name: "Start", id: 2}
 			, {name: "Playstation", id: 0}]
-		static AxisIdentifiers   := [11,12,9,10]
-		static POVIdentifiers := [[13,16,14,15]]	; 1 POV, Order is U, R, D, L
-		
-		static AxisNames := ["LX", "LY", "RX", "RY"]
-		static AxisIndexes := {LX:1, LY:2, RX:3, RY:4}
+		static AxisMappings := [{name: "LX", id: 11}
+			,{name: "LY", id: 12}
+			,{name: "RX", id: 9}
+			,{name: "RY", id: 10}]
 	}
 	
 	class ps4_output extends Titan.ps3_output {
@@ -158,30 +172,22 @@ class Titan {
 			, {name: "Share", id: 1}
 			, {name: "Options", id: 2}
 			, {name: "Playstation", id: 0}]
-		static AxisNames := ["LX", "LY", "RX", "RY"]
-		static AxisIndexes := {LX:1, LY:2, RX:3, RY:4}
 	}
 	
 	; A base class for the various supported output controllers to derive from
 	; Override the indicated class properties to configure the class for that controller type
 	class output {
-		static ButtonMappings := []
 		; =========== Derive Class and Override these properties =============
-		; Maps Axes to Identifiers
-		; 1st element in array defines Identifier of Axis 1, 2nd element is Identifier of Axis 2, etc...
-		static AxisIdentifiers := []
+		static ButtonMappings := []
+		static AxisMappings := []
 		; Maps POV directions to Identifiers. Array of Arrays. Order is U, R, D, L
-		static POVIdentifiers := []
+		static PovMappings := [[13,16,14,15]]	; 1 POV, Order is U, R, D, L
 		
-		; Lookup for Axis Index -> Name
-		static AxisNames := ["LX", "LY", "RX", "RY", "LT", "RT"]
-		; Lookup for Axis Name -> Index
-		static AxisIndexes := {LX:1, LY:2, RX:3,RY:4,LT:5,RT:6}
 		; ========== End of configuration section  ==========================
 		WriteArray := {}	; Holds the Identifier Array
 		PovStates := []
 		__New(){
-			this.POVCount := this.POVIdentifiers.Length()
+			this.POVCount := this.PovMappings.Length()
 			Loop % this.POVCount {
 				this.PovStates[A_Index] := [0,0,0,0]
 			}
@@ -227,7 +233,7 @@ class Titan {
 				return 0
 			}
 			state := (state * 2) - 100
-			this.SetIdentifier(this.AxisIdentifiers[axis], state)
+			this.SetIdentifier(this.AxisMappings[axis, "id"], state)
 			this.Write()
 			return 1
 		}
@@ -237,7 +243,7 @@ class Titan {
 			state_entry := this.PovStates[index, dir]
 			if (state_entry != state){
 				this.PovStates[index, dir] := state
-				id := this.POVIdentifiers[index, dir]
+				id := this.PovMappings[index, dir]
 				this.SetIdentifier(id, state * 100)
 			}
 			this.Write()
