@@ -102,7 +102,7 @@ Class CvJoyInterface {
 		}
 
 		ResetPovs(){
-			this.Interface.ResetButtons(this.DeviceID)
+			this.Interface.ResetPovs(this.DeviceID)
 		}
 
 		; Does the device exist or not?
