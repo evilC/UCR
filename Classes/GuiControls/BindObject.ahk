@@ -1,7 +1,11 @@
 ﻿; ======================================================================== BINDOBJECT ===============================================================
 ; A BindObject represents a collection of keys / mouse / joystick buttons
 class _BindObject {
-	Type := 0 ; 0 = Unset, 1 = Key / Mouse, 2 = stick button, 3 = stick hat
+	; 0 = Unset, 1 = Key / Mouse
+	; 2 = vJoy button, 3 = vJoy hat 1, 4 = vJoy hat 2, 5 = vJoy hat 3, 6 = vJoy hat 4
+	; 7 = vXBox button, 8 = vXBox hat
+	; 9 = Titan button, 10 = Titan hat
+	Type := 0
 	Buttons := []
 	Wild := 0
 	Block := 0

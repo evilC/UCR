@@ -52,7 +52,12 @@ Class _OutputButton extends _InputButton {
 			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", A_Index, this._ChangedValue.Bind(this, 6000 + A_Index))
 		}
 		*/
-
+		
+		menu := this.AddSubMenu("Titan", "Titan" A_Index)
+		Loop 1 {
+			menu.AddMenuItem("Button " A_Index, "Button" A_Index, this._ChangedValue.Bind(this, 10000 + A_Index))
+		}
+		
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
@@ -85,7 +90,7 @@ Class _OutputButton extends _InputButton {
 				if (key.Type = 2 && key.IsVirtual){
 					; Virtual Joystick Button
 					UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
-				} else if (key.Type >= 3 && key.IsVirtual){
+				} else if (key.Type > 2 && key.Type < 7 && key.IsVirtual){
 					; Virtual Joystick POV Hat
 					device := UCR.Libraries.vJoy.Devices[key.DeviceID]
 					if (!IsObject(device.PovState))
@@ -108,6 +113,8 @@ Class _OutputButton extends _InputButton {
 					}
 					device.SetContPov(PovAngles[new_state.x,new_state.y], key.Type - 2)
 					device.PovState := new_state
+				} else if (key.Type == 9 && key.IsVirtual){
+					UCR.Libraries.Titan.SetButtonByIndex(key.code, state)
 				} else {
 					; Keyboard / Mouse
 					name := key.BuildKeyName()
@@ -175,6 +182,18 @@ Class _OutputButton extends _InputButton {
 				bo.Buttons[1].type := 2 + hat
 				bo.Type := 2 + hat
 				this._value := bo
+			} else if (o > 10000 && o < 10200){
+				o -= 10000
+				bo := new _BindObject()
+				bo.Type := 9
+				btn := new _Button()
+				btn.Type := 9
+				btn.IsVirtual := 1
+				bo.Buttons.push(btn)
+				bo.Buttons[1].DeviceID := 1
+				bo.Buttons[1].code := 1
+				this._value := bo
+				
 			}
 			if (IsObject(mod)){
 				UCR._RequestBinding(this, mod)

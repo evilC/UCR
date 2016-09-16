@@ -1,7 +1,11 @@
 ﻿; ======================================================================== BUTTON ===============================================================
 ; Represents a single digital input / output - keyboard key, mouse button, (virtual) joystick button or hat direction
 class _Button {
-	Type := 0 ; 0 = Unset, 1 = Key / Mouse, 2 = stick button, 3 = stick hat
+	; 0 = Unset, 1 = Key / Mouse
+	; 2 = vJoy button, 3 = vJoy hat 1, 4 = vJoy hat 2, 5 = vJoy hat 3, 6 = vJoy hat 4
+	; 7 = vXBox button, 8 = vXBox hat
+	; 9 = Titan button, 10 = Titan hat
+	Type := 0
 	Code := 0
 	DeviceID := 0
 	UID := ""
@@ -43,7 +47,7 @@ class _Button {
 			}
 		} else if (this.Type = 2){
 			return this.DeviceID "Joy" this.code
-		} else if (this.Type >= 3){
+		} else if (this.Type > 2 && this.Type < 7){
 			return this.DeviceID "JoyPov"
 		}
 	}
@@ -58,8 +62,10 @@ class _Button {
 				return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Button " this.code
 			else
 				return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", No Button Selected"
-		} else if (this.Type >= 3){
+		} else if (this.Type > 2 && this.Type < 7){
 			return (this.IsVirtual ? "Virtual " : "") "Stick " this.DeviceID ", Hat " this.Type - 2 " " hat_directions[this.code]
+		} else if (this.Type == 9){
+			return "Titan Button " this.code
 		}
 	}
 	

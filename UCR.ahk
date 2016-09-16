@@ -56,6 +56,7 @@ return
 	#Include Libraries\vJoy\vjoy.ahk
 	#Include Libraries\vJoy\CvJoyInterface.ahk
 	#Include Libraries\TTS\TTS.ahk
+	#Include Libraries\Titan\Titan.ahk
 	
 	; Include Plugins in case they are not in UCRDebug.ahk
 	#include Plugins\Core\AxisInitializer.ahk
