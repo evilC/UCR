@@ -83,8 +83,8 @@ class _BindModeHandler {
 			; End Bind Mode
 			this.BindMode := 0
 			this.SetHotkeyState(0)
-			bindObj := this._OriginalHotkey.value.clone()
-			
+			;bindObj := this._OriginalHotkey.value.clone()
+			bindObj := {}
 			bindObj.Buttons := []
 			for code, key in this.HeldModifiers {
 				bindObj.Buttons.push(key)
@@ -92,7 +92,15 @@ class _BindModeHandler {
 			
 			bindObj.Buttons.push(this.EndKey)
 			bindObj.Type := this.EndKey.Type
-			this._Callback.(this._OriginalHotkey, bindObj)
+			;this._Callback.(this._OriginalHotkey, bindObj)
+			
+			; New format
+			ret := []
+			Loop % BindObj.buttons.Length(){
+				ret.push(BindObj.buttons[A_Index].code)
+			}
+				
+			this._Callback.(this._OriginalHotkey, ret) ;*[UCR]
 			
 			return
 		} else {

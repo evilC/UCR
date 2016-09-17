@@ -813,10 +813,10 @@ Class UCRMain extends _UCRBase {
 				this._CurrentState := this._State.InputBind
 				; De-Activate all active profiles, to make sure they do not interfere with the bind process
 				this._DeActivateProfiles()
-				;this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
-				bo := new AHK_KBM_Input()
-				bo.Binding.push(33)
-				this._BindModeEnded(hk, bo)
+				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
+				;bo := new AHK_KBM_Input()
+				;bo.Binding.push(33)
+				;this._BindModeEnded(hk, bo)
 				return 1
 			}
 			return 0
@@ -837,11 +837,11 @@ Class UCRMain extends _UCRBase {
 	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
 	_BindModeEnded(hk, bo){
 		;OutputDebug % "UCR| Bind Mode Ended: " bo.Buttons[1].code
-		if (hk._IsOutput){
+		if (hk._IsOutput){ ;*[UCR]
 			hk.value := bo
 		} else {
 			;if (this._InputHandler.IsBindable(hk, bo)){
-				hk.value := bo
+				hk.value := new AHK_KBM_Input({Binding: bo})
 				this._InputHandler.SetButtonBinding(hk)
 			;}
 		}
