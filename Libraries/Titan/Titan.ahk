@@ -40,7 +40,7 @@ class Titan {
 	}
 	
 	__New(){
-		if (!this.hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll")){
+		if (!this.hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll", "Ptr")){
 			return
 		}
 		
