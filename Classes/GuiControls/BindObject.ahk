@@ -44,12 +44,26 @@ class _BindObject {
 			this[k] := v
 		}
 	}
-	
-
 }
 
 class AHK_KBM_Input extends _BindObject {
 	IOClass := "AHK_KBM_Input"
+	
+	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
+	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
+	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
+
+	AddBinding(){
+		fn := this.KeyPressed.Bind(this)
+		keyname := this.BuildHotkeyString()
+		hotkey, % "~" keyname, % fn
+	}
+	
+	KeyPressed(){
+		msgbox
+	}
+
 	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
 		max := this.Binding.length()
@@ -58,6 +72,35 @@ class AHK_KBM_Input extends _BindObject {
 			str .= this.BuildKeyName(this.Binding[A_Index])
 			if (A_Index != max)
 				str .= " + "
+		}
+		return str
+	}
+	
+	; Builds an AHK hotkey string (eg ~^a) from a BindObject
+	BuildHotkeyString(){
+		bo := this.Binding ;*[UCR]
+		if (!bo.Length())
+			return ""
+		str := ""
+		if (this.BindOptions.Wild)
+			str .= "*"
+		if (!this.BindOptions.Block)
+			str .= "~"
+		max := bo.Length()
+		Loop % max {
+			key := bo[A_Index]
+			if (A_Index = max){
+				islast := 1
+				nextkey := 0
+			} else {
+				islast := 0
+				nextkey := bo[A_Index+1]
+			}
+			if (this.IsModifier(key) && (max > A_Index)){
+				str .= this.RenderModifier(key)
+			} else {
+				str .= this.BuildKeyName(key)
+			}
 		}
 		return str
 	}
@@ -75,13 +118,13 @@ class AHK_KBM_Input extends _BindObject {
 		}
 	}
 	
-	AddBinding(){
-		fn := this.KeyPressed.Bind(this)
-		keyname := this.BuildKeyName(this.Binding[1])
-		hotkey, % "~" keyname, % fn
+	; Returns true if this Button is a modifier key on the keyboard
+	IsModifier(code){
+		return ObjHasKey(this._Modifiers, code)
 	}
 	
-	KeyPressed(){
-		msgbox
+	; Renders the keycode of a Modifier to it's AHK Hotkey symbol (eg 162 for LCTRL to ^)
+	RenderModifier(code){
+		return this._Modifiers[code].s
 	}
 }
