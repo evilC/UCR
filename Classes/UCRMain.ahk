@@ -813,7 +813,10 @@ Class UCRMain extends _UCRBase {
 				this._CurrentState := this._State.InputBind
 				; De-Activate all active profiles, to make sure they do not interfere with the bind process
 				this._DeActivateProfiles()
-				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
+				;this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
+				bo := new AHK_KBM_Input()
+				bo.Binding.push(33)
+				this._BindModeEnded(hk, bo)
 				return 1
 			}
 			return 0
@@ -837,10 +840,10 @@ Class UCRMain extends _UCRBase {
 		if (hk._IsOutput){
 			hk.value := bo
 		} else {
-			if (this._InputHandler.IsBindable(hk, bo)){
+			;if (this._InputHandler.IsBindable(hk, bo)){
 				hk.value := bo
 				this._InputHandler.SetButtonBinding(hk)
-			}
+			;}
 		}
 		; Re-Activate profiles that were deactivated
 		this._ActivateProfiles()

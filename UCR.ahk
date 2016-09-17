@@ -39,6 +39,8 @@ return
 #Include Classes\Button.ahk
 #Include Classes\Axis.ahk
 
+#Include InputThread.ahk
+
 #include Libraries\JSON.ahk
 
 /*

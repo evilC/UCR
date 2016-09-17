@@ -98,10 +98,10 @@ class _InputButton extends _BannerMenu {
 			; Option selected from list
 			if (o = 1){
 				; Bind
-				;UCR._RequestBinding(this)
-				tmp := new AHK_KBM_Input()
-				tmp.Binding.push(33)
-				this.value := tmp
+				UCR._RequestBinding(this)
+				;tmp := new AHK_KBM_Input()
+				;tmp.Binding.push(33)
+				;this.value := tmp
 				return
 			} else if (o = 2){
 				; Wild

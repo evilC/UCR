@@ -77,6 +77,8 @@ Class _Profile {
 	; Starts the "Input Thread" which handles detection of input for this profile
 	_StartInputThread(){
 		if (this._InputThread == 0){
+			this._InputThread := new _InputThread()
+			/*
 			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
 			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
 			While !this._InputThread.ahkgetvar.autoexecute_done
@@ -92,6 +94,7 @@ Class _Profile {
 				plugin := this.Plugins[this.PluginOrder[A_Index]]
 				plugin._RequestBinding()
 			}
+			*/
 		}
 	}
 	
