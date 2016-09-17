@@ -102,8 +102,8 @@ Class UCRMain extends _UCRBase {
 		}
 		
 		; Start the Global Profile
-		this._SetProfileInputThreadState(1,1)
-		this.Profiles.1._Activate()
+		;this._SetProfileInputThreadState(1,1)
+		;this.Profiles.1._Activate()
 		
 		; Start the Current Profile
 		this.ChangeProfile(SettingsObj.CurrentProfile, 0)
