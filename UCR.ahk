@@ -52,27 +52,27 @@ return
 	#Include Threads\ProfileInputThread.ahk
 	
 	; Libraries
-	#Include Libraries\StickOps\StickOps.ahk
-	#Include Libraries\vJoy\vjoy.ahk
-	#Include Libraries\vJoy\CvJoyInterface.ahk
-	#Include Libraries\TTS\TTS.ahk
-	#Include Libraries\Titan\Titan.ahk
+	;#Include Libraries\StickOps\StickOps.ahk
+	;#Include Libraries\vJoy\vjoy.ahk
+	;#Include Libraries\vJoy\CvJoyInterface.ahk
+	;#Include Libraries\TTS\TTS.ahk
+	;#Include Libraries\Titan\Titan.ahk
 	
 	; Include Plugins in case they are not in UCRDebug.ahk
-	#include Plugins\Core\AxisInitializer.ahk
-	#include Plugins\Core\AxisMerge.ahk
-	#include Plugins\Core\AxisToAxis.ahk
-	#include Plugins\Core\AxisToButton.ahk
-	#include Plugins\Core\BigEmptyPlugin.ahk
-	#include Plugins\Core\ButtonToAxis.ahk
+	;#include Plugins\Core\AxisInitializer.ahk
+	;#include Plugins\Core\AxisMerge.ahk
+	;#include Plugins\Core\AxisToAxis.ahk
+	;#include Plugins\Core\AxisToButton.ahk
+	;#include Plugins\Core\BigEmptyPlugin.ahk
+	;#include Plugins\Core\ButtonToAxis.ahk
 	#include Plugins\Core\ButtonToButton.ahk
-	#include Plugins\Core\CodeRunner.ahk
-	#include Plugins\Core\GameBind.ahk
-	#include Plugins\Core\MouseToJoy.ahk
-	#include Plugins\Core\OneSwitchProfileSwitcher.ahk
-	#include Plugins\Core\OneSwitchPulse.ahk
-	#include Plugins\Core\ProfileSwitcher.ahk
-	#include Plugins\Core\ProfileSpeaker.ahk
+	;#include Plugins\Core\CodeRunner.ahk
+	;#include Plugins\Core\GameBind.ahk
+	;#include Plugins\Core\MouseToJoy.ahk
+	;#include Plugins\Core\OneSwitchProfileSwitcher.ahk
+	;#include Plugins\Core\OneSwitchPulse.ahk
+	;#include Plugins\Core\ProfileSwitcher.ahk
+	;#include Plugins\Core\ProfileSpeaker.ahk
 */
 
 ; Called if the user closes the GUI
