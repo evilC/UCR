@@ -823,10 +823,10 @@ Class UCRMain extends _UCRBase {
 			for k, v in delta {
 				bo[k] := v
 			}
-			if (this._InputHandler.IsBindable(hk, bo)){
+			;if (this._InputHandler.IsBindable(hk, bo)){
 				hk.value := bo
 				this._InputHandler.SetButtonBinding(hk)
-			}
+			;}
 		}
 	}
 	

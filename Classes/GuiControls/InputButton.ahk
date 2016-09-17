@@ -73,6 +73,7 @@ class _InputButton extends _BannerMenu {
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetControlState(){
+		/*
 		ko := (this.__value.Type == 1 && this.__value.Buttons.length())
 		for n, opt in this._KeyOnlyOptions {
 			opt.SetEnableState(ko)
@@ -84,6 +85,9 @@ class _InputButton extends _BannerMenu {
 			Text := this._DefaultBanner			
 		}
 		this.SetCueBanner(Text)
+		*/
+		Text := this.__value.BuildHumanReadable()
+		this.SetCueBanner(Text)
 	}
 	
 	; An option was selected from the list
@@ -94,7 +98,10 @@ class _InputButton extends _BannerMenu {
 			; Option selected from list
 			if (o = 1){
 				; Bind
-				UCR._RequestBinding(this)
+				;UCR._RequestBinding(this)
+				tmp := new AHK_KBM_Input()
+				tmp.Binding.push(33)
+				this.value := tmp
 				return
 			} else if (o = 2){
 				; Wild
@@ -107,7 +114,11 @@ class _InputButton extends _BannerMenu {
 				mod := {suppress: !this.__value.suppress}
 			} else if (o = 5){
 				; Clear Binding
-				mod := {Buttons: []}
+				;mod := {Buttons: []}
+				val := this.__value.clone()
+				val.Binding := []
+				this.value := val
+				return
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return
@@ -131,7 +142,9 @@ class _InputButton extends _BannerMenu {
 	
 	_Deserialize(obj){
 		; Trigger _value setter to set gui state but not fire change event
-		this._value := new _BindObject(obj)
+		;this._value := new _BindObject(obj)
+		cls := obj.IOClass
+		this._value := new %cls%(obj)
 		; Register hotkey on load
 		;UCR._InputHandler.SetButtonBinding(this)
 	}
