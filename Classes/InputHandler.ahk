@@ -18,7 +18,7 @@ Class _InputHandler {
 			bindstring := this.BuildHotkeyString(BtnObj.value)
 		; Set binding in Profile's InputThread
 		;BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
-		BtnObj.ParentPlugin.ParentProfile._InputThread.UpdateBindings()
+		BtnObj.ParentPlugin.ParentProfile._InputThread.UpdateBindings(BtnObj.id, BtnObj.__value)
 		return 1
 	}
 	

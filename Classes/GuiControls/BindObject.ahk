@@ -74,4 +74,14 @@ class AHK_KBM_Input extends _BindObject {
 			return GetKeyName("vk" Format("{:x}", code))
 		}
 	}
+	
+	AddBinding(){
+		fn := this.KeyPressed.Bind(this)
+		keyname := this.BuildKeyName(this.Binding[1])
+		hotkey, % "~" keyname, % fn
+	}
+	
+	KeyPressed(){
+		msgbox
+	}
 }

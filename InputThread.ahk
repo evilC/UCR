@@ -3,7 +3,16 @@ Class _InputThread {
 		;msgbox new
 	}
 	
-	UpdateBindings(){
-		msgbox update
+	UpdateBindings(id, bindobj){
+		;msgbox % "Adding object of class:" IOBoj.__value.IOClass
+		OutputDebug % "UCR| _InputThread.UpdateBindings"
+		bindobj.AddBinding(bindobj.Binding[1])
+		/*
+		Loop % bindobj.Binding.length() {
+			btn := bindobj.Binding[A_Index]
+			OutputDebug % "UCR| Adding Button code " btn
+			
+		}
+		*/
 	}
 }
