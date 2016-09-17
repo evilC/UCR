@@ -49,15 +49,24 @@ class _BindObject {
 class AHK_KBM_Input extends _BindObject {
 	IOClass := "AHK_KBM_Input"
 	
+	_CurrentBinding := 0
 	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
-	AddBinding(){
+	UpdateBinding(){
+		if (this._CurrentBinding != 0){ ;*[UCR]
+			hotkey, % this._CurrentBinding, Off
+			try {
+				hotkey, % this._CurrentBinding " up", Dummy
+				hotkey, % this._CurrentBinding " up", Off
+			}
+		}
 		fn := this.KeyPressed.Bind(this)
 		keyname := this.BuildHotkeyString()
-		hotkey, % "~" keyname, % fn
+		hotkey, % keyname, % fn
+		this._CurrentBinding := keyname
 	}
 	
 	KeyPressed(){
@@ -78,7 +87,7 @@ class AHK_KBM_Input extends _BindObject {
 	
 	; Builds an AHK hotkey string (eg ~^a) from a BindObject
 	BuildHotkeyString(){
-		bo := this.Binding ;*[UCR]
+		bo := this.Binding
 		if (!bo.Length())
 			return ""
 		str := ""
@@ -128,3 +137,6 @@ class AHK_KBM_Input extends _BindObject {
 		return this._Modifiers[code].s
 	}
 }
+
+Dummy:
+	return

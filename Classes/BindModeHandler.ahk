@@ -100,7 +100,8 @@ class _BindModeHandler {
 				ret.push(BindObj.buttons[A_Index].code)
 			}
 				
-			this._Callback.(this._OriginalHotkey, ret) ;*[UCR]
+			;this._Callback.(this._OriginalHotkey, ret)
+			this._Callback.(this._OriginalHotkey, ret, "AHK_KBM_Input")
 			
 			return
 		} else {
