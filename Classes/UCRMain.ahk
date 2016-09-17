@@ -956,6 +956,8 @@ Class UCRMain extends _UCRBase {
 		this.Profiles := {}
 		this.ProfileTree := obj.ProfileTree
 		for id, profile in obj.Profiles {
+			if (profile.Name = "Global")
+				continue
 			this._CreateProfile(profile.Name, id, profile.ParentProfile)
 			this.Profiles[id]._Deserialize(profile)
 			this.Profiles[id]._Hide()
