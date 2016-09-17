@@ -17,17 +17,17 @@ Class _InputHandler {
 		else
 			bindstring := this.BuildHotkeyString(BtnObj.value)
 		; Set binding in Profile's InputThread
-		BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
+		;BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
 		return 1
 	}
 	
 	; Set an Axis Binding
 	SetAxisBinding(AxisObj, delete := 0){
-		AxisObj.ParentPlugin.ParentProfile._SetAxisBinding(ObjShare(AxisObj), delete)
+		;AxisObj.ParentPlugin.ParentProfile._SetAxisBinding(ObjShare(AxisObj), delete)
 	}
 	
 	SetDeltaBinding(DeltaObj, delete := 0){
-		DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj), delete)
+		;DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj), delete)
 	}
 	
 	; Check InputButtons for duplicates etc
@@ -44,7 +44,7 @@ Class _InputHandler {
 	
 	; Turns on or off Hotkey(s)
 	ChangeHotkeyState(state, hk := 0){
-		hk.ParentPlugin.ParentProfile._SetHotkeyState(state)
+		;hk.ParentPlugin.ParentProfile._SetHotkeyState(state)
 	}
 	
 	; Builds an AHK hotkey string (eg ~^a) from a BindObject
