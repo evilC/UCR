@@ -110,6 +110,16 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	SetState(state){
 		tooltip % "UCR| SetState: " state
 	}
+class vJoy_Output extends vGen_Output {
+	IOClass := "AHK_vJoy_Output"
+}
+
+class vXBox_Output extends vGen_Output {
+	IOClass := "AHK_vXBox_Output"
+}
+
+class vGen_Output extends _BindObject {
+	IOType := 1
 }
 
 class AHK_KBM_Common extends _BindObject {
