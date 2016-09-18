@@ -113,10 +113,6 @@ class AHK_Joy_Axes extends _BindObject {
 	static IOClass := "AHK_Joy_Axes"
 	static IsInitialized := 1
 	
-	UpdateBinding(){
-		msgbox axis update
-	}
-	
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("Stick", "AHKStick")
 		Loop 8 {
