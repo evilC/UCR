@@ -272,7 +272,6 @@ class vGen_Output extends _BindObject {
 	}
 	
 	SetState(state){
-		;acq := DllCall(this.DllName "\AcquireDev", "uint", 1, "uint", this._vGenDeviceType, "Ptr*", dev, "Cdecl")
 		push := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", 1, "Cdecl")
 		sleep 1000
 		push := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", 0, "Cdecl")
@@ -282,11 +281,9 @@ class vGen_Output extends _BindObject {
 		if (!this._AttemptAcquire()){
 			return 0
 		}
-		;this._StickControlGUIDs[this.DeviceID, this.ParentControl.id] := 1
 		this._SetStickControlGuid(this.DeviceID, this.ParentControl.id, 1)
 		OutputDebug % "UCR| _RegisterButton - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
 		return 1
-		;msgbox % this.IOClass " stick " this.DeviceID " Button " this.Binding[1] ", GUID " this.ParentControl.id
 	}
 	
 	_UnRegister(){
