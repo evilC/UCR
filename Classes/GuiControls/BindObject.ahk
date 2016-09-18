@@ -280,23 +280,29 @@ class vGen_Output extends _BindObject {
 		if (!this._AttemptAcquire()){
 			return 0
 		}
-		this._StickControlGUIDs[this.DeviceID, this.ParentControl.id] := 1
+		;this._StickControlGUIDs[this.DeviceID, this.ParentControl.id] := 1
+		this._SetStickControlGuid(this.DeviceID, this.ParentControl.id, 1)
 		OutputDebug % "UCR| _RegisterButton - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
 		return 1
 		;msgbox % this.IOClass " stick " this.DeviceID " Button " this.Binding[1] ", GUID " this.ParentControl.id
 	}
 	
-	/*
-	_SetStickControlGuid(DeviceID, GUID){
+	; Registers a GuiControl as "owning" a stick
+	_SetStickControlGuid(DeviceID, GUID, state){
+		; Initialize arrays if they do not exist
 		if (!this._StickControlGUIDs[this._vGenDeviceType].length()){
 			this._StickControlGUIDs[this._vGenDeviceType] := []
 		}
 		if (!IsObject(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
 			this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID] := {}
 		}
-		this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID, this.ParentControl.id] := 1
+		; update record
+		if (state){
+			this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID, this.ParentControl.id] := 1
+		} else {
+			this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID].Delete(this.ParentControl.id)
+		}
 	}
-	*/
 	
 	_AttemptAcquire(){
 		if (this.IsEmptyAssoc(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
