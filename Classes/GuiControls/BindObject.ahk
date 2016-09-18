@@ -185,7 +185,7 @@ class AHK_Joy_Input extends _BindObject {
 			this.RemoveHotkey()
 		fn := this.ButtonEvent.Bind(this, 1)
 		keyname := this.DeviceID "joy" this.Binding[1]
-		hotkey, % keyname, % fn
+		hotkey, % keyname, % fn, On
 		this._CurrentBinding := keyname
 	}
 	
