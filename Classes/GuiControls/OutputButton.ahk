@@ -10,7 +10,7 @@ Class _OutputButton extends _InputButton {
 	JoyMenus := []
 	
 	__New(parent, name, ChangeValueCallback, aParams*){
-		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
+		base.__New(parent, name, ChangeValueCallback, 0, aParams*) ;*[UCR]
 		; Create Select vJoy Button / Hat Select GUI
 	}
 	
@@ -191,7 +191,11 @@ Class _OutputButton extends _InputButton {
 				return
 			} else if (o = 2){
 				; Clear Binding
-				mod := {Buttons: [], type: 0}
+				;mod := {Buttons: [], type: 0}
+				;this.value 
+				cls := this.value.IOClass
+				this.value._UnRegister()
+				this.value := 0
 			} else if (o > 100 && o < 109) {
 				; Stick ID
 				o -= 100
@@ -270,9 +274,11 @@ Class _OutputButton extends _InputButton {
 		; Trigger _value setter to set gui state but not fire change event
 		;this._value := new _BindObject(obj)
 		cls := obj.IOClass
+		/*
 		if (!%cls%.IsInitialized) {
 			%cls%._Init()
 		}
+		*/
 
 		;this._value := new %cls%(this, obj)
 		this._BindObjects[cls]._Deserialize(obj) ;*[UCR]

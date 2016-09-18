@@ -25,6 +25,9 @@ class _InputButton extends _BannerMenu {
 		;this.__value := new _BindObject()
 		for i, name in this._IOClassNames {
 			this._BindObjects[name] := new %name%(this)
+			if (!this._BindObjects.IsInitialized) {
+				this._BindObjects[name]._Init()
+			}
 		}
 		this._BuildMenu()
 		

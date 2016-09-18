@@ -252,21 +252,26 @@ class vGen_Output extends _BindObject {
 	static _NumButtons := 0			; Numer of buttons supported.
 	static _DeviceHandles := []
 	
+	static _hModule := 0
+	
 	_Init(){
+		if (vGen_Output.IsInitialized)
+			return
 		dllpath := "Resources\" this.DllName ".dll"
 		hModule := DllCall("LoadLibrary", "Str", dllpath, "Ptr")
 		if (hModule == 0){
 			OutputDebug % "UCR| IOClass " this.IOClass " Failed to load " dllpath
-			this.IsAvailable := 0
+			vGen_Output.IsAvailable := 0
 		} else {
 			OutputDebug % "UCR| IOClass " this.IOClass " Loaded " dllpath
-			this.IsAvailable := 1
+			vGen_Output.IsAvailable := 1
 		}
+		vGen_Output._hModule := hModule
 		;Loop % this._NumSticks.length(){
 		;	this._StickControlGUIDs.push({})
 		;}
 		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
-		this.IsInitialized := 1
+		vGen_Output.IsInitialized := 1
 	}
 	
 	SetState(state){
@@ -285,6 +290,14 @@ class vGen_Output extends _BindObject {
 		OutputDebug % "UCR| _RegisterButton - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
 		return 1
 		;msgbox % this.IOClass " stick " this.DeviceID " Button " this.Binding[1] ", GUID " this.ParentControl.id
+	}
+	
+	_UnRegister(){
+		this._SetStickControlGuid(this.DeviceID, this.ParentControl.id, 0)
+		OutputDebug % "UCR| _UnRegister - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
+		if (this.IsEmptyAssoc(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
+			this._Relinquish(this.DeviceID)
+		}
 	}
 	
 	; Registers a GuiControl as "owning" a stick
@@ -309,23 +322,32 @@ class vGen_Output extends _BindObject {
 			;VarSetCapacity(dev, A_PtrSize)
 			acq := DllCall(this.DllName "\AcquireDev", "uint", this.DeviceID, "uint", this._vGenDeviceType, "Ptr*", dev, "Cdecl")
 			if (acq){
-				OutputDebug % "UCR| IOClass " this.IOClass " Failed to Acquire Stick type " this._GetDevTypeName() " Device " this.DeviceID
+				OutputDebug % "UCR| IOClass " this.IOClass " Failed to Acquire Stick " this.DeviceID
 				return 0
 			} else {
 				if (!this._DeviceHandles[this._vGenDeviceType].length()){
 					this._DeviceHandles[this._vGenDeviceType] := []
 				}
 				this._DeviceHandles[this._vGenDeviceType, this.DeviceID] := dev
-				OutputDebug % "UCR| IOClass " this.IOClass " Acquired Stick type " this._GetDevTypeName() " Device " this.DeviceID
+				OutputDebug % "UCR| IOClass " this.IOClass " Acquired Stick " this.DeviceID
 				;msgbox % this.IsEmptyAssoc(this._StickControlGUIDs[this.DeviceID])
 				return 1
 			}
 		} else {
 			; Already Acquired
-			OutputDebug % "UCR| IOClass " this.IOClass " has already Acquired Stick type " this._GetDevTypeName() " Device " this.DeviceID
+			OutputDebug % "UCR| IOClass " this.IOClass " has already Acquired Stick " this.DeviceID
 			return 1
 		}
 		
+	}
+	
+	_Relinquish(DeviceID){
+		rel := DllCall(this.DllName "\RelinquishDev", "Ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "Cdecl")
+		this._DeviceHandles[this._vGenDeviceType, this.DeviceID] := 0
+		if (rel == 0){
+			OutputDebug % "UCR| IOClass " this.IOClass " Relinquished Stick " this.DeviceID
+		}
+		return (rel = 0) 
 	}
 	
 	_GetDevTypeName(){
