@@ -18,10 +18,10 @@ Class _InputHandler {
 			bindstring := this.BuildHotkeyString(BtnObj.value)
 		; Set binding in Profile's InputThread
 		;BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
-		;BtnObj.ParentPlugin.ParentProfile._InputThread.UpdateBindings(BtnObj.id, BtnObj.__value)
+		; Pass the GUID of the GUIControl and the BindObject to the Input Thread
 		BindObj := BtnObj.__value
-		BtnObj.ParentPlugin.ParentProfile._InputThread.UpdateBindings(BtnObj.id, BindObj._Serialize())
-		; Pass the GUID of the GUIControl, the BindObject and it's class to the Input Thread
+		BtnObj.ParentPlugin.ParentProfile._InputThread.UpdateBinding(BtnObj.id, BindObj._Serialize())
+		
 		return 1
 	}
 	

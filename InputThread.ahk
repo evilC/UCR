@@ -22,23 +22,9 @@ Class _InputThread {
 		;msgbox new
 	}
 	
-	UpdateBindings(ControlGUID, j){
-		;msgbox % "Adding object of class:" IOBoj.__value.IOClass
-		OutputDebug % "UCR| _InputThread.UpdateBindings - cls: " j.IOClass
-		;this.IOClasses[j.IOClass]._Deserialize(j)
-		;this.IOClasses[j.IOClass].UpdateBinding()
-		
+	UpdateBinding(ControlGUID, j){
+		OutputDebug % "UCR| _InputThread.UpdateBinding - cls: " j.IOClass
 		this.IOClasses[j.IOClass].UpdateBinding(ControlGUID, j)
-		
-		;tmp.UpdateBinding()
-		;bindobj.UpdateBinding()
-		/*
-		Loop % bindobj.Binding.length() {
-			btn := bindobj.Binding[A_Index]
-			OutputDebug % "UCR| Adding Button code " btn
-			
-		}
-		*/
 	}
 	
 
@@ -69,7 +55,6 @@ Class _InputThread {
 				fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				hotkey, % keyname " up", % fn, On
 				OutputDebug % "UCR| Added hotkey " keyname " for ControlGUID " ControlGUID
-				;this._CurrentBinding := keyname
 				this._AHKBindings[ControlGUID] := keyname
 			}
 		}
@@ -84,14 +69,10 @@ Class _InputThread {
 				hotkey, % keyname " up", Off
 				this._AHKBindings.Delete(ControlGUID)
 			}
-			;this._CurrentBinding := 0
 		}
 		
 		KeyEvent(ControlGUID, e){
-			; ToDo: Parent will not exist in thread!
-			
 			OutputDebug % "UCR| INPUT THREAD - Key event for GuiControl " ControlGUID
-			;this.ParentControl.ChangeStateCallback.Call(e)
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
 			this.ParentThread.Callback.Call(ControlGUID, e)
 		}
@@ -212,7 +193,6 @@ Class _InputThread {
 	}
 	
 	class AHK_Joy_Hats {
-		
 		__New(parent){
 			this.ParentThread := parent
 		}
