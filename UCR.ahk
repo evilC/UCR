@@ -35,9 +35,12 @@ return
 #Include Classes\GuiControls\InputDelta.ahk
 #Include Classes\GuiControls\OutputButton.ahk
 #Include Classes\GuiControls\OutputAxis.ahk
-#Include Classes\GuiControls\BindObject.ahk
-#Include Classes\Button.ahk
-#Include Classes\Axis.ahk
+#Include Classes\GuiControls\IOClasses\BindObject.ahk
+#Include Classes\GuiControls\IOClasses\AHK.ahk
+#Include Classes\GuiControls\IOClasses\vGen.ahk
+
+#Include Classes\Button.ahk	; remove
+#Include Classes\Axis.ahk	; remove
 
 #Include InputThread.ahk
 

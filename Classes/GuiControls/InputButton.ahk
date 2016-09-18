@@ -7,8 +7,8 @@ class _InputButton extends _BannerMenu {
 	__value := 0		; Holds the BindObject class
 	; Other internal vars
 	_IsOutput := 0
-	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_Joy_Input: "AHK_Joy_Input"}
-	_IOClassNames := ["AHK_KBM_Input", "AHK_Joy_Input"]
+	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_Joy_Buttons: "AHK_Joy_Buttons"}
+	_IOClassNames := ["AHK_KBM_Input", "AHK_Joy_Buttons"]
 	_BindObjects := {}
 	
 	_DefaultBanner := "Select an Input Button"

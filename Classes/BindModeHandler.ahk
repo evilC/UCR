@@ -105,7 +105,7 @@ class _BindModeHandler {
 			if (bindObj.Type == 1){
 				t := "AHK_KBM_Input"
 			} else {
-				t := "AHK_Joy_Input"
+				t := "AHK_Joy_Buttons"
 				ret.DeviceID := BindObj.buttons[max].type
 			}
 			; Resolve input type to binding type
