@@ -851,10 +851,6 @@ Class UCRMain extends _UCRBase {
 			} else {
 				if (hk.__value != 0)
 					hk.__value._Delete()
-				if (hk._IsOutput){
-					tmp := new %cls%(hk, {})
-					cls := tmp.OutputType
-				}
 				outputdebug % "UCR| Creating new class " cls " for GuiControl " hk.id " deviceid: " bo.deviceid
 				hk.value := new %cls%(hk, bo)
 			}

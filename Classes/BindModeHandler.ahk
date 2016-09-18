@@ -101,14 +101,15 @@ class _BindModeHandler {
 				ret.Binding.push(BindObj.buttons[A_Index].code)
 			}
 				
-			;this._Callback.(this._OriginalHotkey, ret)
+			; Simulate BindMode Thread passing back input type that generated result
 			if (bindObj.Type == 1){
 				t := "AHK_KBM_Input"
 			} else {
 				t := "AHK_Joy_Input"
 				ret.DeviceID := BindObj.buttons[max].type
 			}
-			
+			; Resolve input type to binding type
+			t := this._OriginalHotkey._BindTypes[t]
 			this._Callback.(this._OriginalHotkey, ret, t)
 			
 			return

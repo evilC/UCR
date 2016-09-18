@@ -7,6 +7,8 @@ class _InputButton extends _BannerMenu {
 	__value := 0		; Holds the BindObject class
 	; Other internal vars
 	_IsOutput := 0
+	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_Joy_Input: "AHK_Joy_Input"}
+	
 	_DefaultBanner := "Select an Input Button"
 	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
 	
@@ -99,9 +101,6 @@ class _InputButton extends _BannerMenu {
 			if (o = 1){
 				; Bind
 				UCR._RequestBinding(this)
-				;tmp := new AHK_KBM_Input()
-				;tmp.Binding.push(33)
-				;this.value := tmp
 				return
 			} else if (o = 2){
 				; Wild

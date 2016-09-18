@@ -4,6 +4,7 @@ Class _OutputButton extends _InputButton {
 	State := 0
 	_DefaultBanner := "Select an Output Button"
 	_IsOutput := 1
+	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Output"}
 	;_OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
 	JoyMenus := []
 	
