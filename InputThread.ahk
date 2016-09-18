@@ -1,6 +1,9 @@
 Class _InputThread {
 	IOClasses := {AHK_KBM_Input: 0}
-	__New(){
+	__New(ProfileID, CallbackPtr){
+		this.Callback := ObjShare(CallbackPtr)
+		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
+		
 		for name, state in this.IOClasses {
 			cls := name "_BindThread"
 			this.IOClasses[name] := new %cls%(this)
@@ -73,6 +76,7 @@ Class _InputThread {
 			OutputDebug % "UCR| KEY EVENT"
 			;this.ParentControl.ChangeStateCallback.Call(e)
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
+			this.ParentThread.Callback.Call("aaa",event)
 		}
 		; == END OF THREAD COMMANDS
 

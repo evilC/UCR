@@ -81,6 +81,7 @@ Class _InputHandler {
 		return str
 	}
 	
+	/*
 	; An input event (eg key, mouse, joystick) occured for a bound input
 	; This will have come from another thread
 	; ipt will be an object of class _InputButton or _InputAxis
@@ -97,6 +98,11 @@ Class _InputHandler {
 		}
 		; Notify UCR that there was activity.
 		UCR._InputEvent(ipt, state)
+	}
+	*/
+	
+	InputEvent(aParams*){
+		soundbeep
 	}
 	
 	_DelayCallback(cb, state){
