@@ -52,8 +52,8 @@ Class _InputThread {
 			;msgbox Update binding
 			;return
 			this.RemoveBinding(ControlGUID)
-			keyname := "$" this.BuildHotkeyString(j)
-			if (keyname){
+			if (j.Binding[1]){
+				keyname := "$" this.BuildHotkeyString(j)
 				fn := this.KeyEvent.Bind(this, 1)
 				hotkey, % keyname, % fn, On
 				fn := this.KeyEvent.Bind(this, 0)
