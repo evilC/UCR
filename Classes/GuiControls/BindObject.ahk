@@ -190,10 +190,8 @@ class AHK_Joy_Input extends _BindObject {
 	}
 	
 	RemoveHotkey(){
-		try {
-			hotkey, % this.DeviceID "joy" this.Binding[1], UCR_DUMMY_LABEL
-			hotkey, % this.DeviceID "joy" this.Binding[1], Off
-		}
+		hotkey, % this.DeviceID "joy" this.Binding[1], UCR_DUMMY_LABEL
+		hotkey, % this.DeviceID "joy" this.Binding[1], Off
 		this._CurrentBinding := 0
 	}
 	
