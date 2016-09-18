@@ -48,7 +48,7 @@ class _BindObject {
 	}
 }
 
-class AHK_KBM_Input extends _BindObject {
+class AHK_KBM_Input extends AHK_KBM_Common {
 	IOClass := "AHK_KBM_Input"
 	OutputType := "AHK_KBM_Output"
 	
@@ -91,6 +91,25 @@ class AHK_KBM_Input extends _BindObject {
 	}
 	; == END OF THREAD COMMANDS
 	
+	_Delete(){
+		this.RemoveHotkey()
+	}
+	
+	__Delete(){
+		OutputDebug % "UCR| AHK_KBM_Input Freed"
+	}
+}
+
+class AHK_KBM_Output extends AHK_KBM_Common {
+	IOType := 1
+	IOClass := "AHK_KBM_Output"
+	
+	SetState(state){
+		tooltip % "UCR| SetState: " state
+	}
+}
+
+class AHK_KBM_Common extends _BindObject {
 	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
 		max := this.Binding.length()
@@ -153,21 +172,6 @@ class AHK_KBM_Input extends _BindObject {
 	; Renders the keycode of a Modifier to it's AHK Hotkey symbol (eg 162 for LCTRL to ^)
 	RenderModifier(code){
 		return this._Modifiers[code].s
-	}
-	
-	_Delete(){
-		this.RemoveHotkey()
-	}
-	
-	__Delete(){
-		OutputDebug % "UCR| AHK_KBM_Input Freed"
-	}
-}
-
-class AHK_KBM_Output extends _BindObject {
-	IOType := 1
-	SetState(state){
-		tooltip % "UCR| SetState: " state
 	}
 }
 

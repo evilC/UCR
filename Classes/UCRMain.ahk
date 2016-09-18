@@ -842,7 +842,7 @@ Class UCRMain extends _UCRBase {
 		;	hk.value := bo
 		;} else {
 			;if (this._InputHandler.IsBindable(hk, bo)){
-			if (hk.__value.IOClass == cls){ ;*[UCR]
+			if (hk.__value.IOClass == cls){
 				tmp := hk.__value.clone()
 				for k, v in bo {
 					tmp[k] := v
