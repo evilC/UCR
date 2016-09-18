@@ -8,6 +8,7 @@ class _InputButton extends _BannerMenu {
 	; Other internal vars
 	_IsOutput := 0
 	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_Joy_Input: "AHK_Joy_Input"}
+	_IOClassNames := ["AHK_KBM_Input", "AHK_Joy_Input"]
 	
 	_DefaultBanner := "Select an Input Button"
 	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
