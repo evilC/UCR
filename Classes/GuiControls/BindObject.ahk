@@ -245,9 +245,7 @@ class vGen_Output extends _BindObject {
 	static _vGenDeviceType := 0		; 0 = vJoy, 1 = vXBox
 	static _vGenDeviceTypeNames := {0: "vJoy", 1: "vXBox"}
 	static DllName := "vGenInterface"
-	static _StickControlGUIDs := {}		; Indexed by Stick ID, contains GUIControl GUIDs that use that stick
-	;static _AcquireControls := {}		; GUIDs of Controls that are bound to vGen sticks
-	;							; If  this array is empty, the stick may Relinquish
+	static _StickControlGUIDs := {}	; Contains GUIControl GUIDs that use each stick
 	static _NumSticks := 0			; Numer of sticks supported. Will be overridden
 	static _NumButtons := 0			; Numer of buttons supported.
 	static _DeviceHandles := []
