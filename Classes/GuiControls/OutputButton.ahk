@@ -15,6 +15,11 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	_BuildMenu(){
+		;for i, cls in this._IOClassNames {
+		;	%cls%.AddMenuItems(this)
+		;}
+		;this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
+
 		static HatDirections := ["Up", "Right", "Down", "Left"]
 		static XBoxButtons := ["A", "B", "X", "Y", "LB", "RB", "LS", "RS", "Back", "Start", "Guide"]
 		static TitanButtons := {XB360: XBoxButtons, PS3: ["Triangle", "Circle", "Cross", "Square", "L2", "R2", "L1", "R1", "Select", "Start", "LS", "RS"]}
@@ -56,6 +61,7 @@ Class _OutputButton extends _InputButton {
 		}
 		*/
 		
+		/*
 		TitanButtons := UCR.Libraries.Titan.GetButtonNames()
 		menu := this.AddSubMenu("Titan Buttons", "TitanButtons")
 		Loop 13 {
@@ -78,8 +84,10 @@ Class _OutputButton extends _InputButton {
 		Loop 4 {
 			menu.AddMenuItem(HatDirections[A_Index], HatDirections[A_Index], this._ChangedValue.Bind(this, 10210 + A_Index))	; Set the callback when selected
 		}
-
+		*/
+		
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
+
 	}
 	
 	; Builds the list of options in the DropDownList
