@@ -110,12 +110,40 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	SetState(state){
 		tooltip % "UCR| SetState: " state
 	}
+	
+	AddMenuItems(){
+		this.ParentControl.AddMenuItem("AHK_KBM_Output", "AHK_KBM_Output", this.ChangedValue.Bind(this, 2))
+	}
+	
+	ChangedValue(val){
+		msgbox AHK_KBM_Output
+	}
+}
+
 class vJoy_Output extends vGen_Output {
 	IOClass := "AHK_vJoy_Output"
+	
+	AddMenuItems(){
+		this.ParentControl.AddMenuItem("vJoy_Output", "vJoy_Output", this.ChangedValue.Bind(this, 2))
+	}
+	
+	ChangedValue(val){
+		msgbox vJoy_Output
+	}
+
 }
 
 class vXBox_Output extends vGen_Output {
 	IOClass := "AHK_vXBox_Output"
+	
+	AddMenuItems(){
+		this.ParentControl.AddMenuItem("vXBox_Output", "vXBox_Output", this.ChangedValue.Bind(this, 2))
+	}
+	
+	ChangedValue(val){
+		msgbox vXBox_Output
+	}
+
 }
 
 class vGen_Output extends _BindObject {
