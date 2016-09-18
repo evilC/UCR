@@ -267,9 +267,6 @@ class vGen_Output extends _BindObject {
 			vGen_Output.IsAvailable := 1
 		}
 		vGen_Output._hModule := hModule
-		;Loop % this._NumSticks.length(){
-		;	this._StickControlGUIDs.push({})
-		;}
 		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
 		vGen_Output.IsInitialized := 1
 	}
