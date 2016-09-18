@@ -19,17 +19,18 @@ class ButtonToButton extends _Plugin {
 		; Have it call MyHkChangedValue when it changes value, and MyHkChangedState when it changes state.
 		; Pass the name of the hotkey when it gets called
 		this.AddInputButton("IB1", 0, this.MyHkChangedState.Bind(this, "IB1"), "x+5 yp-2 w200")
-		;Gui, Add, Text, x+5 yp+2 , % " to "
+		Gui, Add, Text, x+5 yp+2 , % " to "
 		; Add an Output, and give it the name "MyOp1". All output objects can be accessed via this.OutputButtons[name]
-		;this.AddOutputButton("OB1", 0, "x+5 yp-2 w200")
+		this.AddOutputButton("OB1", 0, "x+5 yp-2 w200")
 		;this.AddControl("Toggle", 0, "Checkbox", "x+20 yp+3", "Toggle mode")
 	}
 	
 	; Called when the hotkey changes state (key is pressed or released)
 	MyHkChangedState(Name, e){
-		tooltip % "Plugin changed state - " e
-		Sleep 500
-		tooltip
+		;tooltip % "Plugin changed state - " e
+		;Sleep 500
+		;tooltip
+		this.OutputButtons.OB1.SetState(e)
 		/*
 		;OutputDebug, % "UCR| " Name " changed state to: " (e ? "Down" : "Up")
 		if (this.GuiControls.Toggle.value){

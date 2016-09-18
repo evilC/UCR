@@ -50,6 +50,7 @@ class _BindObject {
 
 class AHK_KBM_Input extends _BindObject {
 	IOClass := "AHK_KBM_Input"
+	OutputType := "AHK_KBM_Output"
 	
 	_CurrentBinding := 0
 	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
@@ -57,6 +58,7 @@ class AHK_KBM_Input extends _BindObject {
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
+	; THREAD COMMANDS
 	UpdateBinding(){
 		if (this._CurrentBinding != 0){
 			this.RemoveHotkey()
@@ -81,11 +83,14 @@ class AHK_KBM_Input extends _BindObject {
 	}
 	
 	KeyEvent(e){
+		; ToDo: Parent will not exist in thread!
+		
 		OutputDebug % "UCR| KEY EVENT"
 		this.parent.ChangeStateCallback.Call(e)
 		;msgbox % "Hotkey pressed - " this.parent.Parentplugin.id
 	}
-
+	; == END OF THREAD COMMANDS
+	
 	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
 		max := this.Binding.length()
@@ -156,6 +161,13 @@ class AHK_KBM_Input extends _BindObject {
 	
 	__Delete(){
 		OutputDebug % "UCR| AHK_KBM_Input Freed"
+	}
+}
+
+class AHK_KBM_Output extends _BindObject {
+	IOType := 1
+	SetState(state){
+		tooltip % "UCR| SetState: " state
 	}
 }
 
