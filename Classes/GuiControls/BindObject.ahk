@@ -112,24 +112,33 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	}
 	
 	AddMenuItems(){
-		this.ParentControl.AddMenuItem("Select Keyboard / Mouse Binding...", "AHK_KBM_Output", this._ChangedValue.Bind(this, 2))
+		this.ParentControl.AddMenuItem("Select Keyboard / Mouse Binding...", "AHK_KBM_Output", this._ChangedValue.Bind(this, 1))
 	}
 	
 	_ChangedValue(val){
-		;msgbox AHK_KBM_Output
 		UCR._RequestBinding(this.ParentControl)
 	}
 }
 
 class vJoy_Output extends vGen_Output {
-	IOClass := "AHK_vJoy_Output"
+	IOClass := "vJoy_Output"
 	
 	_JoyMenus := []
+	
+	BuildHumanReadable(){
+		str := "vJoy Stick " this.DeviceID
+		if (this.Binding[1]){
+			str .= ", Button " this.Binding[1]
+		} else {
+			str .= " (No Button Selected)"
+		}
+		return str
+	}
 	
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("vJoy Stick", "vJoyStick")
 		Loop 8 {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
 		}
 		
 		chunksize := 16
@@ -139,38 +148,71 @@ class vJoy_Output extends vGen_Output {
 			this._JoyMenus.Push(menu)
 			Loop % chunksize {
 				btn := A_Index + offset
-					menu.AddMenuItem(btn, btn, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
+				menu.AddMenuItem(btn, btn, this._ChangedValue.Bind(this, 100 + btn))	; Set the callback when selected
+				this._JoyMenus.Push(menu)
 			}
 		}
 	}
 	
-	_ChangedValue(val){
-		msgbox vJoy_Output
+	_ChangedValue(o){
+		if (o < 9){
+			; Stick selected
+			this.DeviceID := o
+		} else if (o > 100 && o < 229){
+			; Button selected
+			o -= 100
+			this.Binding[1] := o
+		} else {
+			return
+		}
+		this.ParentControl.value := this
 	}
 
 }
 
 class vXBox_Output extends vGen_Output {
-	IOClass := "AHK_vXBox_Output"
+	IOClass := "vXBox_Output"
 	
 	_JoyMenus := []
 	_ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back","Start", "LS", "RS"]
+	
+	BuildHumanReadable(){
+		str := "vXBox Stick " this.DeviceID
+		if (this.Binding[1]){
+			str .=  ", Button " this._ButtonNames[this.Binding[1]]
+		} else {
+			str .= " (No Button Selected)"
+		}
+		return str
+	}
+
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("vXBox Stick", "vXBoxStick")
 		Loop 4 {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
 		}
 		
 		menu := this.ParentControl.AddSubMenu("vXBox Buttons", "vXBoxButtons")
 		this._JoyMenus.Push(menu)
 		Loop 10 {
-			menu.AddMenuItem(this._ButtonNames[A_Index], A_Index, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
+			menu.AddMenuItem(this._ButtonNames[A_Index], A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
+			this._JoyMenus.Push(menu)
 		}
 
 	}
 	
-	_ChangedValue(val){
-		msgbox vXBox_Output
+	_ChangedValue(o){
+		if (o < 5){
+			; Stick selected
+			this.DeviceID := o
+		} else if (o > 100 && o < 111){
+			; Button selected
+			o -= 100
+			this.Binding[1] := o
+		} else {
+			return
+		}
+		this.ParentControl.value := this
 	}
 
 }
