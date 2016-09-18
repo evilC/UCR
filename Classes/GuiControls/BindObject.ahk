@@ -67,11 +67,11 @@ class AHK_KBM_Input extends _BindObject {
 	
 	RemoveHotkey(){
 		try {
-			hotkey, % this._CurrentBinding, Dummy
+			hotkey, % this._CurrentBinding, UCR_DUMMY_LABEL
 			hotkey, % this._CurrentBinding, Off
 		}
 		try {
-			hotkey, % this._CurrentBinding " up", Dummy
+			hotkey, % this._CurrentBinding " up", UCR_DUMMY_LABEL
 			hotkey, % this._CurrentBinding " up", Off
 		}
 		this._CurrentBinding := 0
@@ -154,11 +154,12 @@ class AHK_KBM_Input extends _BindObject {
 	}
 }
 
-Dummy:
-	return
-
 class AHK_Joy_Input extends _BindObject {
 	IOClass := "AHK_Joy_Input"
+	
+	RemoveHotkey(){
+		
+	}
 	
 	BuildHumanReadable(){
 		return "Joystick " this.DeviceID " Button " this.Binding[1]

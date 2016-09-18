@@ -996,3 +996,7 @@ Class _UCRBase {
 		return SubStr(fin_guid, 2, 36)
 	}
 }
+
+; Dummy label for hotekys to bind to etc
+UCR_DUMMY_LABEL:
+	return
