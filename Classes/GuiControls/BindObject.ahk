@@ -22,8 +22,8 @@ class _BindObject {
 	BindOptions := {}	; Options for Binding - eg wild / block for KBM
 
 	__New(parent, obj := 0){
-		this.parent := parent
-		OutputDebug % "UCR| New BindObject - " this.parent.id
+		this.ParentControl := parent
+		OutputDebug % "UCR| New BindObject - " this.ParentControl.id
 		if (obj == 0){
 			obj := {}
 		}
@@ -89,8 +89,8 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 		; ToDo: Parent will not exist in thread!
 		
 		OutputDebug % "UCR| KEY EVENT"
-		this.parent.ChangeStateCallback.Call(e)
-		;msgbox % "Hotkey pressed - " this.parent.Parentplugin.id
+		this.ParentControl.ChangeStateCallback.Call(e)
+		;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
 	}
 	; == END OF THREAD COMMANDS
 	
@@ -217,6 +217,6 @@ class AHK_Joy_Input extends _BindObject {
 	}
 	
 	ButtonEvent(e){
-		this.parent.ChangeStateCallback.Call(e)
+		this.ParentControl.ChangeStateCallback.Call(e)
 	}
 }
