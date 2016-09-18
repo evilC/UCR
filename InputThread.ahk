@@ -1,5 +1,5 @@
 Class _InputThread {
-	IOClasses := {AHK_KBM_Input: 0}
+	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0}
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
@@ -32,7 +32,7 @@ Class _InputThread {
 }
 
 	class AHK_KBM_Input_BindThread {
-		_KBMBindings := {}
+		_AHKBindings := {}
 		
 		__New(parent){
 			this.ParentThread := parent
@@ -46,7 +46,6 @@ Class _InputThread {
 		}
 		*/
 		
-		; THREAD COMMANDS
 		UpdateBinding(ControlGUID, j){
 			;msgbox Update binding
 			;return
@@ -59,19 +58,19 @@ Class _InputThread {
 				hotkey, % keyname " up", % fn, On
 				OutputDebug % "UCR| Added hotkey " keyname " for ControlGUID " ControlGUID
 				;this._CurrentBinding := keyname
-				this._KBMBindings[ControlGUID] := keyname
+				this._AHKBindings[ControlGUID] := keyname
 			}
 		}
 		
 		RemoveBinding(ControlGUID){
-			keyname := this._KBMBindings[ControlGUID]
+			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
 				OutputDebug % "UCR| Removing hotkey " keyname " for ControlGUID " ControlGUID
 				hotkey, % keyname, UCR_DUMMY_LABEL
 				hotkey, % keyname, Off
 				hotkey, % keyname " up", UCR_DUMMY_LABEL
 				hotkey, % keyname " up", Off
-				this._KBMBindings.Delete(ControlGUID)
+				this._AHKBindings.Delete(ControlGUID)
 			}
 			;this._CurrentBinding := 0
 		}
@@ -84,13 +83,6 @@ Class _InputThread {
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
 			this.ParentThread.Callback.Call(ControlGUID, e)
 		}
-		; == END OF THREAD COMMANDS
-
-		;ToDo: Add include
-		static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
-		,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
-		,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
-		,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
 		; Builds an AHK hotkey string (eg ~^a) from a BindObject
 		BuildHotkeyString(bo){
@@ -120,6 +112,12 @@ Class _InputThread {
 			return str
 		}
 		
+		; === COMMON WITH IOCLASS. MOVE TO INCLUDE =====
+		static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+		,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
+		,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
+		,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
+
 		; Builds the AHK key name
 		BuildKeyName(code){
 			static replacements := {33: "PgUp", 34: "PgDn", 35: "End", 36: "Home", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 45: "Insert", 46: "Delete"}
@@ -142,5 +140,61 @@ Class _InputThread {
 		RenderModifier(code){
 			return this._Modifiers[code].s
 		}
+		; ================= END MOVE TO INCLUDE ======================
+	}
+	
+	class AHK_Joy_Buttons_BindThread {
+		__New(parent){
+			this.ParentThread := parent
+		}
+		
+		UpdateBinding(ControlGUID, bo){
+			;msgbox Update binding
+			;return
+			this.RemoveBinding(ControlGUID)
+			if (bo.Binding[1]){
+				keyname := this.BuildHotkeyString(bo)
+				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
+				hotkey, % keyname, % fn, On
+				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
+				;hotkey, % keyname " up", % fn, On
+				OutputDebug % "UCR| Added hotkey " keyname " for ControlGUID " ControlGUID
+				;this._CurrentBinding := keyname
+				this._AHKBindings[ControlGUID] := keyname
+			}
+		}
+		
+		RemoveBinding(ControlGUID){
+			keyname := this._AHKBindings[ControlGUID]
+			if (keyname){
+				OutputDebug % "UCR| Removing hotkey " keyname " for ControlGUID " ControlGUID
+				try{
+					hotkey, % keyname, UCR_DUMMY_LABEL
+				}
+				try{
+					hotkey, % keyname, Off
+				}
+				try{
+					hotkey, % keyname " up", UCR_DUMMY_LABEL
+				}
+				try{
+					hotkey, % keyname " up", Off
+				}
+				this._AHKBindings.Delete(ControlGUID)
+			}
+			;this._CurrentBinding := 0
+		}
+		
+		KeyEvent(ControlGUID, e){
+			; ToDo: Parent will not exist in thread!
+			
+			OutputDebug % "UCR| INPUT THREAD - Key event for GuiControl " ControlGUID
+			;this.ParentControl.ChangeStateCallback.Call(e)
+			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
+			this.ParentThread.Callback.Call(ControlGUID, e)
+		}
 
+		BuildHotkeyString(bo){
+			return bo.Deviceid "Joy" bo.Binding[1]
+		}
 	}
