@@ -101,8 +101,15 @@ Class _InputHandler {
 	}
 	*/
 	
-	InputEvent(aParams*){
-		soundbeep
+	InputEvent(ControlGUID, e){
+		OutputDebug % "UCR| InputHandler Received Input from GuiControl " ControlGUID
+		if (ObjHasKey(UCR.BindControlLookup, ControlGUID)){
+			lu := UCR.BindControlLookup[ControlGUID]
+			UCR.BindControlLookup[ControlGUID].ChangeStateCallback.Call(e) ;*[UCR]
+		} else {
+			OutputDebug % "UCR| Guid not found in UCR.BindControlLookup"
+		}
+
 	}
 	
 	_DelayCallback(cb, state){

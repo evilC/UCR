@@ -53,11 +53,11 @@ Class _InputThread {
 			this.RemoveBinding(ControlGUID)
 			if (j.Binding[1]){
 				keyname := "$" this.BuildHotkeyString(j)
-				fn := this.KeyEvent.Bind(this, 1)
+				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
 				hotkey, % keyname, % fn, On
-				fn := this.KeyEvent.Bind(this, 0)
+				fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				hotkey, % keyname " up", % fn, On
-				OutputDebug % "UCR| Added hotkey " keyname
+				OutputDebug % "UCR| Added hotkey " keyname " for ControlGUID " ControlGUID
 				;this._CurrentBinding := keyname
 				this._KBMBindings[ControlGUID] := keyname
 			}
@@ -66,7 +66,7 @@ Class _InputThread {
 		RemoveBinding(ControlGUID){
 			keyname := this._KBMBindings[ControlGUID]
 			if (keyname){
-				OutputDebug % "UCR| Removing hotkey " keyname
+				OutputDebug % "UCR| Removing hotkey " keyname " for ControlGUID " ControlGUID
 				hotkey, % keyname, UCR_DUMMY_LABEL
 				hotkey, % keyname, Off
 				hotkey, % keyname " up", UCR_DUMMY_LABEL
@@ -76,13 +76,13 @@ Class _InputThread {
 			;this._CurrentBinding := 0
 		}
 		
-		KeyEvent(e){
+		KeyEvent(ControlGUID, e){
 			; ToDo: Parent will not exist in thread!
 			
-			OutputDebug % "UCR| INPUT THREAD - KEY EVENT"
+			OutputDebug % "UCR| INPUT THREAD - Key event for GuiControl " ControlGUID
 			;this.ParentControl.ChangeStateCallback.Call(e)
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
-			this.ParentThread.Callback.Call("aaa",event)
+			this.ParentThread.Callback.Call(ControlGUID, e)
 		}
 		; == END OF THREAD COMMANDS
 

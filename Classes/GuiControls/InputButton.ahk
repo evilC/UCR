@@ -21,7 +21,8 @@ class _InputButton extends _BannerMenu {
 		this.ID := UCR.CreateGUID()
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
-		
+		UCR._RegisterGuiControl(this)
+
 		;this.__value := new _BindObject()
 		for i, name in this._IOClassNames {
 			this._BindObjects[name] := new %name%(this)
@@ -120,6 +121,7 @@ class _InputButton extends _BannerMenu {
 				mod := {suppress: !this.__value.suppress}
 			} else if (o = 5){
 				; Clear Binding
+				;mod := {Buttons: []}
 				mod := {Binding: []}
 			} else {
 				; not one of the options from the list, user must have typed in box
@@ -135,6 +137,7 @@ class _InputButton extends _BannerMenu {
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
+		OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
 		UCR._InputHandler.SetButtonBinding(this)
 	}
 	

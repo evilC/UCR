@@ -17,6 +17,8 @@ class _InputAxis extends _BannerMenu {
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
 		
+		UCR._RegisterGuiControl(this)
+
 		for i, name in this._IOClassNames {
 			this._BindObjects[name] := new %name%(this)
 			if (!this._BindObjects.IsInitialized) {

@@ -13,7 +13,7 @@ Class UCRMain extends _UCRBase {
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
-	PluginGuidLookup := {}			; Allows bind threads to find the plugin that
+	BindControlLookup := {}			; Allows bind threads to find the plugin that
 	PLUGIN_WIDTH := 680				; The Width of a plugin
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
 	SIDE_PANEL_WIDTH := 150			; The default width of the side panel
@@ -488,11 +488,12 @@ Class UCRMain extends _UCRBase {
 		this._InputActivitySubscriptions.Delete(hwnd)
 	}
 	
-	_RegisterPlugin(plugin, delete := 0){
+	_RegisterGuiControl(ctrl, delete := 0){
 		if (delete){
-			this.PluginGuidLookup.Delete(plugin.id)
+			this.BindControlLookup.Delete(ctrl.id)
 		} else {
-			this.PluginGuidLookup[plugin.id] := plugin
+			OutputDebug % "UCR| Registering GuiControl "
+			this.BindControlLookup[ctrl.id] := ctrl
 		}
 	}
 	
