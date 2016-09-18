@@ -12,8 +12,11 @@ Class _InputThread {
 		
 		;msgbox % "Adding object of class:" IOBoj.__value.IOClass
 		OutputDebug % "UCR| _InputThread.UpdateBindings - cls: " j.IOClass
-		this.IOClasses[j.IOClass]._Deserialize(j)
-		this.IOClasses[j.IOClass].UpdateBinding()
+		;this.IOClasses[j.IOClass]._Deserialize(j)
+		;this.IOClasses[j.IOClass].UpdateBinding()
+		
+		this.IOClasses[j.IOClass].UpdateBinding(ControlGUID, j)
+		
 		;tmp.UpdateBinding()
 		;bindobj.UpdateBinding()
 		/*
@@ -31,20 +34,20 @@ Class _InputThread {
 			this.ParentThread := parent
 		}
 		
+		/*
 		_Deserialize(obj){
 			for k, v in obj {
 				this[k] := v
 			}
 		}
+		*/
 		
 		; THREAD COMMANDS
-		UpdateBinding(){
+		UpdateBinding(ControlGUID, j){
 			;msgbox Update binding
 			;return
-			if (this._CurrentBinding != 0){ ;*[UCR]
-				this.RemoveBinding()
-			}
-			keyname := this.BuildHotkeyString()
+			this.RemoveBinding(ControlGUID)
+			keyname := this.BuildHotkeyString(j)
 			if (keyname){
 				fn := this.KeyEvent.Bind(this, 1)
 				hotkey, % keyname, % fn, On
@@ -55,7 +58,7 @@ Class _InputThread {
 			}
 		}
 		
-		RemoveBinding(){
+		RemoveBinding(ControlGUID){
 			return
 			hotkey, % this._CurrentBinding, UCR_DUMMY_LABEL
 			hotkey, % this._CurrentBinding, Off
@@ -79,31 +82,18 @@ Class _InputThread {
 		,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 		,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
-		; Builds a human-readable form of the BindObject
-		BuildHumanReadable(){
-			max := this.Binding.length()
-			str := ""
-			Loop % max {
-				str .= this.BuildKeyName(this.Binding[A_Index])
-				if (A_Index != max)
-					str .= " + "
-			}
-			return str
-		}
-		
 		; Builds an AHK hotkey string (eg ~^a) from a BindObject
-		BuildHotkeyString(){
-			bo := this.Binding
-			if (!bo.Length())
+		BuildHotkeyString(bo){
+			if (!bo.Binding.Length())
 				return ""
 			str := ""
-			if (this.BindOptions.Wild)
+			if (bo.BindOptions.Wild)
 				str .= "*"
-			if (!this.BindOptions.Block)
+			if (!bo.BindOptions.Block)
 				str .= "~"
-			max := bo.Length()
+			max := bo.Binding.Length()
 			Loop % max {
-				key := bo[A_Index]
+				key := bo.Binding[A_Index]
 				if (A_Index = max){
 					islast := 1
 					nextkey := 0

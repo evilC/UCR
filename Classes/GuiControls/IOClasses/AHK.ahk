@@ -19,6 +19,7 @@ class AHK_KBM_Common extends _BindObject {
 		return str
 	}
 	
+	/*
 	; Builds an AHK hotkey string (eg ~^a) from a BindObject
 	BuildHotkeyString(){
 		bo := this.Binding
@@ -47,6 +48,7 @@ class AHK_KBM_Common extends _BindObject {
 		}
 		return str
 	}
+	*/
 	
 	; Builds the AHK key name
 	BuildKeyName(code){
