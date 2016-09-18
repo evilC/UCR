@@ -120,11 +120,7 @@ class _InputButton extends _BannerMenu {
 				mod := {suppress: !this.__value.suppress}
 			} else if (o = 5){
 				; Clear Binding
-				;mod := {Buttons: []}
-				val := this.__value.clone()
-				val.Binding := []
-				this.value := val
-				return
+				mod := {Binding: []}
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return

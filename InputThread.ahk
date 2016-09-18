@@ -12,7 +12,6 @@ Class _InputThread {
 	}
 	
 	UpdateBindings(ControlGUID, j){
-		
 		;msgbox % "Adding object of class:" IOBoj.__value.IOClass
 		OutputDebug % "UCR| _InputThread.UpdateBindings - cls: " j.IOClass
 		;this.IOClasses[j.IOClass]._Deserialize(j)
