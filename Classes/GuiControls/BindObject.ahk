@@ -122,10 +122,12 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	}
 }
 
-class vJoy_Output extends vGen_Output {
-	static IOClass := "vJoy_Output"
+class vJoy_Button_Output extends vGen_Output {
+	static IOClass := "vJoy_Button_Output"
 	
 	_JoyMenus := []
+	static _NumSticks := 8			; vJoy has 8 sticks
+	static _NumButtons := 128		; vXBox has 10 Buttons
 	
 	BuildHumanReadable(){
 		str := "vJoy Stick " this.DeviceID
@@ -139,12 +141,12 @@ class vJoy_Output extends vGen_Output {
 	
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("vJoy Stick", "vJoyStick")
-		Loop 8 {
+		Loop % this._NumSticks {
 			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
 		}
 		
 		chunksize := 16
-		Loop % round(128 / chunksize) {
+		Loop % round(this._NumButtons / chunksize) {
 			offset := (A_Index-1) * chunksize
 			menu := this.ParentControl.AddSubMenu("vJoy Buttons " offset + 1 "-" offset + chunksize, "vJoyBtns" A_Index)
 			this._JoyMenus.Push(menu)
@@ -172,12 +174,15 @@ class vJoy_Output extends vGen_Output {
 
 }
 
-class vXBox_Output extends vGen_Output {
-	static IOClass := "vXBox_Output"
+
+class vXBox_Button_Output extends vGen_Output {
+	static IOClass := "vXBox_Button_Output"
 	
 	_JoyMenus := []
 	static _ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back","Start", "LS", "RS"]
 	static _vGenDeviceType := 0		; 0 = vJoy, 1 = vXBox
+	static _NumSticks := 4			; vXBox has 4 sticks
+	static _NumButtons := 10			; vXBox has 10 Buttons
 	
 	BuildHumanReadable(){
 		str := "vXBox Stick " this.DeviceID
@@ -191,7 +196,7 @@ class vXBox_Output extends vGen_Output {
 
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("vXBox Stick", "vXBoxStick")
-		Loop 4 {
+		Loop % this._NumSticks {
 			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
 		}
 		
@@ -229,7 +234,9 @@ class vGen_Output extends _BindObject {
 	static DllName := "vGenInterface"
 	static _AcquireControls := {}		; GUIDs of Controls that are bound to vGen sticks
 								; If  this array is empty, the stick may Relinquish
-								
+	static _NumSticks := 0			; Numer of sticks supported. Will be overridden
+	static _NumButtons := 0			; Numer of buttons supported.
+	
 	_Init(){
 		dllpath := "Resources\" this.DllName ".dll"
 		hModule := DllCall("LoadLibrary", "Str", dllpath, "Ptr")
@@ -253,13 +260,12 @@ class vGen_Output extends _BindObject {
 		push := DllCall(this.DllName "\SetDevButton", "ptr", dev, "uint", 1, "uint", 0, "Cdecl")
 	}
 	
-	/*
+	
 	UpdateBinding(){
 		if (this.DeviceID && this.Binding[1]){
 			msgbox % this.IOClass " stick " this.DeviceID " Button " this.Binding[1]
 		}
 	}
-	*/
 	
 	_Deserialize(obj){
 		base._Deserialize(obj)

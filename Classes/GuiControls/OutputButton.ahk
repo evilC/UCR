@@ -5,7 +5,7 @@ Class _OutputButton extends _InputButton {
 	_DefaultBanner := "Select an Output Button"
 	_IsOutput := 1
 	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Output"}
-	_IOClassNames := ["AHK_KBM_Output", "vJoy_Output", "vXBox_Output"]
+	_IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vXBox_Button_Output"]
 	;_OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
 	JoyMenus := []
 	
@@ -95,6 +95,8 @@ Class _OutputButton extends _InputButton {
 	; Builds the list of options in the DropDownList
 	SetControlState(){
 		base.SetControlState()
+		; Tell vGen etc to Acquire sticks
+		this.__value.UpdateBinding()
 		;joy := (this.__value.Type >= 2 && this.__value.Type <= 6)
 		;for n, opt in this.JoyMenus {
 		;	opt.SetEnableState(joy)
