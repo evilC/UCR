@@ -1,6 +1,12 @@
 class AHK_KBM_Common extends _BindObject {
 	static IsInitialized := 1
 	static IsAvailable := 1
+	
+	static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
+	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
+	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
+
 	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
 		max := this.Binding.length()
@@ -71,10 +77,6 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	static OutputType := "AHK_KBM_Output"
 	
 	_CurrentBinding := 0
-	static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
-	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
-	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
-	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
 	; THREAD COMMANDS
 	UpdateBinding(){
