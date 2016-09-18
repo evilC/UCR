@@ -9,6 +9,7 @@ class _InputButton extends _BannerMenu {
 	_IsOutput := 0
 	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_Joy_Input: "AHK_Joy_Input"}
 	_IOClassNames := ["AHK_KBM_Input", "AHK_Joy_Input"]
+	_BindObjects := {}
 	
 	_DefaultBanner := "Select an Input Button"
 	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
@@ -22,7 +23,9 @@ class _InputButton extends _BannerMenu {
 		this.ChangeStateCallback := ChangeStateCallback
 		
 		;this.__value := new _BindObject()
-
+		for i, name in this._IOClassNames {
+			this._BindObjects[name] := new %name%(this)
+		}
 		this._BuildMenu()
 		
 		this.SetControlState()

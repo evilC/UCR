@@ -842,6 +842,7 @@ Class UCRMain extends _UCRBase {
 		;	hk.value := bo
 		;} else {
 			;if (this._InputHandler.IsBindable(hk, bo)){
+			/*
 			if (hk.__value.IOClass == cls){
 				tmp := hk.__value.clone()
 				for k, v in bo {
@@ -849,11 +850,16 @@ Class UCRMain extends _UCRBase {
 				}
 				hk.value := tmp
 			} else {
-				if (hk.__value != 0)
-					hk.__value._Delete()
+			*/
+				if (hk.__value != 0){
+					;hk.__value._Delete()
+					hk.__value.RemoveHotkey()
+				}
 				outputdebug % "UCR| Creating new class " cls " for GuiControl " hk.id " deviceid: " bo.deviceid
-				hk.value := new %cls%(hk, bo)
-			}
+				;hk.value := new %cls%(hk, bo)
+				hk._BindObjects[cls]._Deserialize(bo)
+				hk.value := hk._BindObjects[cls]
+			;}
 			this._InputHandler.SetButtonBinding(hk)
 			;}
 		;}
