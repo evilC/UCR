@@ -12,8 +12,8 @@ class _BindObject {
 	Block := 0
 	Suppress := 0
 	*/
-	IOClass := 0
-	IOType := 0		; 0 for Input, 1 for Output
+	static IOClass := 0
+	static IOType := 0		; 0 for Input, 1 for Output
 	;DeviceType := 0	; Type of the Device - eg KBM (Keyboard/Mouse), Joystick etc. Meaning varies with IOType
 	;DeviceSubType := 0	; Device Sub-Type, eg vGen DeviceType has vJoy/vXbox Sub-Types
 	DeviceID := 0 		; Device ID, eg Stick ID for Joystick input or vGen output
@@ -21,9 +21,11 @@ class _BindObject {
 					; Normally a single element, but for KBM could be up to 4 modifiers plus a key/button
 	BindOptions := {}	; Options for Binding - eg wild / block for KBM
 
+	static IsInitialized := 0
+	static IsAvailable := 0
+
 	__New(parent, obj := 0){
 		this.ParentControl := parent
-		OutputDebug % "UCR| New BindObject - " this.ParentControl.id
 		if (obj == 0){
 			obj := {}
 		}
@@ -52,11 +54,11 @@ class _BindObject {
 }
 
 class AHK_KBM_Input extends AHK_KBM_Common {
-	IOClass := "AHK_KBM_Input"
-	OutputType := "AHK_KBM_Output"
+	static IOClass := "AHK_KBM_Input"
+	static OutputType := "AHK_KBM_Output"
 	
 	_CurrentBinding := 0
-	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+	static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
 	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
@@ -104,9 +106,9 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 }
 
 class AHK_KBM_Output extends AHK_KBM_Common {
-	IOType := 1
+	static IOType := 1
 	IOClass := "AHK_KBM_Output"
-	
+
 	SetState(state){
 		tooltip % "UCR| SetState: " state
 	}
@@ -121,7 +123,7 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 }
 
 class vJoy_Output extends vGen_Output {
-	IOClass := "vJoy_Output"
+	static IOClass := "vJoy_Output"
 	
 	_JoyMenus := []
 	
@@ -171,10 +173,11 @@ class vJoy_Output extends vGen_Output {
 }
 
 class vXBox_Output extends vGen_Output {
-	IOClass := "vXBox_Output"
+	static IOClass := "vXBox_Output"
 	
 	_JoyMenus := []
-	_ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back","Start", "LS", "RS"]
+	static _ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back","Start", "LS", "RS"]
+	static _vGenDeviceType := 0		; 0 = vJoy, 1 = vXBox
 	
 	BuildHumanReadable(){
 		str := "vXBox Stick " this.DeviceID
@@ -218,10 +221,54 @@ class vXBox_Output extends vGen_Output {
 }
 
 class vGen_Output extends _BindObject {
-	IOType := 1
+	static IOType := 1
+	static IOClass := "vGen_Output"
+	;static LibraryLoaded := vGen_Output._Init()
+	
+	static _vGenDeviceType := 0		; 0 = vJoy, 1 = vXBox
+	static DllName := "vGenInterface"
+	static _AcquireControls := {}		; GUIDs of Controls that are bound to vGen sticks
+								; If  this array is empty, the stick may Relinquish
+								
+	_Init(){
+		dllpath := "Resources\" this.DllName ".dll"
+		hModule := DllCall("LoadLibrary", "Str", dllpath, "Ptr")
+		if (hModule == 0){
+			OutputDebug % "UCR| IOClass " this.IOClass " Failed to load " dllpath
+			this.IsAvailable := 0
+		} else {
+			OutputDebug % "UCR| IOClass " this.IOClass " Loaded " dllpath
+			this.IsAvailable := 1
+		}
+		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
+		this.IsInitialized := 1
+	}
+	
+	SetState(state){
+		OutputDebug % "UCR| IOClass " this.IOClass " acq: " acq
+		;VarSetCapacity(dev, A_PtrSize)
+		acq := DllCall(this.DllName "\AcquireDev", "uint", 1, "uint", this._vGenDeviceType, "Ptr*", dev, "Cdecl")
+		push := DllCall(this.DllName "\SetDevButton", "ptr", dev, "uint", 1, "uint", 1, "Cdecl")
+		sleep 1000
+		push := DllCall(this.DllName "\SetDevButton", "ptr", dev, "uint", 1, "uint", 0, "Cdecl")
+	}
+	
+	/*
+	UpdateBinding(){
+		if (this.DeviceID && this.Binding[1]){
+			msgbox % this.IOClass " stick " this.DeviceID " Button " this.Binding[1]
+		}
+	}
+	*/
+	
+	_Deserialize(obj){
+		base._Deserialize(obj)
+	}
 }
 
 class AHK_KBM_Common extends _BindObject {
+	static IsInitialized := 1
+	static IsAvailable := 1
 	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
 		max := this.Binding.length()
@@ -289,6 +336,8 @@ class AHK_KBM_Common extends _BindObject {
 
 class AHK_Joy_Input extends _BindObject {
 	IOClass := "AHK_Joy_Input"
+
+	static IsInitialized := 1
 
 	_CurrentBinding := 0
 	

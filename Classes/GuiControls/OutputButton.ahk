@@ -268,6 +268,10 @@ Class _OutputButton extends _InputButton {
 		; Trigger _value setter to set gui state but not fire change event
 		;this._value := new _BindObject(obj)
 		cls := obj.IOClass
+		if (!%cls%.IsInitialized) {
+			%cls%._Init()
+		}
+
 		;this._value := new %cls%(this, obj)
 		this._BindObjects[cls]._Deserialize(obj) ;*[UCR]
 		this._value :=  this._BindObjects[cls]
