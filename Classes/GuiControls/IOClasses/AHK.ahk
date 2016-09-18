@@ -79,7 +79,7 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	; THREAD COMMANDS
 	UpdateBinding(){
 		if (this._CurrentBinding != 0){
-			this.RemoveHotkey()
+			this.RemoveBinding()
 		}
 		keyname := this.BuildHotkeyString()
 		if (keyname){
@@ -92,7 +92,7 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 		}
 	}
 	
-	RemoveHotkey(){
+	RemoveBinding(){
 		hotkey, % this._CurrentBinding, UCR_DUMMY_LABEL
 		hotkey, % this._CurrentBinding, Off
 		hotkey, % this._CurrentBinding " up", UCR_DUMMY_LABEL
@@ -110,7 +110,7 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	; == END OF THREAD COMMANDS
 	
 	_Delete(){
-		this.RemoveHotkey()
+		this.RemoveBinding()
 	}
 	
 	__Delete(){
@@ -137,28 +137,27 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 
 class AHK_Joy_Buttons extends _BindObject {
 	static IOClass := "AHK_Joy_Buttons"
-
 	static IsInitialized := 1
 
 	_CurrentBinding := 0
 	
 	UpdateBinding(){
 		if (this._CurrentBinding != 0)
-			this.RemoveHotkey()
+			this.RemoveBinding()
 		fn := this.ButtonEvent.Bind(this, 1)
 		keyname := this.DeviceID "joy" this.Binding[1]
 		hotkey, % keyname, % fn, On
 		this._CurrentBinding := keyname
 	}
 	
-	RemoveHotkey(){
+	RemoveBinding(){
 		hotkey, % this.DeviceID "joy" this.Binding[1], UCR_DUMMY_LABEL
 		hotkey, % this.DeviceID "joy" this.Binding[1], Off
 		this._CurrentBinding := 0
 	}
 	
 	_Delete(){
-		this.RemoveHotkey()
+		this.RemoveBinding()
 	}
 	
 	BuildHumanReadable(){
@@ -172,5 +171,33 @@ class AHK_Joy_Buttons extends _BindObject {
 
 class AHK_Joy_Axes extends _BindObject {
 	static IOClass := "AHK_Joy_Axes"
+	static IsInitialized := 1
 	
+	UpdateBinding(){
+		msgbox axis update
+	}
+	
+	AddMenuItems(){
+		menu := this.ParentControl.AddSubMenu("Stick", "AHKStick")
+		Loop 8 {
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
+		}
+		menu := this.ParentControl.AddSubMenu("Buttons " offset + 1 "-" offset + chunksize, "AHKBtns" A_Index)
+		this._JoyMenus.Push(menu)
+		Loop 6 {
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
+		}
+	}
+	
+	_ChangedValue(o){
+		if (o < 9){
+			; Stick ID
+		} else if (o > 100 && o < 107){
+			; Axis ID
+			o -= 100
+			
+		}
+		msgbox % o
+		;UCR._RequestBinding(this.ParentControl)
+	}
 }

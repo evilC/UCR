@@ -39,6 +39,10 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	_BuildMenu(){
+		for i, cls in this._BindObjects {
+			cls.AddMenuItems()
+		}
+		/*
 		Loop 8 {
 			ji := GetKeyState( A_Index "JoyInfo")
 			if (!ji)
@@ -57,6 +61,7 @@ class _InputAxis extends _BannerMenu {
 			}
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
+		*/
 	}
 	
 	; The Axis Select DDL changed value
