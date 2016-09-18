@@ -120,7 +120,7 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 
 class AHK_KBM_Output extends AHK_KBM_Common {
 	static IOType := 1
-	IOClass := "AHK_KBM_Output"
+	static IOClass := "AHK_KBM_Output"
 
 	SetState(state){
 		tooltip % "UCR| SetState: " state
@@ -136,7 +136,7 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 }
 
 class AHK_Joy_Buttons extends _BindObject {
-	IOClass := "AHK_Joy_Buttons"
+	static IOClass := "AHK_Joy_Buttons"
 
 	static IsInitialized := 1
 
@@ -168,4 +168,9 @@ class AHK_Joy_Buttons extends _BindObject {
 	ButtonEvent(e){
 		this.ParentControl.ChangeStateCallback.Call(e)
 	}
+}
+
+class AHK_Joy_Axes extends _BindObject {
+	static IOClass := "AHK_Joy_Axes"
+	
 }

@@ -6,7 +6,7 @@ ie you will be able to place breakpoints inside these files and they will trigge
 */
 ;#include Plugins\Core\AxisInitializer.ahk
 ;#include Plugins\Core\AxisMerge.ahk
-;#include Plugins\Core\AxisToAxis.ahk
+#include Plugins\Core\AxisToAxis.ahk
 ;#include Plugins\Core\AxisToButton.ahk
 ;#include Plugins\Core\BigEmptyPlugin.ahk
 ;#include Plugins\Core\ButtonToAxis.ahk

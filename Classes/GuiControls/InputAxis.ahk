@@ -4,14 +4,25 @@ class _InputAxis extends _BannerMenu {
 	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	__value := new _Axis()
 	_OptionMap := []
-	
 	State := -1
+	
+	_BindTypes := {AHK_Joy_Axes: "AHK_Joy_Axes"}
+	_IOClassNames := ["AHK_Joy_Axes"]
+	_BindObjects := {}
+	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
 		this.name := name
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
+		
+		for i, name in this._IOClassNames {
+			this._BindObjects[name] := new %name%(this)
+			if (!this._BindObjects.IsInitialized) {
+				this._BindObjects[name]._Init()
+			}
+		}
 		
 		this._BuildMenu()
 		this.SetControlState()

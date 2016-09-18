@@ -27,9 +27,6 @@ class ButtonToButton extends _Plugin {
 	
 	; Called when the hotkey changes state (key is pressed or released)
 	MyHkChangedState(Name, e){
-		;tooltip % "Plugin changed state - " e
-		;Sleep 500
-		;tooltip
 		this.OutputButtons.OB1.SetState(e)
 		/*
 		;OutputDebug, % "UCR| " Name " changed state to: " (e ? "Down" : "Up")
