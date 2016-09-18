@@ -4,7 +4,7 @@ class _InputButton extends _BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
-	__value := ""		; Holds the BindObject class
+	__value := 0		; Holds the BindObject class
 	; Other internal vars
 	_IsOutput := 0
 	_DefaultBanner := "Select an Input Button"
@@ -18,7 +18,7 @@ class _InputButton extends _BannerMenu {
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
 		
-		this.__value := new _BindObject()
+		;this.__value := new _BindObject()
 
 		this._BuildMenu()
 		

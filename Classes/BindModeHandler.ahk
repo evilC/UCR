@@ -95,13 +95,21 @@ class _BindModeHandler {
 			;this._Callback.(this._OriginalHotkey, bindObj)
 			
 			; New format
-			ret := []
-			Loop % BindObj.buttons.Length(){
-				ret.push(BindObj.buttons[A_Index].code)
+			ret :={Binding: []}
+			max := BindObj.buttons.Length()
+			Loop % max {
+				ret.Binding.push(BindObj.buttons[A_Index].code)
 			}
 				
 			;this._Callback.(this._OriginalHotkey, ret)
-			this._Callback.(this._OriginalHotkey, ret, "AHK_KBM_Input")
+			if (bindObj.Type == 1){
+				t := "AHK_KBM_Input"
+			} else {
+				t := "AHK_Joy_Input"
+				ret.DeviceID := BindObj.buttons[max].type
+			}
+			
+			this._Callback.(this._OriginalHotkey, ret, t) ;*[UCR]
 			
 			return
 		} else {

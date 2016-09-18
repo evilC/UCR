@@ -843,10 +843,13 @@ Class UCRMain extends _UCRBase {
 			;if (this._InputHandler.IsBindable(hk, bo)){
 			if (hk.__value.IOClass == cls){
 				tmp := hk.__value.clone()
-				tmp.Binding := bo
+				for k, v in bo {
+					tmp[k] := v
+				}
 				hk.value := tmp
 			} else {
-				hk.value := new %cls%({Binding: bo})
+				hk.value._Delete()
+				hk.value := new %cls%(bo)
 			}
 			this._InputHandler.SetButtonBinding(hk)
 			;}

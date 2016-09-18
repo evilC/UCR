@@ -12,7 +12,7 @@ class _BindObject {
 	Block := 0
 	Suppress := 0
 	*/
-	IOClass := ""
+	IOClass := 0
 	IOType := 0		; 0 for Input, 1 for Output
 	;DeviceType := 0	; Type of the Device - eg KBM (Keyboard/Mouse), Joystick etc. Meaning varies with IOType
 	;DeviceSubType := 0	; Device Sub-Type, eg vGen DeviceType has vJoy/vXbox Sub-Types
@@ -57,11 +57,7 @@ class AHK_KBM_Input extends _BindObject {
 
 	UpdateBinding(){
 		if (this._CurrentBinding != 0){ ;*[UCR]
-			hotkey, % this._CurrentBinding, Off
-			try {
-				hotkey, % this._CurrentBinding " up", Dummy
-				hotkey, % this._CurrentBinding " up", Off
-			}
+			this.RemoveHotkey()
 		}
 		fn := this.KeyPressed.Bind(this)
 		keyname := this.BuildHotkeyString()
@@ -69,8 +65,20 @@ class AHK_KBM_Input extends _BindObject {
 		this._CurrentBinding := keyname
 	}
 	
+	RemoveHotkey(){
+		try {
+			hotkey, % this._CurrentBinding, Dummy
+			hotkey, % this._CurrentBinding, Off
+		}
+		try {
+			hotkey, % this._CurrentBinding " up", Dummy
+			hotkey, % this._CurrentBinding " up", Off
+		}
+		this._CurrentBinding := 0
+	}
+	
 	KeyPressed(){
-		msgbox
+		msgbox Hotkey pressed
 	}
 
 	; Builds a human-readable form of the BindObject
@@ -136,7 +144,32 @@ class AHK_KBM_Input extends _BindObject {
 	RenderModifier(code){
 		return this._Modifiers[code].s
 	}
+	
+	_Delete(){
+		this.RemoveHotkey()
+	}
+	
+	__Delete(){
+		OutputDebug % "UCR| AHK_KBM_Input Freed"
+	}
 }
 
 Dummy:
 	return
+
+class AHK_Joy_Input extends _BindObject {
+	IOClass := "AHK_Joy_Input"
+	
+	BuildHumanReadable(){
+		return "Joystick " this.DeviceID " Button " this.Binding[1]
+	}
+	
+	UpdateBinding(){
+		fn := this.ButtonPressed.Bind(this)
+		hotkey, % this.DeviceID "joy" this.Binding[1], % fn
+	}
+	
+	ButtonPressed(){
+		msgbox JoyButton Pressed
+	}
+}
