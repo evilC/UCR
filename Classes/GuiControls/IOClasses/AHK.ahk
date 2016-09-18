@@ -78,39 +78,6 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	
 	_CurrentBinding := 0
 
-	; THREAD COMMANDS
-	UpdateBinding(){
-		if (this._CurrentBinding != 0){
-			this.RemoveBinding()
-		}
-		keyname := this.BuildHotkeyString()
-		if (keyname){
-			fn := this.KeyEvent.Bind(this, 1)
-			hotkey, % keyname, % fn, On
-			fn := this.KeyEvent.Bind(this, 0)
-			hotkey, % keyname " up", % fn, On
-			OutputDebug % "UCR| Added hotkey " keyname
-			this._CurrentBinding := keyname
-		}
-	}
-	
-	RemoveBinding(){
-		hotkey, % this._CurrentBinding, UCR_DUMMY_LABEL
-		hotkey, % this._CurrentBinding, Off
-		hotkey, % this._CurrentBinding " up", UCR_DUMMY_LABEL
-		hotkey, % this._CurrentBinding " up", Off
-		this._CurrentBinding := 0
-	}
-	
-	KeyEvent(e){
-		; ToDo: Parent will not exist in thread!
-		
-		OutputDebug % "UCR| KEY EVENT"
-		this.ParentControl.ChangeStateCallback.Call(e)
-		;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
-	}
-	; == END OF THREAD COMMANDS
-	
 	_Delete(){
 		this.RemoveBinding()
 	}

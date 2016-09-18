@@ -10,7 +10,7 @@ Class _OutputButton extends _InputButton {
 	JoyMenus := []
 	
 	__New(parent, name, ChangeValueCallback, aParams*){
-		base.__New(parent, name, ChangeValueCallback, 0, aParams*) ;*[UCR]
+		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
 		; Create Select vJoy Button / Hat Select GUI
 	}
 	
@@ -281,7 +281,7 @@ Class _OutputButton extends _InputButton {
 		*/
 
 		;this._value := new %cls%(this, obj)
-		this._BindObjects[cls]._Deserialize(obj) ;*[UCR]
+		this._BindObjects[cls]._Deserialize(obj)
 		this._value :=  this._BindObjects[cls]
 	}
 	
