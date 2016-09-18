@@ -101,7 +101,7 @@ class AHK_Joy_Buttons extends _BindObject {
 	}
 	
 	BuildHumanReadable(){
-		return "Joystick " this.DeviceID " Button " this.Binding[1]
+		return "Stick " this.DeviceID " Button " this.Binding[1]
 	}
 	
 	ButtonEvent(e){
@@ -148,6 +148,7 @@ class AHK_Joy_Hats extends _BindObject {
 	
 	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
-		return "Blah"
+		static hat_directions := ["Up", "Right", "Down", "Left"]
+		return "Stick " this.DeviceID ", Hat " hat_directions[this.Binding[1]]
 	}
 }

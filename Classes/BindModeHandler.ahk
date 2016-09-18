@@ -106,10 +106,10 @@ class _BindModeHandler {
 				t := "AHK_KBM_Input"
 			} else if (bindObj.Type == 2) {
 				t := "AHK_Joy_Buttons"
-				ret.DeviceID := BindObj.buttons[max].type
+				ret.DeviceID := BindObj.buttons[max].DeviceID
 			} else if (bindObj.Type == 3) {
 				t := "AHK_Joy_Hats"
-				ret.DeviceID := BindObj.buttons[max].type
+				ret.DeviceID := BindObj.buttons[max].DeviceID
 			}
 			; Resolve input type to binding type
 			t := this._OriginalHotkey._BindTypes[t]
