@@ -78,6 +78,11 @@ Class _Profile {
 	_StartInputThread(){
 		if (this._InputThread == 0){
 			this._InputThread := new _InputThread()
+			; Load bindings
+			Loop % this.PluginOrder.length() {
+				plugin := this.Plugins[this.PluginOrder[A_Index]]
+				plugin._RequestBinding()
+			}
 			/*
 			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
 			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
