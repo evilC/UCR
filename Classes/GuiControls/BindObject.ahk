@@ -63,29 +63,25 @@ class AHK_KBM_Input extends _BindObject {
 		}
 		keyname := this.BuildHotkeyString()
 		if (keyname){
-			try {
-				fn := this.KeyEvent.Bind(this, 1)
-				hotkey, % keyname, % fn
-				fn := this.KeyEvent.Bind(this, 0)
-				hotkey, % keyname " up", % fn
-				this._CurrentBinding := keyname
-			}
+			fn := this.KeyEvent.Bind(this, 1)
+			hotkey, % keyname, % fn, On
+			fn := this.KeyEvent.Bind(this, 0)
+			hotkey, % keyname " up", % fn, On
+			OutputDebug % "UCR| Added hotkey " keyname
+			this._CurrentBinding := keyname
 		}
 	}
 	
 	RemoveHotkey(){
-		try {
-			hotkey, % this._CurrentBinding, UCR_DUMMY_LABEL
-			hotkey, % this._CurrentBinding, Off
-		}
-		try {
-			hotkey, % this._CurrentBinding " up", UCR_DUMMY_LABEL
-			hotkey, % this._CurrentBinding " up", Off
-		}
+		hotkey, % this._CurrentBinding, UCR_DUMMY_LABEL
+		hotkey, % this._CurrentBinding, Off
+		hotkey, % this._CurrentBinding " up", UCR_DUMMY_LABEL
+		hotkey, % this._CurrentBinding " up", Off
 		this._CurrentBinding := 0
 	}
 	
 	KeyEvent(e){
+		OutputDebug % "UCR| KEY EVENT"
 		this.parent.ChangeStateCallback.Call(e)
 		;msgbox % "Hotkey pressed - " this.parent.Parentplugin.id
 	}
@@ -165,21 +161,35 @@ class AHK_KBM_Input extends _BindObject {
 
 class AHK_Joy_Input extends _BindObject {
 	IOClass := "AHK_Joy_Input"
+
+	_CurrentBinding := 0
+	
+	UpdateBinding(){
+		if (this._CurrentBinding != 0)
+			this.RemoveHotkey()
+		fn := this.ButtonEvent.Bind(this, 1)
+		keyname := this.DeviceID "joy" this.Binding[1]
+		hotkey, % keyname, % fn
+		this._CurrentBinding := keyname
+	}
 	
 	RemoveHotkey(){
-		
+		try {
+			hotkey, % this.DeviceID "joy" this.Binding[1], UCR_DUMMY_LABEL
+			hotkey, % this.DeviceID "joy" this.Binding[1], Off
+		}
+		this._CurrentBinding := 0
+	}
+	
+	_Delete(){
+		this.RemoveHotkey()
 	}
 	
 	BuildHumanReadable(){
 		return "Joystick " this.DeviceID " Button " this.Binding[1]
 	}
 	
-	UpdateBinding(){
-		fn := this.ButtonPressed.Bind(this)
-		hotkey, % this.DeviceID "joy" this.Binding[1], % fn
-	}
-	
-	ButtonPressed(){
-		msgbox JoyButton Pressed
+	ButtonEvent(e){
+		this.parent.ChangeStateCallback.Call(e)
 	}
 }

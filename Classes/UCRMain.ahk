@@ -842,15 +842,17 @@ Class UCRMain extends _UCRBase {
 		;	hk.value := bo
 		;} else {
 			;if (this._InputHandler.IsBindable(hk, bo)){
-			if (hk.__value.IOClass == cls){
+			if (hk.__value.IOClass == cls){ ;*[UCR]
 				tmp := hk.__value.clone()
 				for k, v in bo {
 					tmp[k] := v
 				}
 				hk.value := tmp
 			} else {
-				hk.value._Delete()
-				hk.value := new %cls%(bo, hk)
+				if (hk.__value != 0)
+					hk.__value._Delete()
+				outputdebug % "UCR| Creating new class " cls " for GuiControl " hk.id " deviceid: " bo.deviceid
+				hk.value := new %cls%(hk, bo)
 			}
 			this._InputHandler.SetButtonBinding(hk)
 			;}
