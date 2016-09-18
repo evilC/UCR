@@ -1,12 +1,23 @@
 Class _InputThread {
-	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0}
+	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0, AHK_Joy_Hats: 0}
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
 		
+		names := ""
+		i := 0
 		for name, state in this.IOClasses {
+			if (i)
+				names .= ", "
+			names .= name
 			call:=this.base[name]
 			this.IOClasses[name] := new call(this)
+			i++
+		}
+		if (i){
+			OutputDebug % "UCR| Input Thread loaded IOClasses: " names
+		} else {
+			OutputDebug % "UCR| Input Thread WARNING! Loaded No IOClasses!"
 		}
 		;msgbox new
 	}
@@ -197,6 +208,17 @@ Class _InputThread {
 
 		BuildHotkeyString(bo){
 			return bo.Deviceid "Joy" bo.Binding[1]
+		}
+	}
+	
+	class AHK_Joy_Hats {
+		
+		__New(parent){
+			this.ParentThread := parent
+		}
+		
+		UpdateBinding(ControlGUID, bo){ ;*[UCR]
+			OutputDebug % "UCR| Hat Update Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 		}
 	}
 }
