@@ -19,37 +19,6 @@ class AHK_KBM_Common extends _BindObject {
 		return str
 	}
 	
-	/*
-	; Builds an AHK hotkey string (eg ~^a) from a BindObject
-	BuildHotkeyString(){
-		bo := this.Binding
-		if (!bo.Length())
-			return ""
-		str := ""
-		if (this.BindOptions.Wild)
-			str .= "*"
-		if (!this.BindOptions.Block)
-			str .= "~"
-		max := bo.Length()
-		Loop % max {
-			key := bo[A_Index]
-			if (A_Index = max){
-				islast := 1
-				nextkey := 0
-			} else {
-				islast := 0
-				nextkey := bo[A_Index+1]
-			}
-			if (this.IsModifier(key) && (max > A_Index)){
-				str .= this.RenderModifier(key)
-			} else {
-				str .= this.BuildKeyName(key)
-			}
-		}
-		return str
-	}
-	*/
-	
 	; Builds the AHK key name
 	BuildKeyName(code){
 		static replacements := {33: "PgUp", 34: "PgDn", 35: "End", 36: "Home", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 45: "Insert", 46: "Delete"}
@@ -170,5 +139,15 @@ class AHK_Joy_Axes extends _BindObject {
 		}
 		msgbox % o
 		;UCR._RequestBinding(this.ParentControl)
+	}
+}
+
+class AHK_Joy_Hats extends _BindObject {
+	static IOClass := "AHK_Joy_Hats"
+	static IsInitialized := 1
+	
+	; Builds a human-readable form of the BindObject
+	BuildHumanReadable(){
+		return "Blah"
 	}
 }

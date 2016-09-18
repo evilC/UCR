@@ -102,10 +102,13 @@ class _BindModeHandler {
 			}
 				
 			; Simulate BindMode Thread passing back input type that generated result
-			if (bindObj.Type == 1){
+			if (bindObj.Type == 1){ ;*[UCR]
 				t := "AHK_KBM_Input"
-			} else {
+			} else if (bindObj.Type == 2) {
 				t := "AHK_Joy_Buttons"
+				ret.DeviceID := BindObj.buttons[max].type
+			} else if (bindObj.Type == 3) {
+				t := "AHK_Joy_Hats"
 				ret.DeviceID := BindObj.buttons[max].type
 			}
 			; Resolve input type to binding type
