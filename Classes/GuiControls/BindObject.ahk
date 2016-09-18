@@ -21,7 +21,9 @@ class _BindObject {
 					; Normally a single element, but for KBM could be up to 4 modifiers plus a key/button
 	BindOptions := {}	; Options for Binding - eg wild / block for KBM
 
-	__New(obj){
+	__New(parent, obj){
+		this.parent := parent
+		OutputDebug % "UCR| New BindObject - " this.parent.id
 		this._Deserialize(obj)
 	}
 	
@@ -56,13 +58,19 @@ class AHK_KBM_Input extends _BindObject {
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
 	UpdateBinding(){
-		if (this._CurrentBinding != 0){ ;*[UCR]
+		if (this._CurrentBinding != 0){
 			this.RemoveHotkey()
 		}
-		fn := this.KeyPressed.Bind(this)
 		keyname := this.BuildHotkeyString()
-		hotkey, % keyname, % fn
-		this._CurrentBinding := keyname
+		if (keyname){
+			try {
+				fn := this.KeyEvent.Bind(this, 1)
+				hotkey, % keyname, % fn
+				fn := this.KeyEvent.Bind(this, 0)
+				hotkey, % keyname " up", % fn
+				this._CurrentBinding := keyname
+			}
+		}
 	}
 	
 	RemoveHotkey(){
@@ -77,8 +85,9 @@ class AHK_KBM_Input extends _BindObject {
 		this._CurrentBinding := 0
 	}
 	
-	KeyPressed(){
-		msgbox Hotkey pressed
+	KeyEvent(e){
+		this.parent.ChangeStateCallback.Call(e)
+		;msgbox % "Hotkey pressed - " this.parent.Parentplugin.id
 	}
 
 	; Builds a human-readable form of the BindObject

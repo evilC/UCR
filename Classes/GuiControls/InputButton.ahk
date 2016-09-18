@@ -144,7 +144,7 @@ class _InputButton extends _BannerMenu {
 		; Trigger _value setter to set gui state but not fire change event
 		;this._value := new _BindObject(obj)
 		cls := obj.IOClass
-		this._value := new %cls%(obj)
+		this._value := new %cls%(this, obj)
 		; Register hotkey on load
 		;UCR._InputHandler.SetButtonBinding(this)
 	}

@@ -109,7 +109,7 @@ class _BindModeHandler {
 				ret.DeviceID := BindObj.buttons[max].type
 			}
 			
-			this._Callback.(this._OriginalHotkey, ret, t) ;*[UCR]
+			this._Callback.(this._OriginalHotkey, ret, t)
 			
 			return
 		} else {

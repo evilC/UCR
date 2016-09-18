@@ -726,6 +726,7 @@ Class UCRMain extends _UCRBase {
 		FileReplace(JSON.Dump(obj, ,true), SettingsFile)
 		this._SavingToDisk := 0
 	}
+	
 	; If SettingsVersion changes, this handles converting the INI file to the new format
 	_UpdateSettings(obj){
 		if (obj.SettingsVersion = "0.0.1"){
@@ -849,7 +850,7 @@ Class UCRMain extends _UCRBase {
 				hk.value := tmp
 			} else {
 				hk.value._Delete()
-				hk.value := new %cls%(bo)
+				hk.value := new %cls%(bo, hk)
 			}
 			this._InputHandler.SetButtonBinding(hk)
 			;}
