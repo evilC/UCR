@@ -5,8 +5,8 @@ Class _InputThread {
 		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
 		
 		for name, state in this.IOClasses {
-			cls := name "_BindThread"
-			this.IOClasses[name] := new %cls%(this)
+			call:=this.base[name]
+			this.IOClasses[name] := new call(this)
 		}
 		;msgbox new
 	}
@@ -29,9 +29,10 @@ Class _InputThread {
 		}
 		*/
 	}
-}
+	
 
-	class AHK_KBM_Input_BindThread {
+
+	class AHK_KBM_Input {
 		_AHKBindings := {}
 		
 		__New(parent){
@@ -143,7 +144,7 @@ Class _InputThread {
 		; ================= END MOVE TO INCLUDE ======================
 	}
 	
-	class AHK_Joy_Buttons_BindThread {
+	class AHK_Joy_Buttons {
 		__New(parent){
 			this.ParentThread := parent
 		}
@@ -198,3 +199,4 @@ Class _InputThread {
 			return bo.Deviceid "Joy" bo.Binding[1]
 		}
 	}
+}
