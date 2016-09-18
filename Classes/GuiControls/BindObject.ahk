@@ -112,22 +112,39 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	}
 	
 	AddMenuItems(){
-		this.ParentControl.AddMenuItem("AHK_KBM_Output", "AHK_KBM_Output", this.ChangedValue.Bind(this, 2))
+		this.ParentControl.AddMenuItem("Select Keyboard / Mouse Binding...", "AHK_KBM_Output", this._ChangedValue.Bind(this, 2))
 	}
 	
-	ChangedValue(val){
-		msgbox AHK_KBM_Output
+	_ChangedValue(val){
+		;msgbox AHK_KBM_Output
+		UCR._RequestBinding(this.ParentControl)
 	}
 }
 
 class vJoy_Output extends vGen_Output {
 	IOClass := "AHK_vJoy_Output"
 	
+	_JoyMenus := []
+	
 	AddMenuItems(){
-		this.ParentControl.AddMenuItem("vJoy_Output", "vJoy_Output", this.ChangedValue.Bind(this, 2))
+		menu := this.ParentControl.AddSubMenu("vJoy Stick", "vJoyStick")
+		Loop 8 {
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
+		}
+		
+		chunksize := 16
+		Loop % round(128 / chunksize) {
+			offset := (A_Index-1) * chunksize
+			menu := this.ParentControl.AddSubMenu("vJoy Buttons " offset + 1 "-" offset + chunksize, "vJoyBtns" A_Index)
+			this._JoyMenus.Push(menu)
+			Loop % chunksize {
+				btn := A_Index + offset
+					menu.AddMenuItem(btn, btn, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
+			}
+		}
 	}
 	
-	ChangedValue(val){
+	_ChangedValue(val){
 		msgbox vJoy_Output
 	}
 
@@ -136,11 +153,23 @@ class vJoy_Output extends vGen_Output {
 class vXBox_Output extends vGen_Output {
 	IOClass := "AHK_vXBox_Output"
 	
+	_JoyMenus := []
+	_ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back","Start", "LS", "RS"]
 	AddMenuItems(){
-		this.ParentControl.AddMenuItem("vXBox_Output", "vXBox_Output", this.ChangedValue.Bind(this, 2))
+		menu := this.ParentControl.AddSubMenu("vXBox Stick", "vXBoxStick")
+		Loop 4 {
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
+		}
+		
+		menu := this.ParentControl.AddSubMenu("vXBox Buttons", "vXBoxButtons")
+		this._JoyMenus.Push(menu)
+		Loop 10 {
+			menu.AddMenuItem(this._ButtonNames[A_Index], A_Index, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
+		}
+
 	}
 	
-	ChangedValue(val){
+	_ChangedValue(val){
 		msgbox vXBox_Output
 	}
 
