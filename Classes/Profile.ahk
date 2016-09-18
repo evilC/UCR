@@ -116,6 +116,11 @@ Class _Profile {
 		this._SetDeltaBinding := 0
 	}
 	
+	; Delete requested
+	_Delete(){
+		; ToDo: Delete child plugins
+	}
+	
 	__Delete(){
 		Gui, % this.hwnd ":Destroy"
 	}

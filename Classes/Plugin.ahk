@@ -81,9 +81,15 @@ Class _Plugin {
 		this.ParentProfile := parent
 		this.ID := id
 		this.Name := name
+		UCR._RegisterPlugin(this)
 		this._CreateGui()
 		this.Init()
 		this._ParentGuis()
+	}
+	
+	_Delete(){
+		; delete plugin requested
+		UCR._RegisterPlugin(this, 1)
 	}
 	
 	__Delete(){
