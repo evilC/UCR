@@ -11,7 +11,7 @@ Class _InputThread {
 				names .= ", "
 			names .= name
 			call:=this.base[name]
-			this.IOClasses[name] := new call(this)
+			this.IOClasses[name] := new call(this.Callback)
 			i++
 		}
 		if (i){
@@ -30,8 +30,8 @@ Class _InputThread {
 	class AHK_KBM_Input {
 		_AHKBindings := {}
 		
-		__New(parent){
-			this.ParentThread := parent
+		__New(callback){
+			this.callback := callback
 		}
 		
 		/*
@@ -72,7 +72,7 @@ Class _InputThread {
 		KeyEvent(ControlGUID, e){
 			OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
-			this.ParentThread.Callback.Call(ControlGUID, e)
+			this.Callback.Call(ControlGUID, e)
 		}
 
 		; Builds an AHK hotkey string (eg ~^a) from a BindObject
@@ -135,8 +135,8 @@ Class _InputThread {
 	}
 	
 	class AHK_Joy_Buttons {
-		__New(parent){
-			this.ParentThread := parent
+		__New(Callback){
+			this.Callback := Callback
 		}
 		
 		UpdateBinding(ControlGUID, bo){
@@ -182,7 +182,7 @@ Class _InputThread {
 			OutputDebug % "UCR| AHK_Joy_Buttons Key event for GuiControl " ControlGUID
 			;this.ParentControl.ChangeStateCallback.Call(e)
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
-			this.ParentThread.Callback.Call(ControlGUID, e)
+			this.Callback.Call(ControlGUID, e)
 		}
 
 		BuildHotkeyString(bo){
@@ -193,8 +193,8 @@ Class _InputThread {
 	class AHK_Joy_Axes {
 		StickBindings := {}
 		
-		__New(parent){
-			this.ParentThread := parent
+		__New(Callback){
+			this.Callback := Callback
 			
 			fn := this.StickWatcher.Bind(this)
 			this.StickWatcherFn := fn
@@ -226,8 +226,8 @@ Class _InputThread {
 		; Order is U, R, D, L
 		static PovMap := {-1: [0,0,0,0], 1: [1,0,0,0], 2: [1,1,0,0] , 3: [0,1,0,0], 4: [0,1,1,0], 5: [0,0,1,0], 6: [0,0,1,1], 7: [0,0,0,1], 8: [1,0,0,1]}
 		
-		__New(parent){
-			this.ParentThread := parent
+		__New(Callback){
+			this.Callback := Callback
 			
 			fn := this.HatWatcher.Bind(this)
 			this.HatWatcherFn := fn
@@ -285,7 +285,7 @@ Class _InputThread {
 						obj.state := new_state
 						OutputDebug % "UCR| AHK_Joy_Hats Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
 						; Use the thread-safe object to tell the main thread that the hat direction changed state
-						this.ParentThread.Callback.Call(ControlGUID, new_state)
+						this.Callback.Call(ControlGUID, new_state)
 					}
 				}
 			}

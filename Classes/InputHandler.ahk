@@ -9,6 +9,7 @@ Class _InputHandler {
 		
 	}
 	
+	
 	; Set a Button Binding
 	SetButtonBinding(BtnObj, delete := 0){
 		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?

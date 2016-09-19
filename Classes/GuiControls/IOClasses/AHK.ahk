@@ -113,12 +113,14 @@ class AHK_Joy_Axes extends _BindObject {
 	_ChangedValue(o){
 		if (o < 9){
 			; Stick ID
+			;this.DeviceID := o
 		} else if (o > 100 && o < 107){
 			; Axis ID
 			o -= 100
-			
+			;this.Binding[1] := o
 		}
-		msgbox % o
+		;msgbox % o
+		;if (this.DeviceID && this.Binding[1])
 		;UCR._RequestBinding(this.ParentControl)
 	}
 }
