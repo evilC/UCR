@@ -210,16 +210,6 @@ Class _InputThread {
 		__New(parent){
 			this.ParentThread := parent
 			
-			; 8 Sticks, with an object for each to hold data
-			Loop 8 {
-				obj := []
-				Loop 4 {
-					obj.push([])
-				}
-				this.HatMappings[A_Index] := obj
-			}
-				
-			
 			fn := this.HatWatcher.Bind(this)
 			this.HatWatcherFn := fn
 		}
