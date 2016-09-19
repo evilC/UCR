@@ -27,6 +27,7 @@ Class _InputThread {
 		this.IOClasses[j.IOClass].UpdateBinding(ControlGUID, j)
 	}
 	
+	; Listens for Keyboard and Mouse input using the AHK Hotkey command
 	class AHK_KBM_Input {
 		_AHKBindings := {}
 		
@@ -70,7 +71,7 @@ Class _InputThread {
 		}
 		
 		KeyEvent(ControlGUID, e){
-			OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID
+			;OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
 			this.Callback.Call(ControlGUID, e)
 		}
@@ -134,9 +135,16 @@ Class _InputThread {
 		; ================= END MOVE TO INCLUDE ======================
 	}
 	
+	; Listens for Joystick Button input using AHK's Hotkey command
+	; Joystick button Hotkeys in AHK immediately fire the up event after the down event...
+	; ... so up events are emulated up using AHK's GetKeyState() function
 	class AHK_Joy_Buttons {
+		HeldButtons := {}
+		ButtonTimerRunning := 0
+		
 		__New(Callback){
 			this.Callback := Callback
+			this.ButtonWatcherFn := this.ButtonWatcher.Bind(this)
 		}
 		
 		UpdateBinding(ControlGUID, bo){
@@ -158,7 +166,7 @@ Class _InputThread {
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
-				OutputDebug % "UCR| AHK_Joy_Buttons Removing hotkey " keyname " for ControlGUID " ControlGUID
+				;OutputDebug % "UCR| AHK_Joy_Buttons Removing hotkey " keyname " for ControlGUID " ControlGUID
 				try{
 					hotkey, % keyname, UCR_DUMMY_LABEL
 				}
@@ -179,17 +187,46 @@ Class _InputThread {
 		KeyEvent(ControlGUID, e){
 			; ToDo: Parent will not exist in thread!
 			
-			OutputDebug % "UCR| AHK_Joy_Buttons Key event for GuiControl " ControlGUID
-			;this.ParentControl.ChangeStateCallback.Call(e)
-			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
+			;OutputDebug % "UCR| AHK_Joy_Buttons Key event " e " for GuiControl " ControlGUID
 			this.Callback.Call(ControlGUID, e)
+			
+			this.HeldButtons[this._AHKBindings[ControlGUID]] := ControlGUID
+			if (!this.ButtonTimerRunning){
+				this.ButtonTimerRunning := 1
+				fn := this.ButtonWatcherFn
+				SetTimer, % fn, 10
+				;OutputDebug % "UCR| AHK_Joy_Buttons Starting ButtonWatcher " ControlGUID
+			}
 		}
-
+		
+		ButtonWatcher(){
+			for bindstring, ControlGUID in this.HeldButtons {
+				if (!GetKeyState(bindstring)){
+					this.HeldButtons.Delete(bindstring)
+					;OutputDebug % "UCR| AHK_Joy_Buttons Key event 0 for GuiControl " ControlGUID
+					this.Callback.Call(ControlGUID, 0)
+					if (this.IsEmptyAssoc(this.HeldButtons)){
+						this.ButtonTimerRunning := 0
+						fn := this.ButtonWatcherFn
+						SetTimer, % fn, Off
+						;OutputDebug % "UCR| AHK_Joy_Buttons Stopping ButtonWatcher " ControlGUID
+						return
+					}
+				}
+			}
+		}
+		
 		BuildHotkeyString(bo){
 			return bo.Deviceid "Joy" bo.Binding[1]
 		}
+		
+		; Is an associative array empty?
+		IsEmptyAssoc(assoc){
+			return !assoc._NewEnum()[k, v]
+		}
 	}
 
+	; Listens for Joystick Axis input using AHK's GetKeyState() function
 	class AHK_Joy_Axes {
 		StickBindings := {}
 		
@@ -209,6 +246,7 @@ Class _InputThread {
 		}
 	}
 
+	; Listens for Joystick Hat input using AHK's GetKeyState() function
 	class AHK_Joy_Hats {
 		; Indexed by GetKeyState string (eg "1JoyPOV")
 		; The HatWatcher timer is active while this array has items.
@@ -229,8 +267,7 @@ Class _InputThread {
 		__New(Callback){
 			this.Callback := Callback
 			
-			fn := this.HatWatcher.Bind(this)
-			this.HatWatcherFn := fn
+			this.HatWatcherFn := this.HatWatcher.Bind(this)
 		}
 		
 		; Request from main thread to update binding
