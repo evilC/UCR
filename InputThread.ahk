@@ -27,8 +27,6 @@ Class _InputThread {
 		this.IOClasses[j.IOClass].UpdateBinding(ControlGUID, j)
 	}
 	
-
-
 	class AHK_KBM_Input {
 		_AHKBindings := {}
 		
@@ -193,12 +191,102 @@ Class _InputThread {
 	}
 	
 	class AHK_Joy_Hats {
+		; Indexed by GetKeyState string (eg "1JoyPOV")
+		; The HatWatcher timer is active while this array has items.
+		; Contains an array of objects whose keys are the GUIDs of GuiControls mapped to that POV
+		; Properties of those keys are the direction of the mapping and the state of the binding
+		HatBindings := {}
+		
+		; GUID-Indexed array of sticks + directions that each GUIControl is mapped to, plus it's current state
+		ControlMappings := {}
+		
+		; Is the Hat Watcher timer running?
+		HatTimerRunning := 0
+		
+		; Which cardinal directions are pressed for each of the 8 compass directions, plus centre
+		; Order is U, R, D, L
+		static PovMap := {-1: [0,0,0,0], 1: [1,0,0,0], 2: [1,1,0,0] , 3: [0,1,0,0], 4: [0,1,1,0], 5: [0,0,1,0], 6: [0,0,1,1], 7: [0,0,0,1], 8: [1,0,0,1]}
+		
 		__New(parent){
 			this.ParentThread := parent
+			
+			; 8 Sticks, with an object for each to hold data
+			Loop 8 {
+				obj := []
+				Loop 4 {
+					obj.push([])
+				}
+				this.HatMappings[A_Index] := obj
+			}
+				
+			
+			fn := this.HatWatcher.Bind(this)
+			this.HatWatcherFn := fn
 		}
 		
-		UpdateBinding(ControlGUID, bo){ ;*[UCR]
-			OutputDebug % "UCR| Hat Update Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
+		; Request from main thread to update binding
+		UpdateBinding(ControlGUID, bo){
+			OutputDebug % "UCR| " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
+			this._UpdateArrays(ControlGUID, bo)
+			t := this.HatTimerRunning, k := ObjHasKey(this.ControlMappings, ControlGUID)
+			fn := this.HatWatcherFn
+			if (t && !k){
+				OutputDebug % "UCR| Stopping Hat Watcher" ;*[UCR]
+				SetTimer, % fn, Off
+				this.HatTimerRunning := 0
+			} else if (!t && k){
+				OutputDebug % "UCR| Starting Hat Watcher"
+				this.HatTimerRunning := 1
+				SetTimer, % fn, 10
+			}
+		}
+		
+		; Updates the arrays which drive hat detection
+		_UpdateArrays(ControlGUID, bo := 0){
+			if (ObjHasKey(this.ControlMappings, ControlGUID)){
+				; GuiControl already has binding
+				bindstring := this.ControlMappings[ControlGUID].bindstring
+				this.HatBindings[bindstring].Delete(ControlGUID)
+				this.ControlMappings.Delete(ControlGUID)
+				if (this.IsEmptyAssoc(this.HatBindings[bindstring])){
+					this.HatBindings.Delete(bindstring)
+					;OutputDebug % "UCR| Removing Hat Bindstring " bindstring
+				}
+			}
+			if (bo != 0 && bo.Binding[1]){
+				; there is a new binding
+				bindstring := bo.DeviceID "JoyPOV"
+				if (!ObjHasKey(this.HatBindings, bindstring)){
+					this.HatBindings[bindstring] := {}
+					;OutputDebug % "UCR| Adding Hat Bindstring " bindstring
+				}
+				this.HatBindings[bindstring, ControlGUID] := {dir: bo.Binding[1], state: 0}
+				this.ControlMappings[ControlGUID] := {bindstring: bindstring}
+			}
+		}
+		
+		; Called on a timer when we are trying to detect hats
+		HatWatcher(){
+			for bindstring, bindings in this.HatBindings {
+				state := GetKeyState(bindstring)
+				state := (state = -1 ? -1 : round(state / 4500) + 1)
+				for ControlGUID, obj in bindings {
+					new_state := (this.PovMap[state, obj.dir] == 1)
+					if (obj.state != new_state){
+						obj.state := new_state
+						; Use the thread-safe object to tell the main thread that the hat direction changed state
+						this.ParentThread.Callback.Call(ControlGUID, new_state)
+					}
+				}
+			}
+		}
+		
+		; Is an associative array empty?
+		IsEmptyAssoc(assoc){
+			for k, v in assoc {
+				return 0
+			}
+			return 1
 		}
 	}
 }
