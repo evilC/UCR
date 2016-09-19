@@ -96,7 +96,12 @@ class _InputButton extends _BannerMenu {
 		}
 		this.SetCueBanner(Text)
 		*/
-		Text := this.__value.BuildHumanReadable()
+		if (this.__value.DeviceID){
+			Text := this.__value.BuildHumanReadable()
+		} else {
+			Text := this._DefaultBanner
+
+		}
 		this.SetCueBanner(Text)
 	}
 	
@@ -122,7 +127,7 @@ class _InputButton extends _BannerMenu {
 			} else if (o = 5){
 				; Clear Binding
 				;mod := {Buttons: []}
-				mod := {Binding: []}
+				mod := {Binding: [], DeviceID: 0}
 			} else {
 				; not one of the options from the list, user must have typed in box
 				return
