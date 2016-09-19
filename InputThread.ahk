@@ -1,5 +1,5 @@
 Class _InputThread {
-	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0, AHK_Joy_Hats: 0}
+	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0, AHK_Joy_Hats: 0, AHK_Joy_Axes: 0}
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
@@ -52,7 +52,7 @@ Class _InputThread {
 				hotkey, % keyname, % fn, On
 				fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				hotkey, % keyname " up", % fn, On
-				OutputDebug % "UCR| Added hotkey " keyname " for ControlGUID " ControlGUID
+				OutputDebug % "UCR| AHK_KBM_Input Added hotkey " keyname " for ControlGUID " ControlGUID
 				this._AHKBindings[ControlGUID] := keyname
 			}
 		}
@@ -60,7 +60,7 @@ Class _InputThread {
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
-				OutputDebug % "UCR| Removing hotkey " keyname " for ControlGUID " ControlGUID
+				OutputDebug % "UCR| AHK_KBM_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
 				hotkey, % keyname, UCR_DUMMY_LABEL
 				hotkey, % keyname, Off
 				hotkey, % keyname " up", UCR_DUMMY_LABEL
@@ -70,7 +70,7 @@ Class _InputThread {
 		}
 		
 		KeyEvent(ControlGUID, e){
-			OutputDebug % "UCR| INPUT THREAD - Key event for GuiControl " ControlGUID
+			OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
 			this.ParentThread.Callback.Call(ControlGUID, e)
 		}
@@ -149,7 +149,7 @@ Class _InputThread {
 				hotkey, % keyname, % fn, On
 				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				;hotkey, % keyname " up", % fn, On
-				OutputDebug % "UCR| Added hotkey " keyname " for ControlGUID " ControlGUID
+				OutputDebug % "UCR| AHK_Joy_Buttons Added hotkey " keyname " for ControlGUID " ControlGUID
 				;this._CurrentBinding := keyname
 				this._AHKBindings[ControlGUID] := keyname
 			}
@@ -158,7 +158,7 @@ Class _InputThread {
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
-				OutputDebug % "UCR| Removing hotkey " keyname " for ControlGUID " ControlGUID
+				OutputDebug % "UCR| AHK_Joy_Buttons Removing hotkey " keyname " for ControlGUID " ControlGUID
 				try{
 					hotkey, % keyname, UCR_DUMMY_LABEL
 				}
@@ -179,7 +179,7 @@ Class _InputThread {
 		KeyEvent(ControlGUID, e){
 			; ToDo: Parent will not exist in thread!
 			
-			OutputDebug % "UCR| INPUT THREAD - Key event for GuiControl " ControlGUID
+			OutputDebug % "UCR| AHK_Joy_Buttons Key event for GuiControl " ControlGUID
 			;this.ParentControl.ChangeStateCallback.Call(e)
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
 			this.ParentThread.Callback.Call(ControlGUID, e)
@@ -189,7 +189,26 @@ Class _InputThread {
 			return bo.Deviceid "Joy" bo.Binding[1]
 		}
 	}
-	
+
+	class AHK_Joy_Axes {
+		StickBindings := {}
+		
+		__New(parent){
+			this.ParentThread := parent
+			
+			fn := this.StickWatcher.Bind(this)
+			this.StickWatcherFn := fn
+		}
+		
+		UpdateBinding(ControlGUID, bo){
+			OutputDebug % "UCR| AHK_Joy_Axes " (bo.Binding[1] ? "Update" : "Remove" ) " Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
+		}
+		
+		StickWatcher(){
+			
+		}
+	}
+
 	class AHK_Joy_Hats {
 		; Indexed by GetKeyState string (eg "1JoyPOV")
 		; The HatWatcher timer is active while this array has items.
@@ -216,16 +235,16 @@ Class _InputThread {
 		
 		; Request from main thread to update binding
 		UpdateBinding(ControlGUID, bo){
-			OutputDebug % "UCR| " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
+			OutputDebug % "UCR| AHK_Joy_Hats " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 			this._UpdateArrays(ControlGUID, bo)
 			t := this.HatTimerRunning, k := ObjHasKey(this.ControlMappings, ControlGUID)
 			fn := this.HatWatcherFn
 			if (t && !k){
-				OutputDebug % "UCR| Stopping Hat Watcher" ;*[UCR]
+				OutputDebug % "UCR| AHK_Joy_Hats Stopping Hat Watcher" ;*[UCR]
 				SetTimer, % fn, Off
 				this.HatTimerRunning := 0
 			} else if (!t && k){
-				OutputDebug % "UCR| Starting Hat Watcher"
+				OutputDebug % "UCR| AHK_Joy_Hats Starting Hat Watcher"
 				this.HatTimerRunning := 1
 				SetTimer, % fn, 10
 			}
@@ -240,7 +259,7 @@ Class _InputThread {
 				this.ControlMappings.Delete(ControlGUID)
 				if (this.IsEmptyAssoc(this.HatBindings[bindstring])){
 					this.HatBindings.Delete(bindstring)
-					;OutputDebug % "UCR| Removing Hat Bindstring " bindstring
+					;OutputDebug % "UCR| AHK_Joy_Hats Removing Hat Bindstring " bindstring
 				}
 			}
 			if (bo != 0 && bo.Binding[1]){
@@ -248,7 +267,7 @@ Class _InputThread {
 				bindstring := bo.DeviceID "JoyPOV"
 				if (!ObjHasKey(this.HatBindings, bindstring)){
 					this.HatBindings[bindstring] := {}
-					;OutputDebug % "UCR| Adding Hat Bindstring " bindstring
+					;OutputDebug % "UCR| AHK_Joy_Hats Adding Hat Bindstring " bindstring
 				}
 				this.HatBindings[bindstring, ControlGUID] := {dir: bo.Binding[1], state: 0}
 				this.ControlMappings[ControlGUID] := {bindstring: bindstring}
@@ -264,6 +283,7 @@ Class _InputThread {
 					new_state := (this.PovMap[state, obj.dir] == 1)
 					if (obj.state != new_state){
 						obj.state := new_state
+						OutputDebug % "UCR| AHK_Joy_Hats Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
 						; Use the thread-safe object to tell the main thread that the hat direction changed state
 						this.ParentThread.Callback.Call(ControlGUID, new_state)
 					}
