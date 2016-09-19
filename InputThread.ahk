@@ -283,10 +283,11 @@ Class _InputThread {
 		
 		; Is an associative array empty?
 		IsEmptyAssoc(assoc){
-			for k, v in assoc {
-				return 0
-			}
-			return 1
+			return !assoc._NewEnum()[k, v]
+			;for k, v in assoc {
+			;	return 0
+			;}
+			;return 1
 		}
 	}
 }
