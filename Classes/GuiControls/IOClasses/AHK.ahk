@@ -81,21 +81,6 @@ class AHK_Joy_Buttons extends _BindObject {
 
 	_CurrentBinding := 0
 	
-	UpdateBinding(){
-		if (this._CurrentBinding != 0)
-			this.RemoveBinding()
-		fn := this.ButtonEvent.Bind(this, 1)
-		keyname := this.DeviceID "joy" this.Binding[1]
-		hotkey, % keyname, % fn, On
-		this._CurrentBinding := keyname
-	}
-	
-	RemoveBinding(){
-		hotkey, % this.DeviceID "joy" this.Binding[1], UCR_DUMMY_LABEL
-		hotkey, % this.DeviceID "joy" this.Binding[1], Off
-		this._CurrentBinding := 0
-	}
-	
 	_Delete(){
 		this.RemoveBinding()
 	}
