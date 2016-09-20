@@ -6,12 +6,16 @@ Class _InputThread {
 		
 		names := ""
 		i := 0
+		; Instantiate each of the IOClasses specified in the IOClasses array
 		for name, state in this.IOClasses {
+			; Instantiate an instance of a class that is a child class of this one. Thanks to HotkeyIt for this code!
+			; Replace each 0 in the array with an instance of the relevant class
+			call:=this.base[name]
+			this.IOClasses[name] := new call(this.Callback)
+			; debugging string
 			if (i)
 				names .= ", "
 			names .= name
-			call:=this.base[name]
-			this.IOClasses[name] := new call(this.Callback)
 			i++
 		}
 		if (i){
@@ -22,8 +26,10 @@ Class _InputThread {
 		;msgbox new
 	}
 	
+	; A request from the main thread to update a binding was received.
 	UpdateBinding(ControlGUID, j){
 		OutputDebug % "UCR| _InputThread.UpdateBinding - cls: " j.IOClass
+		; Direct the request to the appropriate IOClass that handles it
 		this.IOClasses[j.IOClass].UpdateBinding(ControlGUID, j)
 	}
 	
