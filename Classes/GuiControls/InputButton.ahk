@@ -74,10 +74,9 @@ class _InputButton extends _BannerMenu {
 
 	_BuildMenu(){
 		this.AddMenuItem("Select Binding", "SelectBinding", this._ChangedValue.Bind(this, 1))
-		wild := this.AddMenuItem("Wild", "Wild", this._ChangedValue.Bind(this, 2))
-		block := this.AddMenuItem("Block", "Block", this._ChangedValue.Bind(this, 3))
-		suppress := this.AddMenuItem("Suppress Repeats", "SuppressRepeats", this._ChangedValue.Bind(this, 4))
-		this._KeyOnlyOptions := {wild: wild, block: block, suppress: suppress}
+		for i, cls in this._BindObjects {
+			cls.AddMenuItems()
+		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 5))
 	}
 	

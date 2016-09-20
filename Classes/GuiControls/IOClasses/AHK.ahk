@@ -55,9 +55,30 @@ class AHK_KBM_Common extends _BindObject {
 class AHK_KBM_Input extends AHK_KBM_Common {
 	static IOClass := "AHK_KBM_Input"
 	static OutputType := "AHK_KBM_Output"
-	
+	BindOptions := {wild: 0, block: 0, suppress: 0}
 	_CurrentBinding := 0
 
+	AddMenuItems(){
+		wild := this.ParentControl.AddMenuItem("Wild", "Wild", this._ChangedValue.Bind(this, 1))
+		block := this.ParentControl.AddMenuItem("Block", "Block", this._ChangedValue.Bind(this, 2))
+		suppress := this.ParentControl.AddMenuItem("Suppress Repeats", "SuppressRepeats", this._ChangedValue.Bind(this, 3))
+		this._KeyOnlyOptions := {wild: wild, block: block, suppress: suppress}
+	}
+	
+	_ChangedValue(o){
+		if (o == 1){
+			; Wild
+			this.BindOptions.wild := !this.BindOptions.wild
+		} else if (o == 2){
+			; Block
+			this.BindOptions.block := !this.BindOptions.block
+		} else if (o == 3){
+			; Suppress
+			this.BindOptions.suppress := !this.BindOptions.suppress
+		}
+		this.ParentControl.value := this ; trigger setter ;*[UCR]
+	}
+	
 	_Delete(){
 		this.RemoveBinding()
 	}
