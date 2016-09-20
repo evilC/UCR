@@ -794,21 +794,12 @@ Class UCRMain extends _UCRBase {
 			;}
 		}
 	}
-	
-	_RequestBinding(ctrl, bo){
-		outputdebug % "UCR| _RequestBinding"
-		if (this._CurrentState == this._State.Normal){
-			this._CurrentState := this._State.InputBind
-			; De-Activate all active profiles, to make sure they do not interfere with the bind process
-			this._DeActivateProfiles()
-			this._BindModeHandler.StartBindMode(bo, this._BindModeEnded.Bind(this))
-			;bo := new AHK_KBM_Input()
-			;bo.Binding.push(33)
-			;this._BindModeEnded(hk, bo)
-			return 1
-		}
-	}
 	*/
+	
+	_RequestBinding(ctrl){
+		outputdebug % "UCR| _RequestBinding"
+		ctrl.ParentPlugin.ParentProfile._InputThread.UpdateBinding(ctrl.id, ctrl._Serialize()) ;*[UCR]
+	}
 	
 	RequestBindMode(IOClassMappings, callback){
 		if (this._CurrentState == this._State.Normal){

@@ -119,8 +119,10 @@ class _InputButton extends _BannerMenu {
 	_BindModeEnded(bo, cls){
 		this.MergeObject(this._BindObjects[cls], bo)
 		this.value := this._BindObjects[cls]
+		UCR._RequestBinding(this)
 	}
 	
+	/*
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RefreshBinding(){
@@ -130,6 +132,7 @@ class _InputButton extends _BannerMenu {
 
 		;UCR._InputHandler.SetButtonBinding(this)
 	}
+	*/
 	
 	SetBinding(bo := 0){
 		this.value := bo
