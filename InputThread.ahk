@@ -3,6 +3,7 @@
 
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
+	DetectionState := 0
 	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0, AHK_Joy_Hats: 0, AHK_Joy_Axes: 0}
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
@@ -30,19 +31,31 @@ Class _InputThread {
 		;msgbox new
 	}
 	
-	; A request from the main thread to update a binding was received.
+	; A request was received from the main thread to update a binding.
 	UpdateBinding(ControlGUID, j){
 		OutputDebug % "UCR| _InputThread.UpdateBinding - cls: " j.IOClass
 		; Direct the request to the appropriate IOClass that handles it
 		this.IOClasses[j.IOClass].UpdateBinding(ControlGUID, j)
 	}
 	
+	; A request was received from the main thread to set the Dection state
+	SetDetectionState(state){
+		if (state == this.DetectionState)
+			return
+		for name, cls in this.IOClasses {
+			cls.SetDetectionState(state)
+		}
+		DetectionState := state
+	}
+	
 	; Listens for Keyboard and Mouse input using the AHK Hotkey command
 	class AHK_KBM_Input {
+		DetectionState := 0
 		_AHKBindings := {}
 		
 		__New(callback){
 			this.callback := callback
+			Suspend, On	; Start with detection off, even if we are passed bindings
 		}
 		
 		/*
@@ -69,7 +82,10 @@ Class _InputThread {
 		}
 		
 		SetDetectionState(state){
-			
+			str := state ? "Off" : "On"
+			OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Suspend " str
+			Suspend, % str
+			this.DetectionState := state
 		}
 		
 		RemoveBinding(ControlGUID){
@@ -177,6 +193,10 @@ Class _InputThread {
 			}
 		}
 		
+		SetDetectionState(state){
+			
+		}
+		
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
@@ -255,6 +275,10 @@ Class _InputThread {
 			OutputDebug % "UCR| AHK_Joy_Axes " (bo.Binding[1] ? "Update" : "Remove" ) " Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
 		}
 		
+		SetDetectionState(state){
+			
+		}
+		
 		StickWatcher(){
 			
 		}
@@ -299,6 +323,10 @@ Class _InputThread {
 				this.HatTimerRunning := 1
 				SetTimer, % fn, 10
 			}
+		}
+		
+		SetDetectionState(state){
+			
 		}
 		
 		; Updates the arrays which drive hat detection

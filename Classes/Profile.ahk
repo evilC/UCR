@@ -150,7 +150,9 @@ Class _Profile {
 			UCR._SetProfileInputThreadState(this.id,1)
 		}
 		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
-		this._SetHotkeyState(1)
+		;this._SetHotkeyState(1)
+		this._InputThread.SetDetectionState(1)
+
 		this._HotkeysActive := 1
 		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
@@ -166,8 +168,10 @@ Class _Profile {
 		if (!this._HotkeysActive)
 			return
 		OutputDebug % "UCR| DeActivating input thread for profile # " this.id " (" this.name " )"
-		if (this._InputThread)
-			this._SetHotkeyState(0)
+		if (this._InputThread){
+			;this._SetHotkeyState(0)
+			this._InputThread.SetDetectionState(0)
+		}
 		this._HotkeysActive := 0
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
