@@ -1,6 +1,6 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain extends _UCRBase {
-	Version := "0.0.18"				; The version of the main application
+	Version := "0.1.0"				; The version of the main application
 	SettingsVersion := "0.0.5"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
