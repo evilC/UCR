@@ -92,7 +92,7 @@ class _InputAxis extends _BannerMenu {
 	
 	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
-	_RequestBinding(){
+	_RefreshBinding(){
 		UCR.RequestAxisBinding(this)
 	}
 	

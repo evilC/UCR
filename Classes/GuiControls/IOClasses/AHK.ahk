@@ -68,15 +68,15 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	_ChangedValue(o){
 		if (o == 1){
 			; Wild
-			this.BindOptions.wild := !this.BindOptions.wild
+			mod := {BindOptions: {wild: !this.BindOptions.wild}}
 		} else if (o == 2){
 			; Block
-			this.BindOptions.block := !this.BindOptions.block
+			mod := {BindOptions: {block: !this.BindOptions.block}}
 		} else if (o == 3){
 			; Suppress
-			this.BindOptions.suppress := !this.BindOptions.suppress
+			mod := {BindOptions: {suppress: !this.BindOptions.suppress}}
 		}
-		this.ParentControl.value := this ; trigger setter ;*[UCR]
+		;UCR._RequestBinding(this, mod)
 	}
 	
 	_Delete(){
@@ -102,7 +102,7 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	}
 	
 	_ChangedValue(val){
-		UCR._RequestBinding(this.ParentControl)
+		;UCR._RequestBinding(this.ParentControl)
 	}
 }
 

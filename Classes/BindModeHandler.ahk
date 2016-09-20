@@ -28,6 +28,7 @@ class _BindModeHandler {
 		Gui, Add, Text, Center, Press the button(s) you wish to bind to this control.`n`nBind Mode will end when you release a key.
 	}
 	
+	/*
 	StartBindMode(hk, callback){
 		this._callback := callback
 		this._OriginalHotkey := hk
@@ -40,7 +41,25 @@ class _BindModeHandler {
 		
 		; When detecting an output, tell the Bind Handler to ignore physical joysticks...
 		; ... as output cannot be "sent" to physical sticks
-		this.SetHotkeyState(1, !hk._IsOutput)
+		;this.SetHotkeyState(1, !hk._IsOutput)
+		this.SetHotkeyState(1, 1)
+	}
+	*/
+	;IOClassMappings, this._BindModeEnded.Bind(this, callback)
+	StartBindMode(IOClassMappings, callback){
+		this._callback := callback
+		
+		this.SelectedBinding := 0
+		this.BindMode := 1
+		this.EndKey := 0
+		this.HeldModifiers := {}
+		this.ModifierCount := 0
+		this.IOClassMappings := IOClassMappings
+		
+		; When detecting an output, tell the Bind Handler to ignore physical joysticks...
+		; ... as output cannot be "sent" to physical sticks
+		;this.SetHotkeyState(1, !hk._IsOutput)
+		this.SetHotkeyState(1, 1)
 	}
 	
 	; Turns on or off the hotkeys
@@ -112,8 +131,11 @@ class _BindModeHandler {
 				ret.DeviceID := BindObj.buttons[max].DeviceID
 			}
 			; Resolve input type to binding type
-			t := this._OriginalHotkey._BindTypes[t]
-			this._Callback.(this._OriginalHotkey, ret, t)
+			; {AHK_KBM_Input: "AHK_KBM_Input", AHK_Joy_Buttons: "AHK_Joy_Buttons", AHK_Joy_Hats: "AHK_Joy_Hats"}
+			;t := this._OriginalHotkey._BindTypes[t]
+			t := this.IOClassMappings[t]
+			;this._Callback.(this._OriginalHotkey, ret, t)
+			this._Callback.Call(ret, t)
 			
 			return
 		} else {

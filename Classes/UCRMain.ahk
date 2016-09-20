@@ -767,10 +767,11 @@ Class UCRMain extends _UCRBase {
 		return 0
 	}
 	
+	/*
 	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
 	;  or changed an option such as "Wild" in an InputButton
 	_RequestBinding(hk, delta := 0){
-		if (delta = 0){
+		if (delta = 0){ ;*[UCR]
 			; Change Buttons requested - start Bind Mode.
 			if (this._CurrentState == this._State.Normal){
 				this._CurrentState := this._State.InputBind
@@ -785,34 +786,68 @@ Class UCRMain extends _UCRBase {
 			return 0
 		} else {
 			; Change option (eg wild, passthrough) requested
-			bo := hk.value.clone()
-			for k, v in delta {
-				bo[k] := v
-			}
+			this.MergeObject(hk, delta)
+			msgbox % bo.BindOptions.wild
 			;if (this._InputHandler.IsBindable(hk, bo)){
-				hk.value := bo
+				;hk.value := bo
 				this._InputHandler.SetButtonBinding(hk)
 			;}
 		}
 	}
 	
+	_RequestBinding(ctrl, bo){
+		outputdebug % "UCR| _RequestBinding"
+		if (this._CurrentState == this._State.Normal){
+			this._CurrentState := this._State.InputBind
+			; De-Activate all active profiles, to make sure they do not interfere with the bind process
+			this._DeActivateProfiles()
+			this._BindModeHandler.StartBindMode(bo, this._BindModeEnded.Bind(this))
+			;bo := new AHK_KBM_Input()
+			;bo.Binding.push(33)
+			;this._BindModeEnded(hk, bo)
+			return 1
+		}
+	}
+	*/
+	
+	RequestBindMode(IOClassMappings, callback){
+		if (this._CurrentState == this._State.Normal){
+			this._CurrentState := this._State.InputBind
+			; De-Activate all active profiles, to make sure they do not interfere with the bind process
+			this._DeActivateProfiles()
+			this._BindModeHandler.StartBindMode(IOClassMappings, this._BindModeEnded.Bind(this, callback))
+			;bo := new AHK_KBM_Input()
+			;bo.Binding.push(33)
+			;this._BindModeEnded(hk, bo)
+			return 1
+		}
+	}
+	
+	_BindModeEnded(callback, bo, cls){
+		callback.Call(bo, cls)
+	}
+	
+	/*
 	; Bind Mode Ended.
 	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
+	; hk = old bindobject
+	; bo = new bindobject
+	; cls = class of input
 	_BindModeEnded(hk, bo, cls){
+		hk.SetBinding(bo)
+		return
 		;OutputDebug % "UCR| Bind Mode Ended: " bo.Buttons[1].code
 		;if (hk._IsOutput){
 		;	hk.value := bo
 		;} else {
 			;if (this._InputHandler.IsBindable(hk, bo)){
-			/*
-			if (hk.__value.IOClass == cls){
-				tmp := hk.__value.clone()
-				for k, v in bo {
-					tmp[k] := v
-				}
-				hk.value := tmp
-			} else {
-			*/
+			;if (hk.__value.IOClass == cls){
+			;	tmp := hk.__value.clone()
+			;	for k, v in bo {
+			;		tmp[k] := v
+			;	}
+			;	hk.value := tmp
+			;} else {
 				if (hk.__value != 0){
 					;hk.__value._Delete()
 					hk.__value.RemoveBinding()
@@ -829,7 +864,7 @@ Class UCRMain extends _UCRBase {
 		this._ActivateProfiles()
 		this._CurrentState := this._State.Normal
 	}
-	
+	*/
 	; Request an axis binding.
 	RequestAxisBinding(axis){
 		this._InputHandler.SetAxisBinding(axis)
@@ -907,14 +942,13 @@ Class UCRMain extends _UCRBase {
 		msgbox % this.Libraries.vJoy.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
 	}
 	
-	MergeObject(base, patch){
+	MergeObject(src, patch){
 		for k, v in patch {
 			if (IsObject(v)){
-				this.MergeObject(base[k], v)
+				this.MergeObject(src[k], v)
 			} else {
-				base[k] := v
+				src[k] := v
 			}
-			
 		}
 	}
 

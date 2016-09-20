@@ -187,7 +187,7 @@ Class _OutputButton extends _InputButton {
 			; Option selected from list
 			if (o = 1){
 				; Bind
-				UCR._RequestBinding(this)
+				;UCR._RequestBinding(this)
 				return
 			} else if (o = 2){
 				; Clear Binding
@@ -196,7 +196,9 @@ Class _OutputButton extends _InputButton {
 				cls := this.value.IOClass
 				this.value._UnRegister()
 				this.value := 0
-			} else if (o > 100 && o < 109) {
+			}
+			/*
+			else if (o > 100 && o < 109) {
 				; Stick ID
 				o -= 100
 				reopen := 0
@@ -267,6 +269,7 @@ Class _OutputButton extends _InputButton {
 				UCR._RequestBinding(this, mod)
 				return
 			}
+			*/
 		}
 	}
 	
@@ -285,7 +288,7 @@ Class _OutputButton extends _InputButton {
 		this._value :=  this._BindObjects[cls]
 	}
 	
-	_RequestBinding(){
+	_RefreshBinding(){
 		; override base and do nothing
 	}
 	

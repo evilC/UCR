@@ -107,42 +107,32 @@ class _InputButton extends _BannerMenu {
 	; An option was selected from the list
 	_ChangedValue(o){
 		if (o){
-			;o := this._CurrentOptionMap[o]
-			
 			; Option selected from list
 			if (o = 1){
 				; Bind
-				UCR._RequestBinding(this)
-				return
-			} else if (o = 2){
-				; Wild
-				mod := {wild: !this.__value.wild}
-			} else if (o = 3){
-				; Block
-				mod := {block: !this.__value.block}
-			} else if (o = 4){
-				; Suppress
-				mod := {suppress: !this.__value.suppress}
-			} else if (o = 5){
-				; Clear Binding
-				;mod := {Buttons: []}
-				mod := {Binding: [], DeviceID: 0}
-			} else {
-				; not one of the options from the list, user must have typed in box
-				return
-			}
-			if (IsObject(mod)){
-				UCR._RequestBinding(this, mod)
+				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this))
 				return
 			}
 		}
 	}
 	
+	_BindModeEnded(bo, cls){
+		this.MergeObject(this._BindObjects[cls], bo)
+		this.value := this._BindObjects[cls]
+	}
+	
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
-	_RequestBinding(){
+	_RefreshBinding(){
 		OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
-		UCR._InputHandler.SetButtonBinding(this)
+		bo := this.__value._Serialize()
+		;UCR._RequestBinding(this, bo)
+
+		;UCR._InputHandler.SetButtonBinding(this)
+	}
+	
+	SetBinding(bo := 0){
+		this.value := bo
 	}
 	
 	_Serialize(){
@@ -157,4 +147,15 @@ class _InputButton extends _BannerMenu {
 		; Register hotkey on load
 		;UCR._InputHandler.SetButtonBinding(this)
 	}
+	
+	MergeObject(src, patch){
+		for k, v in patch {
+			if (IsObject(v)){
+				this.MergeObject(src[k], v)
+			} else {
+				src[k] := v
+			}
+		}
+	}
+
 }

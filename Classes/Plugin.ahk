@@ -170,12 +170,12 @@ Class _Plugin {
 		}
 	}
 	
-	; Call _RequestBinding on all child controls
-	_RequestBinding(){
+	; Call _RefreshBinding on all child controls
+	_RefreshBinding(){
 		Loop % this._SerializeList.length(){
 			key := this._SerializeList[A_Index]
 			for name, ctrl in this[key] {
-				ctrl._RequestBinding()
+				ctrl._RefreshBinding()
 			}
 		}
 	}
