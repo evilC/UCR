@@ -107,8 +107,8 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 }
 
 ; IOClass for AHK Joystick Button Input GuiControls
-class AHK_Joy_Buttons extends _BindObject {
-	static IOClass := "AHK_Joy_Buttons"
+class AHK_JoyBtn_Input extends _BindObject {
+	static IOClass := "AHK_JoyBtn_Input"
 	static IsInitialized := 1
 
 	_CurrentBinding := 0

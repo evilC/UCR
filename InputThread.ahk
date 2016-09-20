@@ -4,7 +4,7 @@
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
 	DetectionState := 0
-	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0, AHK_Joy_Hats: 0, AHK_Joy_Axes: 0}
+	IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_Joy_Hats: 0, AHK_Joy_Axes: 0}
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
@@ -16,7 +16,7 @@ Class _InputThread {
 			; Instantiate an instance of a class that is a child class of this one. Thanks to HotkeyIt for this code!
 			; Replace each 0 in the array with an instance of the relevant class
 			call:=this.base[name]
-			this.IOClasses[name] := new call(this.Callback)
+			this.IOClasses[name] := new call(this.Callback) ;*[UCR]
 			; debugging string
 			if (i)
 				names .= ", "
@@ -28,7 +28,6 @@ Class _InputThread {
 		} else {
 			OutputDebug % "UCR| Input Thread WARNING! Loaded No IOClasses!"
 		}
-		;msgbox new
 	}
 	
 	; A request was received from the main thread to update a binding.
@@ -82,9 +81,13 @@ Class _InputThread {
 		}
 		
 		SetDetectionState(state){
-			str := state ? "Off" : "On"
-			OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Suspend " str
-			Suspend, % str
+			; Are we already in the requested state?
+			; This code is rigged so that either AHK_KBM_Input or AHK_JoyBtn_Input or both will not clash...
+			; ... As long as all are turned on or off together, you won't get weird results.
+			if (A_IsSuspended == state){
+				OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkeys " (state ? "On" : "Off")
+				Suspend, % (state ? "Off" : "On")
+			}
 			this.DetectionState := state
 		}
 		
@@ -168,13 +171,14 @@ Class _InputThread {
 	; Listens for Joystick Button input using AHK's Hotkey command
 	; Joystick button Hotkeys in AHK immediately fire the up event after the down event...
 	; ... so up events are emulated up using AHK's GetKeyState() function
-	class AHK_Joy_Buttons {
+	class AHK_JoyBtn_Input {
 		HeldButtons := {}
 		ButtonTimerRunning := 0
 		
 		__New(Callback){
 			this.Callback := Callback
 			this.ButtonWatcherFn := this.ButtonWatcher.Bind(this)
+			Suspend, On	; Start with detection off, even if we are passed bindings
 		}
 		
 		UpdateBinding(ControlGUID, bo){
@@ -187,20 +191,26 @@ Class _InputThread {
 				hotkey, % keyname, % fn, On
 				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				;hotkey, % keyname " up", % fn, On
-				OutputDebug % "UCR| AHK_Joy_Buttons Added hotkey " keyname " for ControlGUID " ControlGUID
+				OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
 				;this._CurrentBinding := keyname
 				this._AHKBindings[ControlGUID] := keyname
 			}
 		}
 		
 		SetDetectionState(state){
-			
+			; Are we already in the requested state?
+			if (A_IsSuspended == state){
+				OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkeys " (state ? "On" : "Off")
+				Suspend, % (state ? "Off" : "On")
+			}
+			this.DetectionState := state
+
 		}
 		
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
-				OutputDebug % "UCR| AHK_Joy_Buttons Removing hotkey " keyname " for ControlGUID " ControlGUID
+				OutputDebug % "UCR| AHK_JoyBtn_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
 				try{
 					hotkey, % keyname, UCR_DUMMY_LABEL
 				}
@@ -221,7 +231,7 @@ Class _InputThread {
 		KeyEvent(ControlGUID, e){
 			; ToDo: Parent will not exist in thread!
 			
-			;OutputDebug % "UCR| AHK_Joy_Buttons Key event " e " for GuiControl " ControlGUID
+			;OutputDebug % "UCR| AHK_JoyBtn_Input Key event " e " for GuiControl " ControlGUID
 			this.Callback.Call(ControlGUID, e)
 			
 			this.HeldButtons[this._AHKBindings[ControlGUID]] := ControlGUID
@@ -229,7 +239,7 @@ Class _InputThread {
 				this.ButtonTimerRunning := 1
 				fn := this.ButtonWatcherFn
 				SetTimer, % fn, 10
-				;OutputDebug % "UCR| AHK_Joy_Buttons Starting ButtonWatcher " ControlGUID
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Starting ButtonWatcher " ControlGUID
 			}
 		}
 		
@@ -237,13 +247,13 @@ Class _InputThread {
 			for bindstring, ControlGUID in this.HeldButtons {
 				if (!GetKeyState(bindstring)){
 					this.HeldButtons.Delete(bindstring)
-					;OutputDebug % "UCR| AHK_Joy_Buttons Key event 0 for GuiControl " ControlGUID
+					;OutputDebug % "UCR| AHK_JoyBtn_Input Key event 0 for GuiControl " ControlGUID
 					this.Callback.Call(ControlGUID, 0)
 					if (this.IsEmptyAssoc(this.HeldButtons)){
 						this.ButtonTimerRunning := 0
 						fn := this.ButtonWatcherFn
 						SetTimer, % fn, Off
-						;OutputDebug % "UCR| AHK_Joy_Buttons Stopping ButtonWatcher " ControlGUID
+						;OutputDebug % "UCR| AHK_JoyBtn_Input Stopping ButtonWatcher " ControlGUID
 						return
 					}
 				}

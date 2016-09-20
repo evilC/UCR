@@ -124,14 +124,14 @@ class _BindModeHandler {
 			if (bindObj.Type == 1){
 				t := "AHK_KBM_Input"
 			} else if (bindObj.Type == 2) {
-				t := "AHK_Joy_Buttons"
+				t := "AHK_JoyBtn_Input"
 				ret.DeviceID := BindObj.buttons[max].DeviceID
 			} else if (bindObj.Type == 3) {
 				t := "AHK_Joy_Hats"
 				ret.DeviceID := BindObj.buttons[max].DeviceID
 			}
 			; Resolve input type to binding type
-			; {AHK_KBM_Input: "AHK_KBM_Input", AHK_Joy_Buttons: "AHK_Joy_Buttons", AHK_Joy_Hats: "AHK_Joy_Hats"}
+			; {AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_Joy_Hats: "AHK_Joy_Hats"}
 			;t := this._OriginalHotkey._BindTypes[t]
 			t := this.IOClassMappings[t]
 			;this._Callback.(this._OriginalHotkey, ret, t)
