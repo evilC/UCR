@@ -1,7 +1,7 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
 Class UCRMain extends _UCRBase {
 	Version := "0.1.0"				; The version of the main application
-	SettingsVersion := "0.0.5"		; The version of the settings file format
+	SettingsVersion := "0.0.6"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
@@ -739,57 +739,9 @@ Class UCRMain extends _UCRBase {
 	
 	; If SettingsVersion changes, this handles converting the INI file to the new format
 	_UpdateSettings(obj){
-		if (obj.SettingsVersion = "0.0.1"){
-			; Upgrade from 0.0.1 to 0.0.2
-			; Convert profiles from name-indexed to unique-id indexed
-			oldprofiles := obj.Profiles.clone()
-			obj.Profiles := {}
-			obj.ProfileTree := {0: [1, 2]}
-			obj.CurrentProfile := 2
-			for name, profile in oldprofiles {
-				if (name = "global"){
-					id := 1
-				} else if (name = "default"){
-					id := 2
-				} else {
-					id := this.CreateGUID()
-					obj.ProfileTree[0].push(id)
-				}
-				profile.id := id
-				profile.Name := name
-				profile.ParentProfile := 0
-				obj.Profiles[id] := profile
-			}
-			obj.SettingsVersion := "0.0.2"
-		}
-		
-		if (obj.SettingsVersion = "0.0.2"){
-			obj.CurrentSize.w := this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH
-			obj.SettingsVersion := "0.0.3"
-		}
-		
-		if (obj.SettingsVersion = "0.0.3"){
-			for id, profile in obj.Profiles {
-				oldplugins := profile.Plugins.clone()
-				oldorder := profile.PluginOrder
-				profile.Plugins := {}
-				profile.PluginOrder := []
-				Loop % oldorder.length() {
-					name := oldorder[A_Index]
-					plugin := oldplugins[name]
-					plugin.name := name
-					id := this.CreateGUID()
-					profile.Plugins[id] := plugin
-					profile.PluginOrder.push(id)
-				}
-			}
-			obj.SettingsVersion := "0.0.4"
-		}
-		if (obj.SettingsVersion = "0.0.4"){
-			for id, profile in obj.Profiles {
-				profile.InheritsFromParent := 0
-			}
-			obj.SettingsVersion := "0.0.5"
+		if (obj.SettingsVersion != "0.0.6"){
+			msgbox % "This version of UCR does not support INI files from previous versions.`nPlease back up or delete your INI file and re-run UCR."
+			ExitApp
 		}
 		; Default to making no changes
 		return obj
