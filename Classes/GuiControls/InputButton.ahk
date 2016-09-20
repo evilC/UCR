@@ -116,9 +116,19 @@ class _InputButton extends _BannerMenu {
 		}
 	}
 	
+	; Bind Mode has ended.
+	; A "Primitive" BindObject will be passed, along with the IOClass of the detected input.
+	; The Primitive contains just the Binding property and optionally the DeviceID property.
 	_BindModeEnded(bo, cls){
+		if (this.__value.IOClass && this.__value.IOClass != cls){
+			; There is an existing, different IOClass
+			this.Binding := []			; clear the old Binding
+			UCR._RequestBinding(this)	; Tell the Input IOClass in the Profile's InputThread to delete the binding
+		}
 		this.MergeObject(this._BindObjects[cls], bo)
 		this.value := this._BindObjects[cls]
+		; Request the new binding from the Profile's InputThread.
+		; If the IOClass was the same as before, the old binding will be deleted automatically
 		UCR._RequestBinding(this)
 	}
 	

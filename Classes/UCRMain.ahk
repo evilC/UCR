@@ -796,11 +796,17 @@ Class UCRMain extends _UCRBase {
 	}
 	*/
 	
+	; A plugin is requesting that we register a binding with an input thread
 	_RequestBinding(ctrl){
 		outputdebug % "UCR| _RequestBinding"
 		ctrl.ParentPlugin.ParentProfile._InputThread.UpdateBinding(ctrl.id, ctrl._Serialize()) ;*[UCR]
 	}
 	
+	; A plugin is requesting a new Binding via Bind Mode (User pressing inputs they wish to bind)
+	; Can also be used to request a binding for outputs, if the output has a corresponding input IOClass (eg Keyboard + Mouse)
+	; IOClassMappings defines for each IOClass detected as input, what IOClass to map it to...
+	; ... this is generally itself or a corresponding output IOClass
+	; eg a request for a AHK_KBM_Output IOClass Binding would use AHK_KBM_Input as the detection IOClass
 	RequestBindMode(IOClassMappings, callback){
 		if (this._CurrentState == this._State.Normal){
 			this._CurrentState := this._State.InputBind
@@ -814,7 +820,10 @@ Class UCRMain extends _UCRBase {
 		}
 	}
 	
+	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, bo, cls){
+		this._ActivateProfiles()
+		this._CurrentState := this._State.Normal
 		callback.Call(bo, cls)
 	}
 	

@@ -68,6 +68,10 @@ Class _InputThread {
 			}
 		}
 		
+		SetDetectionState(state){
+			
+		}
+		
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
@@ -176,7 +180,7 @@ Class _InputThread {
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
-				;OutputDebug % "UCR| AHK_Joy_Buttons Removing hotkey " keyname " for ControlGUID " ControlGUID
+				OutputDebug % "UCR| AHK_Joy_Buttons Removing hotkey " keyname " for ControlGUID " ControlGUID
 				try{
 					hotkey, % keyname, UCR_DUMMY_LABEL
 				}
