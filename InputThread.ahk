@@ -1,3 +1,7 @@
+; ToDo: Split IOClasses out into individual files
+; ToDo: Rename these type of IOClasses to IOInputClasses?
+
+; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
 	IOClasses := {AHK_KBM_Input: 0, AHK_Joy_Buttons: 0, AHK_Joy_Hats: 0, AHK_Joy_Axes: 0}
 	__New(ProfileID, CallbackPtr){

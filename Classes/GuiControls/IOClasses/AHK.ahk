@@ -1,3 +1,11 @@
+; ToDo - Rename to IOControlClasses ?
+; AHK IOClasses
+; These classes handle most of the functionality of a GUIControl's appearance while bound to one of these IOClasses
+
+; These IOClasses are for input detection methods that AHK supports natively
+; ie the Hotkey command and GetKeystate for input and SendXXXX etc for Output
+
+; Common functions for AHK Keyboard and Mouse GuiControls
 class AHK_KBM_Common extends _BindObject {
 	static IsInitialized := 1
 	static IsAvailable := 1
@@ -43,6 +51,7 @@ class AHK_KBM_Common extends _BindObject {
 	}
 }
 
+; IOClass for AHK Keyboard and Mouse Input GuiControls
 class AHK_KBM_Input extends AHK_KBM_Common {
 	static IOClass := "AHK_KBM_Input"
 	static OutputType := "AHK_KBM_Output"
@@ -58,6 +67,7 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	}
 }
 
+; IOClass for AHK Keyboard and Mouse Output GuiControls
 class AHK_KBM_Output extends AHK_KBM_Common {
 	static IOType := 1
 	static IOClass := "AHK_KBM_Output"
@@ -75,6 +85,7 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	}
 }
 
+; IOClass for AHK Joystick Button Input GuiControls
 class AHK_Joy_Buttons extends _BindObject {
 	static IOClass := "AHK_Joy_Buttons"
 	static IsInitialized := 1
@@ -94,6 +105,7 @@ class AHK_Joy_Buttons extends _BindObject {
 	}
 }
 
+; IOClass for AHK Joystick Axis Input GuiControls
 class AHK_Joy_Axes extends _BindObject {
 	static IOClass := "AHK_Joy_Axes"
 	static IsInitialized := 1
@@ -125,6 +137,7 @@ class AHK_Joy_Axes extends _BindObject {
 	}
 }
 
+; IOClass for AHK Joystick Hat Input GuiControls
 class AHK_Joy_Hats extends _BindObject {
 	static IOClass := "AHK_Joy_Hats"
 	static IsInitialized := 1
