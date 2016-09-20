@@ -55,7 +55,7 @@ class _InputButton extends _BannerMenu {
 		
 		set {
 			this._value := value	; trigger _value setter to set value and cuebanner etc
-			OutputDebug % "UCR| Hotkey " this.Name " called ParentPlugin._ControlChanged()"
+			;OutputDebug % "UCR| Hotkey " this.Name " called ParentPlugin._ControlChanged()"
 			this.ParentPlugin._ControlChanged(this)
 		}
 	}
@@ -119,33 +119,31 @@ class _InputButton extends _BannerMenu {
 	; Bind Mode has ended.
 	; A "Primitive" BindObject will be passed, along with the IOClass of the detected input.
 	; The Primitive contains just the Binding property and optionally the DeviceID property.
-	_BindModeEnded(bo, cls){
-		if (this.__value.IOClass && this.__value.IOClass != cls){
+	_BindModeEnded(bo){
+		if (this.__value.IOClass && this.__value.IOClass != bo.IOClass){
 			; There is an existing, different IOClass
 			this.Binding := []			; clear the old Binding
 			UCR._RequestBinding(this)	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 		}
-		this.MergeObject(this._BindObjects[cls], bo)
-		this.value := this._BindObjects[cls]
-		; Request the new binding from the Profile's InputThread.
-		; If the IOClass was the same as before, the old binding will be deleted automatically
+		this.SetBinding(bo)
+	}
+	
+	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
+	; ... then it can be re-built by calling this method on each control.
+	_RequestBinding(){
+		OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
 		UCR._RequestBinding(this)
 	}
 	
-	/*
-	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
-	; ... then it can be re-built by calling this method on each control.
-	_RefreshBinding(){
-		OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
-		bo := this.__value._Serialize()
-		;UCR._RequestBinding(this, bo)
+	SetBinding(bo){
+		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
+		this._BindObjects[bo.IOClass]._Deserialize(bo)
+		this.value := this._BindObjects[bo.IOClass]
+		; Request the new binding from the Profile's InputThread.
+		; If the IOClass was the same as before, the old binding will be deleted automatically
+		UCR._RequestBinding(this)
 
-		;UCR._InputHandler.SetButtonBinding(this)
-	}
-	*/
-	
-	SetBinding(bo := 0){
-		this.value := bo
 	}
 	
 	_Serialize(){

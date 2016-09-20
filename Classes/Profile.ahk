@@ -81,7 +81,7 @@ Class _Profile {
 			; Load bindings
 			Loop % this.PluginOrder.length() {
 				plugin := this.Plugins[this.PluginOrder[A_Index]]
-				plugin._RefreshBinding()
+				plugin._RequestBinding()
 			}
 			/*
 			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
@@ -97,7 +97,7 @@ Class _Profile {
 			; Load bindings
 			Loop % this.PluginOrder.length() {
 				plugin := this.Plugins[this.PluginOrder[A_Index]]
-				plugin._RefreshBinding()
+				plugin._RequestBinding()
 			}
 			*/
 		}

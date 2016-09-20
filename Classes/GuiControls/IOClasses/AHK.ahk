@@ -68,15 +68,17 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	_ChangedValue(o){
 		if (o == 1){
 			; Wild
-			mod := {BindOptions: {wild: !this.BindOptions.wild}}
+			this.BindOptions.wild := !this.BindOptions.wild
 		} else if (o == 2){
 			; Block
-			mod := {BindOptions: {block: !this.BindOptions.block}}
+			this.BindOptions.block := !this.BindOptions.block
 		} else if (o == 3){
 			; Suppress
-			mod := {BindOptions: {suppress: !this.BindOptions.suppress}}
+			this.BindOptions.suppress := !this.BindOptions.suppress
 		}
-		;UCR._RequestBinding(this, mod)
+		bo := this._Serialize()
+		bo.Delete("Binding")	; get rid of the binding, so it does not stomp on the current binding
+		this.ParentControl.SetBinding(bo)
 	}
 	
 	_Delete(){

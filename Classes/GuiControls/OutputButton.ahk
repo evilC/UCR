@@ -288,7 +288,7 @@ Class _OutputButton extends _InputButton {
 		this._value :=  this._BindObjects[cls]
 	}
 	
-	_RefreshBinding(){
+	_RequestBinding(){
 		; override base and do nothing
 	}
 	

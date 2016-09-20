@@ -798,8 +798,9 @@ Class UCRMain extends _UCRBase {
 	
 	; A plugin is requesting that we register a binding with an input thread
 	_RequestBinding(ctrl){
-		outputdebug % "UCR| _RequestBinding"
-		ctrl.ParentPlugin.ParentProfile._InputThread.UpdateBinding(ctrl.id, ctrl._Serialize()) ;*[UCR]
+		bo := ctrl._Serialize()
+		outputdebug % "UCR| _RequestBinding - bo.Bindings[1]: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		ctrl.ParentPlugin.ParentProfile._InputThread.UpdateBinding(ctrl.id, bo) ;*[UCR]
 	}
 	
 	; A plugin is requesting a new Binding via Bind Mode (User pressing inputs they wish to bind)
@@ -821,10 +822,10 @@ Class UCRMain extends _UCRBase {
 	}
 	
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
-	_BindModeEnded(callback, bo, cls){
+	_BindModeEnded(callback, primitive){
 		this._ActivateProfiles()
 		this._CurrentState := this._State.Normal
-		callback.Call(bo, cls)
+		callback.Call(primitive)
 	}
 	
 	/*

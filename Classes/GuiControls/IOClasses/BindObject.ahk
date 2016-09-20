@@ -37,6 +37,8 @@ class _BindObject {
 	
 	_Deserialize(obj){
 		for k, v in obj {
+			if (k = "IOClass")
+				continue
 			this[k] := v
 		}
 	}

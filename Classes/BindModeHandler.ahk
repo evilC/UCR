@@ -133,7 +133,7 @@ class _BindModeHandler {
 			; Resolve input type to binding type
 			; {AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_Joy_Hats: "AHK_Joy_Hats"}
 			;t := this._OriginalHotkey._BindTypes[t]
-			t := this.IOClassMappings[t]
+			ret.IOClass := this.IOClassMappings[t]
 			;this._Callback.(this._OriginalHotkey, ret, t)
 			this._Callback.Call(ret, t)
 			
