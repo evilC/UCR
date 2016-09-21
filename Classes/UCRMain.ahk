@@ -55,7 +55,9 @@ Class UCRMain extends _UCRBase {
 		this.Minimizer := new _Minimizer(this.hwnd, this._GuiMinimized.Bind(this))
 		
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
-		this._InputThreadScript := Script	; Cache script for profile InputThreads
+		
+		; Cache script for profile InputThreads
+		this._InputThreadScript := Script	"`n#Persistent`n#NoTrayIcon`n#MaxHotkeysPerInterval 9999`nautoexecute_done := 1`nreturn`n"
 		
 		if (this.UserSettings.GuiControls.ShowJoystickNames){
 			; Load the Joystick OEM name DLL

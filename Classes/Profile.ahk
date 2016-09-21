@@ -81,7 +81,7 @@ Class _Profile {
 			;this._InputThread := new _InputThread(this.id, ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)))
 			;this._InputThread := new _InputThread(this.id, UCR._InputHandler.InputEvent.Bind(UCR._InputHandler))
 			this.InputThread := {}
-			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n#Persistent`n#NoTrayIcon`n#MaxHotkeysPerInterval 9999`nautoexecute_done := 1`nreturn`n" UCR._InputThreadScript)
+			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")" UCR._InputThreadScript)
 
 			While !this._InputThread.ahkgetvar.autoexecute_done
 				Sleep 10 ; wait until variable has been set.
