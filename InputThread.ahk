@@ -173,11 +173,13 @@ Class _InputThread {
 	; ... so up events are emulated up using AHK's GetKeyState() function
 	class AHK_JoyBtn_Input {
 		HeldButtons := {}
-		ButtonTimerRunning := 0
+		TimerWanted := 0		; Whether or not we WANT to run the ButtonTimer (NOT if it is actually running!)
+		TimerRunning := 0
+		DetectionState := 0		; Whether or not we are allowed to have hotkeys or be running the timer
 		
 		__New(Callback){
 			this.Callback := Callback
-			this.ButtonWatcherFn := this.ButtonWatcher.Bind(this)
+			this.TimerFn := this.ButtonWatcher.Bind(this)
 			Suspend, On	; Start with detection off, even if we are passed bindings
 		}
 		
@@ -204,7 +206,7 @@ Class _InputThread {
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state
-
+			this.ProcessTimerState()
 		}
 		
 		RemoveBinding(ControlGUID){
@@ -235,11 +237,9 @@ Class _InputThread {
 			this.Callback.Call(ControlGUID, e)
 			
 			this.HeldButtons[this._AHKBindings[ControlGUID]] := ControlGUID
-			if (!this.ButtonTimerRunning){
-				this.ButtonTimerRunning := 1
-				fn := this.ButtonWatcherFn
-				SetTimer, % fn, 10
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Starting ButtonWatcher " ControlGUID
+			if (!this.TimerWanted){
+				this.TimerWanted := 1
+				this.ProcessTimerState()
 			}
 		}
 		
@@ -250,16 +250,27 @@ Class _InputThread {
 					;OutputDebug % "UCR| AHK_JoyBtn_Input Key event 0 for GuiControl " ControlGUID
 					this.Callback.Call(ControlGUID, 0)
 					if (this.IsEmptyAssoc(this.HeldButtons)){
-						this.ButtonTimerRunning := 0
-						fn := this.ButtonWatcherFn
-						SetTimer, % fn, Off
-						;OutputDebug % "UCR| AHK_JoyBtn_Input Stopping ButtonWatcher " ControlGUID
+						this.TimerWanted := 0
+						this.ProcessTimerState()
 						return
 					}
 				}
 			}
 		}
 		
+		ProcessTimerState(){
+			fn := this.TimerFn
+			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				SetTimer, % fn, 10
+				this.TimerRunning := 1
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher " ControlGUID
+			} else if (!this.TimerWanted && this.TimerRunning){
+				SetTimer, % fn, Off
+				this.TimerRunning := 0
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher " ControlGUID
+			}
+		}
+
 		BuildHotkeyString(bo){
 			return bo.Deviceid "Joy" bo.Binding[1]
 		}
@@ -277,8 +288,8 @@ Class _InputThread {
 		__New(Callback){
 			this.Callback := Callback
 			
-			fn := this.StickWatcher.Bind(this)
-			this.StickWatcherFn := fn
+			fn := this.TimerFn.Bind(this)
+			this.TimerFnFn := fn
 		}
 		
 		UpdateBinding(ControlGUID, bo){
@@ -286,9 +297,23 @@ Class _InputThread {
 		}
 		
 		SetDetectionState(state){
-			
+			this.DetectionState := state
+			this.ProcessTimerState()
 		}
 		
+		ProcessTimerState(){
+			fn := this.TimerFn
+			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				SetTimer, % fn, 10
+				this.TimerRunning := 1
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher " ControlGUID
+			} else if (!this.TimerWanted && this.TimerRunning){
+				SetTimer, % fn, Off
+				this.TimerRunning := 0
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher " ControlGUID
+			}
+		}
+
 		StickWatcher(){
 			
 		}
@@ -305,9 +330,6 @@ Class _InputThread {
 		; GUID-Indexed array of sticks + directions that each GUIControl is mapped to, plus it's current state
 		ControlMappings := {}
 		
-		; Is the Hat Watcher timer running?
-		HatTimerRunning := 0
-		
 		; Which cardinal directions are pressed for each of the 8 compass directions, plus centre
 		; Order is U, R, D, L
 		static PovMap := {-1: [0,0,0,0], 1: [1,0,0,0], 2: [1,1,0,0] , 3: [0,1,0,0], 4: [0,1,1,0], 5: [0,0,1,0], 6: [0,0,1,1], 7: [0,0,0,1], 8: [1,0,0,1]}
@@ -315,30 +337,44 @@ Class _InputThread {
 		__New(Callback){
 			this.Callback := Callback
 			
-			this.HatWatcherFn := this.HatWatcher.Bind(this)
+			this.TimerFn := this.HatWatcher.Bind(this)
 		}
 		
 		; Request from main thread to update binding
 		UpdateBinding(ControlGUID, bo){
 			OutputDebug % "UCR| AHK_Joy_Hats " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 			this._UpdateArrays(ControlGUID, bo)
-			t := this.HatTimerRunning, k := ObjHasKey(this.ControlMappings, ControlGUID)
-			fn := this.HatWatcherFn
+			t := this.TimerWanted, k := ObjHasKey(this.ControlMappings, ControlGUID)
+			fn := this.TimerFn
 			if (t && !k){
 				OutputDebug % "UCR| AHK_Joy_Hats Stopping Hat Watcher" ;*[UCR]
 				SetTimer, % fn, Off
-				this.HatTimerRunning := 0
+				this.TimerWanted := 0
 			} else if (!t && k){
 				OutputDebug % "UCR| AHK_Joy_Hats Starting Hat Watcher"
-				this.HatTimerRunning := 1
+				this.TimerWanted := 1
 				SetTimer, % fn, 10
 			}
 		}
 		
 		SetDetectionState(state){
-			
+			this.DetectionState := state
+			this.ProcessTimerState()
 		}
 		
+		ProcessTimerState(){
+			fn := this.TimerFn
+			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				SetTimer, % fn, 10
+				this.TimerRunning := 1
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher " ControlGUID
+			} else if (!this.TimerWanted && this.TimerRunning){
+				SetTimer, % fn, Off
+				this.TimerRunning := 0
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher " ControlGUID
+			}
+		}
+
 		; Updates the arrays which drive hat detection
 		_UpdateArrays(ControlGUID, bo := 0){
 			if (ObjHasKey(this.ControlMappings, ControlGUID)){
