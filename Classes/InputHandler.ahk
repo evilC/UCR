@@ -9,7 +9,7 @@ Class _InputHandler {
 		
 	}
 	
-	
+	/*
 	; Set a Button Binding
 	SetButtonBinding(BtnObj, delete := 0){
 		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
@@ -34,7 +34,7 @@ Class _InputHandler {
 	SetDeltaBinding(DeltaObj, delete := 0){
 		;DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj), delete)
 	}
-	
+	*/
 	; Check InputButtons for duplicates etc
 	IsBindable(hk, bo){
 		; Do not allow bind of LMB with block enabled
@@ -103,7 +103,7 @@ Class _InputHandler {
 	*/
 	
 	InputEvent(ControlGUID, e){
-		OutputDebug % "UCR| InputHandler Received event " e " from GuiControl " ControlGUID
+		;OutputDebug % "UCR| InputHandler Received event " e " from GuiControl " ControlGUID
 		if (ObjHasKey(UCR.BindControlLookup, ControlGUID)){
 			lu := UCR.BindControlLookup[ControlGUID]
 			UCR.BindControlLookup[ControlGUID].ChangeStateCallback.Call(e) ;*[UCR]

@@ -11,6 +11,7 @@ Class _Profile {
 	PluginOrder := []		; The order that plugins are listed in
 	_IsGlobal := 0			; 1 if this Profile is Global (Always active)
 	_InputThread := 0		; Holds the handle to the Input Thread, if loaded
+	InputThread := 0		; Holds the Interface functions for the thread, or 0 if thread not loaded
 	_LinkedProfiles := {}	; Profiles with which this one is associated
 	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
 	InheritsFromParent := 0	
@@ -76,14 +77,26 @@ Class _Profile {
 	
 	; Starts the "Input Thread" which handles detection of input for this profile
 	_StartInputThread(){
-		if (this._InputThread == 0){
+		if (this.InputThread == 0){
 			;this._InputThread := new _InputThread(this.id, ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)))
-			this._InputThread := new _InputThread(this.id, UCR._InputHandler.InputEvent.Bind(UCR._InputHandler))
+			;this._InputThread := new _InputThread(this.id, UCR._InputHandler.InputEvent.Bind(UCR._InputHandler))
+			this.InputThread := {}
+			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n#Persistent`n#NoTrayIcon`n#MaxHotkeysPerInterval 9999`nautoexecute_done := 1`nreturn`n" UCR._InputThreadScript)
+
+			While !this._InputThread.ahkgetvar.autoexecute_done
+				Sleep 10 ; wait until variable has been set.
+			OutputDebug % "UCR| Input Thread for thread #" this.id " ( " this.Name " ) has started"
+
+			; Get thread-safe boundfunc object for thread's SetHotkeyState
+			this.InputThread.UpdateBinding := ObjShare(this._InputThread.ahkgetvar("InterfaceUpdateBinding"))
+			this.InputThread.SetDetectionState := ObjShare(this._InputThread.ahkgetvar("InterfaceSetDetectionState"))
+			
 			; Load bindings
 			Loop % this.PluginOrder.length() {
 				plugin := this.Plugins[this.PluginOrder[A_Index]]
 				plugin._RequestBinding()
 			}
+			
 			/*
 			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
 			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
@@ -106,10 +119,10 @@ Class _Profile {
 	
 	; Stops the "Input Thread" which handles detection of input for this profile
 	_StopInputThread(){
-		if (this._InputThread != 0){
+		if (this.InputThread != 0){
 			OutputDebug % "UCR| Stopping Input Thread for thread #" this.id " ( " this.Name " )"
 			ahkthread_free(this._InputThread)
-			this._InputThread := 0
+			this.InputThread := 0
 		}
 		this._SetHotkeyState := 0
 		this._SetButtonBinding := 0
@@ -146,13 +159,13 @@ Class _Profile {
 	_Activate(){
 		if (this._HotkeysActive)
 			return
-		if (this._InputThread == 0){
+		if (this.InputThread == 0){
 			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
 			UCR._SetProfileInputThreadState(this.id,1)
 		}
 		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
 		;this._SetHotkeyState(1)
-		this._InputThread.SetDetectionState(1)
+		this.InputThread.SetDetectionState(1)
 
 		this._HotkeysActive := 1
 		; Fire Activate on each plugin
@@ -169,9 +182,9 @@ Class _Profile {
 		if (!this._HotkeysActive)
 			return
 		OutputDebug % "UCR| DeActivating input thread for profile # " this.id " (" this.name " )"
-		if (this._InputThread){
+		if (this.InputThread){
 			;this._SetHotkeyState(0)
-			this._InputThread.SetDetectionState(0)
+			this.InputThread.SetDetectionState(0)
 		}
 		this._HotkeysActive := 0
 		Loop % this.PluginOrder.length() {

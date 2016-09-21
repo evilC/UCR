@@ -42,8 +42,6 @@ return
 #Include Classes\Button.ahk	; remove
 #Include Classes\Axis.ahk	; remove
 
-#Include InputThread.ahk
-
 #include Libraries\JSON.ahk
 
 /*

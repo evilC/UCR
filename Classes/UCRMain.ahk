@@ -426,7 +426,7 @@ Class UCRMain extends _UCRBase {
 				if (p_id = id)
 					continue
 				p := this.Profiles[p_id]
-				if (p._InputThread = 0){
+				if (p.InputThread = 0){
 					this._SetProfileInputThreadState(p_id,1)
 				}
 				this._ProfileToolbox.SetProfileColor(p_id, {fore: 0x0, back: 0x00bfff})
@@ -800,7 +800,8 @@ Class UCRMain extends _UCRBase {
 	_RequestBinding(ctrl){
 		bo := ctrl._Serialize()
 		outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID
-		ctrl.ParentPlugin.ParentProfile._InputThread.UpdateBinding(ctrl.id, bo)
+		;ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
+		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
 	}
 	
 	; A plugin is requesting a new Binding via Bind Mode (User pressing inputs they wish to bind)

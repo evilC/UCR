@@ -41,9 +41,6 @@ class AxisToAxis extends _Plugin {
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
 		GuiControl, , % this.hSliderIn, % value
-		tooltip % "Plugin changed state - " e
-		Sleep 500
-		tooltip
 		/*
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		if (this.vAxis && this.vDevice){
