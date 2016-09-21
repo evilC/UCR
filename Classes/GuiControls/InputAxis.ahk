@@ -44,6 +44,7 @@ class _InputAxis extends _BannerMenu {
 		for i, cls in this._BindObjects {
 			cls.AddMenuItems()
 		}
+		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 		/*
 		Loop 8 {
 			ji := GetKeyState( A_Index "JoyInfo")
@@ -67,23 +68,23 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	_ChangedValue(o){
-
+		if (o == 2){
+			this.__value.Binding := []
+			this.__value.DeviceID := 0
+			this.SetBinding(this.__value)
+		}
 	}
 	
 	; bo is a "Primitive" BindObject
 	SetBinding(bo, update := 1){
-		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", Device: " bo.DeviceID
-		if (!bo.DeviceID)
-			bo.Delete("DeviceID")
-		if (!bo.Binding[1])
-			bo.Delete("Binding")
-		OutputDebug % "UCR| SetBinding: Existing code=" this._BindObjects[bo.IOClass].Binding[1] ", Device=" this._BindObjects[bo.IOClass].DeviceID
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
 		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
 		
-		;if (this__value.Binding[1] && this.__value.DeviceID){
+		; If both value and device are set, or neither are set, then update the binding
+		; ToDo - add in the condition that the binding must have also changed
+		if ((this.__value.Binding[1] && this.__value.DeviceID) || (!this.__value.Binding[1] && !this.__value.DeviceID)){
 			UCR._RequestBinding(this)
-		;}
+		}
 	}
 	
 	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
@@ -99,6 +100,9 @@ class _InputAxis extends _BannerMenu {
 			this.SetCueBanner(this.__value.BuildHumanReadable())
 		} else {
 			this.SetCueBanner("Select an Input Axis")
+		}
+		for i, cls in this._BindObjects {
+			cls.UpdateMenus(this.__value.IOClass)
 		}
 	}
 	

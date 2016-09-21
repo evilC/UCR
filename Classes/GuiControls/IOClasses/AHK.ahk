@@ -139,6 +139,7 @@ class AHK_JoyBtn_Input extends _BindObject {
 class AHK_JoyAxis_Input extends _BindObject {
 	static IOClass := "AHK_JoyAxis_Input"
 	static IsInitialized := 1
+	_JoyMenus := []
 	
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("Stick", "AHKStick")
@@ -174,7 +175,11 @@ class AHK_JoyAxis_Input extends _BindObject {
 	}
 	
 	UpdateMenus(cls){
-		
+		;ji := GetKeyState( A_Index "JoyInfo")
+		state := (this.DeviceID)
+		for i, menu in this._JoyMenus {
+			menu.SetEnableState(state)
+		}
 	}
 }
 

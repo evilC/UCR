@@ -297,6 +297,7 @@ Class _InputThread {
 			dev := bo.DeviceID, axis := bo.Binding[1]
 			OutputDebug % "UCR| AHK_JoyAxis_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
 			if (ObjHasKey(this.ControlMappings, ControlGUID)){
+				OutputDebug % "UCR| AHK_JoyAxis_Input removing binding"
 				str := this.ControlMappings[ControlGUID]
 				this.StickBindings.Delete(str)
 				this.ControlMappings.Delete(ControlGUID)

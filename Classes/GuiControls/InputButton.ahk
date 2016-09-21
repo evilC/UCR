@@ -104,7 +104,9 @@ class _InputButton extends _BannerMenu {
 				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this))
 				return
 			} else if (o == 2){
-				this.value := 0
+				this.__value.Binding := []
+				this.__value.DeviceID := 0
+				this.SetBinding(this._value)
 			}
 		}
 	}
@@ -137,9 +139,14 @@ class _InputButton extends _BannerMenu {
 		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
 		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
-		; Request the new binding from the Profile's InputThread.
-		; If the IOClass was the same as before, the old binding will be deleted automatically
-		UCR._RequestBinding(this)
+		
+		; If both value and device are set, or neither are set, then update the binding
+		; ToDo - add in the condition that the binding must have also changed
+		if ((this.__value.Binding[1] && this.__value.DeviceID) || (!this.__value.Binding[1] && !this.__value.DeviceID)){
+			; Request the new binding from the Profile's InputThread.
+			; If the IOClass was the same as before, the old binding will be deleted automatically
+			UCR._RequestBinding(this)
+		}
 	}
 	
 	_Serialize(){
