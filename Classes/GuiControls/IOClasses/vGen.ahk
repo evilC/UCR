@@ -112,6 +112,13 @@ class vGen_Output extends _BindObject {
 		return 1
 	}
 	
+	UpdateMenus(cls){
+		state := (cls == this.IOClass && this.DeviceID)
+		for i, menu in this._JoyMenus {
+			menu.SetEnableState(state)
+		}
+	}
+	
 	_Deserialize(obj){
 		base._Deserialize(obj)
 	}
@@ -229,5 +236,4 @@ class vXBox_Button_Output extends vGen_Output {
 		}
 		this.ParentControl.value := this
 	}
-
 }

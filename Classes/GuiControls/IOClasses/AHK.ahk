@@ -57,12 +57,14 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 	static OutputType := "AHK_KBM_Output"
 	BindOptions := {wild: 0, block: 0, suppress: 0}
 	_CurrentBinding := 0
+	
+	_DisableItems := []
 
 	AddMenuItems(){
 		wild := this.ParentControl.AddMenuItem("Wild", "Wild", this._ChangedValue.Bind(this, 1))
 		block := this.ParentControl.AddMenuItem("Block", "Block", this._ChangedValue.Bind(this, 2))
 		suppress := this.ParentControl.AddMenuItem("Suppress Repeats", "SuppressRepeats", this._ChangedValue.Bind(this, 3))
-		this._KeyOnlyOptions := {wild: wild, block: block, suppress: suppress}
+		this._DisableItems := [wild, block, suppress]
 	}
 	
 	_ChangedValue(o){
@@ -81,6 +83,13 @@ class AHK_KBM_Input extends AHK_KBM_Common {
 		this.ParentControl.SetBinding(bo)
 	}
 	
+	UpdateMenus(cls){
+		state := ((cls == this.IOClass) && this.ParentControl.GetBinding().Binding[1])
+		for i, item in this._DisableItems {
+			item.SetEnableState(state)
+		}
+	}
+
 	_Delete(){
 		this.RemoveBinding()
 	}
@@ -156,13 +165,21 @@ class AHK_Joy_Axes extends _BindObject {
 		;if (this.DeviceID && this.Binding[1])
 		;UCR._RequestBinding(this.ParentControl)
 	}
+	
+	UpdateMenus(cls){
+		
+	}
 }
 
 ; IOClass for AHK Joystick Hat Input GuiControls
 class AHK_Joy_Hats extends _BindObject {
 	static IOClass := "AHK_Joy_Hats"
 	static IsInitialized := 1
-	
+
+	UpdateMenus(cls){
+		
+	}
+
 	; Builds a human-readable form of the BindObject
 	BuildHumanReadable(){
 		static hat_directions := ["Up", "Right", "Down", "Left"]

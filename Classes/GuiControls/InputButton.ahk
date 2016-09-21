@@ -77,7 +77,7 @@ class _InputButton extends _BannerMenu {
 		for i, cls in this._BindObjects {
 			cls.AddMenuItems()
 		}
-		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 5))
+		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
@@ -99,9 +99,12 @@ class _InputButton extends _BannerMenu {
 			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner
-
 		}
 		this.SetCueBanner(Text)
+		; Update the Menus etc of all the IOClasses in this control
+		for i, cls in this._BindObjects {
+			cls.UpdateMenus(this.__value.IOClass)
+		}
 	}
 	
 	; An option was selected from the list
@@ -112,6 +115,8 @@ class _InputButton extends _BannerMenu {
 				; Bind
 				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this))
 				return
+			} else if (o == 2){
+				this.value := 0
 			}
 		}
 	}
@@ -133,6 +138,10 @@ class _InputButton extends _BannerMenu {
 	_RequestBinding(){
 		OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
 		UCR._RequestBinding(this)
+	}
+	
+	GetBinding(){
+		return this._Serialize()
 	}
 	
 	SetBinding(bo){

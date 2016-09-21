@@ -98,6 +98,10 @@ Class _OutputButton extends _InputButton {
 		base.SetControlState()
 		; Tell vGen etc to Acquire sticks
 		this.__value.UpdateBinding()
+		; Update the Menus etc of all the IOClasses in this control
+		for i, cls in this._BindObjects {
+			cls.UpdateMenus(this.__value.IOClass)
+		}
 		;joy := (this.__value.Type >= 2 && this.__value.Type <= 6)
 		;for n, opt in this.JoyMenus {
 		;	opt.SetEnableState(joy)
