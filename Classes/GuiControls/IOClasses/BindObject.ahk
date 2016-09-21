@@ -22,17 +22,7 @@ class _BindObject {
 	}
 	
 	_Serialize(){
-		/*
-		obj := {Buttons: [], Wild: this.Wild, Block: this.Block, Suppress: this.Suppress, Type: this.Type}
-		Loop % this.Buttons.length(){
-			obj.Buttons.push(this.Buttons[A_Index]._Serialize())
-		}
-		return obj
-		*/
-		return {Binding: this.Binding, BindOptions: this.BindOptions
-		;	, IOType: this.IOType, DeviceType: this.DeviceType, DeviceSubType: this.DeviceSubType, DeviceID: this.DeviceID}
-			, IOType: this.IOType, IOClass: this.IOClass, DeviceID: this.DeviceID}
-
+		return {Binding: this.Binding, BindOptions: this.BindOptions, IOClass: this.IOClass, DeviceID: this.DeviceID}
 	}
 	
 	UpdateMenus(cls){
