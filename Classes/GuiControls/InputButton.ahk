@@ -95,7 +95,7 @@ class _InputButton extends _BannerMenu {
 		}
 		this.SetCueBanner(Text)
 		*/
-		if (this.__value.Binding[1]){
+		if (this.__value.Binding[1] || this.__value.DeviceID){
 			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner
