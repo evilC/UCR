@@ -6,8 +6,8 @@ class _InputAxis extends _BannerMenu {
 	_OptionMap := []
 	State := -1
 	
-	_BindTypes := {AHK_Joy_Axes: "AHK_Joy_Axes"}
-	_IOClassNames := ["AHK_Joy_Axes"]
+	_BindTypes := {AHK_JoyAxis_Input: "AHK_JoyAxis_Input"}
+	_IOClassNames := ["AHK_JoyAxis_Input"]
 	_BindObjects := {}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
@@ -71,12 +71,16 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	; bo is a "Primitive" BindObject
-	SetBinding(bo){
+	SetBinding(bo, update := 1){
+		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", Device: " bo.DeviceID
 		if (!bo.DeviceID)
 			bo.Delete("DeviceID")
+		if (!bo.Binding[1])
+			bo.Delete("Binding")
+		OutputDebug % "UCR| SetBinding: Existing code=" this._BindObjects[bo.IOClass].Binding[1] ", Device=" this._BindObjects[bo.IOClass].DeviceID
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this.value := this._BindObjects[bo.IOClass]
-		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " this._BindObjects[bo.IOClass].Binding[1] ", Device: " this._BindObjects[bo.IOClass].DeviceID
+		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
+		
 		;if (this__value.Binding[1] && this.__value.DeviceID){
 			UCR._RequestBinding(this)
 		;}
@@ -86,7 +90,7 @@ class _InputAxis extends _BannerMenu {
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
 		;UCR.RequestAxisBinding(this)
-		;UCR.RequestBinding(this)
+		UCR._RequestBinding(this)
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
@@ -136,12 +140,8 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	_Deserialize(obj){
-		; Trigger _value setter to set gui state but not fire change event
-		;this._value := new _BindObject(obj)
-		cls := obj.IOClass
-		this._value := new %cls%(this, obj)
-		; Register hotkey on load
-		;UCR._InputHandler.SetButtonBinding(this)
+		; Pass 0 to SetBinding so we don't save while we are loading
+		this.SetBinding(obj, 0)
 	}
 
 	/*
