@@ -92,17 +92,15 @@ class _InputAxis extends _BannerMenu {
 	
 	; bo is a "Primitive" BindObject
 	SetBinding(bo){
-		; This is CRASHING!
-		return
-		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
 		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
 		;msgbox % this._BindObjects[bo.IOClass].IOClass
-		msgbox % this__value.DeviceID
+		;msgbox % this__value.DeviceID
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this._value := this._BindObjects[bo.IOClass]
-		if (this__value.Binding[1] && this.__value.DeviceID){
+		this.value := this._BindObjects[bo.IOClass]
+		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " this._BindObjects[bo.IOClass].Binding[1] ", Device: " this._BindObjects[bo.IOClass].DeviceID
+		;if (this__value.Binding[1] && this.__value.DeviceID){
 			UCR._RequestBinding(this.ParentControl)
-		}
+		;}
 	}
 	
 	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
@@ -113,42 +111,11 @@ class _InputAxis extends _BannerMenu {
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetControlState(){
-		axis := this.__value.Axis
-		DeviceID := this.__value.DeviceID
-		this._OptionMap := []
-		opts := []
-		if (DeviceID){
-			; Show Sticks and Axes
-			max := 14
-			index_offset := 0
-			if (!Axis)
-				str := "Pick an Axis (Stick " DeviceID ")"
+		if (this.__value.DeviceID || this.__value.Binding[1]){
+			this.SetCueBanner(this.__value.BuildHumanReadable())
 		} else {
-			str := "Select an Input Axis"
-			max := 8
-			index_offset := 6
+			this.SetCueBanner("Select an Input Axis")
 		}
-		Loop % max {
-			map_index := A_Index + index_offset
-			if ((map_index > 6 && map_index <= 14))
-				joyinfo := GetKeyState( map_index - 6 "JoyInfo")
-			else
-				joyinfo := 0
-			if ((map_index > 6 && map_index <= 14) && !JoyInfo)
-				continue
-			opts.push(this._Options[map_index])
-			this._OptionMap.push(map_index)
-		}
-		if (DeviceID || axis){
-			opts.push(this._Options[15])
-			this._OptionMap.push(15)
-		}
-		
-		if (DeviceID && Axis)
-			str := "Stick " DeviceID ", Axis " axis " (" this.AHKAxisList[axis] ")"
-		
-		this.SetOptions(opts)
-		this.SetCueBanner(str)
 	}
 	
 	; Get / Set of .value
@@ -185,6 +152,17 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	_Serialize(){
+		return this.__value._Serialize()
+	}
+	
+	_Deserialize(obj){
+		for k, v in obj {
+			this[k] := v
+		}
+	}
+
+	/*
+	_Serialize(){
 		obj := {value: this._value}
 		return obj
 	}
@@ -193,4 +171,5 @@ class _InputAxis extends _BannerMenu {
 		this._value := obj.value
 		;UCR.RequestAxisBinding(this)
 	}
+	*/
 }

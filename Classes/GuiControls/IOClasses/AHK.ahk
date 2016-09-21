@@ -152,6 +152,14 @@ class AHK_Joy_Axes extends _BindObject {
 		}
 	}
 	
+	BuildHumanReadable(){
+		if (this.DeviceID && this.Binding[1]){
+			return "Stick " this.DeviceID ", Axis " this.Binding[1]
+		} else if (this.DeviceID){
+			return "Pick an Axis (Stick " this.DeviceID ")"
+		}
+	}
+	
 	_ChangedValue(o){
 		if (o < 9){
 			; Stick ID
