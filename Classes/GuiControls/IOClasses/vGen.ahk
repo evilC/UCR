@@ -31,9 +31,7 @@ class vGen_Output extends _BindObject {
 	}
 	
 	SetState(state){
-		push := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", 1, "Cdecl")
-		sleep 1000
-		push := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", 0, "Cdecl")
+		push := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", state, "Cdecl")
 	}
 	
 	_RegisterButton(){
