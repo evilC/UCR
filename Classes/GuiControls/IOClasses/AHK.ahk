@@ -100,11 +100,9 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 	}
 	
 	AddMenuItems(){
-		this.ParentControl.AddMenuItem("Select Keyboard / Mouse Binding...", "AHK_KBM_Output", this._ChangedValue.Bind(this, 1))
 	}
 	
-	_ChangedValue(val){
-		;UCR._RequestBinding(this.ParentControl)
+	_ChangedValue(o){
 	}
 }
 

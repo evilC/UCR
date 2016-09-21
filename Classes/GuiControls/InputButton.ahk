@@ -143,7 +143,6 @@ class _InputButton extends _BannerMenu {
 		; Request the new binding from the Profile's InputThread.
 		; If the IOClass was the same as before, the old binding will be deleted automatically
 		UCR._RequestBinding(this)
-
 	}
 	
 	_Serialize(){

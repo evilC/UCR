@@ -15,6 +15,7 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	_BuildMenu(){
+		this.AddMenuItem("Select Keyboard / Mouse Binding...", "AHK_KBM_Output", this._ChangedValue.Bind(this, 1))
 		for i, cls in this._BindObjects {
 			cls.AddMenuItems()
 		}
@@ -188,6 +189,7 @@ Class _OutputButton extends _InputButton {
 			if (o = 1){
 				; Bind
 				;UCR._RequestBinding(this)
+				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this))
 				return
 			} else if (o = 2){
 				; Clear Binding
@@ -272,6 +274,22 @@ Class _OutputButton extends _InputButton {
 			*/
 		}
 	}
+	
+	; Bind Mode has ended.
+	; A "Primitive" BindObject will be passed, along with the IOClass of the detected input.
+	; The Primitive contains just the Binding property and optionally the DeviceID property.
+	_BindModeEnded(bo){
+		this.SetBinding(bo)
+	}
+	
+	; bo is a "Primitive" BindObject
+	SetBinding(bo){
+		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
+		this._BindObjects[bo.IOClass]._Deserialize(bo)
+		this.value := this._BindObjects[bo.IOClass]
+	}
+
 	
 	_Deserialize(obj){
 		; Trigger _value setter to set gui state but not fire change event
