@@ -82,19 +82,6 @@ class _InputButton extends _BannerMenu {
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetControlState(){
-		/*
-		ko := (this.__value.Type == 1 && this.__value.Buttons.length())
-		for n, opt in this._KeyOnlyOptions {
-			opt.SetEnableState(ko)
-			opt.SetCheckState(this.__value[n])
-		}
-		if ( this.__value.Buttons.length()) {
-			Text := this.__value.BuildHumanReadable()
-		} else {
-			Text := this._DefaultBanner			
-		}
-		this.SetCueBanner(Text)
-		*/
 		if (this.__value.Binding[1] || this.__value.DeviceID){
 			Text := this.__value.BuildHumanReadable()
 		} else {
@@ -107,7 +94,8 @@ class _InputButton extends _BannerMenu {
 		}
 	}
 	
-	; An option was selected from the list
+	; An option was selected from one of the Menus that this class controls
+	; Menus in this GUIControl may be handled in an IOClass
 	_ChangedValue(o){
 		if (o){
 			; Option selected from list

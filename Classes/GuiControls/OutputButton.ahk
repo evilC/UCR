@@ -22,49 +22,6 @@ Class _OutputButton extends _InputButton {
 		;this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 
 		/*
-		static HatDirections := ["Up", "Right", "Down", "Left"]
-		static XBoxButtons := ["A", "B", "X", "Y", "LB", "RB", "LS", "RS", "Back", "Start", "Guide"]
-		static TitanButtons := {XB360: XBoxButtons, PS3: ["Triangle", "Circle", "Cross", "Square", "L2", "R2", "L1", "R1", "Select", "Start", "LS", "RS"]}
-		this.AddMenuItem("Select Keyboard / Mouse Binding", "Select", this._ChangedValue.Bind(this, 1))
-		menu := this.AddSubMenu("vJoy Stick", "vJoy Stick")
-		Loop 8 {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))
-		}
-		chunksize := 16
-		Loop % round(128 / chunksize) {
-			offset := (A_Index-1) * chunksize
-			menu := this.AddSubMenu("vJoy Buttons " offset + 1 "-" offset + chunksize, "vJoyBtns" A_Index)
-			this.JoyMenus.Push(menu)
-			Loop % chunksize {
-				btn := A_Index + offset
-					menu.AddMenuItem(btn, btn, this._ChangedValue.Bind(this, 1000 + btn))	; Set the callback when selected
-			}
-		}
-
-		Loop 4 {
-			menu := this.AddSubMenu("vJoy Hat " A_Index, "vJoyHat" A_Index)
-			offset := (1 + A_Index) * 1000
-			this.JoyMenus.Push(menu)
-			Loop 4 {
-				menu.AddMenuItem(HatDirections[A_Index], HatDirections[A_Index], this._ChangedValue.Bind(this, offset + A_Index))	; Set the callback when selected
-			}
-		}
-		*/
-		
-		/*
-		menu := this.AddSubMenu("vXBox Pad", "vXBoxPad")
-		Loop 4 {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 200 + A_Index))
-		}
-
-		menu := this.AddSubMenu("vXBox Buttons", "vXBoxBtns")
-		this.JoyMenus.Push(menu)
-		Loop 11 {
-			menu.AddMenuItem(XBoxButtons[A_Index] " (" A_Index ")", A_Index, this._ChangedValue.Bind(this, 6000 + A_Index))
-		}
-		*/
-		
-		/*
 		TitanButtons := UCR.Libraries.Titan.GetButtonNames()
 		menu := this.AddSubMenu("Titan Buttons", "TitanButtons")
 		Loop 13 {
@@ -184,12 +141,10 @@ Class _OutputButton extends _InputButton {
 		}
 	}
 	
-	; An option was selected from the list
+	; An option was selected from one of the Menus that this class controls
+	; Menus in this GUIControl may be handled in an IOClass
 	_ChangedValue(o){
 		if (o){
-			;o := this._CurrentOptionMap[o]
-			
-			; Option selected from list
 			if (o = 1){
 				; Bind
 				;UCR._RequestBinding(this)
@@ -197,85 +152,10 @@ Class _OutputButton extends _InputButton {
 				return
 			} else if (o = 2){
 				; Clear Binding
-				;mod := {Buttons: [], type: 0}
-				;this.value 
 				cls := this.value.IOClass
 				this.value._UnRegister()
 				this.value := 0
 			}
-			/*
-			else if (o > 100 && o < 109) {
-				; Stick ID
-				o -= 100
-				reopen := 0
-				if (this.__value.type >= 2 && this.__value.type <= 6){
-					; stick already selected
-					bo := this.__value.clone()
-				} else {
-					reopen := 1
-					bo := new _BindObject()
-					bo.Type := 2
-					btn := new _Button()
-					btn.Type := 2
-					btn.IsVirtual := 1
-					bo.Buttons.push(btn)
-				}
-				
-				bo.Buttons[1].DeviceID := o
-				this._value := bo
-				; Re-open the menu if we just changed to stick
-				if (reopen)
-					this.OpenMenu()
-			} else if (o > 1000 && o < 1129){
-				; vJoy button
-				o -= 1000
-				bo := this.__value.clone()
-				bo.Buttons[1].code := o
-				bo.Buttons[1].type := 2
-				bo.Type := 2
-				this.value := bo
-			} else if (o > 2000 && o < 6000){
-				; vJoy hat
-				o -= 2000
-				hat := 1
-				while (o > 1000){
-					o -= 1000
-					hat++
-				}
-				bo := this.__value.clone()
-				bo.Buttons[1].code := o
-				bo.Buttons[1].type := 2 + hat
-				bo.Type := 2 + hat
-				this.value := bo
-			} else if (o > 10000 && o < 10200){
-				; Titan Buttons
-				o -= 10000
-				bo := new _BindObject()
-				bo.Type := 9
-				btn := new _Button()
-				btn.Type := 9
-				btn.IsVirtual := 1
-				bo.Buttons.push(btn)
-				bo.Buttons[1].DeviceID := 1
-				bo.Buttons[1].code := o
-				this.value := bo
-			} else if (o > 10200 && o < 10300){
-				; Titan Hat
-				o -= 10210
-				bo := new _BindObject()
-				bo.Type := 10
-				btn := new _Button()
-				btn.Type := 10
-				btn.code := o
-				btn.IsVirtual := 1
-				bo.Buttons.push(btn)
-				this.value := bo
-			}
-			if (IsObject(mod)){
-				UCR._RequestBinding(this, mod)
-				return
-			}
-			*/
 		}
 	}
 	
@@ -297,15 +177,7 @@ Class _OutputButton extends _InputButton {
 	
 	_Deserialize(obj){
 		; Trigger _value setter to set gui state but not fire change event
-		;this._value := new _BindObject(obj)
 		cls := obj.IOClass
-		/*
-		if (!%cls%.IsInitialized) {
-			%cls%._Init()
-		}
-		*/
-
-		;this._value := new %cls%(this, obj)
 		this._BindObjects[cls]._Deserialize(obj)
 		this._value :=  this._BindObjects[cls]
 	}
@@ -323,7 +195,5 @@ Class _OutputButton extends _InputButton {
 		base._KillReferences()
 		this.JoyMenus := []
 		;~ GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
-		;~ this.ChangeValueCallback := ""
-		;~ this.ChangeStateCallback := ""
 	}
 }
