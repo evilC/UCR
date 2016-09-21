@@ -29,8 +29,14 @@ class _BindObject {
 	}
 
 	_Deserialize(obj){
-		for k, v in obj {
-			this[k] := v
-		}
+		if (ObjHasKey(obj, "DeviceID"))
+			this.DeviceID := obj.DeviceID
+		if (ObjHasKey(obj, "Binding"))
+			this.Binding := obj.Binding
+		if (ObjHasKey(obj, "BindOptions"))
+			this.BindOptions := obj.BindOptions
+		;for k, v in obj {
+		;	this[k] := v
+		;}
 	}
 }

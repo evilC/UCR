@@ -7,8 +7,8 @@ class _InputButton extends _BannerMenu {
 	__value := 0		; Holds the BindObject class
 	; Other internal vars
 	_IsOutput := 0
-	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_Joy_Hats: "AHK_Joy_Hats"}
-	_IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_Joy_Hats"]
+	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
+	_IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
 	_BindObjects := {}
 	
 	_DefaultBanner := "Select an Input Button"
@@ -132,11 +132,11 @@ class _InputButton extends _BannerMenu {
 		return this._Serialize()
 	}
 	
-	SetBinding(bo){
+	SetBinding(bo, update := 1){
 		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
 		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this.value := this._BindObjects[bo.IOClass]
+		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
 		; Request the new binding from the Profile's InputThread.
 		; If the IOClass was the same as before, the old binding will be deleted automatically
 		UCR._RequestBinding(this)
@@ -147,12 +147,8 @@ class _InputButton extends _BannerMenu {
 	}
 	
 	_Deserialize(obj){
-		; Trigger _value setter to set gui state but not fire change event
-		;this._value := new _BindObject(obj)
-		cls := obj.IOClass
-		this._value := new %cls%(this, obj)
-		; Register hotkey on load
-		;UCR._InputHandler.SetButtonBinding(this)
+		; Pass 0 to SetBinding so we don't save while we are loading
+		this.SetBinding(obj, 0)
 	}
 	
 	MergeObject(src, patch){

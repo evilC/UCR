@@ -136,8 +136,8 @@ class AHK_JoyBtn_Input extends _BindObject {
 }
 
 ; IOClass for AHK Joystick Axis Input GuiControls
-class AHK_Joy_Axes extends _BindObject {
-	static IOClass := "AHK_Joy_Axes"
+class AHK_JoyAxis_Input extends _BindObject {
+	static IOClass := "AHK_JoyAxis_Input"
 	static IsInitialized := 1
 	
 	AddMenuItems(){
@@ -161,15 +161,16 @@ class AHK_Joy_Axes extends _BindObject {
 	}
 	
 	_ChangedValue(o){
+		bo := {IOClass: "AHK_JoyAxis_Input"}
 		if (o < 9){
 			; Stick ID
-			this.DeviceID := o
+			bo.DeviceID := o
 		} else if (o > 100 && o < 107){
 			; Axis ID
 			o -= 100
-			this.Binding[1] := o
+			bo.Binding := [o]
 		}
-		this.ParentControl.SetBinding(this._Serialize())
+		this.ParentControl.SetBinding(bo)
 	}
 	
 	UpdateMenus(cls){
@@ -178,8 +179,8 @@ class AHK_Joy_Axes extends _BindObject {
 }
 
 ; IOClass for AHK Joystick Hat Input GuiControls
-class AHK_Joy_Hats extends _BindObject {
-	static IOClass := "AHK_Joy_Hats"
+class AHK_JoyHat_Input extends _BindObject {
+	static IOClass := "AHK_JoyHat_Input"
 	static IsInitialized := 1
 
 	UpdateMenus(cls){

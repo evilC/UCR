@@ -4,7 +4,7 @@
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
 	DetectionState := 0
-	IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_Joy_Hats: 0, AHK_Joy_Axes: 0}
+	IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0, AHK_JoyAxis_Input: 0}
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
@@ -202,7 +202,7 @@ Class _InputThread {
 		SetDetectionState(state){
 			; Are we already in the requested state?
 			if (A_IsSuspended == state){
-				OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkeys " (state ? "On" : "Off")
+				OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Axis detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state
@@ -282,18 +282,35 @@ Class _InputThread {
 	}
 
 	; Listens for Joystick Axis input using AHK's GetKeyState() function
-	class AHK_Joy_Axes {
+	class AHK_JoyAxis_Input {
 		StickBindings := {}
+		ControlMappings := {}
 		
 		__New(Callback){
 			this.Callback := Callback
 			
-			fn := this.TimerFn.Bind(this)
-			this.TimerFnFn := fn
+			this.TimerFn := this.StickWatcher.Bind(this)
 		}
 		
 		UpdateBinding(ControlGUID, bo){
-			OutputDebug % "UCR| AHK_Joy_Axes " (bo.Binding[1] ? "Update" : "Remove" ) " Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
+			static AHKAxisList := ["X","Y","Z","R","U","V"]
+			dev := bo.DeviceID, axis := bo.Binding[1]
+			OutputDebug % "UCR| AHK_JoyAxis_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
+			if (ObjHasKey(this.ControlMappings, ControlGUID)){
+				str := this.ControlMappings[ControlGUID]
+				this.StickBindings.Delete(str)
+				this.ControlMappings.Delete(ControlGUID)
+				if (this.IsEmptyAssoc(this.StickBindings)){
+					this.TimerWanted := 0
+				}
+			}
+			if (dev && axis){
+				str := dev "joy" AHKAxisList[axis]
+				this.StickBindings[str] := {ControlGUID: ControlGUID, state: -1}
+				this.ControlMappings[ControlGUID] := str
+				this.TimerWanted := 1
+			}
+			this.ProcessTimerState()
 		}
 		
 		SetDetectionState(state){
@@ -306,21 +323,39 @@ Class _InputThread {
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher " ControlGUID
+				OutputDebug % "UCR| AHK_JoyAxis_Input Started AxisWatcher"
 			} else if (!this.TimerWanted && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher " ControlGUID
+				OutputDebug % "UCR| AHK_JoyAxis_Input Stopped AxisWatcher"
 			}
 		}
 
 		StickWatcher(){
-			
+			for bindstring, obj in this.StickBindings {
+				state := GetKeyState(bindstring)
+				if (state != obj.state){
+					obj.state := state
+					;this.Callback.Call(obj.ControlGUID, state)
+					OutputDebug % "UCR| Firing Axis Callback - " state
+					fn := this.InputEvent.Bind(this, obj.ControlGUID, state)
+					SetTimer, % fn, -0
+				}
+			}
+		}
+		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
+		}
+		
+		; Is an associative array empty?
+		IsEmptyAssoc(assoc){
+			return !assoc._NewEnum()[k, v]
 		}
 	}
 
 	; Listens for Joystick Hat input using AHK's GetKeyState() function
-	class AHK_Joy_Hats {
+	class AHK_JoyHat_Input {
 		; Indexed by GetKeyState string (eg "1JoyPOV")
 		; The HatWatcher timer is active while this array has items.
 		; Contains an array of objects whose keys are the GUIDs of GuiControls mapped to that POV
@@ -342,16 +377,16 @@ Class _InputThread {
 		
 		; Request from main thread to update binding
 		UpdateBinding(ControlGUID, bo){
-			OutputDebug % "UCR| AHK_Joy_Hats " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
+			OutputDebug % "UCR| AHK_JoyHat_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 			this._UpdateArrays(ControlGUID, bo)
 			t := this.TimerWanted, k := ObjHasKey(this.ControlMappings, ControlGUID)
 			fn := this.TimerFn
 			if (t && !k){
-				OutputDebug % "UCR| AHK_Joy_Hats Stopping Hat Watcher" ;*[UCR]
+				OutputDebug % "UCR| AHK_JoyHat_Input Stopping Hat Watcher"
 				SetTimer, % fn, Off
 				this.TimerWanted := 0
 			} else if (!t && k){
-				OutputDebug % "UCR| AHK_Joy_Hats Starting Hat Watcher"
+				OutputDebug % "UCR| AHK_JoyHat_Input Starting Hat Watcher"
 				this.TimerWanted := 1
 				SetTimer, % fn, 10
 			}
@@ -367,11 +402,11 @@ Class _InputThread {
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher " ControlGUID
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher"
 			} else if (!this.TimerWanted && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher " ControlGUID
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher"
 			}
 		}
 
@@ -384,7 +419,7 @@ Class _InputThread {
 				this.ControlMappings.Delete(ControlGUID)
 				if (this.IsEmptyAssoc(this.HatBindings[bindstring])){
 					this.HatBindings.Delete(bindstring)
-					;OutputDebug % "UCR| AHK_Joy_Hats Removing Hat Bindstring " bindstring
+					;OutputDebug % "UCR| AHK_JoyHat_Input Removing Hat Bindstring " bindstring
 				}
 			}
 			if (bo != 0 && bo.Binding[1]){
@@ -392,7 +427,7 @@ Class _InputThread {
 				bindstring := bo.DeviceID "JoyPOV"
 				if (!ObjHasKey(this.HatBindings, bindstring)){
 					this.HatBindings[bindstring] := {}
-					;OutputDebug % "UCR| AHK_Joy_Hats Adding Hat Bindstring " bindstring
+					;OutputDebug % "UCR| AHK_JoyHat_Input Adding Hat Bindstring " bindstring
 				}
 				this.HatBindings[bindstring, ControlGUID] := {dir: bo.Binding[1], state: 0}
 				this.ControlMappings[ControlGUID] := {bindstring: bindstring}
@@ -408,7 +443,7 @@ Class _InputThread {
 					new_state := (this.PovMap[state, obj.dir] == 1)
 					if (obj.state != new_state){
 						obj.state := new_state
-						OutputDebug % "UCR| AHK_Joy_Hats Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
+						OutputDebug % "UCR| AHK_JoyHat_Input Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
 						; Use the thread-safe object to tell the main thread that the hat direction changed state
 						this.Callback.Call(ControlGUID, new_state)
 					}

@@ -27,7 +27,7 @@ class AxisToAxis extends _Plugin {
 		this.AddControl("Sensitivity", 0, "Edit", "x+10 yp-3 w30", "100")
 		Gui, Add, Text, % "x+0 yp+3", `%
 		this.AddControl("Linear", 0, "Checkbox", "x+18 yp w30")
-		;this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
+		this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
 		this.hSliderOut := hwnd
 	}
