@@ -31,10 +31,10 @@ Class _InputThread {
 	}
 	
 	; A request was received from the main thread to update a binding.
-	UpdateBinding(ControlGUID, j){
-		OutputDebug % "UCR| _InputThread.UpdateBinding - cls: " j.IOClass
+	UpdateBinding(ControlGUID, bo){
+		OutputDebug % "UCR| _InputThread.UpdateBinding - cls: " bo.IOClass
 		; Direct the request to the appropriate IOClass that handles it
-		this.IOClasses[j.IOClass].UpdateBinding(ControlGUID, j)
+		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
 	}
 	
 	; A request was received from the main thread to set the Dection state
