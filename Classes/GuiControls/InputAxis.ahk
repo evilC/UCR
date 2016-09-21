@@ -66,40 +66,19 @@ class _InputAxis extends _BannerMenu {
 		*/
 	}
 	
-	; The Axis Select DDL changed value
 	_ChangedValue(o){
-		axis := this.__value.Axis
-		DeviceID := this.__value.DeviceID
-		
-		if (o > 10){
-			o -= 10
-			DeviceID := 1
-			while (o > 10){
-				DeviceID++
-				o -= 10
-			}
-			axis := o
-		} else if (o == 2){
-			; Clear Selected
-			axis := DeviceID := 0
-		}
-		this.__value.Axis := axis
-		this.__value.DeviceID := DeviceID
-		this.SetControlState()
-		this.value := this.__value
-		UCR.RequestAxisBinding(this)
+
 	}
 	
 	; bo is a "Primitive" BindObject
 	SetBinding(bo){
-		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
-		;msgbox % this._BindObjects[bo.IOClass].IOClass
-		;msgbox % this__value.DeviceID
+		if (!bo.DeviceID)
+			bo.Delete("DeviceID")
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
 		this.value := this._BindObjects[bo.IOClass]
 		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " this._BindObjects[bo.IOClass].Binding[1] ", Device: " this._BindObjects[bo.IOClass].DeviceID
 		;if (this__value.Binding[1] && this.__value.DeviceID){
-			UCR._RequestBinding(this.ParentControl)
+			UCR._RequestBinding(this)
 		;}
 	}
 	
@@ -107,6 +86,7 @@ class _InputAxis extends _BannerMenu {
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
 		;UCR.RequestAxisBinding(this)
+		;UCR.RequestBinding(this)
 	}
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
@@ -156,9 +136,12 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	_Deserialize(obj){
-		for k, v in obj {
-			this[k] := v
-		}
+		; Trigger _value setter to set gui state but not fire change event
+		;this._value := new _BindObject(obj)
+		cls := obj.IOClass
+		this._value := new %cls%(this, obj)
+		; Register hotkey on load
+		;UCR._InputHandler.SetButtonBinding(this)
 	}
 
 	/*

@@ -799,7 +799,7 @@ Class UCRMain extends _UCRBase {
 	; A plugin is requesting that we register a binding with an input thread
 	_RequestBinding(ctrl){
 		bo := ctrl._Serialize()
-		outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		ctrl.ParentPlugin.ParentProfile._InputThread.UpdateBinding(ctrl.id, bo)
 	}
 	

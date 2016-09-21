@@ -169,11 +169,7 @@ class AHK_Joy_Axes extends _BindObject {
 			o -= 100
 			this.Binding[1] := o
 		}
-		;UCR._RequestBinding(this)
 		this.ParentControl.SetBinding(this._Serialize())
-		;msgbox % o
-		;if (this.DeviceID && this.Binding[1])
-		;UCR._RequestBinding(this.ParentControl)
 	}
 	
 	UpdateMenus(cls){
