@@ -90,6 +90,21 @@ class _InputAxis extends _BannerMenu {
 		UCR.RequestAxisBinding(this)
 	}
 	
+	; bo is a "Primitive" BindObject
+	SetBinding(bo){
+		; This is CRASHING!
+		return
+		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
+		;msgbox % this._BindObjects[bo.IOClass].IOClass
+		msgbox % this__value.DeviceID
+		this._BindObjects[bo.IOClass]._Deserialize(bo)
+		this._value := this._BindObjects[bo.IOClass]
+		if (this__value.Binding[1] && this.__value.DeviceID){
+			UCR._RequestBinding(this.ParentControl)
+		}
+	}
+	
 	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){

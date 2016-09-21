@@ -16,7 +16,7 @@ Class _InputThread {
 			; Instantiate an instance of a class that is a child class of this one. Thanks to HotkeyIt for this code!
 			; Replace each 0 in the array with an instance of the relevant class
 			call:=this.base[name]
-			this.IOClasses[name] := new call(this.Callback) ;*[UCR]
+			this.IOClasses[name] := new call(this.Callback)
 			; debugging string
 			if (i)
 				names .= ", "

@@ -145,7 +145,7 @@ class AHK_Joy_Axes extends _BindObject {
 		Loop 8 {
 			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
 		}
-		menu := this.ParentControl.AddSubMenu("Buttons " offset + 1 "-" offset + chunksize, "AHKBtns" A_Index)
+		menu := this.ParentControl.AddSubMenu("Axes ", "Axes")
 		this._JoyMenus.Push(menu)
 		Loop 6 {
 			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
@@ -155,12 +155,14 @@ class AHK_Joy_Axes extends _BindObject {
 	_ChangedValue(o){
 		if (o < 9){
 			; Stick ID
-			;this.DeviceID := o
+			this.DeviceID := o
 		} else if (o > 100 && o < 107){
 			; Axis ID
 			o -= 100
-			;this.Binding[1] := o
+			this.Binding[1] := o
 		}
+		;UCR._RequestBinding(this)
+		this.ParentControl.SetBinding(this._Serialize())
 		;msgbox % o
 		;if (this.DeviceID && this.Binding[1])
 		;UCR._RequestBinding(this.ParentControl)
