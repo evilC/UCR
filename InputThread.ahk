@@ -6,7 +6,8 @@ Class _InputThread {
 	DetectionState := 0
 	IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0, AHK_JoyAxis_Input: 0}
 	__New(ProfileID, CallbackPtr){
-		this.Callback := ObjShare(CallbackPtr)
+		;this.Callback := ObjShare(CallbackPtr)
+		this.Callback := CallbackPtr
 		this.ProfileID := ProfileID ; Profile ID of parent profile. So we know which profile this thread serves
 		
 		names := ""
