@@ -9,7 +9,7 @@ class _BindMapper {
 	static IOClasses := {AHK_Common: 0, AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0}
 	__New(CallbackPtr){
 		;this.Callback := ObjShare(CallbackPtr)
-		this.Callback := CallbackPtr ;*[UCR]
+		this.Callback := CallbackPtr
 		; Instantiate each of the IOClasses specified in the IOClasses array
 		for name, state in this.IOClasses {
 			; Instantiate an instance of a class that is a child class of this one. Thanks to HotkeyIt for this code!

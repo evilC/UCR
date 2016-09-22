@@ -9,11 +9,6 @@ class _BindModeHandler {
 	ModifierCount := 0
 	_Callback := 0
 	
-	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
-	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
-	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
-	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
-
 	__New(){
 		;this._BindModeThread:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		;While !this._BindModeThread.ahkgetvar.autoexecute_done
@@ -50,7 +45,7 @@ class _BindModeHandler {
 	StartBindMode(IOClassMappings, callback){
 		this._callback := callback
 		
-		this.SelectedBinding := 0
+		this.SelectedBinding := {Binding: [], DeviceID: 0, IOClass: 0}
 		this.BindMode := 1
 		this.EndKey := 0
 		this.HeldModifiers := {}
@@ -79,12 +74,52 @@ class _BindModeHandler {
 	; The BindModeThread calls back here
 	ProcessInput(e, i, deviceid, IOClass){
 		;ToolTip % "e " e ", i " i ", deviceid " deviceid ", IOClass " IOClass
-		if (!e){
+		;if (ObjHasKey(this._Modifiers, i))
+		if (this.SelectedBinding.IOClass && (this.SelectedBinding.IOClass != IOClass)){
+			; Changed binding IOCLass part way through.
+			if (e){
+				SoundBeep, 500, 100
+			}
+			return
+		}
+		max := this.SelectedBinding.Binding.length()
+		if (e){
+			for idx, code in  this.SelectedBinding.Binding {
+				if (i == code)
+					return	; filter repeats
+			}
+			this.SelectedBinding.Binding.push(i)
+			if (this.AHK_KBM_Input.IsModifier(i)){
+				if (max > this.ModifierCount){
+					; Modifier pressed after end key
+					SoundBeep, 500, 100
+					return
+				}
+				this.ModifierCount++
+			} else if (max > this.ModifierCount) {
+				; Second End Key pressed after first held
+				SoundBeep, 500, 100
+				return
+			}
+			this.SelectedBinding.IOClass := IOClass
+		} else {
 			this.BindMode := 0
 			this.SetHotkeyState(0)
-			ret := {Binding:[i], DeviceID: deviceid, IOClass: IOClass}
-			;this._Callback.Call(ret, IOClass)
-			this._Callback.Call(ret)
+			;ret := {Binding:[i], DeviceID: deviceid, IOClass: this.IOClassMappings[IOClass]}
+			
+			this._Callback.Call(this.SelectedBinding)
+		}
+	}
+	
+	; Implements IsModifier to tell the BindMode Handler that this IOClass can be a modifier
+	class AHK_KBM_Input {
+		static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+			,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
+			,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
+			,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
+		
+		IsModifier(code){
+			return ObjHasKey(this._Modifiers, code)
 		}
 	}
 	
