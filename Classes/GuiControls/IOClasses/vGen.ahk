@@ -30,16 +30,20 @@ class vGen_Output extends _BindObject {
 		vGen_Output.IsInitialized := 1
 	}
 	
-	SetState(state){
-		push := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", state, "Cdecl")
+	SetButtonState(state){
+		ret := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", state, "Cdecl")
 	}
 	
-	_RegisterButton(){
+	SetAxisState(state){
+		ret := DllCall(this.DllName "\SetDevAxis", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "Float", state, "Cdecl")
+	}
+	
+	_Register(){
 		if (!this._AttemptAcquire()){
 			return 0
 		}
 		this._SetStickControlGuid(this.DeviceID, this.ParentControl.id, 1)
-		OutputDebug % "UCR| _RegisterButton - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
+		OutputDebug % "UCR| _Register - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
 		return 1
 	}
 	
@@ -131,6 +135,10 @@ class vJoy_Button_Output extends vGen_Output {
 	static _NumSticks := 8			; vJoy has 8 sticks
 	static _NumButtons := 128		; vJoy has 128 Buttons
 	
+	SetState(state){
+		base.SetButtonState(state)
+	}
+	
 	BuildHumanReadable(){
 		str := "vJoy Stick " this.DeviceID
 		if (this.Binding[1]){
@@ -162,7 +170,7 @@ class vJoy_Button_Output extends vGen_Output {
 
 	UpdateBinding(){
 		if (this.DeviceID && this.Binding[1]){
-			this._RegisterButton()
+			this._Register()
 		}
 	}
 	
@@ -191,6 +199,10 @@ class vJoy_Axis_Output extends vGen_Output {
 	
 	_JoyMenus := []
 	
+	SetState(state){
+		base.SetAxisState(state)
+	}
+	
 	BuildHumanReadable(){
 		str := "vJoy Stick " this.DeviceID
 		if (this.Binding[1]){
@@ -217,7 +229,7 @@ class vJoy_Axis_Output extends vGen_Output {
 	
 	UpdateBinding(){
 		if (this.DeviceID && this.Binding[1]){
-			this._RegisterButton()
+			this._Register()
 		}
 	}
 	
@@ -273,7 +285,7 @@ class vXBox_Button_Output extends vGen_Output {
 	
 	UpdateBinding(){
 		if (this.DeviceID && this.Binding[1]){
-			this._RegisterButton()
+			this._Register()
 		}
 	}
 	

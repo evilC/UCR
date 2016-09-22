@@ -48,6 +48,12 @@ class _OutputAxis extends _BannerMenu {
 	
 	; Plugin Authors call this to set the state of the output axis
 	SetState(state, delay_done := 0){
+		if (UCR._CurrentState == 2 && !delay_done){
+			fn := this.SetState.Bind(this, state, 1)
+			SetTimer, % fn, % -UCR._GameBindDuration
+		} else {
+			this.__value.SetState(state)
+		}
 		/*
 		if (UCR._CurrentState == 2 && !delay_done){
 			; In GameBind Mode - delay output.
