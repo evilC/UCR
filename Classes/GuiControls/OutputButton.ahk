@@ -48,6 +48,7 @@ Class _OutputButton extends _InputButton {
 			SetTimer, % fn, % -UCR._GameBindDuration
 		} else {
 			this.__value.SetState(state)
+			this.State := state
 			/*
 			this.State := state
 			max := this.__value.Buttons.Length()

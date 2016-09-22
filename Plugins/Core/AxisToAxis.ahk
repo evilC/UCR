@@ -34,16 +34,13 @@ class AxisToAxis extends _Plugin {
 	
 	; The user changed options - store stick and axis selected for fast retreival
 	MyOutputChangedValue(value){
-		this.vAxis := value.axis
+		this.vAxis := value.Binding[1]
 		this.vDevice := value.DeviceID
 	}
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
 		GuiControl, , % this.hSliderIn, % value
-		this.OutputAxes.OutputAxis.SetState(value)
-		GuiControl, , % this.hSliderOut, % value
-		/*
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		if (this.vAxis && this.vDevice){
 			if (this.GuiControls.Deadzone.value){
@@ -61,7 +58,7 @@ class AxisToAxis extends _Plugin {
 			}
 			value := UCR.Libraries.StickOps.InternalToAHK(value)
 			GuiControl, , % this.hSliderOut, % value
-			value := UCR.Libraries.StickOps.AHKToVjoy(value)
+			;value := UCR.Libraries.StickOps.AHKToVjoy(value)
 			this.OutputAxes.OutputAxis.SetState(value)
 		}
 		*/

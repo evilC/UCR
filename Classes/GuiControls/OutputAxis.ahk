@@ -53,6 +53,7 @@ class _OutputAxis extends _BannerMenu {
 			SetTimer, % fn, % -UCR._GameBindDuration
 		} else {
 			this.__value.SetState(state)
+			this.State := State
 		}
 		/*
 		if (UCR._CurrentState == 2 && !delay_done){

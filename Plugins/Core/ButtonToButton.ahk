@@ -22,13 +22,11 @@ class ButtonToButton extends _Plugin {
 		Gui, Add, Text, x+5 yp+2 , % " to "
 		; Add an Output, and give it the name "MyOp1". All output objects can be accessed via this.OutputButtons[name]
 		this.AddOutputButton("OB1", 0, "x+5 yp-2 w200")
-		;this.AddControl("Toggle", 0, "Checkbox", "x+20 yp+3", "Toggle mode")
+		this.AddControl("Toggle", 0, "Checkbox", "x+20 yp+3", "Toggle mode")
 	}
 	
 	; Called when the hotkey changes state (key is pressed or released)
 	MyHkChangedState(Name, e){
-		this.OutputButtons.OB1.SetState(e)
-		/*
 		;OutputDebug, % "UCR| " Name " changed state to: " (e ? "Down" : "Up")
 		if (this.GuiControls.Toggle.value){
 			; Toggle mode - Toggle the state of the output when the input goes down
@@ -39,6 +37,5 @@ class ButtonToButton extends _Plugin {
 			; Normal mode - Set the state of the output to match the state of the input
 			this.OutputButtons.OB1.SetState(e)
 		}
-		*/
 	}
 }
