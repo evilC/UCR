@@ -3,9 +3,9 @@ Handles binding of the hotkeys for Bind Mode
 Runs as a separate thread to the main application,
 so that bind mode keys can be turned on and off quickly with Suspend
 */
-#Persistent
-#NoTrayIcon
-autoexecute_done := 1
+;#Persistent
+;#NoTrayIcon
+;autoexecute_done := 1
 
 class _BindMapper {
 	DebugMode := 2	; 0 = block all, 1 = dont block LMB / RMB, 2 = no blocking
@@ -17,8 +17,8 @@ class _BindMapper {
 	JoystickCaps := []
 	
 	__New(CallbackPtr){
-		this.Callback := ObjShare(CallbackPtr)
-		this.MasterThread := AhkExported()
+		;this.Callback := ObjShare(CallbackPtr)
+		this.Callback := CallbackPtr
 		this.GetJoystickCaps()
 		
 		; Make sure hotkeys are suspended before creating them,
@@ -106,6 +106,7 @@ class _BindMapper {
 	}
 	
 	SetHotkeyState(state, enablejoysticks := 1){
+		;OutputDebug % "UCR| SetHotkeyState"
 		if (state){
 			if (enablejoysticks)
 				this.SetHatWatchState(1)

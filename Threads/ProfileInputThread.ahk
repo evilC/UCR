@@ -31,6 +31,13 @@ Class _InputThread {
 		
 		global InterfaceUpdateBinding := ObjShare(this.UpdateBinding.Bind(this))
 		global InterfaceSetDetectionState := ObjShare(this.SetDetectionState.Bind(this))
+		
+		; Unreachable dummy label for hotkeys to bind to to clear binding
+		if(0){
+			UCR_INPUTHREAD_DUMMY_LABEL:
+				return
+		}
+
 	}
 	
 	; A request was received from the main thread to update a binding.
@@ -98,9 +105,9 @@ Class _InputThread {
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
 				OutputDebug % "UCR| AHK_KBM_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
-				hotkey, % keyname, UCR_DUMMY_LABEL
+				hotkey, % keyname, UCR_INPUTHREAD_DUMMY_LABEL
 				hotkey, % keyname, Off
-				hotkey, % keyname " up", UCR_DUMMY_LABEL
+				hotkey, % keyname " up", UCR_INPUTHREAD_DUMMY_LABEL
 				hotkey, % keyname " up", Off
 				this._AHKBindings.Delete(ControlGUID)
 			}
@@ -217,13 +224,13 @@ Class _InputThread {
 			if (keyname){
 				OutputDebug % "UCR| AHK_JoyBtn_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
 				try{
-					hotkey, % keyname, UCR_DUMMY_LABEL
+					hotkey, % keyname, UCR_INPUTHREAD_DUMMY_LABEL
 				}
 				try{
 					hotkey, % keyname, Off
 				}
 				try{
-					hotkey, % keyname " up", UCR_DUMMY_LABEL
+					hotkey, % keyname " up", UCR_INPUTHREAD_DUMMY_LABEL
 				}
 				try{
 					hotkey, % keyname " up", Off

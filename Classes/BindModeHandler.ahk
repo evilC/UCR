@@ -15,10 +15,11 @@ class _BindModeHandler {
 	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 
 	__New(){
-		this._BindModeThread:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
-		While !this._BindModeThread.ahkgetvar.autoexecute_done
-			Sleep 50 ; wait until variable has been set.
-		this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" ObjShare(this._ProcessInput.Bind(this)) ")"]
+		;this._BindModeThread:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
+		;While !this._BindModeThread.ahkgetvar.autoexecute_done
+		;	Sleep 50 ; wait until variable has been set.
+		;this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" ObjShare(this._ProcessInput.Bind(this)) ")"]
+		this._BindModeThread := new _BindMapper(this._ProcessInput.Bind(this))
 		
 		Gui, new, +HwndHwnd
 		Gui +ToolWindow -Border
@@ -70,7 +71,8 @@ class _BindModeHandler {
 		} else {
 			Gui, % this.hBindModePrompt ":Hide"
 		}
-		this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
+		;this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
+		this._BindModeThread.SetHotkeyState(state, enablejoystick)
 	}
 	
 	; The BindModeThread calls back here

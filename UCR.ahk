@@ -40,6 +40,8 @@ return
 #Include Classes\GuiControls\IOClasses\vGen.ahk
 #Include Classes\GuiControls\IOClasses\Titan.ahk
 
+#Include Threads\BindModeThread.ahk
+
 #Include Classes\Button.ahk	; remove
 #Include Classes\Axis.ahk	; remove
 
