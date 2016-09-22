@@ -136,7 +136,7 @@ class _InputButton extends _BannerMenu {
 	}
 	
 	SetBinding(bo, update := 1){
-		OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
 		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
 		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]

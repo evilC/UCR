@@ -494,7 +494,7 @@ Class UCRMain extends _UCRBase {
 		if (delete){
 			this.BindControlLookup.Delete(ctrl.id)
 		} else {
-			OutputDebug % "UCR| Registering GuiControl "
+			;OutputDebug % "UCR| Registering GuiControl "
 			this.BindControlLookup[ctrl.id] := ctrl
 		}
 	}
@@ -801,7 +801,7 @@ Class UCRMain extends _UCRBase {
 	; A plugin is requesting that we register a binding with an input thread
 	_RequestBinding(ctrl){
 		bo := ctrl._Serialize()
-		outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID
+		;outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
 		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
 	}

@@ -18,8 +18,8 @@ class _BindModeHandler {
 		;this._BindModeThread:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
 		;While !this._BindModeThread.ahkgetvar.autoexecute_done
 		;	Sleep 50 ; wait until variable has been set.
-		;this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" ObjShare(this._ProcessInput.Bind(this)) ")"]
-		this._BindModeThread := new _BindMapper(this._ProcessInput.Bind(this))
+		;this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" ObjShare(this.ProcessInput.Bind(this)) ")"]
+		this._BindModeThread := new _BindMapper(this.ProcessInput.Bind(this))
 		
 		Gui, new, +HwndHwnd
 		Gui +ToolWindow -Border
@@ -72,9 +72,23 @@ class _BindModeHandler {
 			Gui, % this.hBindModePrompt ":Hide"
 		}
 		;this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
-		this._BindModeThread.SetHotkeyState(state, enablejoystick)
+		;this._BindModeThread.SetHotkeyState(state, enablejoystick)
+		this._BindModeThread.SetDetectionState(state)
 	}
 	
+	; The BindModeThread calls back here
+	ProcessInput(e, i, deviceid, IOClass){
+		;ToolTip % "e " e ", i " i ", deviceid " deviceid ", IOClass " IOClass
+		if (!e){
+			this.BindMode := 0
+			this.SetHotkeyState(0)
+			ret := {Binding:[i], DeviceID: deviceid, IOClass: IOClass}
+			;this._Callback.Call(ret, IOClass)
+			this._Callback.Call(ret)
+		}
+	}
+	
+	/*
 	; The BindModeThread calls back here
 	_ProcessInput(e, type, code, deviceid){
 		;OutputDebug % "UCR| _ProcessInput: e: " e ", type: " type ", code: " code ", deviceid: " deviceid
@@ -82,7 +96,9 @@ class _BindModeHandler {
 		i := new _Button({type: type, code: code, deviceid: deviceid})
 		this.ProcessInput(i,e)
 	}
+	*/
 	
+	/*
 	; Called when a key was pressed
 	ProcessInput(i, e){
 		if (!this.BindMode)
@@ -169,4 +185,5 @@ class _BindModeHandler {
 			this.ProcessInput(i, 0)
 		}
 	}
+	*/
 }
