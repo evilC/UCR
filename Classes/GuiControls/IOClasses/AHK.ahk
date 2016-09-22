@@ -140,16 +140,19 @@ class AHK_JoyAxis_Input extends _BindObject {
 	static IOClass := "AHK_JoyAxis_Input"
 	static IsInitialized := 1
 	_JoyMenus := []
+	_StickMenus := []
+	_AxisMenus := []
 	
 	AddMenuItems(){
+		static AHKAxisList := ["X","Y","Z","R","U","V"]
 		menu := this.ParentControl.AddSubMenu("Stick", "AHKStick")
 		Loop 8 {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
+			this._StickMenus.push(menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index)))
 		}
 		menu := this.ParentControl.AddSubMenu("Axes ", "Axes")
 		this._JoyMenus.Push(menu)
 		Loop 6 {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
+			this._AxisMenus.Push(menu.AddMenuItem(A_Index " - " AHKAxisList[A_Index], A_Index, this._ChangedValue.Bind(this, 100 + A_Index)))
 		}
 	}
 	
@@ -175,10 +178,26 @@ class AHK_JoyAxis_Input extends _BindObject {
 	}
 	
 	UpdateMenus(cls){
-		;ji := GetKeyState( A_Index "JoyInfo")
+		static AHKAxisList := ["X","Y","Z","R","U","V"]
 		state := (this.DeviceID)
 		for i, menu in this._JoyMenus {
 			menu.SetEnableState(state)
+		}
+		Loop 8 {
+			stick := A_Index
+			ji := (GetKeyState(stick "JoyInfo"))
+			this._StickMenus[A_Index].SetEnableState(ji)
+			;if (UCR.UserSettings.GuiControls.ShowJoystickNames){
+			;	name := " (" DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr") ")"
+			;}
+		}
+		if (this.DeviceID){
+			ji := (GetKeyState(this.DeviceID "JoyInfo"))
+			if (this.DeviceID){
+				Loop 4 {
+					this._AxisMenus[A_Index].SetEnableState(InStr(ji, AHKAxisList[A_Index+2]))
+				}
+			}
 		}
 	}
 }
