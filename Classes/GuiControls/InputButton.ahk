@@ -1,18 +1,19 @@
 ﻿; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
 class _InputButton extends _BannerMenu {
+	static _IsOutput := 0
+	static _BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
+	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
+	static _DefaultBanner := "Select an Input Button"
+	static _OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
+	
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
 	__value := 0		; Holds the BindObject class
 	; Other internal vars
-	_IsOutput := 0
-	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
-	_IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
 	_BindObjects := {}
 	
-	_DefaultBanner := "Select an Input Button"
-	_OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
@@ -106,7 +107,7 @@ class _InputButton extends _BannerMenu {
 			} else if (o == 2){
 				this.__value.Binding := []
 				this.__value.DeviceID := 0
-				this.SetBinding(this._value)
+				this.SetBinding(this.__value)
 			}
 		}
 	}

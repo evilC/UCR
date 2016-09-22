@@ -1,12 +1,12 @@
 ﻿; ======================================================================== OUTPUT BUTTON ===============================================================
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
 Class _OutputButton extends _InputButton {
+	static _DefaultBanner := "Select an Output Button"
+	static _IsOutput := 1
+	static _BindTypes := {AHK_KBM_Input: "AHK_KBM_Output"}
+	static _IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vXBox_Button_Output"]
+
 	State := 0
-	_DefaultBanner := "Select an Output Button"
-	_IsOutput := 1
-	_BindTypes := {AHK_KBM_Input: "AHK_KBM_Output"}
-	_IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vXBox_Button_Output"]
-	;_OptionMap := {Select: 1, vJoyButton: 2, Clear: 3}
 	JoyMenus := []
 	
 	__New(parent, name, ChangeValueCallback, aParams*){
@@ -19,33 +19,6 @@ Class _OutputButton extends _InputButton {
 		for i, cls in this._BindObjects {
 			cls.AddMenuItems()
 		}
-		;this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
-
-		/*
-		TitanButtons := UCR.Libraries.Titan.GetButtonNames()
-		menu := this.AddSubMenu("Titan Buttons", "TitanButtons")
-		Loop 13 {
-			btn := A_Index
-			str := " ( ", i := 0
-			for console, buttons in TitanButtons {
-				if (!buttons[btn])
-					continue
-				if (i){
-					str .= " / "
-				}
-				str .= console " " buttons[btn]
-				i++
-			}
-			str .= ")"
-			menu.AddMenuItem(A_Index str, "Button" A_Index, this._ChangedValue.Bind(this, 10000 + A_Index))
-		}
-
-		menu := this.AddSubMenu("Titan Hat", "TitanHat")
-		Loop 4 {
-			menu.AddMenuItem(HatDirections[A_Index], HatDirections[A_Index], this._ChangedValue.Bind(this, 10210 + A_Index))	; Set the callback when selected
-		}
-		*/
-		
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 
 	}
@@ -152,9 +125,10 @@ Class _OutputButton extends _InputButton {
 				return
 			} else if (o = 2){
 				; Clear Binding
-				cls := this.value.IOClass
 				this.value._UnRegister()
-				this.value := 0
+				this.__value.Binding := []
+				this.__value.DeviceID := 0
+				this.SetBinding(this.__value)
 			}
 		}
 	}
@@ -167,20 +141,12 @@ Class _OutputButton extends _InputButton {
 	}
 	
 	; bo is a "Primitive" BindObject
-	SetBinding(bo){
+	SetBinding(bo, update := 1){
 		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
-		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
 		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this.value := this._BindObjects[bo.IOClass]
+		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
 	}
 
-	
-	_Deserialize(obj){
-		; Trigger _value setter to set gui state but not fire change event
-		;cls := obj.IOClass
-		;this._value := new %cls%(this, obj)
-	}
-	
 	_RequestBinding(){
 		; override base and do nothing
 	}

@@ -1,11 +1,11 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
 class _OutputAxis extends _BannerMenu {
-	_IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
-	_BindObjects := {}
-
+	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
+	static _DefaultBanner := "Select an Output Axis"
+	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
+	
 	;__value := {DeviceID: 0, axis: 0}
-	__value := new _Axis()
-	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
+	_BindObjects := {}
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
@@ -32,6 +32,12 @@ class _OutputAxis extends _BannerMenu {
 		this.ChangeValueCallback := ""
 	}
 	
+	; bo is a "Primitive" BindObject
+	SetBinding(bo, update := 1){
+		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		this._BindObjects[bo.IOClass]._Deserialize(bo)
+		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
+	}
 	
 	_BuildMenu(){
 		for i, cls in this._BindObjects {
@@ -61,6 +67,16 @@ class _OutputAxis extends _BannerMenu {
 	}
 	
 	SetControlState(){
+		if (this.__value.Binding[1] || this.__value.DeviceID){
+			Text := this.__value.BuildHumanReadable()
+		} else {
+			Text := this._DefaultBanner
+		}
+		this.SetCueBanner(Text)
+		; Update the Menus etc of all the IOClasses in this control
+		for i, cls in this._BindObjects {
+			cls.UpdateMenus(this.__value.IOClass)
+		}
 		/*
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
@@ -171,12 +187,12 @@ class _OutputAxis extends _BannerMenu {
 	}
 	
 	_Serialize(){
-		;obj := {value: this._value}
-		return obj
+		return this.__value._Serialize()
 	}
 	
 	_Deserialize(obj){
-		;this._value := obj.value
+		; Pass 0 to SetBinding so we don't save while we are loading
+		this.SetBinding(obj, 0)
 	}
 	
 }

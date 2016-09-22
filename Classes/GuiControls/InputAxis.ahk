@@ -1,14 +1,14 @@
 ﻿; ======================================================================== INPUT AXIS ===============================================================
 class _InputAxis extends _BannerMenu {
-	AHKAxisList := ["X","Y","Z","R","U","V"]
-	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
-	__value := new _Axis()
+	static AHKAxisList := ["X","Y","Z","R","U","V"]
+	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
+	static _BindTypes := {AHK_JoyAxis_Input: "AHK_JoyAxis_Input"}
+	static _IOClassNames := ["AHK_JoyAxis_Input"]
+	
 	_OptionMap := []
 	State := -1
-	
-	_BindTypes := {AHK_JoyAxis_Input: "AHK_JoyAxis_Input"}
-	_IOClassNames := ["AHK_JoyAxis_Input"]
 	_BindObjects := {}
+	__value := 0
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)

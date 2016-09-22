@@ -184,12 +184,22 @@ class vJoy_Button_Output extends vGen_Output {
 
 class vJoy_Axis_Output extends vGen_Output {
 	static IOClass := "vJoy_Axis_Output"
-	static _NumSticks := 8			; vJoy has 8 sticks
-	static _NumAxes := 8		; vJoy has 128 Buttons
+	static _NumSticks := 8			; vJoy has 8 Sticks
+	static _NumAxes := 8			; vJoy has 8 Axes
 
 	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	
 	_JoyMenus := []
+	
+	BuildHumanReadable(){
+		str := "vJoy Stick " this.DeviceID
+		if (this.Binding[1]){
+			str .= ", Axis " this.Binding[1]
+		} else {
+			str .= " (No Axis Selected)"
+		}
+		return str
+	}
 	
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("vJoy Stick", "vJoyStick")
@@ -205,14 +215,26 @@ class vJoy_Axis_Output extends vGen_Output {
 		}
 	}
 	
-	_ChangedValue(o){
-		
+	UpdateBinding(){
+		if (this.DeviceID && this.Binding[1]){
+			this._RegisterButton()
+		}
 	}
-}
-
-class vXBox_Axis_Output extends vGen_Output {
-	static IOClass := "vXBox_Axis_Output"
 	
+	_ChangedValue(o){
+		if (o < 9){
+			; Stick selected
+			this.DeviceID := o
+		} else if (o > 100 && o < 109){
+			; Axis selected
+			o -= 100
+			this.Binding[1] := o
+		} else {
+			return
+		}
+		this.ParentControl.value := this
+	}
+
 }
 
 class vXBox_Button_Output extends vGen_Output {
@@ -270,10 +292,18 @@ class vXBox_Button_Output extends vGen_Output {
 	}
 }
 
+
+class vXBox_Axis_Output extends vGen_Output {
+	static IOClass := "vXBox_Axis_Output"
+	
+}
+
+
 class vJoy_Hat_Output extends vGen_Output {
 	static IOClass := "vJoy_Hat_Output"
 	
 }
+
 
 class vXBox_Hat_Output extends vGen_Output {
 	static IOClass := "vXBox_Hat_Output"
