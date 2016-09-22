@@ -38,6 +38,7 @@ return
 #Include Classes\GuiControls\IOClasses\BindObject.ahk
 #Include Classes\GuiControls\IOClasses\AHK.ahk
 #Include Classes\GuiControls\IOClasses\vGen.ahk
+#Include Classes\GuiControls\IOClasses\Titan.ahk
 
 #Include Classes\Button.ahk	; remove
 #Include Classes\Axis.ahk	; remove

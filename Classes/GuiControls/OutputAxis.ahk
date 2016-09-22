@@ -1,5 +1,8 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
 class _OutputAxis extends _BannerMenu {
+	_IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
+	_BindObjects := {}
+
 	;__value := {DeviceID: 0, axis: 0}
 	__value := new _Axis()
 	vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
@@ -8,6 +11,13 @@ class _OutputAxis extends _BannerMenu {
 		this.ParentPlugin := parent
 		this.name := name
 		this.ChangeValueCallback := ChangeValueCallback
+		
+		for i, name in this._IOClassNames {
+			this._BindObjects[name] := new %name%(this)
+			if (!this._BindObjects.IsInitialized) {
+				this._BindObjects[name]._Init()
+			}
+		}
 		
 		this._BuildMenu()
 		this.SetControlState()
@@ -22,40 +32,17 @@ class _OutputAxis extends _BannerMenu {
 		this.ChangeValueCallback := ""
 	}
 	
+	
 	_BuildMenu(){
-		Loop 8 {
-			menu := this.AddSubMenu("vJoy Stick " A_Index, "vJoyStick" A_Index)
-			offset := A_Index * 10
-			Loop 8 {
-				menu.AddMenuItem(A_Index " (" this.vJoyAxisList[A_Index] ")", A_Index, this._ChangedValue.Bind(this, offset + A_Index))
-			}
-		}
-		menu := this.AddSubMenu("Titan Axis", "TitanAxis")
-		offset := 100
-		Loop 6 {
-			str := ""
-			TitanAxes := UCR.Libraries.Titan.GetAxisNames()
-			axis := A_Index
-			str := " ( ", i := 0
-			for console, axes in TitanAxes {
-				if (!axes[axis])
-					continue
-				if (i){
-					str .= " / "
-				}
-				str .= console " " axes[axis]
-				i++
-			}
-			str .= ")"
-
-			;names := GetAxisNames
-			menu.AddMenuItem(A_Index str, A_Index, this._ChangedValue.Bind(this, offset + A_Index))
+		for i, cls in this._BindObjects {
+			cls.AddMenuItems()
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Plugin Authors call this to set the state of the output axis
 	SetState(state, delay_done := 0){
+		/*
 		if (UCR._CurrentState == 2 && !delay_done){
 			; In GameBind Mode - delay output.
 			; Call this method again, but pass 1 to delay_done
@@ -70,9 +57,11 @@ class _OutputAxis extends _BannerMenu {
 				UCR.Libraries.Titan.SetAxisByIndex(this.__value.Axis, state)
 			}
 		}
+		*/
 	}
 	
 	SetControlState(){
+		/*
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
 		this._OptionMap := []
@@ -113,9 +102,11 @@ class _OutputAxis extends _BannerMenu {
 		
 		this.SetOptions(opts)
 		this.SetCueBanner(str)
+		*/
 	}
 	
 	_ChangedValue(o){
+		/*
 		axis := this.__value.Axis
 		DeviceID := this.__value.DeviceID
 		
@@ -143,6 +134,7 @@ class _OutputAxis extends _BannerMenu {
 		
 		this.SetControlState()
 		this.value := this.__value
+		*/
 	}
 	
 	; Get / Set of .value
@@ -179,12 +171,12 @@ class _OutputAxis extends _BannerMenu {
 	}
 	
 	_Serialize(){
-		obj := {value: this._value}
+		;obj := {value: this._value}
 		return obj
 	}
 	
 	_Deserialize(obj){
-		this._value := obj.value
+		;this._value := obj.value
 	}
 	
 }

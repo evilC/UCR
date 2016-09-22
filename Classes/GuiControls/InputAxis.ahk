@@ -45,26 +45,6 @@ class _InputAxis extends _BannerMenu {
 			cls.AddMenuItems()
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
-		/*
-		Loop 8 {
-			ji := GetKeyState( A_Index "JoyInfo")
-			if (!ji)
-				continue
-			offset := A_Index * 10
-			if (UCR.UserSettings.GuiControls.ShowJoystickNames){
-				name := " (" DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr") ")"
-			}
-			menu := this.AddSubMenu("Stick " A_index name, "Stick" A_index)
-			Loop 6 {
-				str := this.AHKAxisList[A_Index]
-				if (this.AHKAxisList[A_Index] != this.vJoyAxisList[A_Index]){
-					str .= " / " this.vJoyAxisList[A_Index]
-				}
-				menu.AddMenuItem(A_Index " (" str ")", A_Index, this._ChangedValue.Bind(this, offset + A_Index))
-			}
-		}
-		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
-		*/
 	}
 	
 	_ChangedValue(o){
