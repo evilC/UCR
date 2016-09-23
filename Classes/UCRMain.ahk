@@ -803,7 +803,7 @@ Class UCRMain extends _UCRBase {
 		bo := ctrl._Serialize()
 		;outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
-		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
+		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, ObjShare(bo))
 	}
 	
 	; A plugin is requesting a new Binding via Bind Mode (User pressing inputs they wish to bind)
