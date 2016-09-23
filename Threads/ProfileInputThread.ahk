@@ -43,7 +43,7 @@ Class _InputThread {
 	; A request was received from the main thread to update a binding.
 	UpdateBinding(ControlGUID, boPtr){
 		bo := ObjShare(boPtr).clone()
-		OutputDebug % "UCR| InputThread.UpdateBinding - cls: " bo.IOClass
+		;OutputDebug % "UCR| InputThread.UpdateBinding - cls: " bo.IOClass
 		; Direct the request to the appropriate IOClass that handles it
 		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
 	}

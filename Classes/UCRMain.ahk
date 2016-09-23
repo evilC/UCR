@@ -830,6 +830,7 @@ Class UCRMain extends _UCRBase {
 	
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, primitive){
+		OutputDebug % "UCR| UCRMain: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
 		this._ActivateProfiles()
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)

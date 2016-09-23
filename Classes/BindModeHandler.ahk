@@ -89,6 +89,7 @@ class _BindModeHandler {
 					return	; filter repeats
 			}
 			this.SelectedBinding.Binding.push(i)
+			this.SelectedBinding.DeviceID := DeviceID
 			if (this.AHK_KBM_Input.IsModifier(i)){
 				if (max > this.ModifierCount){
 					; Modifier pressed after end key
@@ -107,6 +108,7 @@ class _BindModeHandler {
 			this.SetHotkeyState(0, this.IOClassMappings)
 			;ret := {Binding:[i], DeviceID: deviceid, IOClass: this.IOClassMappings[IOClass]}
 			
+			OutputDebug % "UCR| BindModeHandler: Bind Mode Ended. Binding[1]: " this.SelectedBinding.Binding[1] ", DeviceID: " this.SelectedBinding.DeviceID ", IOClass: " this.SelectedBinding.IOClass
 			this._Callback.Call(this.SelectedBinding)
 		}
 	}

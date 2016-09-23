@@ -118,7 +118,7 @@ class _InputButton extends _BannerMenu {
 		if (this.__value.IOClass && this.__value.IOClass != bo.IOClass){
 			; There is an existing, different IOClass
 			this.Binding := []			; clear the old Binding
-			UCR._RequestBinding(this)	; Tell the Input IOClass in the Profile's InputThread to delete the binding
+			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 		}
 		this.SetBinding(bo)
 	}
@@ -127,7 +127,7 @@ class _InputButton extends _BannerMenu {
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
 		if (IsObject(this.__value)){
-			OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
+			;OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
 			UCR._RequestBinding(this)
 		}
 	}
@@ -137,7 +137,7 @@ class _InputButton extends _BannerMenu {
 	}
 	
 	SetBinding(bo, update := 1){
-		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+		OutputDebug % "UCR| InputButton SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;this.MergeObject(this._IOClasses[bo.IOClass], bo)
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
 		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
