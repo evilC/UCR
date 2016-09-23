@@ -35,7 +35,9 @@ return
 #Include Classes\GuiControls\InputDelta.ahk
 #Include Classes\GuiControls\OutputButton.ahk
 #Include Classes\GuiControls\OutputAxis.ahk
+
 #Include Classes\GuiControls\IOClasses\BindObject.ahk
+#Include Classes\GuiControls\IOClasses\IOClassBase.ahk
 #Include Classes\GuiControls\IOClasses\AHK.ahk
 #Include Classes\GuiControls\IOClasses\vGen.ahk
 #Include Classes\GuiControls\IOClasses\Titan.ahk

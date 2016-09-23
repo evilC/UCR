@@ -1,4 +1,4 @@
-class vGen_Output extends _BindObject {
+class vGen_Output extends _IOClassBase {
 	static IOType := 1
 	static IOClass := "vGen_Output"
 	;static LibraryLoaded := vGen_Output._Init()

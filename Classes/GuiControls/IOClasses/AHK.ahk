@@ -6,7 +6,7 @@
 ; ie the Hotkey command and GetKeystate for input and SendXXXX etc for Output
 
 ; Common functions for AHK Keyboard and Mouse GuiControls
-class AHK_KBM_Common extends _BindObject {
+class AHK_KBM_Common extends _IOClassBase {
 	static IsInitialized := 1
 	static IsAvailable := 1
 	
@@ -116,7 +116,7 @@ class AHK_KBM_Output extends AHK_KBM_Common {
 }
 
 ; IOClass for AHK Joystick Button Input GuiControls
-class AHK_JoyBtn_Input extends _BindObject {
+class AHK_JoyBtn_Input extends _IOClassBase {
 	static IOClass := "AHK_JoyBtn_Input"
 	static IsInitialized := 1
 
@@ -136,7 +136,7 @@ class AHK_JoyBtn_Input extends _BindObject {
 }
 
 ; IOClass for AHK Joystick Axis Input GuiControls
-class AHK_JoyAxis_Input extends _BindObject {
+class AHK_JoyAxis_Input extends _IOClassBase {
 	static IOClass := "AHK_JoyAxis_Input"
 	static IsInitialized := 1
 	_JoyMenus := []
@@ -203,7 +203,7 @@ class AHK_JoyAxis_Input extends _BindObject {
 }
 
 ; IOClass for AHK Joystick Hat Input GuiControls
-class AHK_JoyHat_Input extends _BindObject {
+class AHK_JoyHat_Input extends _IOClassBase {
 	static IOClass := "AHK_JoyHat_Input"
 	static IsInitialized := 1
 
