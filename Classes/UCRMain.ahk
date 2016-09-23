@@ -801,6 +801,10 @@ Class UCRMain extends _UCRBase {
 	; A plugin is requesting that we register a binding with an input thread
 	_RequestBinding(ctrl){
 		bo := ctrl._Serialize()
+		if (!IsObject(bo)){
+			OutputDebug % "UCR| Warning! Tried to _RequestBinding without a BindObject set!"
+			return
+		}
 		;outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
 		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, ObjShare(bo))

@@ -126,8 +126,10 @@ class _InputButton extends _BannerMenu {
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
-		OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
-		UCR._RequestBinding(this)
+		if (IsObject(this.__value)){
+			OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
+			UCR._RequestBinding(this)
+		}
 	}
 	
 	GetBinding(){
@@ -143,7 +145,7 @@ class _InputButton extends _BannerMenu {
 		; ToDo - add in the condition that the binding must have also changed
 		; Request the new binding from the Profile's InputThread.
 		; If the IOClass was the same as before, the old binding will be deleted automatically
-		UCR._RequestBinding(this)
+		this._RequestBinding()
 	}
 	
 	_Serialize(){
