@@ -2,7 +2,7 @@
 ; A class the script author can instantiate to allow the user to select a hotkey.
 class _InputButton extends _BannerMenu {
 	static _IsOutput := 0
-	static _BindTypes := {AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
+	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
 	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
 	static _DefaultBanner := "Select an Input Button"
 	static _OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}

@@ -3,7 +3,7 @@
 Class _OutputButton extends _InputButton {
 	static _DefaultBanner := "Select an Output Button"
 	static _IsOutput := 1
-	static _BindTypes := {AHK_KBM_Input: "AHK_KBM_Output"}
+	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Output"}
 	static _IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vXBox_Button_Output"]
 
 	State := 0
@@ -122,7 +122,7 @@ Class _OutputButton extends _InputButton {
 			if (o = 1){
 				; Bind
 				;UCR._RequestBinding(this)
-				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this))
+				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this)) ;*[UCR]
 				return
 			} else if (o = 2){
 				; Clear Binding

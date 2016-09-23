@@ -68,7 +68,7 @@ class _BindModeHandler {
 		}
 		;this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
 		;this._BindModeThread.SetHotkeyState(state, enablejoystick)
-		this._BindModeThread.SetDetectionState(state)
+		this._BindModeThread.SetDetectionState(state, this.IOClassMappings)
 	}
 	
 	; The BindModeThread calls back here
@@ -104,7 +104,7 @@ class _BindModeHandler {
 			this.SelectedBinding.IOClass := IOClass
 		} else {
 			this.BindMode := 0
-			this.SetHotkeyState(0)
+			this.SetHotkeyState(0, this.IOClassMappings)
 			;ret := {Binding:[i], DeviceID: deviceid, IOClass: this.IOClassMappings[IOClass]}
 			
 			this._Callback.Call(this.SelectedBinding)

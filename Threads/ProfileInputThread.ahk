@@ -201,7 +201,9 @@ Class _InputThread {
 			if (bo.Binding[1]){
 				keyname := this.BuildHotkeyString(bo)
 				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
-				hotkey, % keyname, % fn, On
+				try {
+					hotkey, % keyname, % fn, On
+				}
 				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				;hotkey, % keyname " up", % fn, On
 				OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID

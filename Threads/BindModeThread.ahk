@@ -31,11 +31,12 @@ class _BindMapper {
 	}
 	
 	; A request was received from the main thread to set the Dection state
-	SetDetectionState(state){
+	SetDetectionState(state, IOClassMappings){
 		if (state == this.DetectionState)
 			return
-		for name, cls in this.IOClasses {
-			cls.SetDetectionState(state)
+		for name, ret in IOClassMappings {
+			;OutputDebug % "UCR| BindModeThread Starting watcher " name " with return type " ret
+			this.IOClasses[name].SetDetectionState(state, ret)
 		}
 		this.DetectionState := state
 	}
@@ -47,7 +48,8 @@ class _BindMapper {
 			this.Callback := callback
 		}
 		
-		SetDetectionState(state){
+		SetDetectionState(state, ReturnIOClass){
+			OutputDebug % "Turning Hotkeys " (state ? "On" : "Off")
 			Suspend, % (state ? "Off", "On")
 		}
 	}
@@ -61,7 +63,13 @@ class _BindMapper {
 			this.Callback := callback
 			this.CreateHotkeys()
 		}
-		
+
+		SetDetectionState(state, ReturnIOClass){
+			;this.ReturnIOClass := ( state ? ReturnIOClass : 0)
+			this.ReturnIOClass := ReturnIOClass
+
+		}
+
 		; Binds a key to every key on the keyboard and mouse
 		; Passes VK codes to GetKeyName() to obtain names for all keys
 		; List of VKs: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
@@ -114,7 +122,7 @@ class _BindMapper {
 		
 		InputEvent(e, i){
 			;tooltip % "code: " i ", e: " e
-			this.Callback.Call(e, i, 0, this.IOClass)
+			this.Callback.Call(e, i, 0, this.ReturnIOClass)
 		}
 	}
 	
@@ -129,6 +137,11 @@ class _BindMapper {
 			this.CreateHotkeys()
 		}
 		
+		SetDetectionState(state, ReturnIOClass){
+			;this.ReturnIOClass := ( state ? ReturnIOClass : 0)
+			this.ReturnIOClass := ReturnIOClass
+		}
+
 		; Binds a key to every key on the keyboard and mouse
 		; Passes VK codes to GetKeyName() to obtain names for all keys
 		; List of VKs: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
@@ -160,7 +173,7 @@ class _BindMapper {
 		}
 		
 		InputEvent(e, i, deviceid){
-			this.Callback.Call(e, i, deviceid, this.IOClass)
+			this.Callback.Call(e, i, deviceid, this.ReturnIOClass)
 		}
 	}
 
