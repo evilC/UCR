@@ -12,7 +12,7 @@ class _InputButton extends _BannerMenu {
 	; Internal vars describing the bindstring
 	__value := 0		; Holds the BindObject class
 	; Other internal vars
-	_BindObjects := {}
+	_IOClasses := {}
 	
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
@@ -25,9 +25,9 @@ class _InputButton extends _BannerMenu {
 		UCR._RegisterGuiControl(this)
 
 		for i, name in this._IOClassNames {
-			this._BindObjects[name] := new %name%(this)
-			if (!this._BindObjects.IsInitialized) {
-				this._BindObjects[name]._Init()
+			this._IOClasses[name] := new %name%(this)
+			if (!this._IOClasses.IsInitialized) {
+				this._IOClasses[name]._Init()
 			}
 		}
 		this._BuildMenu()
@@ -74,7 +74,7 @@ class _InputButton extends _BannerMenu {
 
 	_BuildMenu(){
 		this.AddMenuItem("Select Binding", "SelectBinding", this._ChangedValue.Bind(this, 1))
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.AddMenuItems()
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
@@ -89,7 +89,7 @@ class _InputButton extends _BannerMenu {
 		}
 		this.SetCueBanner(Text)
 		; Update the Menus etc of all the IOClasses in this control
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)
 		}
 	}
@@ -136,9 +136,9 @@ class _InputButton extends _BannerMenu {
 	
 	SetBinding(bo, update := 1){
 		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
-		;this.MergeObject(this._BindObjects[bo.IOClass], bo)
-		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
+		;this.MergeObject(this._IOClasses[bo.IOClass], bo)
+		this._IOClasses[bo.IOClass]._Deserialize(bo)
+		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
 		
 		; ToDo - add in the condition that the binding must have also changed
 		; Request the new binding from the Profile's InputThread.

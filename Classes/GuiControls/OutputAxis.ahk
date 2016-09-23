@@ -5,7 +5,7 @@ class _OutputAxis extends _BannerMenu {
 	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	
 	;__value := {DeviceID: 0, axis: 0}
-	_BindObjects := {}
+	_IOClasses := {}
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
@@ -13,9 +13,9 @@ class _OutputAxis extends _BannerMenu {
 		this.ChangeValueCallback := ChangeValueCallback
 		
 		for i, name in this._IOClassNames {
-			this._BindObjects[name] := new %name%(this)
-			if (!this._BindObjects.IsInitialized) {
-				this._BindObjects[name]._Init()
+			this._IOClasses[name] := new %name%(this)
+			if (!this._IOClasses.IsInitialized) {
+				this._IOClasses[name]._Init()
 			}
 		}
 		
@@ -35,12 +35,12 @@ class _OutputAxis extends _BannerMenu {
 	; bo is a "Primitive" BindObject
 	SetBinding(bo, update := 1){
 		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
-		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
+		this._IOClasses[bo.IOClass]._Deserialize(bo)
+		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
 	}
 	
 	_BuildMenu(){
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.AddMenuItems()
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
@@ -81,7 +81,7 @@ class _OutputAxis extends _BannerMenu {
 		}
 		this.SetCueBanner(Text)
 		; Update the Menus etc of all the IOClasses in this control
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)
 		}
 		/*

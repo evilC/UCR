@@ -858,8 +858,8 @@ Class UCRMain extends _UCRBase {
 				}
 				outputdebug % "UCR| Creating new class " cls " for GuiControl " hk.id " deviceid: " bo.deviceid
 				;hk.value := new %cls%(hk, bo)
-				hk._BindObjects[cls]._Deserialize(bo)
-				hk.value := hk._BindObjects[cls]
+				hk._IOClasses[cls]._Deserialize(bo)
+				hk.value := hk._IOClasses[cls]
 			;}
 			this._InputHandler.SetButtonBinding(hk)
 			;}

@@ -7,7 +7,7 @@ class _InputAxis extends _BannerMenu {
 	
 	_OptionMap := []
 	State := -1
-	_BindObjects := {}
+	_IOClasses := {}
 	__value := 0
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
@@ -20,9 +20,9 @@ class _InputAxis extends _BannerMenu {
 		UCR._RegisterGuiControl(this)
 
 		for i, name in this._IOClassNames {
-			this._BindObjects[name] := new %name%(this)
-			if (!this._BindObjects.IsInitialized) {
-				this._BindObjects[name]._Init()
+			this._IOClasses[name] := new %name%(this)
+			if (!this._IOClasses.IsInitialized) {
+				this._IOClasses[name]._Init()
 			}
 		}
 		
@@ -41,7 +41,7 @@ class _InputAxis extends _BannerMenu {
 	}
 	
 	_BuildMenu(){
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.AddMenuItems()
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
@@ -57,8 +57,8 @@ class _InputAxis extends _BannerMenu {
 	
 	; bo is a "Primitive" BindObject
 	SetBinding(bo, update := 1){
-		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
+		this._IOClasses[bo.IOClass]._Deserialize(bo)
+		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
 		
 		; If both value and device are set, or neither are set, then update the binding
 		; ToDo - add in the condition that the binding must have also changed
@@ -81,7 +81,7 @@ class _InputAxis extends _BannerMenu {
 		} else {
 			this.SetCueBanner("Select an Input Axis")
 		}
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)
 		}
 	}

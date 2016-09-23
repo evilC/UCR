@@ -16,7 +16,7 @@ Class _OutputButton extends _InputButton {
 	
 	_BuildMenu(){
 		this.AddMenuItem("Select Keyboard / Mouse Binding...", "AHK_KBM_Output", this._ChangedValue.Bind(this, 1))
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.AddMenuItems()
 		}
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
@@ -29,7 +29,7 @@ Class _OutputButton extends _InputButton {
 		; Tell vGen etc to Acquire sticks
 		this.__value.UpdateBinding()
 		; Update the Menus etc of all the IOClasses in this control
-		for i, cls in this._BindObjects {
+		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)
 		}
 		;joy := (this.__value.Type >= 2 && this.__value.Type <= 6)
@@ -144,8 +144,8 @@ Class _OutputButton extends _InputButton {
 	; bo is a "Primitive" BindObject
 	SetBinding(bo, update := 1){
 		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
-		this._BindObjects[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._BindObjects[bo.IOClass]
+		this._IOClasses[bo.IOClass]._Deserialize(bo)
+		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
 	}
 
 	_RequestBinding(){
