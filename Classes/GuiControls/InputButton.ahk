@@ -24,7 +24,6 @@ class _InputButton extends _BannerMenu {
 		this.ChangeStateCallback := ChangeStateCallback
 		UCR._RegisterGuiControl(this)
 
-		;this.__value := new _BindObject()
 		for i, name in this._IOClassNames {
 			this._BindObjects[name] := new %name%(this)
 			if (!this._BindObjects.IsInitialized) {
