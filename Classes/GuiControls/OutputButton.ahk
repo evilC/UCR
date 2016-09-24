@@ -1,7 +1,7 @@
 ﻿; ======================================================================== OUTPUT BUTTON ===============================================================
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
-Class _OutputButton extends _InputButton {
-	static _ControlType := "_OutputButton"
+Class OutputButton extends InputButton {
+	static _ControlType := "OutputButton"
 	static _DefaultBanner := "Select an Output Button"
 	static _IsOutput := 1
 	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Output"}

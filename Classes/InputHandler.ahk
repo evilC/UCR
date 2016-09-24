@@ -85,7 +85,7 @@ Class _InputHandler {
 	/*
 	; An input event (eg key, mouse, joystick) occured for a bound input
 	; This will have come from another thread
-	; ipt will be an object of class _InputButton or _InputAxis
+	; ipt will be an object of class InputButton or _InputAxis
 	; event will be 0 or 1 for a Button type, or the value of the axis for an axis type
 	InputEvent(ipt, state){
 		ipt := Object(ipt)	; Resolve input object back from pointer

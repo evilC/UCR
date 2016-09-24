@@ -1,7 +1,7 @@
 ﻿; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
-class _InputButton extends _IOControl {
-	static _ControlType := "_InputButton"
+class InputButton extends _IOControl {
+	static _ControlType := "InputButton"
 	static _IsOutput := 0
 	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
 	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]

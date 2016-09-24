@@ -1,17 +1,18 @@
 ﻿; ======================================================================== GUICONTROL ===============================================================
 ; Wraps a GuiControl to make it's value persistent between runs.
 class _GuiControl {
+	static _ListTypes := {ListBox: 1, DDL: 1, DropDownList: 1, ComboBox: 1, Tab: 1, Tab2: 1, Tab3: 1}
 	__value := ""	; variable that actually holds value. ._value and .__value handled by Setters / Getters
-	__New(parent, name, ChangeValueCallback, aParams*){
+	__New(parent, type, name, ChangeValueCallback, aParams*){
 		this.ParentPlugin := parent
 		this.Name := name
-		this.ControlType := aParams[1]
+		this.ControlType := type
 		; Detect what kind of GuiControl this is, so that later operations (eg set of value) work as intended.
 		; Decide whether the control type is a "List" type: ListBox, DropDownList (ddl), ComboBox, and Tab (and tab2?)
-		if (aParams[1] = "listbox" ||aParams[1] = "ddl" || aParams[1] = "dropdownlist" || aParams[1] = "combobox" || aParams[1] = "tab" || aParams[1] = "tab2"){
+		if (ObjHasKey(this._ListTypes, type)){
 			this.IsListType := 1
 			; Detect if this List Type uses AltSubmit
-			if (InStr(aParams[2], "altsubmit"))
+			if (InStr(aParams[1], "altsubmit"))
 				this.IsAltSubmitType := 1
 			else 
 				this.IsAltSubmitType := 0
@@ -24,7 +25,7 @@ class _GuiControl {
 		; Store the user's callback that is to be fired when the Control changes value
 		this.ChangeValueCallback := ChangeValueCallback
 		; Add the Control
-		Gui, % this.ParentPlugin.hwnd ":Add", % aParams[1], % "hwndhwnd " aParams[2], % aParams[3]
+		Gui, % this.ParentPlugin.hwnd ":Add", % type, % "hwndhwnd " aParams[1], % aParams[2]
 		this.hwnd := hwnd
 		; Set default value - get this from state of GuiControl before any loading of settings is done
 		GuiControlGet, value, % this.ParentPlugin.hwnd ":", % this.hwnd

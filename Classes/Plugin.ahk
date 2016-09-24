@@ -14,6 +14,7 @@ Class _Plugin {
 	OutputAxes := {}			; An associative array, indexed by name, of child Output (virtual) Axes
 	ProfileSelects := {}		; An associative array, indexed by name, of Profile Select GuiControls
 	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
+	_CustomControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1, ProfileSelect: 1}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -22,12 +23,25 @@ Class _Plugin {
 	
 	; === Plugins can call these commands to add various GuiControls to their Gui ===
 	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
+	AddControl(type, name, ChangeValueCallback, aParams*){
+		if (ObjHasKey(this._CustomControls, type)){
+			this.GuiControls[name] := new %type%(this, name, ChangeValueCallback, aParams*)
+		} else {
+			this.GuiControls[name] := new _GuiControl(this, type, name, ChangeValueCallback, aParams*)
+		}
+		return this.GuiControls[name]
+	}
+	
+	/*
+	; === Plugins can call these commands to add various GuiControls to their Gui ===
+	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
 	AddControl(name, ChangeValueCallback, aParams*){
 		if (!ObjHasKey(this.GuiControls, name)){
 			this.GuiControls[name] := new _GuiControl(this, name, ChangeValueCallback, aParams*)
 			return this.GuiControls[name]
 		}
 	}
+	*/
 	
 	; Adds a GuiControl that allows the end-user to pick Button(s) to use as Input(s)
 	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
@@ -130,6 +144,11 @@ Class _Plugin {
 	; Save plugin to disk
 	_Serialize(){
 		obj := {Type: this.Type, name: this.Name}
+		obj.GuiControls := {}
+		for name, ctrl in this.GuiControls {
+			obj.GuiControls[name] := ctrl._Serialize()
+		}
+		/*
 		Loop % this._SerializeList.length(){
 			key := this._SerializeList[A_Index]
 			obj[key] := {}
@@ -137,18 +156,24 @@ Class _Plugin {
 				obj[key, name] := ctrl._Serialize()
 			}
 		}
+		*/
 		return obj
 	}
 	
 	; Load plugin from disk
 	_Deserialize(obj){
 		this.Type := obj.Type
+		for name, ctrl in obj.GuiControls {
+			this.GuiControls[name]._Deserialize(ctrl)
+		}
+		/*
 		Loop % this._SerializeList.length(){
 			key := this._SerializeList[A_Index]
 			for name, ctrl in obj[key] {
 				this[key, name]._Deserialize(ctrl)
 			}
 		}
+		*/
 	}
 	
 	_OnActive(){

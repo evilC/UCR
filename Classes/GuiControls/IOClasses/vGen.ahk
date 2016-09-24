@@ -185,7 +185,7 @@ class vGen_Output extends _IOClassBase {
 	}
 	
 	UpdateMenus(cls){
-		OutputDebug % "UCR| UpdateMenus. This IOClass: " this.IOClass "  ||  _vGenDeviceType - this: " this._vGenDeviceType ", GuiControl: " this.ParentControl.value._vGenDeviceType
+		;OutputDebug % "UCR| UpdateMenus. This IOClass: " this.IOClass "  ||  _vGenDeviceType - this: " this._vGenDeviceType ", GuiControl: " this.ParentControl.value._vGenDeviceType
 		; Is the vGenDeviceType of the old class the same as the new class, and has a device been chosen ?
 		state := (this._vGenDeviceType == this.ParentControl.value._vGenDeviceType && this.ParentControl.value.DeviceID)
 		for i, menu in this._JoyMenus {
