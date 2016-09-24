@@ -5,12 +5,17 @@ class vGen_Output extends _IOClassBase {
 	
 	static _vGenDeviceTypeNames := {0: "vJoy", 1: "vXBox"}
 	static DllName := "vGenInterface"
+	static _hModule := 0
 	static _StickControlGUIDs := {}	; Contains GUIControl GUIDs that use each stick
 	static _NumSticks := 0			; Numer of sticks supported. Will be overridden
 	static _NumButtons := 0			; Numer of buttons supported.
 	static _DeviceHandles := []
 	
-	static _hModule := 0
+	; Not static, will change - but needs to be shared amongst all class instances
+	; Holds the state of each hat direction
+	; Needed so we can merge two cardinal mappings from two plugins to get a diagonal
+	static _POVStates := {vJoy_Hat_Output: [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]]
+	, vXBox_Hat_Output: [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]]}
 	
 	_Init(){
 		if (vGen_Output.IsInitialized)
@@ -42,7 +47,7 @@ class vGen_Output extends _IOClassBase {
 	SetHatState(state){
 		; DWORD SetDevPov(HDEVICE hDev, UINT nPov, FLOAT Value);
 		h := this.GetHatStrings()
-		s := (state == 0 ? -1 : state * 90)
+		s := (state == 0 ? -1 : (h.dir - 1) * 90)
 		OutputDebug % "UCR| SetDevPov h:" h.hat " value:" s
 		ret := DllCall(this.DllName "\SetDevPov", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", h.hat, "Float", s, "Cdecl")
 	}
