@@ -30,7 +30,6 @@ return
 #Include Classes\GuiControls\GuiControl.ahk
 #Include Classes\GuiControls\BannerMenu.ahk
 #Include Classes\GuiControls\ProfileSelect.ahk
-#Include Classes\GuiControls\IOControl.ahk
 #Include Classes\GuiControls\InputButton.ahk
 #Include Classes\GuiControls\InputAxis.ahk
 #Include Classes\GuiControls\InputDelta.ahk

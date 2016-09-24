@@ -1,7 +1,6 @@
 ﻿; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
-class _InputButton extends _IOControl {
-	static ControlType := "_InputButton"
+class _InputButton extends _BannerMenu {
 	static _IsOutput := 0
 	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
 	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
@@ -147,6 +146,15 @@ class _InputButton extends _IOControl {
 		; Request the new binding from the Profile's InputThread.
 		; If the IOClass was the same as before, the old binding will be deleted automatically
 		this._RequestBinding()
+	}
+	
+	_Serialize(){
+		return this.__value._Serialize()
+	}
+	
+	_Deserialize(obj){
+		; Pass 0 to SetBinding so we don't save while we are loading
+		this.SetBinding(obj, 0)
 	}
 	
 	MergeObject(src, patch){

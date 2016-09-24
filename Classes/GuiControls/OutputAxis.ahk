@@ -1,5 +1,5 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
-class _OutputAxis extends _IOControl {
+class _OutputAxis extends _BannerMenu {
 	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
 	static _DefaultBanner := "Select an Output Axis"
 	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
@@ -194,4 +194,14 @@ class _OutputAxis extends _IOControl {
 			}
 		}
 	}
+	
+	_Serialize(){
+		return this.__value._Serialize()
+	}
+	
+	_Deserialize(obj){
+		; Pass 0 to SetBinding so we don't save while we are loading
+		this.SetBinding(obj, 0)
+	}
+	
 }
