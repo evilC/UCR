@@ -11,11 +11,26 @@ class vGen_Output extends _IOClassBase {
 	static _NumButtons := 0			; Numer of buttons supported.
 	static _DeviceHandles := []
 	
+	
+	static _AngleToCardinals := {-1: {x: 0, y: 0}
+		, 0: {x: 0, y: 1}		; Up
+		, 45: {x: 1, y: 1}		; Up right
+		, 90: {x: 1, y: 0}		; Right
+		, 135: {x: 1, y: -1}	; Down right
+		, 180: {x: 0, y: -1}	; Down
+		, 225: {x: -1, y: -1}	; Down left
+		, 270: {x: -1, y: 0}	; Left
+		, 315: {x: -1, y: 1}}	; Up left
+		;, 360: {x: 0, y: 1}}	; Up again, for safety
+	static _IndexToCardinals := {-1: {x: 0, y: 0}
+		, 1: {x: 0, y: 1}		; Up
+		, 2: {x: 1, y: 0}		; Right
+		, 3: {x: 0, y: -1}		; Down
+		, 4: {x: -1, y: 0}}		; Left
 	; Not static, will change - but needs to be shared amongst all class instances
 	; Holds the state of each hat direction
 	; Needed so we can merge two cardinal mappings from two plugins to get a diagonal
-	static _POVStates := {vJoy_Hat_Output: [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]]
-	, vXBox_Hat_Output: [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]]}
+	static _POVStates := {}
 	
 	_Init(){
 		if (vGen_Output.IsInitialized)
@@ -29,6 +44,19 @@ class vGen_Output extends _IOClassBase {
 			OutputDebug % "UCR| IOClass " this.IOClass " Loaded " dllpath
 			vGen_Output.IsAvailable := 1
 		}
+		this._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
+		
+		this._POVStates.vXBox_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
 		vGen_Output._hModule := hModule
 		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
 		vGen_Output.IsInitialized := 1
@@ -47,9 +75,35 @@ class vGen_Output extends _IOClassBase {
 	SetHatState(state){
 		; DWORD SetDevPov(HDEVICE hDev, UINT nPov, FLOAT Value);
 		h := this.GetHatStrings()
-		s := (state == 0 ? -1 : (h.dir - 1) * 90)
-		OutputDebug % "UCR| SetDevPov h:" h.hat " value:" s
-		ret := DllCall(this.DllName "\SetDevPov", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", h.hat, "Float", s, "Cdecl")
+		change := this._IndexToCardinals[h.dir]
+		old_state := this._POVStates[this.IOClass, this.DeviceID, h.hat]
+		new_state := this._UpdatePovAngles(state, old_state, change)
+		angle := this._StateToAngle(new_state)
+		this._POVStates[this.IOClass, this.DeviceID, h.hat] := new_state
+		;OutputDebug % "UCR| SetDevPov hat: " h.hat ", dir: " h.dir ", state: " state ", value:" angle ", old: x=" old_state.x ", y=" old_state.y ", new: x=" new_state.x ", y= " new_state.y
+		ret := DllCall(this.DllName "\SetDevPov", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", h.hat, "Float", angle, "Cdecl")
+	}
+
+	_UpdatePovAngles(state, old_state, change){
+		;OutputDebug % "UCR| _UpdatePovAngles received change of: x= " change.x ", y= " change.y ", state= " state
+		ret := old_state.clone()
+		for axis, dir in old_state {
+			; Press of direction - add change
+			if (change[axis]){
+				ret[axis] := (state ? change[axis] : 0)
+				;OutputDebug % "UCR| _UpdatePovAngles changing " axis " to " change[axis]
+			}
+		}
+		return ret
+	}
+
+	_StateToAngle(state) {
+		for angle, potential_state in this._AngleToCardinals {
+			if (potential_state.x == state.x && potential_state.y == state.y){
+				return angle
+			}
+		}
+		return -1	; safety, should not be hit
 	}
 	
 	_Register(){
