@@ -14,6 +14,7 @@ Class _Plugin {
 	OutputAxes := {}			; An associative array, indexed by name, of child Output (virtual) Axes
 	ProfileSelects := {}		; An associative array, indexed by name, of Profile Select GuiControls
 	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
+	_CustomControls := {GuiControls: 1, InputButtons: 1, InputDeltas: 1, OutputButtons: 1, InputAxes: 1, OutputAxes: 1, ProfileSelects:1 }
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){

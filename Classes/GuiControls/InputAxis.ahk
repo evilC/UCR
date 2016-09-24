@@ -1,5 +1,5 @@
 ﻿; ======================================================================== INPUT AXIS ===============================================================
-class _InputAxis extends _BannerMenu {
+class _InputAxis extends _IOControl {
 	static _BindTypes := {AHK_JoyAxis_Input: "AHK_JoyAxis_Input"}
 	static _IOClassNames := ["AHK_JoyAxis_Input"]
 	
@@ -117,15 +117,6 @@ class _InputAxis extends _BannerMenu {
 		}
 	}
 	
-	_Serialize(){
-		return this.__value._Serialize()
-	}
-	
-	_Deserialize(obj){
-		; Pass 0 to SetBinding so we don't save while we are loading
-		this.SetBinding(obj, 0)
-	}
-
 	/*
 	_Serialize(){
 		obj := {value: this._value}
