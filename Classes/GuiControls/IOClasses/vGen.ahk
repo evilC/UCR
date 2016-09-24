@@ -192,10 +192,12 @@ class vJoy_Button_Output extends vGen_Output {
 
 class vJoy_Axis_Output extends vGen_Output {
 	static IOClass := "vJoy_Axis_Output"
+	static _vGenDeviceType := 0		; 0 = vJoy, 1 = vXBox
 	static _NumSticks := 8			; vJoy has 8 Sticks
 	static _NumAxes := 8			; vJoy has 8 Axes
+	static _Prefix := "vJoy"
 
-	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
+	static AxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	
 	_JoyMenus := []
 	
@@ -204,7 +206,7 @@ class vJoy_Axis_Output extends vGen_Output {
 	}
 	
 	BuildHumanReadable(){
-		str := "vJoy Stick " this.DeviceID
+		str := this._Prefix " Stick " this.DeviceID
 		if (this.Binding[1]){
 			str .= ", Axis " this.Binding[1]
 		} else {
@@ -214,15 +216,15 @@ class vJoy_Axis_Output extends vGen_Output {
 	}
 	
 	AddMenuItems(){
-		menu := this.ParentControl.AddSubMenu("vJoy Stick", "vJoyStick")
+		menu := this.ParentControl.AddSubMenu(this._Prefix " Stick", this._Prefix "Stick")
 		Loop % this._NumSticks {
 			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
 		}
 		
-		menu := this.ParentControl.AddSubMenu("vJoy Axes", "vJoyAxes")
+		menu := this.ParentControl.AddSubMenu(this._Prefix " Axes", this._Prefix "Axes")
 		Loop % this._NumAxes {
 			this._JoyMenus.Push(menu)
-			menu.AddMenuItem(A_Index "(" this.vJoyAxisList[A_Index] ")", A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
+			menu.AddMenuItem(A_Index " (" this.AxisList[A_Index] ")", A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
 			this._JoyMenus.Push(menu)
 		}
 	}
@@ -246,9 +248,14 @@ class vJoy_Axis_Output extends vGen_Output {
 		}
 		this.ParentControl.value := this
 	}
-
 }
 
+class vJoy_Hat_Output extends vGen_Output {
+	static IOClass := "vJoy_Hat_Output"
+	
+}
+
+; ==================================== vXBox =======================================
 class vXBox_Button_Output extends vGen_Output {
 	static IOClass := "vXBox_Button_Output"
 	
@@ -257,6 +264,10 @@ class vXBox_Button_Output extends vGen_Output {
 	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
 	static _NumSticks := 4			; vXBox has 4 sticks
 	static _NumButtons := 10			; vXBox has 10 Buttons
+	
+	SetState(state){
+		base.SetButtonState(state)
+	}
 	
 	BuildHumanReadable(){
 		str := "vXBox Stick " this.DeviceID
@@ -304,18 +315,15 @@ class vXBox_Button_Output extends vGen_Output {
 	}
 }
 
-
-class vXBox_Axis_Output extends vGen_Output {
+class vXBox_Axis_Output extends vJoy_Axis_Output {
 	static IOClass := "vXBox_Axis_Output"
-	
+	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
+	static _NumSticks := 4			; vJoy has 8 Sticks
+	static _NumAxes := 6			; vJoy has 8 Axes
+	static _Prefix := "vXBox"
+
+	static AxisList := ["LS X", "LS Y", "RS X", "RS Y", "LT", "RT"]
 }
-
-
-class vJoy_Hat_Output extends vGen_Output {
-	static IOClass := "vJoy_Hat_Output"
-	
-}
-
 
 class vXBox_Hat_Output extends vGen_Output {
 	static IOClass := "vXBox_Hat_Output"
