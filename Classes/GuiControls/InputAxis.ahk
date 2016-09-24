@@ -1,5 +1,6 @@
 ﻿; ======================================================================== INPUT AXIS ===============================================================
 class _InputAxis extends _IOControl {
+	static _ControlType := "_InputAxis"
 	static _BindTypes := {AHK_JoyAxis_Input: "AHK_JoyAxis_Input"}
 	static _IOClassNames := ["AHK_JoyAxis_Input"]
 	

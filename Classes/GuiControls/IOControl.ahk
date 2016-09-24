@@ -1,5 +1,8 @@
 class _IOControl extends _BannerMenu {
 	_Serialize(){
+		;val := this.__value._Serialize()
+		;val._ControlType := this._ControlType
+		;return val
 		return this.__value._Serialize()
 	}
 	
