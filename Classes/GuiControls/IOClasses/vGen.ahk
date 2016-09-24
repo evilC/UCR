@@ -484,7 +484,10 @@ class vXBox_Axis_Output extends vJoy_Axis_Output {
 	static AxisList := ["LS X", "LS Y", "RS X", "RS Y", "LT", "RT"]
 }
 
-class vXBox_Hat_Output extends vXBox_Base {
+class vXBox_Hat_Output extends vJoy_Hat_Output {
 	static IOClass := "vXBox_Hat_Output"
-	
+	static _NumHats := 1
+	static _Prefix := "vXBox"
+	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
+	static _HatName := "D-Pad"
 }

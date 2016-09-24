@@ -4,7 +4,7 @@ Class _OutputButton extends _InputButton {
 	static _DefaultBanner := "Select an Output Button"
 	static _IsOutput := 1
 	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Output"}
-	static _IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vJoy_Hat_Output", "vXBox_Button_Output"]
+	static _IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vJoy_Hat_Output", "vXBox_Button_Output", "vXBox_Hat_Output"]
 
 	State := 0
 	JoyMenus := []
