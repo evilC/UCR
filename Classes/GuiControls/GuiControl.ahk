@@ -85,14 +85,18 @@ class _GuiControl {
 		; Parent has told child state to be in, child does not need to notify parent of change in state
 		set {
 			this.__value := value
-			this._SetGlabel(0)						; Turn off g-label to avoid triggering save
-			cmd := ""
-			if (this.IsListType){
-				cmd := (this.IsAltSubmitType ? "choose" : "choosestring")
-			}
-			GuiControl, % cmd, % this.hwnd, % value
-			this._SetGlabel(1)						; Turn g-label back on
+			this.SetControlState()
 		}
+	}
+	
+	SetControlState(){
+		this._SetGlabel(0)						; Turn off g-label to avoid triggering save
+		cmd := ""
+		if (this.IsListType){
+			cmd := (this.IsAltSubmitType ? "choose" : "choosestring")
+		}
+		GuiControl, % cmd, % this.hwnd, % this.__value
+		this._SetGlabel(1)						; Turn g-label back on
 	}
 	
 	; The user typed something into the GuiControl
