@@ -5,7 +5,9 @@ Re-Enable profiles
 
 Wire up the SetState outputs for keyboard / mouse
 
-Fix IO GuiControl selection
+Only Buttons seem to cause vGen to Acquire
+
+Add vXBox hat
 
 Make all GuiControls use the GuiControls array in the INI file. Avoid spamming with empty InputDeltas, ProfileSelects etc for each plugin
 ################################################################

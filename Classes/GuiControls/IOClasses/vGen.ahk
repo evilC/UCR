@@ -283,7 +283,7 @@ class vJoy_Button_Output extends vJoy_Base {
 
 }
 
-class vJoy_Axis_Output extends vGen_Output {
+class vJoy_Axis_Output extends vJoy_Base {
 	static IOClass := "vJoy_Axis_Output"
 	static _NumAxes := 8			; vJoy has 8 Axes
 	static AxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
@@ -479,7 +479,8 @@ class vXBox_Button_Output extends vXBox_Base {
 class vXBox_Axis_Output extends vJoy_Axis_Output {
 	static IOClass := "vXBox_Axis_Output"
 	static _NumAxes := 6			; vXBox has 6 Axes
-
+	static _Prefix := "vXBox"
+	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
 	static AxisList := ["LS X", "LS Y", "RS X", "RS Y", "LT", "RT"]
 }
 
