@@ -103,7 +103,7 @@ Class _InputHandler {
 	*/
 	
 	InputEvent(ControlGUID, e){
-		;OutputDebug % "UCR| InputHandler Received event " e " from GuiControl " ControlGUID
+		OutputDebug % "UCR| InputHandler Received event " e " from GuiControl " ControlGUID
 		if (ObjHasKey(UCR.BindControlLookup, ControlGUID)){
 			lu := UCR.BindControlLookup[ControlGUID]
 			UCR.BindControlLookup[ControlGUID].ChangeStateCallback.Call(e) ;*[UCR]

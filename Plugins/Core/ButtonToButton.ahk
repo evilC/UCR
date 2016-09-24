@@ -19,7 +19,7 @@ class ButtonToButton extends _Plugin {
 		; Add a hotkey, and give it the name "MyHk1". All hotkey objects can be accessed via this.InputButtons[name]
 		; Have it call MyHkChangedValue when it changes value, and MyHkChangedState when it changes state.
 		; Pass the name of the hotkey when it gets called
-		this.AddControl("InputButton", "IB1", 0, this.MyHkChangedState.Bind(this, "IB1"), "x+5 yp-2 w200") ;*[UCR]
+		this.AddControl("InputButton", "IB1", 0, this.MyHkChangedState.Bind(this, "IB1"), "x+5 yp-2 w200")
 		;this.AddControl("IB1", "InputButton", 0, this.MyHkChangedState.Bind(this, "IB1"), "x+5 yp-2 w200")
 		Gui, Add, Text, x+5 yp+2 , % " to "
 		; Add an Output, and give it the name "MyOp1". All output objects can be accessed via this.OutputButtons[name]
@@ -35,11 +35,11 @@ class ButtonToButton extends _Plugin {
 		if (this.GuiControls.Toggle.value){
 			; Toggle mode - Toggle the state of the output when the input goes down
 			if (e){
-				this.OutputButtons.OB1.SetState(!this.OutputButtons.OB1.State)
+				this.GuiControls.OB1.SetState(!this.OutputButtons.OB1.State)
 			}
 		} else {
 			; Normal mode - Set the state of the output to match the state of the input
-			this.OutputButtons.OB1.SetState(e)
+			this.GuiControls.OB1.SetState(e)
 		}
 	}
 }
