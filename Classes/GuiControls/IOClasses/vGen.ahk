@@ -30,11 +30,21 @@ class vGen_Output extends _IOClassBase {
 	}
 	
 	SetButtonState(state){
+		; DWORD SetDevButton(HDEVICE hDev, UINT Button, BOOL Press);
 		ret := DllCall(this.DllName "\SetDevButton", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "uint", state, "Cdecl")
 	}
 	
 	SetAxisState(state){
+		; DWORD SetDevAxis(HDEVICE hDev, UINT Axis, FLOAT Value);
 		ret := DllCall(this.DllName "\SetDevAxis", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", this.Binding[1], "Float", state, "Cdecl")
+	}
+	
+	SetHatState(state){
+		; DWORD SetDevPov(HDEVICE hDev, UINT nPov, FLOAT Value);
+		h := this.GetHatStrings()
+		s := (state == 0 ? -1 : state * 90)
+		OutputDebug % "UCR| SetDevPov h:" h.hat " value:" s
+		ret := DllCall(this.DllName "\SetDevPov", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", h.hat, "Float", s, "Cdecl")
 	}
 	
 	_Register(){
@@ -120,6 +130,16 @@ class vGen_Output extends _IOClassBase {
 		for i, menu in this._JoyMenus {
 			menu.SetEnableState(state)
 		}
+	}
+	
+	GetHatStrings(){
+		hat := 0
+		o := this.Binding[1]
+		while (o > 100){
+			hat++
+			o -= 100
+		}
+		return {hat: hat, dir: o}
 	}
 	
 	_Deserialize(obj){
@@ -257,6 +277,10 @@ class vJoy_Hat_Output extends vJoy_Base {
 	static _HatDirections := ["Up", "Right", "Down", "Left"]
 	static _HatName := "Hat"
 	
+	SetState(state){
+		base.SetHatState(state)
+	}
+	
 	BuildHumanReadable(){
 		h := this.GetHatStrings()
 		hatstr := (this._NumHats > 1 ? h.hat " " : "")
@@ -298,16 +322,6 @@ class vJoy_Hat_Output extends vJoy_Base {
 			return
 		}
 		this.ParentControl.value := this
-	}
-	
-	GetHatStrings(){
-		hat := 0
-		o := this.Binding[1]
-		while (o > 100){
-			hat++
-			o -= 100
-		}
-		return {hat: hat, dir: o}
 	}
 }
 
