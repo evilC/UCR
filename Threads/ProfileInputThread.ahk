@@ -24,7 +24,7 @@ Class _InputThread {
 			i++
 		}
 		if (i){
-			OutputDebug % "UCR| Input Thread loaded IOClasses: " names
+			; OutputDebug % "UCR| Input Thread loaded IOClasses: " names
 		} else {
 			OutputDebug % "UCR| Input Thread WARNING! Loaded No IOClasses!"
 		}
@@ -215,7 +215,7 @@ Class _InputThread {
 		SetDetectionState(state){
 			; Are we already in the requested state?
 			if (A_IsSuspended == state){
-				OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Axis detection " (state ? "On" : "Off")
+				;OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Axis detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state

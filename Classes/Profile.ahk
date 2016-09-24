@@ -146,11 +146,11 @@ Class _Profile {
 	_Activate(){
 		if (this._HotkeysActive)
 			return
+		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
 		if (this.InputThread == 0){
 			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
 			UCR._SetProfileInputThreadState(this.id,1)
 		}
-		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
 		;this._SetHotkeyState(1)
 		this.InputThread.SetDetectionState(1)
 

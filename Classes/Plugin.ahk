@@ -170,11 +170,13 @@ Class _Plugin {
 		}
 		; Remove input bindings etc here
 		; Some attempt is also made to free resources so destructors fire, though this is a WIP
+		/*
 		this.InputButtons := ""
 		for Name, obj in this.InputAxes {
 			UCR._InputHandler.SetAxisBinding(obj, 1)
 			obj._KillReferences()
 		}
+		*/
 		for name, obj in this.GuiControls {
 			obj._KillReferences()
 		}

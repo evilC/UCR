@@ -111,7 +111,7 @@ class vGen_Output extends _IOClassBase {
 			return 0
 		}
 		this._SetStickControlGuid(this.DeviceID, this.ParentControl.id, 1)
-		OutputDebug % "UCR| _Register - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
+		;OutputDebug % "UCR| _Register - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
 		return 1
 	}
 	
@@ -158,7 +158,7 @@ class vGen_Output extends _IOClassBase {
 			}
 		} else {
 			; Already Acquired
-			OutputDebug % "UCR| IOClass " this.IOClass " has already Acquired Stick " this.DeviceID
+			;OutputDebug % "UCR| IOClass " this.IOClass " has already Acquired Stick " this.DeviceID
 			return 1
 		}
 		

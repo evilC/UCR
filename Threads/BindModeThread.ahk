@@ -23,9 +23,9 @@ class _BindMapper {
 			i++
 		}
 		if (i){
-			OutputDebug % "UCR| Input Thread loaded IOClasses: " names
+			OutputDebug % "UCR| Bind Mode Thread loaded IOClasses: " names
 		} else {
-			OutputDebug % "UCR| Input Thread WARNING! Loaded No IOClasses!"
+			OutputDebug % "UCR| Bind Mode Thread WARNING! Loaded No IOClasses!"
 		}
 		Suspend, On
 	}
