@@ -185,7 +185,9 @@ class vGen_Output extends _IOClassBase {
 	}
 	
 	UpdateMenus(cls){
-		state := (cls == this.IOClass && this.DeviceID)
+		OutputDebug % "UCR| UpdateMenus. This IOClass: " this.IOClass "  ||  _vGenDeviceType - this: " this._vGenDeviceType ", GuiControl: " this.ParentControl.value._vGenDeviceType
+		; Is the vGenDeviceType of the old class the same as the new class, and has a device been chosen ?
+		state := (this._vGenDeviceType == this.ParentControl.value._vGenDeviceType && this.ParentControl.value.DeviceID)
 		for i, menu in this._JoyMenus {
 			menu.SetEnableState(state)
 		}
@@ -262,10 +264,17 @@ class vJoy_Button_Output extends vJoy_Base {
 		if (o < 9){
 			; Stick selected
 			this.DeviceID := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.value.Binding[1]
+			}
+			
 		} else if (o > 100 && o < 229){
 			; Button selected
 			o -= 100
 			this.Binding[1] := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.value.DeviceID
+			}
 		} else {
 			return
 		}
@@ -319,10 +328,16 @@ class vJoy_Axis_Output extends vGen_Output {
 		if (o < 9){
 			; Stick selected
 			this.DeviceID := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.value.Binding[1]
+			}
 		} else if (o > 100 && o < 109){
 			; Axis selected
 			o -= 100
 			this.Binding[1] := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.value.DeviceID
+			}
 		} else {
 			return
 		}
@@ -335,6 +350,7 @@ class vJoy_Hat_Output extends vJoy_Base {
 	static _NumHats := 4
 	static _HatDirections := ["Up", "Right", "Down", "Left"]
 	static _HatName := "Hat"
+	_JoyMenus := []
 	
 	SetState(state){
 		base.SetHatState(state)
@@ -373,10 +389,16 @@ class vJoy_Hat_Output extends vJoy_Base {
 		if (o <= this._NumSticks){
 			; Stick selected
 			this.DeviceID := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.value.Binding[1]
+			}
 		} else if (o > 100 && o <= (this._NumHats * 100) + 4){
 			; Button selected
 			;o -= 100
 			this.Binding[1] := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.value.DeviceID
+			}
 		} else {
 			return
 		}
@@ -437,10 +459,16 @@ class vXBox_Button_Output extends vXBox_Base {
 		if (o < 5){
 			; Stick selected
 			this.DeviceID := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.value.Binding[1]
+			}
 		} else if (o > 100 && o < 111){
 			; Button selected
 			o -= 100
 			this.Binding[1] := o
+			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.value.DeviceID
+			}
 		} else {
 			return
 		}
