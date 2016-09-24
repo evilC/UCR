@@ -258,9 +258,10 @@ class vJoy_Hat_Output extends vJoy_Base {
 	static _HatName := "Hat"
 	
 	BuildHumanReadable(){
-		str := "vXBox Stick " this.DeviceID
+		h := this.GetHatStrings()
+		hatstr := (this._NumHats > 1 ? h.hat " " : "")
 		if (this.Binding[1]){
-			str .=  ", Button " this._ButtonNames[this.Binding[1]]
+			str .= this._Prefix " Stick " this.DeviceID ", " this._HatName " " hatstr this._HatDirections[h.dir]
 		} else {
 			str .= " (No Button Selected)"
 		}
@@ -272,8 +273,9 @@ class vJoy_Hat_Output extends vJoy_Base {
 			hatnum := (this._NumHats > 1 ? " " A_Index : "")
 			menu := this.ParentControl.AddSubMenu(this._Prefix " " this._HatName hatnum, this._Prefix "Hat" hatnum)
 			this._JoyMenus.Push(menu)
+			offset := A_Index * 100
 			Loop 4 {
-				menu.AddMenuItem(this._HatDirections[A_Index], A_Index, this._ChangedValue.Bind(this, A_Index))
+				menu.AddMenuItem(this._HatDirections[A_Index], A_Index, this._ChangedValue.Bind(this, A_Index + offset))
 			}
 		}
 	}
@@ -285,17 +287,27 @@ class vJoy_Hat_Output extends vJoy_Base {
 	}
 	
 	_ChangedValue(o){
-		if (o < 5){
+		if (o <= this._NumSticks){
 			; Stick selected
 			this.DeviceID := o
-		} else if (o > 100 && o < 111){
+		} else if (o > 100 && o <= (this._NumHats * 100) + 4){
 			; Button selected
-			o -= 100
+			;o -= 100
 			this.Binding[1] := o
 		} else {
 			return
 		}
 		this.ParentControl.value := this
+	}
+	
+	GetHatStrings(){
+		hat := 0
+		o := this.Binding[1]
+		while (o > 100){
+			hat++
+			o -= 100
+		}
+		return {hat: hat, dir: o}
 	}
 }
 
