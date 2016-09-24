@@ -1,6 +1,6 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
-class _OutputAxis extends _IOControl {
-	static _ControlType := "_OutputAxis"
+class OutputAxis extends _IOControl {
+	static _ControlType := "OutputAxis"
 	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
 	static _DefaultBanner := "Select an Output Axis"
 	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]

@@ -18,16 +18,22 @@ class AxisToAxis extends _Plugin {
 		Gui, Add, Text, % "x+10 yp w125 Center", Output Virtual Axis
 		Gui, Add, Text, % "x+5 yp w100 Center", Output Preview
 		
-		this.AddInputAxis("InputAxis", 0, this.MyInputChangedState.Bind(this), "xm w125")
+		;this.AddInputAxis("InputAxis", 0, this.MyInputChangedState.Bind(this), "xm w125")
+		this.AddControl("InputAxis", "IA1", 0, this.MyInputChangedState.Bind(this), "xm w125")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
 		this.hSliderIn := hwnd
-		this.AddControl("Invert", 0, "CheckBox", "x+20 yp+3 w30")
-		this.AddControl("Deadzone", 0, "Edit", "x+10 yp-3 w30", "0")
+		;this.AddControl("Invert", 0, "CheckBox", "x+20 yp+3 w30")
+		this.AddControl("CheckBox", "Invert", 0, "x+20 yp+3 w30")
+		;this.AddControl("Deadzone", 0, "Edit", "x+10 yp-3 w30", "0")
+		this.AddControl("Edit", "Deadzone", 0, "x+10 yp-3 w30", "0")
 		Gui, Add, Text, % "x+0 yp+3", `%
-		this.AddControl("Sensitivity", 0, "Edit", "x+10 yp-3 w30", "100")
+		;this.AddControl("Sensitivity", 0, "Edit", "x+10 yp-3 w30", "100")
+		this.AddControl("Edit", "Sensitivity", 0, "x+10 yp-3 w30", "100")
 		Gui, Add, Text, % "x+0 yp+3", `%
-		this.AddControl("Linear", 0, "Checkbox", "x+18 yp w30")
-		this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
+		;this.AddControl("Linear", 0, "Checkbox", "x+18 yp w30")
+		this.AddControl("Checkbox", "Linear", 0, "x+18 yp w30")
+		;this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
+		this.AddControl("OutputAxis", "OA1", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
 		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
 		this.hSliderOut := hwnd
 	}
@@ -59,7 +65,7 @@ class AxisToAxis extends _Plugin {
 			value := UCR.Libraries.StickOps.InternalToAHK(value)
 			GuiControl, , % this.hSliderOut, % value
 			;value := UCR.Libraries.StickOps.AHKToVjoy(value)
-			this.OutputAxes.OutputAxis.SetState(value)
+			this.GuiControls.OA1.SetState(value)
 		}
 		*/
 	}

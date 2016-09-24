@@ -32,53 +32,10 @@ Class _Plugin {
 		return this.GuiControls[name]
 	}
 	
-	/*
-	; === Plugins can call these commands to add various GuiControls to their Gui ===
-	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
-	AddControl(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.GuiControls, name)){
-			this.GuiControls[name] := new _GuiControl(this, name, ChangeValueCallback, aParams*)
-			return this.GuiControls[name]
-		}
-	}
-	*/
-	
-	; Adds a GuiControl that allows the end-user to pick Button(s) to use as Input(s)
-	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.InputButtons, name)){
-			this.InputButtons[name] := new _InputButton(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.InputButtons[name]
-		}
-	}
-	
-	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an input
-	AddInputAxis(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.InputAxes,name)){
-			this.InputAxes[name] := new _InputAxis(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.InputAxes[name]
-		}
-	}
-	
 	AddInputDelta(name, ChangeStateCallback, aParams*){
 		if (!ObjHasKey(this.InputDeltas,name)){
 			this.InputDeltas[name] := new _InputDelta(this, name, ChangeStateCallback, aParams*)
 			return this.InputDeltas[name]
-		}
-	}
-	
-	; Adds a GuiControl that allows the end-user to pick Button(s) to be used as output(s)
-	AddOutputButton(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.OutputButtons, name)){
-			this.OutputButtons[name] := new _OutputButton(this, name, ChangeValueCallback, aParams*)
-			return this.OutputButtons[name]
-		}
-	}
-	
-	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an output
-	AddOutputAxis(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.OutputAxes,name)){
-			this.OutputAxes[name] := new _OutputAxis(this, name, ChangeValueCallback, aParams*)
-			return this.OutputAxes[name]
 		}
 	}
 	
@@ -213,37 +170,15 @@ Class _Plugin {
 		}
 		; Remove input bindings etc here
 		; Some attempt is also made to free resources so destructors fire, though this is a WIP
-		for name, obj in this.InputButtons {
-			UCR._InputHandler.SetButtonBinding(obj, 1)
-			obj._KillReferences()
-		}
 		this.InputButtons := ""
 		for Name, obj in this.InputAxes {
 			UCR._InputHandler.SetAxisBinding(obj, 1)
 			obj._KillReferences()
 		}
-		this.InputAxes := ""
-		for name, obj in this.InputDeltas {
-			UCR._InputHandler.SetDeltaBinding(obj, 1)
-			obj._KillReferences()
-		}
-		this.InputDeltas := ""
-		for name, obj in this.OutputButtons {
-			obj._KillReferences()
-		}
-		this.OutputButtons := ""
-		for name, obj in this.OutputAxes {
-			obj._KillReferences()
-		}
-		this.OutputAxes := ""
 		for name, obj in this.GuiControls {
 			obj._KillReferences()
 		}
 		this.GuiControls := ""
-		for name, obj in this.ProfileSelects {
-			obj._KillReferences()
-		}
-		this.ProfileSelects := ""
 		this.ParentProfile._RemovePlugin(this)
 		try {
 			this._KillReferences()
