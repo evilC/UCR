@@ -3,7 +3,7 @@ Make BindMode thread run multi-threaded again
 
 Re-Enable profiles
 
-Wire up the SetState outputs for keyboard / mouse
+Wire up the SetState outputs for keyboard / mouse / hat directions
 
 Make all GuiControls use the GuiControls array in the INI file. Avoid spamming with empty InputDeltas, ProfileSelects etc for each plugin
 ################################################################
