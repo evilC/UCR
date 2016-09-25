@@ -73,6 +73,7 @@ Class _Profile {
 			OutputDebug % "UCR| Input Thread for thread #" this.id " ( " this.Name " ) has started"
 
 			; Get thread-safe boundfunc object for thread's SetHotkeyState
+			this.InputThread := {}
 			this.InputThread.UpdateBinding := ObjShare(this._InputThread.ahkgetvar("InterfaceUpdateBinding"))
 			this.InputThread.SetDetectionState := ObjShare(this._InputThread.ahkgetvar("InterfaceSetDetectionState"))
 			
