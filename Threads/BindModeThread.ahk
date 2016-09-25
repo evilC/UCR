@@ -3,13 +3,17 @@ Handles binding of the hotkeys for Bind Mode
 Runs as a separate thread to the main application,
 so that bind mode keys can be turned on and off quickly with Suspend
 */
+#Persistent
+#NoTrayIcon
+#MaxHotkeysPerInterval 9999
+autoexecute_done := 1
 
 class _BindMapper {
 	DetectionState := 0
 	static IOClasses := {AHK_Common: 0, AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0}
 	__New(CallbackPtr){
-		;this.Callback := ObjShare(CallbackPtr)
-		this.Callback := CallbackPtr
+		this.Callback := ObjShare(CallbackPtr)
+		;this.Callback := CallbackPtr
 		; Instantiate each of the IOClasses specified in the IOClasses array
 		for name, state in this.IOClasses {
 			; Instantiate an instance of a class that is a child class of this one. Thanks to HotkeyIt for this code!
@@ -28,13 +32,18 @@ class _BindMapper {
 			OutputDebug % "UCR| Bind Mode Thread WARNING! Loaded No IOClasses!"
 		}
 		Suspend, On
+		global InterfaceSetDetectionState := ObjShare(this.SetDetectionState.Bind(this))
 	}
 	
 	; A request was received from the main thread to set the Dection state
-	SetDetectionState(state, IOClassMappings){
+	SetDetectionState(state, IOClassMappingsPtr){
+		IOClassMappings := ObjShare(IOClassMappingsPtr)
 		if (state == this.DetectionState)
 			return
-		for name, ret in IOClassMappings {
+		; ToDo: Why can I not pass this array through with ObjShare?
+		static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
+		;for name, ret in IOClassMappings {
+		for name, ret in _BindTypes {
 			;OutputDebug % "UCR| BindModeThread Starting watcher " name " with return type " ret
 			this.IOClasses[name].SetDetectionState(state, ret)
 		}
