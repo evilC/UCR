@@ -49,7 +49,7 @@ Class _UCR extends _UCRBase {
 		; Load the settings file into an object, but do nothing with it for now
 		SettingsObj := this._LoadSettings()
 		; Merge the User Settings onto the default settings
-		this.MergeObject(this.UserSettings, SettingsObj.UserSettings)
+		this.MergeObject(this.UserSettings, SettingsObj.UserSettings) ;*[UCR]
 		; ======================= End of init ==============================
 		
 		this.Minimizer := new _Minimizer(this.hwnd, this._GuiMinimized.Bind(this))
@@ -105,8 +105,8 @@ Class _UCR extends _UCRBase {
 		}
 		
 		; Start the Global Profile
-		;this._SetProfileInputThreadState(1,1)
-		;this.Profiles.1._Activate()
+		this._SetProfileInputThreadState(1,1)
+		this.Profiles.1._Activate()
 		
 		; Start the Current Profile
 		this.ChangeProfile(SettingsObj.CurrentProfile, 0)
@@ -909,8 +909,6 @@ Class _UCR extends _UCRBase {
 		this.Profiles := {}
 		this.ProfileTree := obj.ProfileTree
 		for id, profile in obj.Profiles {
-			if (profile.Name = "Global")
-				continue
 			this._CreateProfile(profile.Name, id, profile.ParentProfile)
 			this.Profiles[id]._Deserialize(profile)
 			this.Profiles[id]._Hide()

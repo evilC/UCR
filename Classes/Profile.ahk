@@ -109,10 +109,8 @@ Class _Profile {
 			ahkthread_free(this._InputThread)
 			this.InputThread := 0
 		}
-		this._SetHotkeyState := 0
-		this._SetButtonBinding := 0
-		this._SetAxisBinding := 0
-		this._SetDeltaBinding := 0
+		this.UpdateBinding := 0
+		this.SetDetectionState := 0
 	}
 	
 	; Delete requested
@@ -166,11 +164,11 @@ Class _Profile {
 	_DeActivate(){
 		if (!this._HotkeysActive)
 			return
-		OutputDebug % "UCR| DeActivating input thread for profile # " this.id " (" this.name " )"
-		if (this.InputThread){
+		;if (this.InputThread != 0){
 			;this._SetHotkeyState(0)
+			OutputDebug % "UCR| DeActivating input thread for profile # " this.id " (" this.name " )"
 			this.InputThread.SetDetectionState(0)
-		}
+		;}
 		this._HotkeysActive := 0
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]

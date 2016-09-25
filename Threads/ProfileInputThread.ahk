@@ -52,10 +52,10 @@ Class _InputThread {
 	SetDetectionState(state){
 		if (state == this.DetectionState)
 			return
+		this.DetectionState := state
 		for name, cls in this.IOClasses {
 			cls.SetDetectionState(state)
 		}
-		DetectionState := state
 	}
 	
 	; Listens for Keyboard and Mouse input using the AHK Hotkey command
@@ -215,7 +215,7 @@ Class _InputThread {
 		SetDetectionState(state){
 			; Are we already in the requested state?
 			if (A_IsSuspended == state){
-				;OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Axis detection " (state ? "On" : "Off")
+				OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Button detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state

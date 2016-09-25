@@ -117,7 +117,7 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	Set(bo, update_ini := 1){
-		OutputDebug % "UCR| InputButton Set: class: " bo.IOClass ", code: " bo.Binding[1] ", DeviceID: " bo.DeviceID
+		;OutputDebug % "UCR| InputButton Set: class: " bo.IOClass ", code: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;this.MergeObject(this._IOClasses[bo.IOClass], bo)
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
 		base.Set(this._IOClasses[bo.IOClass], update_ini)
