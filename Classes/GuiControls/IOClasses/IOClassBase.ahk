@@ -8,9 +8,6 @@
 					; Normally a single element, but for KBM could be up to 4 modifiers plus a key/button
 	BindOptions := {}	; Options for Binding - eg wild / block for KBM
 
-	static IsInitialized := 0
-	static IsAvailable := 0
-
 	__New(parent, obj := 0){
 		this.ParentControl := parent
 		if (obj == 0){

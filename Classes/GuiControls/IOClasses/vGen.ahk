@@ -1,7 +1,6 @@
 class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	static IOType := 1
 	static IOClass := "vGen_Output"
-	;static LibraryLoaded := vGen_Output._Init()
 	
 	static _vGenDeviceTypeNames := {0: "vJoy", 1: "vXBox"}
 	static DllName := "vGenInterface"
@@ -11,6 +10,8 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	static _NumButtons := 0			; Numer of buttons supported.
 	static _DeviceHandles := []
 	
+	static IsInitialized := 0
+	static IsAvailable := 0
 	
 	static _AngleToCardinals := {-1: {x: 0, y: 0}
 		, 0: {x: 0, y: 1}		; Up
@@ -33,18 +34,19 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	static _POVStates := {}
 	
 	_Init(){
-		if (vGen_Output.IsInitialized)
+		;if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
+		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
 			return
 		dllpath := "Resources\" this.DllName ".dll"
 		hModule := DllCall("LoadLibrary", "Str", dllpath, "Ptr")
 		if (hModule == 0){
 			OutputDebug % "UCR| IOClass " this.IOClass " Failed to load " dllpath
-			vGen_Output.IsAvailable := 0
+			_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 0
 		} else {
 			OutputDebug % "UCR| IOClass " this.IOClass " Loaded " dllpath
-			vGen_Output.IsAvailable := 1
+			_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 1
 		}
-		this._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		_UCR.Classes.IOClasses.vGen_Output._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
@@ -53,13 +55,13 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
 		
-		this._POVStates.vXBox_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		_UCR.Classes.IOClasses.vGen_Output._POVStates.vXBox_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
-		vGen_Output._hModule := hModule
+		_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
 		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
-		vGen_Output.IsInitialized := 1
+		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := 1
 	}
 	
 	SetButtonState(state){
