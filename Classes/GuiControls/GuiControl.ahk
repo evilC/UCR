@@ -2,7 +2,7 @@
 ; Wraps a GuiControl to make it's value persistent between runs.
 class _GuiControl {
 	static _ListTypes := {ListBox: 1, DDL: 1, DropDownList: 1, ComboBox: 1, Tab: 1, Tab2: 1, Tab3: 1}
-	__value := ""	; variable that actually holds value. ._value and .__value handled by Setters / Getters
+	__value := ""	; variable that actually holds value.
 	__New(parent, type, name, ChangeValueCallback, aParams*){
 		this.ParentPlugin := parent
 		this.Name := name
@@ -29,13 +29,7 @@ class _GuiControl {
 		this.hwnd := hwnd
 		; Set default value - get this from state of GuiControl before any loading of settings is done
 		GuiControlGet, value, % this.ParentPlugin.hwnd ":", % this.hwnd
-		this.__value := value
-		; Turn on the gLabel
-		this._SetGlabel(1)
-		
-		; Fire ChangeValueCallback so that any variables that depend on GuiControl values can be initialized
-		if (IsObject(ChangeValueCallback))
-			ChangeValueCallback.Call(value)
+		this.Set(value, 0)
 	}
 	
 	__Delete(){
@@ -56,36 +50,6 @@ class _GuiControl {
 			GuiControl, % this.ParentPlugin.hwnd ":+g", % this.hwnd, % fn
 		} else {
 			GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
-		}
-	}
-
-	; Get / Set of .value
-	value[]{
-		; Read of current contents of GuiControl
-		get {
-			return this.__value
-		}
-		
-		; When the user types something in a guicontrol, this gets called
-		; Fire _ControlChanged on parent so new setting can be saved
-		set {
-			this.__value := value
-			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
-			this.ParentPlugin._ControlChanged(this)
-		}
-	}
-	
-	; Get / Set of ._value
-	_value[]{
-		; this will probably not get called
-		get {
-			return this.__value
-		}
-		; Update contents of GuiControl, but do not fire _ControlChanged
-		; Parent has told child state to be in, child does not need to notify parent of change in state
-		set {
-			this.__value := value
-			this.SetControlState()
 		}
 	}
 	
@@ -126,7 +90,7 @@ class _GuiControl {
 	}
 	
 	_Serialize(){
-		obj := {value: this._value}
+		obj := {value: this.__value}
 		return obj
 	}
 	

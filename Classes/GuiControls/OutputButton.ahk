@@ -50,69 +50,6 @@ Class OutputButton extends InputButton {
 		} else {
 			this.__value.SetState(state)
 			this.State := state
-			/*
-			this.State := state
-			max := this.__value.Buttons.Length()
-			if (state)
-				i := 1
-			else
-				i := max
-			Loop % max{
-				key := this.__value.Buttons[i]
-				if key.Type == 1 {
-					; Keyboard / Mouse
-					name := key.BuildKeyName()
-					Send % "{" name (state ? " Down" : " Up") "}"
-				} else if (key.Type = 2 && key.IsVirtual){
-					; Virtual Joystick Button
-					UCR.Libraries.vJoy.Devices[key.DeviceID].SetBtn(state, key.code)
-				} else if (key.Type > 2 && key.Type < 7 && key.IsVirtual){
-					; Virtual Joystick POV Hat
-					device := UCR.Libraries.vJoy.Devices[key.DeviceID]
-					if (!IsObject(device.PovState))
-						device.PovState := {x: 0, y: 0}
-					if (state)
-						new_state := PovMap[key.code].clone()
-					else
-						new_state := PovMap[0].clone()
-					
-					this_angle := PovMap[key.code]
-					Loop 2 {
-						ax := Axes[A_Index]
-						if (this_angle[ax]){
-							if (device.PovState[ax] && device.PovState[ax] != new_state[ax])
-								new_state[ax] := 0
-						} else {
-							; this key does not control this axis, look at device.PovState for value
-							new_state[ax] := device.PovState[ax]
-						}
-					}
-					device.SetContPov(PovAngles[new_state.x,new_state.y], key.Type - 2)
-					device.PovState := new_state
-				} else if (key.Type == 9 && key.IsVirtual){
-					; Titan Button
-					UCR.Libraries.Titan.SetButtonByIndex(key.code, state)
-				} else if key.Type == 10 {
-					; Titan Hat
-					; ToDo: This probably won't work for hat to hat mapping.
-					; Need to be able to toggle on/off cardinals
-					;if (state)
-					;	angle := (key.code-1)*2
-					;else
-					;	angle := -1
-					;UCR.Libraries.Titan.SetPOVAngle(1, angle)
-					UCR.Libraries.Titan.SetPovDirectionState(1, key.code, state)
-					
-					Send % "{" name (state ? " Down" : " Up") "}"
-				} else {
-					return 0
-				}
-				if (state)
-					i++
-				else
-					i--
-			}
-			*/
 		}
 	}
 	
@@ -143,10 +80,10 @@ Class OutputButton extends InputButton {
 	}
 	
 	; bo is a "Primitive" BindObject
-	SetBinding(bo, update := 1){
+	SetBinding(bo, update_ini := 1){
 		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
+		this.Set(this._IOClasses[bo.IOClass], update_ini)
 	}
 
 	_RequestBinding(){

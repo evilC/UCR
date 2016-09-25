@@ -49,30 +49,6 @@ class InputButton extends _IOControl {
 		this._KeyOnlyOptions := ""
 	}
 	
-	value[]{
-		get {
-			return this.__value
-		}
-		
-		set {
-			this._value := value	; trigger _value setter to set value and cuebanner etc
-			;OutputDebug % "UCR| Hotkey " this.Name " called ParentPlugin._ControlChanged()"
-			this.ParentPlugin._ControlChanged(this)
-		}
-	}
-	
-	_value[]{
-		get {
-			return this.__value
-		}
-		
-		; Parent class told this hotkey what it's value is. Set value, but do not fire ParentPlugin._ControlChanged
-		set {
-			this.__value := value
-			this.SetControlState()
-		}
-	}
-
 	_BuildMenu(){
 		this.AddMenuItem("Select Binding", "SelectBinding", this._ChangedValue.Bind(this, 1))
 		for i, cls in this._IOClasses {
@@ -137,11 +113,11 @@ class InputButton extends _IOControl {
 		return this._Serialize()
 	}
 	
-	SetBinding(bo, update := 1){
+	SetBinding(bo, update_ini := 1){
 		OutputDebug % "UCR| InputButton SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;this.MergeObject(this._IOClasses[bo.IOClass], bo)
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
+		this.Set(this._IOClasses[bo.IOClass], update_ini)
 		
 		; ToDo - add in the condition that the binding must have also changed
 		; Request the new binding from the Profile's InputThread.

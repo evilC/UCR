@@ -34,10 +34,10 @@ class OutputAxis extends _IOControl {
 	}
 	
 	; bo is a "Primitive" BindObject
-	SetBinding(bo, update := 1){
+	SetBinding(bo, update_ini := 1){
 		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
+		this.Set(this._IOClasses[bo.IOClass], update_ini)
 	}
 	
 	_BuildMenu(){
@@ -56,22 +56,6 @@ class OutputAxis extends _IOControl {
 			this.__value.SetState(state)
 			this.State := State
 		}
-		/*
-		if (UCR._CurrentState == 2 && !delay_done){
-			; In GameBind Mode - delay output.
-			; Call this method again, but pass 1 to delay_done
-			fn := this.SetState.Bind(this, state, 1)
-			SetTimer, % fn, % -UCR._GameBindDuration
-		} else {
-			this.State := state
-			if (this.type == 4){
-				UCR.Libraries.vJoy.Devices[this.__value.DeviceID].SetAxisByIndex(state, this.__value.Axis)
-			} else {
-				state := Round(state/327.67)
-				UCR.Libraries.Titan.SetAxisByIndex(this.__value.Axis, state)
-			}
-		}
-		*/
 	}
 	
 	SetControlState(){
@@ -87,84 +71,10 @@ class OutputAxis extends _IOControl {
 		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)
 		}
-		/*
-		axis := this.__value.Axis
-		DeviceID := this.__value.DeviceID
-		this._OptionMap := []
-		opts := []
-		if (DeviceID){
-			; Show Sticks and Axes
-			max := 16
-			index_offset := 0
-			if (!Axis)
-				str := "Pick an Axis (Stick " DeviceID ")"
-		} else {
-			str := "Select an Output Axis"
-			max := 10
-			index_offset := 8
-		}
-		Loop % max {
-			map_index := A_Index + index_offset
-			if (map_index > 8 && map_index <= 16){
-				if (!UCR.Libraries.vJoy.Devices[map_index - 8].IsAvailable()){
-					continue
-				}
-			}
-			opts.push(this._Options[map_index])
-			this._OptionMap.push(map_index)
-		}
-		if (DeviceID || axis){
-			opts.push(this._Options[17])
-			this._OptionMap.push(17)
-		}
-		
-		if (DeviceID && Axis){
-			if (type == 4){
-				str := "vJoy Stick " DeviceID ", Axis " axis " (" this.vJoyAxisList[axis] ")"
-			} else {
-				str := "Titan Axis " axis
-			}
-		}
-		
-		this.SetOptions(opts)
-		this.SetCueBanner(str)
-		*/
 	}
 	
 	_ChangedValue(o){
 
 	}
 	
-	; Get / Set of .value
-	value[]{
-		; Read of current contents of GuiControl
-		get {
-			return this.__value
-		}
-		
-		; When the user types something in a guicontrol, this gets called
-		; Fire _ControlChanged on parent so new setting can be saved
-		set {
-			this._value := value
-			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
-			this.ParentPlugin._ControlChanged(this)
-		}
-	}
-	
-	; Get / Set of ._value
-	_value[]{
-		; this will probably not get called
-		get {
-			return this.__value
-		}
-		; Update contents of GuiControl, but do not fire _ControlChanged
-		; Parent has told child state to be in, child does not need to notify parent of change in state
-		set {
-			this.__value := value
-			this.SetControlState()
-			if (IsObject(this.ChangeValueCallback)){
-				this.ChangeValueCallback.Call(this.__value)
-			}
-		}
-	}
 }

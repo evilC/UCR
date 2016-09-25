@@ -55,9 +55,9 @@ class InputAxis extends _IOControl {
 	}
 	
 	; bo is a "Primitive" BindObject
-	SetBinding(bo, update := 1){
+	SetBinding(bo, update_ini := 1){
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		this[update ? "value" : "_value"] := this._IOClasses[bo.IOClass]
+		this.Set(this._IOClasses[bo.IOClass], update_ini)
 		
 		; If both value and device are set, or neither are set, then update the binding
 		; ToDo - add in the condition that the binding must have also changed
@@ -82,39 +82,6 @@ class InputAxis extends _IOControl {
 		}
 		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)
-		}
-	}
-	
-	; Get / Set of .value
-	value[]{
-		; Read of current contents of GuiControl
-		get {
-			return this.__value
-		}
-		
-		; When the user types something in a guicontrol, this gets called
-		; Fire _ControlChanged on parent so new setting can be saved
-		set {
-			this._value := value
-			OutputDebug % "UCR| GuiControl " this.Name " called ParentPlugin._ControlChanged()"
-			this.ParentPlugin._ControlChanged(this)
-		}
-	}
-	
-	; Get / Set of ._value
-	_value[]{
-		; this will probably not get called
-		get {
-			return this.__value
-		}
-		; Update contents of GuiControl, but do not fire _ControlChanged
-		; Parent has told child state to be in, child does not need to notify parent of change in state
-		set {
-			this.__value := value
-			this.SetControlState()
-			if (IsObject(this.ChangeValueCallback)){
-				this.ChangeValueCallback.Call(this.__value)
-			}
 		}
 	}
 }
