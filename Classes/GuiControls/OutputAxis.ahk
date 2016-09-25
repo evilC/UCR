@@ -1,5 +1,5 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
-class OutputAxis extends _UCR._ControlClasses.GuiControls.IOControl {
+class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "OutputAxis"
 	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
 	static _DefaultBanner := "Select an Output Axis"
@@ -15,7 +15,7 @@ class OutputAxis extends _UCR._ControlClasses.GuiControls.IOControl {
 		
 		for i, name in this._IOClassNames {
 			;this._IOClasses[name] := new %name%(this)
-			call:= _UCR._ControlClasses.IOClasses[name]
+			call:= _UCR.Classes.IOClasses[name]
 			this._IOClasses[name] := new call(this)
 
 			if (!this._IOClasses.IsInitialized) {

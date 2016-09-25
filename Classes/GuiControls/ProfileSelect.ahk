@@ -1,6 +1,6 @@
 ﻿/*
 ; ======================================================================== PROFILE SLECT ===============================================================
-class _ProfileSelect extends _UCR._ControlClasses._BannerMenu {
+class _ProfileSelect extends _UCR.Classes._BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring

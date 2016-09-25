@@ -22,10 +22,10 @@ Class _Plugin {
 	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
 	AddControl(type, name, ChangeValueCallback, aParams*){
 		if (ObjHasKey(this._CustomControls, type)){
-			call:= _UCR._ControlClasses.GuiControls[type]
+			call:= _UCR.Classes.GuiControls[type]
 			this.GuiControls[name] := new call(this, name, ChangeValueCallback, aParams*)
 		} else {
-			call:= _UCR._ControlClasses.GuiControls.GuiControl
+			call:= _UCR.Classes.GuiControls.GuiControl
 			this.GuiControls[name] := new call(this, type, name, ChangeValueCallback, aParams*)
 		}
 		return this.GuiControls[name]

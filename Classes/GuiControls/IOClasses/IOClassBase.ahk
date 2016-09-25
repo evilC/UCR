@@ -1,4 +1,4 @@
-﻿class IOClassBase extends _UCR._ControlClasses.IOClasses.BindObject {
+﻿class IOClassBase extends _UCR.Classes.IOClasses.BindObject {
 	static IOClass := 0
 	static IOType := 0		; 0 for Input, 1 for Output
 	;DeviceType := 0	; Type of the Device - eg KBM (Keyboard/Mouse), Joystick etc. Meaning varies with IOType

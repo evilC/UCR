@@ -1,5 +1,5 @@
 ﻿; ======================================================================== INPUT AXIS ===============================================================
-class InputAxis extends _UCR._ControlClasses.GuiControls.IOControl {
+class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "InputAxis"
 	static _BindTypes := {AHK_JoyAxis_Input: "AHK_JoyAxis_Input"}
 	static _IOClassNames := ["AHK_JoyAxis_Input"]
@@ -20,9 +20,9 @@ class InputAxis extends _UCR._ControlClasses.GuiControls.IOControl {
 
 		for i, name in this._IOClassNames {
 			;this._IOClasses[name] := new %name%(this)
-			call:= _UCR._ControlClasses.IOClasses[name]
+			call:= _UCR.Classes.IOClasses[name]
 			this._IOClasses[name] := new call(this)
-			;_UCR._ControlClasses.IOClasses.
+			;_UCR.Classes.IOClasses.
 			if (!this._IOClasses.IsInitialized) {
 				this._IOClasses[name]._Init()
 			}

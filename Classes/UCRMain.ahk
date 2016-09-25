@@ -925,7 +925,7 @@ Class _UCR extends _UCRBase {
 	}
 	
 	; Holds Classes for GuiControls and IOControls
-	class _ControlClasses {
+	class Classes {
 		class GuiControls {
 			#Include Classes\GuiControls\GuiControl.ahk
 			#Include Classes\GuiControls\ProfileSelect.ahk

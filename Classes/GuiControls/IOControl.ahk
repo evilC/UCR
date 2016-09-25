@@ -1,4 +1,4 @@
-class IOControl extends _UCR._ControlClasses.GuiControls._BannerMenu {
+class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	Get(){
 		return this.__value
 	}

@@ -1,6 +1,6 @@
 ﻿; ======================================================================== INPUT BUTTON ===============================================================
 ; A class the script author can instantiate to allow the user to select a hotkey.
-class InputButton extends _UCR._ControlClasses.GuiControls.IOControl {
+class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "InputButton"
 	static _IsOutput := 0
 	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
@@ -27,7 +27,7 @@ class InputButton extends _UCR._ControlClasses.GuiControls.IOControl {
 
 		for i, name in this._IOClassNames {
 			;this._IOClasses[name] := new %name%(this)
-			call:= _UCR._ControlClasses.IOClasses[name]
+			call:= _UCR.Classes.IOClasses[name]
 			this._IOClasses[name] := new call(this)
 
 			if (!this._IOClasses.IsInitialized) {
