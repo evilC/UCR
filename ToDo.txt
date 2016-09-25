@@ -9,7 +9,7 @@ Custom Serializers / Desrializers for IOClasses? Would also reduce INI file spam
 
 Fix ProfileSelect / InputDelta
 
-Can IOControl derivatives replace SetButton() with an overridden Set()?
+Can IOControl derivatives replace SetBinding() with an overridden Set()?
 ################################################################
 
 Re-Add all the plugins
