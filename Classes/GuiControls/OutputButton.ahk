@@ -127,7 +127,7 @@ Class OutputButton extends InputButton {
 				return
 			} else if (o = 2){
 				; Clear Binding
-				this.value._UnRegister()
+				this.Get()._UnRegister()
 				this.__value.Binding := []
 				this.__value.DeviceID := 0
 				this.SetBinding(this.__value)

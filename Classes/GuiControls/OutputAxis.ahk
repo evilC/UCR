@@ -132,35 +132,7 @@ class OutputAxis extends _IOControl {
 	}
 	
 	_ChangedValue(o){
-		/*
-		axis := this.__value.Axis
-		DeviceID := this.__value.DeviceID
-		
-		if (o > 10 && o < 100){
-			o -= 10
-			DeviceID := 1
-			while (o > 10){
-				o -= 10
-				DeviceID++
-			}
-			axis := o
-			type := 4
-		} else if (o > 100 && o < 107){
-			o -= 100
-			DeviceID := 1
-			axis := o
-			type := 5
-		} else {
-			; Clear Selected
-			axis := DeviceID := 0
-		}
-		this.__value.Axis := axis
-		this.__value.DeviceID := DeviceID
-		this.__value.type := type
-		
-		this.SetControlState()
-		this.value := this.__value
-		*/
+
 	}
 	
 	; Get / Set of .value

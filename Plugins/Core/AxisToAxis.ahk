@@ -49,17 +49,17 @@ class AxisToAxis extends _Plugin {
 		GuiControl, , % this.hSliderIn, % value
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		if (this.vAxis && this.vDevice){
-			if (this.GuiControls.Deadzone.value){
-				value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.value)
+			if (this.GuiControls.Deadzone.Get()){
+				value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.Get())
 			}
-			if (this.GuiControls.Sensitivity.value){
-				if (this.GuiControls.Linear.value)
-					value *= (this.GuiControls.Sensitivity.value / 100)
+			if (this.GuiControls.Sensitivity.Get()){
+				if (this.GuiControls.Linear.Get())
+					value *= (this.GuiControls.Sensitivity.Get() / 100)
 				else
-					value := UCR.Libraries.StickOps.Sensitivity(value, this.GuiControls.Sensitivity.value)
+					value := UCR.Libraries.StickOps.Sensitivity(value, this.GuiControls.Sensitivity.Get())
 				
 			}
-			if (this.GuiControls.Invert.value){
+			if (this.GuiControls.Invert.Get()){
 				value := UCR.Libraries.StickOps.Invert(value)
 			}
 			value := UCR.Libraries.StickOps.InternalToAHK(value)

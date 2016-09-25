@@ -9,32 +9,6 @@ Class _InputHandler {
 		
 	}
 	
-	/*
-	; Set a Button Binding
-	SetButtonBinding(BtnObj, delete := 0){
-		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
-		if (delete)
-			bindstring := ""
-		else
-			bindstring := this.BuildHotkeyString(BtnObj.value)
-		; Set binding in Profile's InputThread
-		;BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
-		; Pass the GUID of the GUIControl and the BindObject to the Input Thread
-		BindObj := BtnObj.__value
-		BtnObj.ParentPlugin.ParentProfile._InputThread.UpdateBinding(BtnObj.id, BindObj._Serialize())
-		
-		return 1
-	}
-	
-	; Set an Axis Binding
-	SetAxisBinding(AxisObj, delete := 0){
-		;AxisObj.ParentPlugin.ParentProfile._SetAxisBinding(ObjShare(AxisObj), delete)
-	}
-	
-	SetDeltaBinding(DeltaObj, delete := 0){
-		;DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj), delete)
-	}
-	*/
 	; Check InputButtons for duplicates etc
 	IsBindable(hk, bo){
 		; Do not allow bind of LMB with block enabled
@@ -81,26 +55,6 @@ Class _InputHandler {
 		}
 		return str
 	}
-	
-	/*
-	; An input event (eg key, mouse, joystick) occured for a bound input
-	; This will have come from another thread
-	; ipt will be an object of class InputButton or InputAxis
-	; event will be 0 or 1 for a Button type, or the value of the axis for an axis type
-	InputEvent(ipt, state){
-		ipt := Object(ipt)	; Resolve input object back from pointer
-		if (ipt.__value.Suppress && state && ipt.State > 0){
-			; Suppress repeats option
-			return
-		}
-		ipt.State := state
-		if (IsObject(ipt.ChangeStateCallback)){
-			ipt.ChangeStateCallback.Call(state)
-		}
-		; Notify UCR that there was activity.
-		UCR._InputEvent(ipt, state)
-	}
-	*/
 	
 	InputEvent(ControlGUID, e){
 		;OutputDebug % "UCR| InputHandler Received event " e " from GuiControl " ControlGUID

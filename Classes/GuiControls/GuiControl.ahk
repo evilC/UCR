@@ -109,18 +109,14 @@ class _GuiControl {
 		if (this.IsListType){
 			cmd := (this.IsAltSubmitType ? "choose" : "choosestring")
 		}
-		GuiControl, % cmd, % this.hwnd, % this.__value
+		GuiControl, % cmd, % this.hwnd, % this.Get()
 		this._SetGlabel(1)						; Turn g-label back on
 	}
 	
 	; The user typed something into the GuiControl
 	_ChangedValue(){
 		GuiControlGet, value, % this.ParentPlugin.hwnd ":", % this.hwnd
-		this.value := value		; Set control value and fire change events to parent
-		; If the script author defined a callback for onchange event of this GuiControl, then fire it
-		if (IsObject(this.ChangeValueCallback)){
-			this.ChangeValueCallback.Call(value)
-		}
+		this.Set(value, 1, 0, 1)
 	}
 	
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
@@ -135,7 +131,7 @@ class _GuiControl {
 	}
 	
 	_Deserialize(obj){
-		this._value := obj.value
+		this.Set(obj.value, 0)
 		; Fire callback so plugins can initialize internal vars
 		if (IsObject(this.ChangeValueCallback)){
 			this.ChangeValueCallback.Call(obj.value)

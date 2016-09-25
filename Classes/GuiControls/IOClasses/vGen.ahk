@@ -185,9 +185,9 @@ class vGen_Output extends _IOClassBase {
 	}
 	
 	UpdateMenus(cls){
-		;OutputDebug % "UCR| UpdateMenus. This IOClass: " this.IOClass "  ||  _vGenDeviceType - this: " this._vGenDeviceType ", GuiControl: " this.ParentControl.value._vGenDeviceType
+		;OutputDebug % "UCR| UpdateMenus. This IOClass: " this.IOClass "  ||  _vGenDeviceType - this: " this._vGenDeviceType ", GuiControl: " this.ParentControl.Get()._vGenDeviceType
 		; Is the vGenDeviceType of the old class the same as the new class, and has a device been chosen ?
-		state := (this._vGenDeviceType == this.ParentControl.value._vGenDeviceType && this.ParentControl.value.DeviceID)
+		state := (this._vGenDeviceType == this.ParentControl.Get()._vGenDeviceType && this.ParentControl.Get().DeviceID)
 		for i, menu in this._JoyMenus {
 			menu.SetEnableState(state)
 		}
@@ -264,21 +264,21 @@ class vJoy_Button_Output extends vJoy_Base {
 		if (o < 9){
 			; Stick selected
 			this.DeviceID := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := this.ParentControl.value.Binding[1]
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.Get().Binding[1]
 			}
 			
 		} else if (o > 100 && o < 229){
 			; Button selected
 			o -= 100
 			this.Binding[1] := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := this.ParentControl.value.DeviceID
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.Get().DeviceID
 			}
 		} else {
 			return
 		}
-		this.ParentControl.value := this
+		this.ParentControl.Set(this)
 	}
 
 }
@@ -328,20 +328,20 @@ class vJoy_Axis_Output extends vJoy_Base {
 		if (o < 9){
 			; Stick selected
 			this.DeviceID := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := this.ParentControl.value.Binding[1]
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.Get().Binding[1]
 			}
 		} else if (o > 100 && o < 109){
 			; Axis selected
 			o -= 100
 			this.Binding[1] := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := this.ParentControl.value.DeviceID
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.Get().DeviceID
 			}
 		} else {
 			return
 		}
-		this.ParentControl.value := this
+		this.ParentControl.Set(this)
 	}
 }
 
@@ -389,20 +389,20 @@ class vJoy_Hat_Output extends vJoy_Base {
 		if (o <= this._NumSticks){
 			; Stick selected
 			this.DeviceID := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := this.ParentControl.value.Binding[1]
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.Get().Binding[1]
 			}
 		} else if (o > 100 && o <= (this._NumHats * 100) + 4){
 			; Button selected
 			;o -= 100
 			this.Binding[1] := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := this.ParentControl.value.DeviceID
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.Get().DeviceID
 			}
 		} else {
 			return
 		}
-		this.ParentControl.value := this
+		this.ParentControl.Set(this)
 	}
 }
 
@@ -459,20 +459,20 @@ class vXBox_Button_Output extends vXBox_Base {
 		if (o < 5){
 			; Stick selected
 			this.DeviceID := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := this.ParentControl.value.Binding[1]
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.Binding[1] := this.ParentControl.Get().Binding[1]
 			}
 		} else if (o > 100 && o < 111){
 			; Button selected
 			o -= 100
 			this.Binding[1] := o
-			if (this.ParentControl.value._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := this.ParentControl.value.DeviceID
+			if (this.ParentControl.Get()._vGenDeviceType == this._vGenDeviceType){
+				this.DeviceID := this.ParentControl.Get().DeviceID
 			}
 		} else {
 			return
 		}
-		this.ParentControl.value := this
+		this.ParentControl.Set(this)
 	}
 }
 

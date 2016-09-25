@@ -29,7 +29,7 @@ class ButtonToButton extends _Plugin {
 	; Called when the hotkey changes state (key is pressed or released)
 	MyHkChangedState(Name, e){
 		;OutputDebug, % "UCR| " Name " changed state to: " (e ? "Down" : "Up")
-		if (this.GuiControls.Toggle.value){
+		if (this.GuiControls.Toggle.Get()){
 			; Toggle mode - Toggle the state of the output when the input goes down
 			if (e){
 				this.GuiControls.OB1.SetState(!this.OutputButtons.OB1.State)

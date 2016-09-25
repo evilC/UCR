@@ -769,35 +769,6 @@ Class UCRMain extends _UCRBase {
 		return 0
 	}
 	
-	/*
-	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
-	;  or changed an option such as "Wild" in an InputButton
-	_RequestBinding(hk, delta := 0){
-		if (delta = 0){ ;*[UCR]
-			; Change Buttons requested - start Bind Mode.
-			if (this._CurrentState == this._State.Normal){
-				this._CurrentState := this._State.InputBind
-				; De-Activate all active profiles, to make sure they do not interfere with the bind process
-				this._DeActivateProfiles()
-				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
-				;bo := new AHK_KBM_Input()
-				;bo.Binding.push(33)
-				;this._BindModeEnded(hk, bo)
-				return 1
-			}
-			return 0
-		} else {
-			; Change option (eg wild, passthrough) requested
-			this.MergeObject(hk, delta)
-			msgbox % bo.BindOptions.wild
-			;if (this._InputHandler.IsBindable(hk, bo)){
-				;hk.value := bo
-				this._InputHandler.SetButtonBinding(hk)
-			;}
-		}
-	}
-	*/
-	
 	; A plugin is requesting that we register a binding with an input thread
 	_RequestBinding(ctrl){
 		bo := ctrl._Serialize()
@@ -834,49 +805,6 @@ Class UCRMain extends _UCRBase {
 		this._ActivateProfiles()
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)
-	}
-	
-	/*
-	; Bind Mode Ended.
-	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
-	; hk = old bindobject
-	; bo = new bindobject
-	; cls = class of input
-	_BindModeEnded(hk, bo, cls){
-		hk.SetBinding(bo)
-		return
-		;OutputDebug % "UCR| Bind Mode Ended: " bo.Buttons[1].code
-		;if (hk._IsOutput){
-		;	hk.value := bo
-		;} else {
-			;if (this._InputHandler.IsBindable(hk, bo)){
-			;if (hk.__value.IOClass == cls){
-			;	tmp := hk.__value.clone()
-			;	for k, v in bo {
-			;		tmp[k] := v
-			;	}
-			;	hk.value := tmp
-			;} else {
-				if (hk.__value != 0){
-					;hk.__value._Delete()
-					hk.__value.RemoveBinding()
-				}
-				outputdebug % "UCR| Creating new class " cls " for GuiControl " hk.id " deviceid: " bo.deviceid
-				;hk.value := new %cls%(hk, bo)
-				hk._IOClasses[cls]._Deserialize(bo)
-				hk.value := hk._IOClasses[cls]
-			;}
-			this._InputHandler.SetButtonBinding(hk)
-			;}
-		;}
-		; Re-Activate profiles that were deactivated
-		this._ActivateProfiles()
-		this._CurrentState := this._State.Normal
-	}
-	*/
-	; Request an axis binding.
-	RequestAxisBinding(axis){
-		this._InputHandler.SetAxisBinding(axis)
 	}
 	
 	; Request a Mouse Axis Delta binding

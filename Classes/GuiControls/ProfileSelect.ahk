@@ -42,7 +42,6 @@ class _ProfileSelect extends _BannerMenu {
 	
 	_ChangedValue(o){
 		if (o == 1){
-			;this.value := 1
 			UCR._ProfilePicker.PickProfile(this.ProfileChanged.Bind(this), this.__value)
 		} else {
 			this.value := 0
