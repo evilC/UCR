@@ -65,7 +65,6 @@ Class _Profile {
 	; Starts the "Input Thread" which handles detection of input for this profile
 	_StartInputThread(){
 		if (this.InputThread == 0){
-			;this._InputThread := new _InputThread(this.id, UCR._InputHandler.InputEvent.Bind(UCR._InputHandler))
 			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
 
 			While !this._InputThread.ahkgetvar.autoexecute_done
