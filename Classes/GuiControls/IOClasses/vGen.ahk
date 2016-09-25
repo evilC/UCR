@@ -1,4 +1,4 @@
-class vGen_Output extends _IOClassBase {
+class vGen_Output extends _UCR._ControlClasses.IOClasses.IOClassBase {
 	static IOType := 1
 	static IOClass := "vGen_Output"
 	;static LibraryLoaded := vGen_Output._Init()
@@ -209,13 +209,13 @@ class vGen_Output extends _IOClassBase {
 }
 
 ; ============================================== vJoy =======================================
-class vJoy_Base extends vGen_Output {
+class vJoy_Base extends _UCR._ControlClasses.IOClasses.vGen_Output {
 	static _vGenDeviceType := 0		; 0 = vJoy, 1 = vXBox
 	static _NumSticks := 8			; vJoy has 8 sticks
 	static _Prefix := "vJoy"	
 }
 
-class vJoy_Button_Output extends vJoy_Base {
+class vJoy_Button_Output extends _UCR._ControlClasses.IOClasses.vJoy_Base {
 	static IOClass := "vJoy_Button_Output"
 	
 	_JoyMenus := []
@@ -283,7 +283,7 @@ class vJoy_Button_Output extends vJoy_Base {
 
 }
 
-class vJoy_Axis_Output extends vJoy_Base {
+class vJoy_Axis_Output extends _UCR._ControlClasses.IOClasses.vJoy_Base {
 	static IOClass := "vJoy_Axis_Output"
 	static _NumAxes := 8			; vJoy has 8 Axes
 	static AxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
@@ -345,7 +345,7 @@ class vJoy_Axis_Output extends vJoy_Base {
 	}
 }
 
-class vJoy_Hat_Output extends vJoy_Base {
+class vJoy_Hat_Output extends _UCR._ControlClasses.IOClasses.vJoy_Base {
 	static IOClass := "vJoy_Hat_Output"
 	static _NumHats := 4
 	static _HatDirections := ["Up", "Right", "Down", "Left"]
@@ -407,13 +407,13 @@ class vJoy_Hat_Output extends vJoy_Base {
 }
 
 ; ==================================== vXBox =======================================
-class vXBox_Base extends vGen_Output {
+class vXBox_Base extends _UCR._ControlClasses.IOClasses.vGen_Output {
 	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
 	static _NumSticks := 4			; vXBox has 4 sticks
 	static _Prefix := "vXBox"	
 }
 
-class vXBox_Button_Output extends vXBox_Base {
+class vXBox_Button_Output extends _UCR._ControlClasses.IOClasses.vXBox_Base {
 	static IOClass := "vXBox_Button_Output"
 	
 	_JoyMenus := []
@@ -476,7 +476,7 @@ class vXBox_Button_Output extends vXBox_Base {
 	}
 }
 
-class vXBox_Axis_Output extends vJoy_Axis_Output {
+class vXBox_Axis_Output extends _UCR._ControlClasses.IOClasses.vJoy_Axis_Output {
 	static IOClass := "vXBox_Axis_Output"
 	static _NumAxes := 6			; vXBox has 6 Axes
 	static _Prefix := "vXBox"
@@ -484,7 +484,7 @@ class vXBox_Axis_Output extends vJoy_Axis_Output {
 	static AxisList := ["LS X", "LS Y", "RS X", "RS Y", "LT", "RT"]
 }
 
-class vXBox_Hat_Output extends vJoy_Hat_Output {
+class vXBox_Hat_Output extends _UCR._ControlClasses.IOClasses.vJoy_Hat_Output {
 	static IOClass := "vXBox_Hat_Output"
 	static _NumHats := 1
 	static _Prefix := "vXBox"

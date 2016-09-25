@@ -28,14 +28,6 @@ return
 #Include Classes\Profile.ahk
 #Include Classes\Plugin.ahk
 
-#Include Classes\GuiControls\IOClasses\BindObject.ahk
-#Include Classes\GuiControls\IOClasses\IOClassBase.ahk
-#Include Classes\GuiControls\IOClasses\AHK.ahk
-#Include Classes\GuiControls\IOClasses\vGen.ahk
-#Include Classes\GuiControls\IOClasses\Titan.ahk
-
-#Include Threads\BindModeThread.ahk
-
 #include Libraries\JSON.ahk
 
 /*

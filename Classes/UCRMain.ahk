@@ -924,10 +924,7 @@ Class _UCR extends _UCRBase {
 			this.CurrentPos := obj.CurrentPos
 	}
 	
-	; _UCR._ControlClasses.GuiControls.InputButton
-	; _UCR._ControlClasses.GuiControls.ProfileSelect
-	; _UCR._ControlClasses.GuiControls.GuiControl
-	; _UCR._ControlClasses.IOClasses.vGen_Output
+	; Holds Classes for GuiControls and IOControls
 	class _ControlClasses {
 		class GuiControls {
 			#Include Classes\GuiControls\GuiControl.ahk
@@ -942,7 +939,11 @@ Class _UCR extends _UCRBase {
 		}
 		
 		class IOClasses {
-			
+			#Include Classes\GuiControls\IOClasses\BindObject.ahk
+			#Include Classes\GuiControls\IOClasses\IOClassBase.ahk
+			#Include Classes\GuiControls\IOClasses\AHK.ahk
+			#Include Classes\GuiControls\IOClasses\vGen.ahk
+			#Include Classes\GuiControls\IOClasses\Titan.ahk
 		}
 	}
 }

@@ -26,7 +26,10 @@ class InputButton extends _UCR._ControlClasses.GuiControls.IOControl {
 		UCR._RegisterGuiControl(this)
 
 		for i, name in this._IOClassNames {
-			this._IOClasses[name] := new %name%(this)
+			;this._IOClasses[name] := new %name%(this)
+			call:= _UCR._ControlClasses.IOClasses[name]
+			this._IOClasses[name] := new call(this)
+
 			if (!this._IOClasses.IsInitialized) {
 				this._IOClasses[name]._Init()
 			}
