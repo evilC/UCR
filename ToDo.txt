@@ -1,5 +1,5 @@
 ########## Required before public testing can begin ############
-Make BindMode thread run multi-threaded again
+Fix BindMode thread not passing IOClassMappings
 
 Re-Enable profiles
 
@@ -8,8 +8,6 @@ Wire up the SetState outputs for keyboard / mouse
 Custom Serializers / Desrializers for IOClasses? Would also reduce INI file spam
 
 Fix ProfileSelect / InputDelta
-
-Can IOControl derivatives replace SetBinding() with an overridden Set()?
 ################################################################
 
 Re-Add all the plugins

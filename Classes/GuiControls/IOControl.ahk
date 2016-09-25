@@ -21,7 +21,7 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	}
 	
 	_Deserialize(obj){
-		; Pass 0 to SetBinding so we don't save while we are loading
-		this.SetBinding(obj, 0)
+		; Pass 0 to Set so we don't save while we are loading
+		this.Set(obj, 0)
 	}
 }

@@ -67,7 +67,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 				this.Get()._UnRegister()
 				this.__value.Binding := []
 				this.__value.DeviceID := 0
-				this.SetBinding(this.__value)
+				this.Set(this.__value)
 			}
 		}
 	}
@@ -76,14 +76,14 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 	; A "Primitive" BindObject will be passed, along with the IOClass of the detected input.
 	; The Primitive contains just the Binding property and optionally the DeviceID property.
 	_BindModeEnded(bo){
-		this.SetBinding(bo)
+		this.Set(bo)
 	}
 	
 	; bo is a "Primitive" BindObject
-	SetBinding(bo, update_ini := 1){
-		;OutputDebug % "UCR| SetBinding: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
+	Set(bo, update_ini := 1){
+		;OutputDebug % "UCR| Set: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		this.Set(this._IOClasses[bo.IOClass], update_ini)
+		base.Set(this._IOClasses[bo.IOClass], update_ini)
 	}
 
 	_RequestBinding(){
