@@ -663,18 +663,17 @@ Class _UCR extends _UCRBase {
 		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", FR
 		{
 			FileRead,plugincode,% A_LoopFileFullPath
-			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
+			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+",classname)
 			already_loaded := 0
 			; Check if the classname already exists.
-			if (IsObject(%classname1%)){
-				cls := %classname1%
-				if (cls.base.__Class = "_Plugin"){
+			if (IsObject(_UCR.Classes.Plugins[classname1])){
 					; Existing class extends plugin
 					; Class has been included via other means (eg to debug it), so do not try to include again.
 					already_loaded := 1
-				}
 			}
-			dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
+			;dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
+			dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _UCR {`nclass Classes{`nclass Plugin{`n}`n}`n}`n" plugincode)
+			
 			t := A_TickCount + 1000
 			While !(autoexecute_done := dllthread.ahkgetvar.autoexecute_done) && A_TickCount < t
 				Sleep 10
@@ -945,6 +944,8 @@ Class _UCR extends _UCRBase {
 			#Include Classes\GuiControls\IOClasses\vGen.ahk
 			#Include Classes\GuiControls\IOClasses\Titan.ahk
 		}
+		
+		#Include Classes\Plugin.ahk
 	}
 }
 

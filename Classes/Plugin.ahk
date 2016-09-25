@@ -1,7 +1,7 @@
 ﻿; ======================================================================== PLUGIN ===============================================================
 ; The _Plugin class itself is never instantiated.
 ; Instead, plugins derive from the base _Plugin class.
-Class _Plugin {
+Class Plugin {
 	Type := "_Plugin"			; The class of the plugin
 	ParentProfile := 0			; Will point to the parent profile
 	ID := 0						; Unique ID for the plugin

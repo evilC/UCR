@@ -26,7 +26,6 @@ return
 #Include Classes\InputHandler.ahk
 #Include Classes\BindModeHandler.ahk
 #Include Classes\Profile.ahk
-#Include Classes\Plugin.ahk
 
 #include Libraries\JSON.ahk
 

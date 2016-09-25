@@ -2,7 +2,7 @@
 Remaps a physical joystick axis to a virtual joystick axis
 Requires the StickOps library and the vJoy library
 */
-class AxisToAxis extends _Plugin {
+class AxisToAxis extends _UCR.Classes.Plugin {
 	Type := "Remapper (Axis To Axis)"
 	Description := "Maps an axis input to a virtual axis output"
 	vAxis := 0

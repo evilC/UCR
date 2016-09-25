@@ -8,7 +8,7 @@ Keyboard, Mouse Buttons/Wheel, Virtual Joystick Buttons / Hat directions
 */
 
 ; All plugins must derive from the _Plugin class
-class ButtonToButton extends _Plugin {
+class ButtonToButton extends _UCR.Classes.Plugin {
 	Type := "Remapper (Button To Button)"
 	Description := "Remaps button type inputs (Keys, Mouse buttons, Joystick buttons + hat directions)"
 	; The Init() method of a plugin is called when one is added. Use it to create your Gui etc
