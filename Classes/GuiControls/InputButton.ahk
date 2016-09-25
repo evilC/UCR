@@ -73,6 +73,20 @@ class InputButton extends _IOControl {
 		}
 	}
 
+	Get(){
+		return this.__value
+	}
+	
+	Set(value, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
+		this.__value := value
+		if (update_guicontrol)
+			this.SetControlState()
+		if (update_ini)
+			this.ParentPlugin._ControlChanged(this)
+		if (fire_callback && IsObject(this.ChangeValueCallback))
+			this.ChangeValueCallback.Call(this.__value)
+	}
+	
 	_BuildMenu(){
 		this.AddMenuItem("Select Binding", "SelectBinding", this._ChangedValue.Bind(this, 1))
 		for i, cls in this._IOClasses {
