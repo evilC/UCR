@@ -107,7 +107,8 @@ Class _Profile {
 		if (this.InputThread != 0){
 			OutputDebug % "UCR| Stopping Input Thread for thread #" this.id " ( " this.Name " )"
 			ahkthread_free(this._InputThread)
-			this.InputThread := 0
+			this._InputThread := 0	; Kill thread
+			this.InputThread := 0	; Set var to 0 to indicate thread is off
 		}
 		this.UpdateBinding := 0
 		this.SetDetectionState := 0
