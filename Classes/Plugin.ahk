@@ -7,12 +7,9 @@ Class _Plugin {
 	ID := 0						; Unique ID for the plugin
 	Name := ""					; The name the user chose for the plugin
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
-	InputButtons := {}			; An associative array, indexed by name, of child Input Buttons (aka Hotkeys)
 	InputDeltas := {}
-	OutputButtons := {}			; An associative array, indexed by name, of child Output Buttons
-	InputAxes := {}				; An associative array, indexed by name, of child Input Axes
-	OutputAxes := {}			; An associative array, indexed by name, of child Output (virtual) Axes
 	ProfileSelects := {}		; An associative array, indexed by name, of Profile Select GuiControls
+	
 	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
 	_CustomControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1, ProfileSelect: 1}
 	
