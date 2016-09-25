@@ -9,7 +9,7 @@
 OutputDebug DBGVIEWCLEAR
 SetBatchLines, -1
 global UCR	; set UCR as a super-global NOW so that it is super-global while the Constructor is executing
-new UCRMain()	; The first line of the constructor will store the class instance in the UCR super-global
+new _UCR()	; The first line of the constructor will store the class instance in the UCR super-global
 return
 
 ; If you wish to be able to debug plugins, include them in UCRDebug.ahk
@@ -27,15 +27,6 @@ return
 #Include Classes\BindModeHandler.ahk
 #Include Classes\Profile.ahk
 #Include Classes\Plugin.ahk
-#Include Classes\GuiControls\GuiControl.ahk
-#Include Classes\GuiControls\BannerMenu.ahk
-#Include Classes\GuiControls\ProfileSelect.ahk
-#Include Classes\GuiControls\IOControl.ahk
-#Include Classes\GuiControls\InputButton.ahk
-#Include Classes\GuiControls\InputAxis.ahk
-#Include Classes\GuiControls\InputDelta.ahk
-#Include Classes\GuiControls\OutputButton.ahk
-#Include Classes\GuiControls\OutputAxis.ahk
 
 #Include Classes\GuiControls\IOClasses\BindObject.ahk
 #Include Classes\GuiControls\IOClasses\IOClassBase.ahk

@@ -1,6 +1,6 @@
 ﻿; ======================================================================== OUTPUT BUTTON ===============================================================
 ; An Output allows the end user to specify which buttons to press as part of a plugin's functionality
-Class OutputButton extends InputButton {
+Class OutputButton extends _UCR._ControlClasses.GuiControls.InputButton {
 	static _ControlType := "OutputButton"
 	static _DefaultBanner := "Select an Output Button"
 	static _IsOutput := 1

@@ -1,6 +1,6 @@
 ﻿; ======================================================================== GUICONTROL ===============================================================
 ; Wraps a GuiControl to make it's value persistent between runs.
-class _GuiControl {
+class GuiControl {
 	static _ListTypes := {ListBox: 1, DDL: 1, DropDownList: 1, ComboBox: 1, Tab: 1, Tab2: 1, Tab3: 1}
 	__value := ""	; variable that actually holds value.
 	__New(parent, type, name, ChangeValueCallback, aParams*){

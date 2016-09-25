@@ -1,5 +1,5 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
-Class UCRMain extends _UCRBase {
+Class _UCR extends _UCRBase {
 	Version := "0.1.0"				; The version of the main application
 	SettingsVersion := "0.0.6"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
@@ -801,7 +801,7 @@ Class UCRMain extends _UCRBase {
 	
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, primitive){
-		OutputDebug % "UCR| UCRMain: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
+		OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
 		this._ActivateProfiles()
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)
@@ -922,6 +922,28 @@ Class UCRMain extends _UCRBase {
 			this.CurrentSize := obj.CurrentSize
 		if (IsObject(obj.CurrentPos))
 			this.CurrentPos := obj.CurrentPos
+	}
+	
+	; _UCR._ControlClasses.GuiControls.InputButton
+	; _UCR._ControlClasses.GuiControls.ProfileSelect
+	; _UCR._ControlClasses.GuiControls.GuiControl
+	; _UCR._ControlClasses.IOClasses.vGen_Output
+	class _ControlClasses {
+		class GuiControls {
+			#Include Classes\GuiControls\GuiControl.ahk
+			#Include Classes\GuiControls\ProfileSelect.ahk
+			#Include Classes\GuiControls\BannerMenu.ahk
+			#Include Classes\GuiControls\IOControl.ahk
+			#Include Classes\GuiControls\InputButton.ahk
+			#Include Classes\GuiControls\InputAxis.ahk
+			#Include Classes\GuiControls\InputDelta.ahk
+			#Include Classes\GuiControls\OutputButton.ahk
+			#Include Classes\GuiControls\OutputAxis.ahk
+		}
+		
+		class IOClasses {
+			
+		}
 	}
 }
 
