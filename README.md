@@ -39,7 +39,8 @@ Install AutoHotkey, then take a copy of UCR.exe from the download zip, rename it
 
 ##Debugging UCR
 A major design goal of UCR is to make it (and plugins) debuggable. 
-Development is currently done using [AHK Studio](https://autohotkey.com/boards/viewtopic.php?t=300), so if you wish to debug UCR or a plugin, that is the advised solution.  
+Development is currently done using [SciTE4AutoHotkey](https://autohotkey.com/boards/viewtopic.php?f=6&t=62), so if you wish to debug UCR or a plugin, that is the advised solution.  
+Currently the relased version of SciTE4AutoHotkey does not support breakpoints in plugins etc properly, but Lexikos has a fix for this, and I posted instructions [here](https://autohotkey.com/boards/viewtopic.php?p=111383#p111383) on how to apply the fix.  
 UCR's code avoids the use of SetTimer, OnMessage etc in the main thread wherever possible, so that "stepping in" in the debugger does not end up dropping you into some random timer pseudo-thread. In general, it works around these situations by offloading any code that might interfere with the debugging process to a worker thread.
 
 ##Debugging Plugins
