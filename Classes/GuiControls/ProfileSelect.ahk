@@ -51,32 +51,22 @@ class ProfileSelect extends _UCR.Classes.GuiControls._BannerMenu {
 		this.value := id
 	}
 	
-	value[]{
-		get {
-			return this.__value
-		}
-		
-		set {
-			this._value := value	; trigger _value setter to set value and cuebanner etc
-			;OutputDebug % "UCR| "
-			this.ParentPlugin._ControlChanged(this)
-		}
+	Get(){
+		return this.__value
 	}
-	
-	_value[]{
-		get {
-			return this.__value
-		}
-		
-		; Parent class told this hotkey what it's value is. Set value, but do not fire ParentPlugin._ControlChanged
-		set {
-			if (this.__value)
-				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, this.__value, 0)
-			this.__value := value
-			if (value)
-				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, value, 1)
+
+	Set(value, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
+		if (this.__value)
+			this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, this.__value, 0)
+		this.__value := value
+		if (value)
+			this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, value, 1)
+		if (update_guicontrol)
 			this.SetControlState()
-		}
+		if (update_ini)
+			this.ParentPlugin._ControlChanged(this)
+		if (fire_callback && IsObject(this.ChangeValueCallback))
+			this.ChangeValueCallback.Call(this.__value)
 	}
 	
 	; Kill references so destructor can fire
@@ -87,11 +77,14 @@ class ProfileSelect extends _UCR.Classes.GuiControls._BannerMenu {
 	}
 	
 	_Serialize(){
-		obj := {value: this._value}
-		return obj
+		;val := this.__value._Serialize()
+		;val._ControlType := this._ControlType
+		;return val
+		return this.__value._Serialize()
 	}
 	
 	_Deserialize(obj){
-		this._value := obj.value
+		; Pass 0 to Set so we don't save while we are loading
+		this.Set(obj.value, 0)
 	}
 }

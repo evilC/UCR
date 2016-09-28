@@ -29,7 +29,7 @@ class ProfileSwitcher extends _UCR.Classes.Plugin {
 
 	; The hotkey was pressed to change profile
 	MyHkChangedState(e){
-		if !(UCR.ChangeProfile(this.GuiControls["Profile" e].value))
+		if !(UCR.ChangeProfile(this.GuiControls["Profile" e].Get()))
 			SoundBeep, 300, 200
 	}
 	
