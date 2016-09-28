@@ -2,14 +2,17 @@
 Fix BindMode thread not being passed IOClassMappings
 Convert BindMode Thread to use ThreadHeader
 
-Remove _InputHandler?
-
 Wire up the SetState outputs for keyboard / mouse
 
 Custom Serializers / Desrializers for IOClasses? Would also reduce INI file spam
 
 Re-add InputDelta
+
 ################################################################
+
+Remove _InputHandler?
+
+Make sure all XBox button / axis assignments are correct
 
 Re-Add all the plugins
 
