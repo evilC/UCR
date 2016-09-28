@@ -37,9 +37,9 @@ class _BindMapper {
 	
 	; A request was received from the main thread to set the Dection state
 	SetDetectionState(state, IOClassMappingsPtr){
-		IOClassMappings := ObjShare(IOClassMappingsPtr)
 		if (state == this.DetectionState)
 			return
+		;IOClassMappings := ObjShare(IOClassMappingsPtr)
 		; ToDo: Why can I not pass this array through with ObjShare?
 		static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
 		;for name, ret in IOClassMappings {
