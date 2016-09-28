@@ -16,8 +16,6 @@ Standard methods eg .IsBound() for IOClasses
 
 Remove _InputHandler?
 
-Make sure all XBox button / axis assignments are correct
-
 Re-Add all the plugins
 
 Add Titan API back in
