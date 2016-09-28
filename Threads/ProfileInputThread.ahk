@@ -472,27 +472,40 @@ Class _InputThread {
 	}
 	
 	class RawInput_Mouse_Delta {
-	
+		_DeltaBindings := {}
+		Registered := 0
+		
 		__New(Callback){
 			this.Callback := Callback
+			this.MouseMoveFn := this.OnMouseMove.Bind(this)
+			Gui, +HwndHwnd		; Get a unique hwnd so we can register for messages
+			this.hwnd := hwnd
 		}
 		
 		UpdateBinding(ControlGUID, bo){
 			OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
-			;~ ;return
-			;~ this.RemoveBinding(ControlGUID)
-			;~ if (bo.Binding[1]){
-				;~ keyname := this.BuildHotkeyString(bo)
-				;~ fn := this.KeyEvent.Bind(this, ControlGUID, 1)
-				;~ try {
-					;~ hotkey, % keyname, % fn, On
-				;~ }
-				;~ ;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
-				;~ ;hotkey, % keyname " up", % fn, On
-				;~ OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
-				;~ ;this._CurrentBinding := keyname
-				;~ this._AHKBindings[ControlGUID] := keyname
-			;~ }
+			this.RemoveBinding(ControlGUID)
+			if (bo.Binding[1]){
+				keyname := this.BuildHotkeyString(bo)
+				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
+				try {
+					hotkey, % keyname, % fn, On
+				}
+				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
+				;hotkey, % keyname " up", % fn, On
+				OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
+				;this._CurrentBinding := keyname
+				this._DeltaBindings[ControlGUID] := keyname
+				if (!this.Registered)
+					this.RegisterMouse()
+			}
+		}
+		
+		RemoveBinding(ControlGUID){
+			this._DeltaBindings.Delete(ControlGUID)
+			if (this.Registered && this.IsEmptyAssoc(this._DeltaBindings)){
+				this.UnRegisterMouse()
+			}
 		}
 		
 		SetDetectionState(state){
@@ -504,6 +517,106 @@ Class _InputThread {
 			;~ }
 			;~ this.DetectionState := state
 			;~ this.ProcessTimerState()
+		}
+		
+		RegisterMouse(){
+			static RIDEV_INPUTSINK := 0x00000100
+			; Register mouse for WM_INPUT messages.
+			static DevSize := 8 + A_PtrSize
+			static RAWINPUTDEVICE := 0
+			
+			if (this.Registered)
+				return
+			OutputDebug % "UCR| ProfileInputThread registering for mouse delta"
+			if (RAWINPUTDEVICE == 0){
+				VarSetCapacity(RAWINPUTDEVICE, DevSize)
+				NumPut(1, RAWINPUTDEVICE, 0, "UShort")
+				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
+				NumPut(RIDEV_INPUTSINK, RAWINPUTDEVICE, 4, "Uint")
+				; WM_INPUT needs a hwnd to route to, so get the hwnd of the AHK Gui.
+				; It doesn't matter if the GUI is showing, as long as it exists
+				NumPut(this.hwnd, RAWINPUTDEVICE, 8, "Uint")
+			}
+			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
+			OnMessage(0x00FF, this.MouseMoveFn, -1)
+			this.Registered := 1
+		}
+		
+		UnRegisterMouse(){
+			static RIDEV_REMOVE := 0x00000001
+			static DevSize := 8 + A_PtrSize
+
+			if (!this.Registered)
+				return
+			OutputDebug % "UCR| ProfileInputThread unregistering for mouse delta"
+			;fn := this.MouseTimeoutFn
+			;SetTimer, % fn, Off
+			
+			;RAWINPUTDEVICE := this.RAWINPUTDEVICE
+			static RAWINPUTDEVICE := 0
+			if (RAWINPUTDEVICE == 0){
+				VarSetCapacity(RAWINPUTDEVICE, DevSize)
+				NumPut(1, RAWINPUTDEVICE, 0, "UShort")
+				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
+				NumPut(RIDEV_REMOVE, RAWINPUTDEVICE, 4, "Uint")
+			}
+			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 0, "UInt", DevSize )
+			OnMessage(0x00FF, this.MouseMoveFn, 0)
+			this.Registered := 0
+		}
+		
+		; Called when the mouse moved.
+		; Messages tend to contain small (+/- 1) movements, and happen frequently (~20ms)
+		OnMouseMove(wParam, lParam){
+			; RawInput statics
+			static DeviceSize := 2 * A_PtrSize, iSize := 0, sz := 0, offsets := {x: (20+A_PtrSize*2), y: (24+A_PtrSize*2)}, uRawInput
+	 
+			static axes := {x: 1, y: 2}
+			VarSetCapacity(raw, 40, 0)
+			If (!DllCall("GetRawInputData",uint,lParam,uint,0x10000003,uint,&raw,"uint*",40,uint, 16) or ErrorLevel)
+				Return 0
+			ThisMouse := NumGet(raw, 8)
+	 
+			; Find size of rawinput data - only needs to be run the first time.
+			if (!iSize){
+				r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", 0, "UInt*", iSize, "UInt", 8 + (A_PtrSize * 2))
+				VarSetCapacity(uRawInput, iSize)
+			}
+			sz := iSize	; param gets overwritten with # of bytes output, so preserve iSize
+			; Get RawInput data
+			r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", &uRawInput, "UInt*", sz, "UInt", 8 + (A_PtrSize * 2))
+	 
+			x := NumGet(&uRawInput, offsets.x, "Int")
+			y := NumGet(&uRawInput, offsets.y, "Int")
+			
+			xy := {}
+			if (x){
+				xy.x := x
+			}
+			if (y){
+				xy.y := y
+			}
+
+			state := {axes: xy, MouseID: ThisMouse}
+			for ControlGuid, obj in this._DeltaBindings {
+				;this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
+				this.Callback.Call(ControlGuid, state)	; ToDo: This should be a proper I/O object type, like Buttons or Axes
+			}
+	 
+			; There is no message for "Stopped", so simulate one
+			;fn := this.MouseTimeoutFn
+			;SetTimer, % fn, % -this.MouseTimeOutDuration
+		}
+		
+		;OnMouseTimeout(){
+		;	for hwnd, obj in this.MouseDeltaMappings {
+		;		this.InputEvent(obj, {x: 0, y: 0})
+		;	}
+		;}
+		
+		; Is an associative array empty?
+		IsEmptyAssoc(assoc){
+			return !assoc._NewEnum()[k, v]
 		}
 	}
 }

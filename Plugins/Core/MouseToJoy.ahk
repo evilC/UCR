@@ -17,7 +17,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	TimerY := 0
 	
 	Init(){
-		/*
 		title_row := 25
 		x_row := 45
 		y_row := x_row + 25
@@ -80,7 +79,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.AddControl("AbsoluteRadio", 0, "Radio", "x150 ym",, 1)
 		;this.AddControl("RelativeRadio", 0, "Radio", "x270 ym",, 0)
 		this.AddControl("DDL", "ModeSelect", this.ModeSelect.Bind(this), "x575 w100 ym AltSubmit", "Mode: Absolute||Mode: Relative")
-		*/
+		
 		this.AddControl("InputDelta", "MD1", this.MouseEvent.Bind(this), "xm w200")
 		
 		;this.MouseTimeoutFn := this.OnMouseTimeout.Bind(this)
@@ -106,7 +105,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		if (val == "Any" || val == 0){
 			val := ""
 		}
-		this.GuiControls.MouseID.value := val
+		this.GuiControls.MouseID.Get() := val
 		GuiControl, , % this.GuiControls.MouseID.hwnd, % val
 	}
 	
@@ -129,13 +128,12 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			; This seems to fix it, but this should probably be properly investigated.
 			return
 		}
-		m_id := this.GuiControls.MouseID.value
+		m_id := this.GuiControls.MouseID.Get()
 		if (m_id && m_id != value.MouseID)
 			return
-		
 		if (this.Mode = 1){
 			; Absolute
-			threshold := this.GuiControls.AbsoluteThreshold.value
+			threshold := this.GuiControls.AbsoluteThreshold.Get()
 			if (dox && ax && ax <= threshold)
 				dox := 0
 			if (doy && ay && ay <= threshold)
@@ -149,7 +147,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		} else {
 			; Relative
 			if (dox){
-				if (this.GuiControls.InvertX.value)
+				if (this.GuiControls.InvertX.Get())
 					x *= -1
 				this.CurrX += ( x * this.RelativeScaleFactor.X )
 				if (this.CurrX > 50)
@@ -159,7 +157,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			}
 			
 			if (doy){
-				if (this.GuiControls.InvertY.value)
+				if (this.GuiControls.InvertY.Get())
 					y *= -1
 				this.CurrY += ( y * this.RelativeScaleFactor.Y )
 				if (this.CurrY > 50)
@@ -168,17 +166,20 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 					this.CurrY := -50
 			}
 		}
+
 		if (dox){
 			;OutputDebug, % "UCR| x: " this.CurrX " (" UCR.Libraries.StickOps.InternalToAHK(this.CurrX) "), y: " this.CurrY
-			if (this.OutputAxes.OutputAxisX.value.DeviceID && this.OutputAxes.OutputAxisX.value.Axis){
-				this.OutputAxes.OutputAxisX.SetState(UCR.Libraries.StickOps.InternalToVjoy(this.CurrX))
+			ox := this.GuiControls.OutputAxisX.Get()
+			if (ox.DeviceID && ox.Binding[1]){
+				this.GuiControls.OutputAxisX.SetState(UCR.Libraries.StickOps.InternalToAHK(this.CurrX))
 				GuiControl, , % this.hSliderX, % UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
 			}
 		}
 		
 		if (doy){
-			if (this.OutputAxes.OutputAxisY.value.DeviceID && this.OutputAxes.OutputAxisY.value.Axis){
-				this.OutputAxes.OutputAxisY.SetState(UCR.Libraries.StickOps.InternalToVjoy(this.CurrY))
+			oy := this.GuiControls.OutputAxisY.Get()
+			if (oy.DeviceID && oy.Binding[1]){
+				this.GuiControls.OutputAxisY.SetState(UCR.Libraries.StickOps.InternalToAHK(this.CurrY))
 				GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(this.CurrY)
 			}
 		}
@@ -196,7 +197,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 				}
 				fn := this.MouseEvent.Bind(this, {axes: {x: 0}, MouseID: MouseID})
 				this.TimerX := fn
-				SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.value
+				SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.Get()
 			}
 			if (doy && y != 0){
 				if (this.TimerY != 0){
@@ -205,7 +206,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 				}
 				fn := this.MouseEvent.Bind(this, {axes: {y: 0}, MouseID: MouseID})
 				this.TimerY := fn
-				SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.value
+				SetTimer, % fn, % "-" this.GuiControls.AbsoluteTimeout.Get()
 			}
 		}
 	}

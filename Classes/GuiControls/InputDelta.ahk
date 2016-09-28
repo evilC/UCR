@@ -35,7 +35,6 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 	}
 
 	_BuildMenu(){
-		this.AddMenuItem("Select Binding", "SelectBinding", this._ChangedValue.Bind(this, 1))
 		for i, cls in this._IOClasses {
 			cls.AddMenuItems()
 		}
@@ -50,10 +49,6 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 			;~ Text := this._DefaultBanner
 		;~ }
 		;~ this.SetCueBanner(Text)
-		; Update the Menus etc of all the IOClasses in this control
-		;~ for i, cls in this._IOClasses {
-			;~ cls.UpdateMenus(this.__value.IOClass)
-		;~ }
 		this.SetCueBanner(this._DefaultBanner)
 	}
 	
@@ -61,36 +56,15 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 		
 	}
 	
-	Register(){
-		;UCR._InputHandler.SetDeltaBinding(this)
-	}
-	
-	UnRegister(){
-		;UCR._InputHandler.SetDeltaBinding(this, 1)
-	}
-	
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
-		;this.Register()
 		UCR._RequestBinding(this)
 	}
 	
 	Set(value, aParams*){
-		;base.Set(value, aParams*)
 		this._IOClasses.RawInput_Mouse_Delta._Deserialize(value)
 		this.__value := this._IOClasses.RawInput_Mouse_Delta
 		this._RequestBinding()
 	}
-	
-	/*
-	_Serialize(){
-		obj := {value: this.value}
-		return obj
-	}
-	
-	_Deserialize(obj){
-		this.value := obj.value
-	}
-	*/
 }
