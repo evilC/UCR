@@ -38,14 +38,6 @@ Class Plugin {
 		}
 	}
 	
-	; Adds a Profile Select GuiControl
-	AddProfileSelect(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.ProfileSelects,name)){
-			this.ProfileSelects[name] := new _ProfileSelect(this, name, ChangeValueCallback, aParams*)
-			return this.ProfileSelects[name]
-		}
-	}
-	
 	; === Private ===
 	__New(id, name, parent){
 		this.ParentProfile := parent
