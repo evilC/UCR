@@ -29,37 +29,6 @@ return
 
 #include Libraries\JSON.ahk
 
-/*
-	; Block commented includes are recognized by AHKStudio
-	; These lines merely make these files appear in AHKStudio's "Project Explorer"
-	; This DOES NOT mean you will be able to debug them
-	
-	; Threads
-	#Include Threads\BindModeThread.ahk
-	#Include Threads\MessageFilterThread.ahk
-	#Include Threads\ProfileInputThread.ahk
-	
-	; Libraries
-	#Include Libraries\StickOps\StickOps.ahk
-	;#Include Libraries\TTS\TTS.ahk
-	
-	; Include Plugins in case they are not in UCRDebug.ahk
-	;#include Plugins\Core\AxisInitializer.ahk
-	;#include Plugins\Core\AxisMerge.ahk
-	;#include Plugins\Core\AxisToAxis.ahk
-	;#include Plugins\Core\AxisToButton.ahk
-	;#include Plugins\Core\BigEmptyPlugin.ahk
-	;#include Plugins\Core\ButtonToAxis.ahk
-	#include Plugins\Core\ButtonToButton.ahk
-	;#include Plugins\Core\CodeRunner.ahk
-	;#include Plugins\Core\GameBind.ahk
-	;#include Plugins\Core\MouseToJoy.ahk
-	;#include Plugins\Core\OneSwitchProfileSwitcher.ahk
-	;#include Plugins\Core\OneSwitchPulse.ahk
-	;#include Plugins\Core\ProfileSwitcher.ahk
-	;#include Plugins\Core\ProfileSpeaker.ahk
-*/
-
 ; Called if the user closes the GUI
 GuiClose(hwnd){
 	UCR.GuiClose(hwnd)
