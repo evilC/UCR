@@ -6,7 +6,6 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
 	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
 	static _DefaultBanner := "Select an Input Button"
-	static _OptionMap := {Select: 1, Wild: 2, Block: 3, Suppress: 4, Clear: 5}
 	
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
