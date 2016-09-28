@@ -1,6 +1,8 @@
 ########## Required before public testing can begin ############
-Fix BindMode thread not passing IOClassMappings
+Fix BindMode thread not being passed IOClassMappings
 Convert BindMode Thread to use ThreadHeader
+
+Remove _InputHandler?
 
 Re-Enable profiles
 
