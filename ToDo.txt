@@ -1,16 +1,18 @@
 ########## Required before public testing can begin ############
-Fix BindMode thread not being passed IOClassMappings
-Convert BindMode Thread to use ThreadHeader
 
 Wire up the SetState outputs for keyboard / mouse
 
-Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
+################################################################
 
 Standardize Getters and Setters for IOControls etc - more stuff can be in base classes
 
-Re-add InputDelta
+Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
 
-################################################################
+Fix BindMode thread not being passed IOClassMappings
+
+Convert BindMode Thread to use ThreadHeader
+
+Standard methods eg .IsBound() for IOClasses
 
 Remove _InputHandler?
 
