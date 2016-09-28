@@ -4,7 +4,9 @@ Convert BindMode Thread to use ThreadHeader
 
 Wire up the SetState outputs for keyboard / mouse
 
-Custom Serializers / Desrializers for IOClasses? Would also reduce INI file spam
+Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
+
+Standardize Getters and Setters for IOControls etc - more stuff can be in base classes
 
 Re-add InputDelta
 

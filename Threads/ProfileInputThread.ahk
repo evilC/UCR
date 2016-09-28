@@ -3,7 +3,7 @@
 
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
-	static IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0, AHK_JoyAxis_Input: 0}
+	static IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0, AHK_JoyAxis_Input: 0, RawInput_Mouse_Delta: 0}
 	DetectionState := 0
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
@@ -77,8 +77,6 @@ Class _InputThread {
 		*/
 		
 		UpdateBinding(ControlGUID, bo){
-			;msgbox Update binding
-			;return
 			this.RemoveBinding(ControlGUID)
 			if (bo.Binding[1]){
 				keyname := "$" this.BuildHotkeyString(bo)
@@ -195,8 +193,6 @@ Class _InputThread {
 		}
 		
 		UpdateBinding(ControlGUID, bo){
-			;msgbox Update binding
-			;return
 			this.RemoveBinding(ControlGUID)
 			if (bo.Binding[1]){
 				keyname := this.BuildHotkeyString(bo)
@@ -472,6 +468,42 @@ Class _InputThread {
 			;	return 0
 			;}
 			;return 1
+		}
+	}
+	
+	class RawInput_Mouse_Delta {
+	
+		__New(Callback){
+			this.Callback := Callback
+		}
+		
+		UpdateBinding(ControlGUID, bo){
+			OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
+			;~ ;return
+			;~ this.RemoveBinding(ControlGUID)
+			;~ if (bo.Binding[1]){
+				;~ keyname := this.BuildHotkeyString(bo)
+				;~ fn := this.KeyEvent.Bind(this, ControlGUID, 1)
+				;~ try {
+					;~ hotkey, % keyname, % fn, On
+				;~ }
+				;~ ;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
+				;~ ;hotkey, % keyname " up", % fn, On
+				;~ OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
+				;~ ;this._CurrentBinding := keyname
+				;~ this._AHKBindings[ControlGUID] := keyname
+			;~ }
+		}
+		
+		SetDetectionState(state){
+			OutputDebug % "UCR| InputDelta SetDetectionState " state
+			;~ ; Are we already in the requested state?
+			;~ if (A_IsSuspended == state){
+				;~ OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Button detection " (state ? "On" : "Off")
+				;~ Suspend, % (state ? "Off" : "On")
+			;~ }
+			;~ this.DetectionState := state
+			;~ this.ProcessTimerState()
 		}
 	}
 }
