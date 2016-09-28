@@ -483,7 +483,7 @@ class vXBox_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Axis_Output {
 	static _NumAxes := 6			; vXBox has 6 Axes
 	static _Prefix := "vXBox"
 	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
-	static AxisList := ["LS X", "LS Y", "RS X", "RS Y", "LT", "RT"]
+	static AxisList := ["LS X", "LS Y", "RT", "RS X", "RS Y", "LT"]
 }
 
 class vXBox_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Hat_Output {
