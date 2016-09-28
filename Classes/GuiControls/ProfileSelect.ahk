@@ -1,6 +1,5 @@
-﻿/*
-; ======================================================================== PROFILE SLECT ===============================================================
-class _ProfileSelect extends _UCR.Classes._BannerMenu {
+﻿; ======================================================================== PROFILE SLECT ===============================================================
+class ProfileSelect extends _UCR.Classes.GuiControls._BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
@@ -33,10 +32,8 @@ class _ProfileSelect extends _UCR.Classes._BannerMenu {
 	SetControlState(){
 		if (this.__value){
 			; Has current binding
-			this.SetOptions(this._Options)
 			this.SetCueBanner(UCR.BuildProfilePathName(this.__value))
 		} else {
-			this.SetOptions([this._Options[1]])
 			this.SetCueBanner(this._DefaultBanner)
 		}
 	}
@@ -98,4 +95,3 @@ class _ProfileSelect extends _UCR.Classes._BannerMenu {
 		this._value := obj.value
 	}
 }
-*/

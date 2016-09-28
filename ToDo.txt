@@ -4,13 +4,11 @@ Convert BindMode Thread to use ThreadHeader
 
 Remove _InputHandler?
 
-Re-Enable profiles
-
 Wire up the SetState outputs for keyboard / mouse
 
 Custom Serializers / Desrializers for IOClasses? Would also reduce INI file spam
 
-Fix ProfileSelect / InputDelta
+Re-add InputDelta
 ################################################################
 
 Re-Add all the plugins
