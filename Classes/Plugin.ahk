@@ -31,13 +31,6 @@ Class Plugin {
 		return this.GuiControls[name]
 	}
 	
-	AddInputDelta(name, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.InputDeltas,name)){
-			this.InputDeltas[name] := new _InputDelta(this, name, ChangeStateCallback, aParams*)
-			return this.InputDeltas[name]
-		}
-	}
-	
 	; === Private ===
 	__New(id, name, parent){
 		this.ParentProfile := parent
