@@ -225,7 +225,7 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	_JoyMenus := []
 	static _NumButtons := 128		; vJoy has 128 Buttons
 	
-	SetState(state){
+	Set(state){
 		base.SetButtonState(state)
 	}
 	
@@ -295,7 +295,7 @@ class vJoy_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	
 	_JoyMenus := []
 	
-	SetState(state){
+	Set(state){
 		base.SetAxisState(state)
 	}
 	
@@ -358,7 +358,7 @@ class vJoy_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	static _HatName := "Hat"
 	_JoyMenus := []
 	
-	SetState(state){
+	Set(state){
 		base.SetHatState(state)
 	}
 	
@@ -427,7 +427,7 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 	static _ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back","Start", "LS", "RS"]
 	static _NumButtons := 10			; vXBox has 10 Buttons
 	
-	SetState(state){
+	Set(state){
 		base.SetButtonState(state)
 	}
 	

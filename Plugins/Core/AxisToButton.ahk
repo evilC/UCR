@@ -52,11 +52,11 @@ class AxisToButton extends _UCR.Classes.Plugin {
 		
 		; Release the old button
 		if (this.LastState != 0)
-			this.GuiControls["OB" this.LastState].SetState(0)
+			this.GuiControls["OB" this.LastState].Set(0)
 		
 		; Press the new button
 		if (new_state != 0)
-			this.GuiControls["OB" new_state].SetState(1)
+			this.GuiControls["OB" new_state].Set(1)
 		
 		this.LastState := new_state
 	}

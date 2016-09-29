@@ -171,16 +171,18 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			;OutputDebug, % "UCR| x: " this.CurrX " (" UCR.Libraries.StickOps.InternalToAHK(this.CurrX) "), y: " this.CurrY
 			ox := this.GuiControls.OutputAxisX.GetBinding()
 			if (ox.DeviceID && ox.Binding[1]){
-				this.GuiControls.OutputAxisX.SetState(UCR.Libraries.StickOps.InternalToAHK(this.CurrX))
-				GuiControl, , % this.hSliderX, % UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
+				cx := UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
+				this.GuiControls.OutputAxisX.Set(cx)
+				GuiControl, , % this.hSliderX, % cx
 			}
 		}
 		
 		if (doy){
 			oy := this.GuiControls.OutputAxisY.GetBinding()
 			if (oy.DeviceID && oy.Binding[1]){
-				this.GuiControls.OutputAxisY.SetState(UCR.Libraries.StickOps.InternalToAHK(this.CurrY))
-				GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(this.CurrY)
+				cy := UCR.Libraries.StickOps.InternalToAHK(this.CurrY)
+				this.GuiControls.OutputAxisY.Set(cy)
+				GuiControl, , % this.hSliderY, % cy
 			}
 		}
 		if (!ObjHasKey(this.SeenMice, MouseID)){

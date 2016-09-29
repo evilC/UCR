@@ -86,7 +86,7 @@ class AxisMerge extends _UCR.Classes.Plugin {
 				outval := UCR.Libraries.StickOps.Sensitivity(outval, this.GuiControls.Sensitivity.Get())
 			outval := UCR.Libraries.StickOps.InternalToAHK(outval)
 			GuiControl, , % this.hSliderOut, % outval
-			this.GuiControls.OutputAxis.SetState(outval)
+			this.GuiControls.OutputAxis.Set(outval)
 		}
 		GuiControl, , % this.hSliderIn1, % UCR.Libraries.StickOps.InternalToAHK(value1)
 		GuiControl, , % this.hSliderIn2, % UCR.Libraries.StickOps.InternalToAHK(value2)

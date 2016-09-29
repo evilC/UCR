@@ -126,10 +126,14 @@ Class Plugin {
 	
 	; Called when a plugin becomes inactive (eg profile changed)
 	_OnInActive(){
+		; ToDo: Replace this.
+		/*
+		; Release held buttons on profile inactive
 		for k, v in this.OutputButtons{
 			if (v.State == 1)
 				v.SetState(0)
 		}
+		*/
 		; Call user's OnInactive method (if it exists)
 		if (IsFunc(this["OnInActive"])){
 			this.OnInActive()

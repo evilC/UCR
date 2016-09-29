@@ -40,7 +40,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 	}
 	
 	; Used by script authors to set the state of this output
-	SetState(state, delay_done := 0){
+	Set(state, delay_done := 0){
 		static PovMap := {0: {x:0, y:0}, 1: {x: 0, y: 1}, 2: {x: 1, y: 0}, 3: {x: 0, y: 2}, 4: {x: 2, y: 0}}
 		static PovAngles := {0: {0:-1, 1:0, 2:18000}, 1:{0:9000, 1:4500, 2:13500}, 2:{0:27000, 1:31500, 2:22500}}
 		static Axes := ["x", "y"]
@@ -48,7 +48,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 			fn := this.SetState.Bind(this, state, 1)
 			SetTimer, % fn, % -UCR._GameBindDuration
 		} else {
-			this.__value.SetState(state)
+			this.__value.Set(state)
 			this.State := state
 		}
 	}

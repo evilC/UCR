@@ -65,7 +65,7 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 			value := UCR.Libraries.StickOps.InternalToAHK(value)
 			GuiControl, , % this.hSliderOut, % value
 			;value := UCR.Libraries.StickOps.AHKToVjoy(value)
-			this.GuiControls.OA1.SetState(value)
+			this.GuiControls.OA1.Set(value)
 		}
 		*/
 	}

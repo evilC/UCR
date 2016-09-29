@@ -106,7 +106,7 @@ class AHK_KBM_Output extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 	static IOClass := "AHK_KBM_Output"
 
 	; Used by script authors to set the state of this output
-	SetState(state, delay_done := 0){
+	Set(state, delay_done := 0){
 		if (UCR._CurrentState == 2 && !delay_done){
 			fn := this.SetState.Bind(this, state, 1)
 			SetTimer, % fn, % -UCR._GameBindDuration

@@ -20,18 +20,18 @@ class AxisInitializer extends _UCR.Classes.Plugin {
 	MyOutputChangedValue(value){
 		;this.vAxis := value.axis
 		;this.vDevice := value.DeviceID
-		this.SetState()
+		this.Set()
 	}
 	
 	OnActive(){
-		this.SetState()
+		this.Set()
 	}
 	
 	PositionChanged(){
-		this.SetState()
+		this.Set()
 	}
 	
-	SetState(){
-		this.GuiControls.OutputAxis.SetState(this.GuiControls.Position.Get())
+	Set(){
+		this.GuiControls.OutputAxis.Set(this.GuiControls.Position.Get())
 	}
 }

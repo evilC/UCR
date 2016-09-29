@@ -1,14 +1,12 @@
 ########## Required before public testing can begin ############
 
-Wire up the SetState outputs for keyboard / mouse
+Plugin _OnInactive can no longer release held buttons
+Make IOControls seperate array to GuiControls
+Needs to be this way, so that plugins can iterate all their bindings
 
 Check if ProfileSelect saves value properly.
 ProfileChanged(id) sets .value, but .Get() returns __value
 ################################################################
-
-For IOControls, rename Get() and Set() to GetBinding() and SetBinding().
-Implement Get() and Set() to get/set state
-This way, for both IOControls and GuiControls, Get() / Set() operate on the current state of the control
 
 Standardize Getters and Setters for IOControls etc - more stuff can be in base classes
 

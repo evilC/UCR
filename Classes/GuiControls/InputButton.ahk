@@ -111,10 +111,6 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 		}
 	}
 	
-	GetBinding(){
-		return this._Serialize()
-	}
-	
 	SetBinding(bo, update_ini := 1){
 		;OutputDebug % "UCR| InputButton Set: class: " bo.IOClass ", code: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;this.MergeObject(this._IOClasses[bo.IOClass], bo)

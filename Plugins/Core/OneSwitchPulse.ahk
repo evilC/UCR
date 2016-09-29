@@ -66,7 +66,7 @@ class OneSwitchPulse extends _UCR.Classes.Plugin {
 		if (e){
 			this.Enabled := !this.Enabled
 			if (this.GuiControls.HoldButtonEnabled.Get())
-				this.GuiControls.HoldButton.SetState(this.Enabled)
+				this.GuiControls.HoldButton.Set(this.Enabled)
 			this.ShowStatus()
 			OutputDebug % "UCR| Setting State - " this.Enabled
 			this.SetSubscriptionState(this.Enabled)
@@ -123,9 +123,9 @@ class OneSwitchPulse extends _UCR.Classes.Plugin {
 	HoldButtonChanged(e){
 		if (e){
 			if (this.TimerRunning)
-				this.GuiControls.HoldButton.SetState(1)
+				this.GuiControls.HoldButton.Set(1)
 		} else {
-			this.GuiControls.HoldButton.SetState(0)
+			this.GuiControls.HoldButton.Set(0)
 		}
 	}
 	
@@ -138,18 +138,18 @@ class OneSwitchPulse extends _UCR.Classes.Plugin {
 	; Send a pulse to J2K
 	Pulse(){
 		OutputDebug % "UCR| Pulse " round(A_TickCount / 1000, 2)
-		this.GuiControls.PulseButton.SetState(1)
+		this.GuiControls.PulseButton.Set(1)
 		Sleep 50
-		this.GuiControls.PulseButton.SetState(0)
+		this.GuiControls.PulseButton.Set(0)
 	}
 	
 	; Send a timeout to J2K
 	Timeout(){
 		OutputDebug % "UCR| Pulse Timeout " round(A_TickCount / 1000, 2)
 		this.SetTimerState(0)
-		this.GuiControls.TimeoutButton.SetState(1)
+		this.GuiControls.TimeoutButton.Set(1)
 		Sleep 50
-		this.GuiControls.TimeoutButton.SetState(0)
+		this.GuiControls.TimeoutButton.Set(0)
 		this.SetTimerState(1)
 	}
 	
