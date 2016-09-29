@@ -1,4 +1,6 @@
 class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
+	State := -1		; Holds current state of Input
+	
 	Get(){
 		return this.__value
 	}
@@ -11,6 +13,14 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			this.ParentPlugin._ControlChanged(this)
 		if (fire_callback && IsObject(this.ChangeValueCallback))
 			this.ChangeValueCallback.Call(this.__value)
+	}
+	
+	; Called by InputThread when an Input changes state
+	OnStateChange(e){
+		if (this.ChangeStateCallback != 0){
+			this.State := e
+			this.ChangeStateCallback.Call(e)
+		}
 	}
 	
 	_Serialize(){

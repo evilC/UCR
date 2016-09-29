@@ -60,7 +60,8 @@ Class _InputHandler {
 		;OutputDebug % "UCR| InputHandler Received event " e " from GuiControl " ControlGUID
 		if (ObjHasKey(UCR.BindControlLookup, ControlGUID)){
 			lu := UCR.BindControlLookup[ControlGUID]
-			UCR.BindControlLookup[ControlGUID].ChangeStateCallback.Call(e)
+			;UCR.BindControlLookup[ControlGUID].ChangeStateCallback.Call(e)
+			UCR.BindControlLookup[ControlGUID].OnStateChange(e)
 		} else {
 			OutputDebug % "UCR| Guid not found in UCR.BindControlLookup"
 		}
