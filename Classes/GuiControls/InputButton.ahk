@@ -85,7 +85,7 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 			} else if (o == 2){
 				this.__value.Binding := []
 				this.__value.DeviceID := 0
-				this.Set(this.__value)
+				this.SetBinding(this.__value)
 			}
 		}
 	}
@@ -99,7 +99,7 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 			this.Binding := []			; clear the old Binding
 			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 		}
-		this.Set(bo)
+		this.SetBinding(bo)
 	}
 	
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
@@ -115,11 +115,11 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 		return this._Serialize()
 	}
 	
-	Set(bo, update_ini := 1){
+	SetBinding(bo, update_ini := 1){
 		;OutputDebug % "UCR| InputButton Set: class: " bo.IOClass ", code: " bo.Binding[1] ", DeviceID: " bo.DeviceID
 		;this.MergeObject(this._IOClasses[bo.IOClass], bo)
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		base.Set(this._IOClasses[bo.IOClass], update_ini)
+		base.SetBinding(this._IOClasses[bo.IOClass], update_ini)
 		
 		; ToDo - add in the condition that the binding must have also changed
 		; Request the new binding from the Profile's InputThread.

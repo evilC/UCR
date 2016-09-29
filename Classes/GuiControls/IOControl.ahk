@@ -5,7 +5,7 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		return this.__value
 	}
 	
-	Set(value, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
+	SetBinding(value, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
 		this.__value := value
 		if (update_guicontrol)
 			this.SetControlState()
@@ -17,6 +17,10 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 
 	Get(){
 		return this.State
+	}
+	
+	Set(state){
+		this.State := state
 	}
 
 	; Called by InputThread when an Input changes state
@@ -36,6 +40,6 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	
 	_Deserialize(obj){
 		; Pass 0 to Set so we don't save while we are loading
-		this.Set(obj, 0)
+		this.SetBinding(obj, 0)
 	}
 }

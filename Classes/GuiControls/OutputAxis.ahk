@@ -37,10 +37,10 @@ class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	; bo is a "Primitive" BindObject
-	Set(bo, update_ini := 1){
+	SetBinding(bo, update_ini := 1){
 		;OutputDebug % "UCR| Set: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		base.Set(this._IOClasses[bo.IOClass], update_ini)
+		base.SetBinding(this._IOClasses[bo.IOClass], update_ini)
 	}
 	
 	_BuildMenu(){

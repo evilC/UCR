@@ -51,8 +51,8 @@ class AxisMerge extends _UCR.Classes.Plugin {
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
 		outval := 0
-		value1 := UCR.Libraries.StickOps.AHKToInternal(this.GuiControls.InputAxis1.State)
-		value2 := UCR.Libraries.StickOps.AHKToInternal(this.GuiControls.InputAxis2.State)
+		value1 := UCR.Libraries.StickOps.AHKToInternal(this.GuiControls.InputAxis1.Get())
+		value2 := UCR.Libraries.StickOps.AHKToInternal(this.GuiControls.InputAxis2.Get())
 		
 		; Apply input axis inversions
 		if (this.GuiControls.Invert1.Get())

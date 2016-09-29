@@ -282,7 +282,7 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 		} else {
 			return
 		}
-		this.ParentControl.Set(this)
+		this.ParentControl.SetBinding(this)
 	}
 
 }
@@ -347,7 +347,7 @@ class vJoy_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 		} else {
 			return
 		}
-		this.ParentControl.Set(this)
+		this.ParentControl.SetBinding(this)
 	}
 }
 
@@ -409,7 +409,7 @@ class vJoy_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 		} else {
 			return
 		}
-		this.ParentControl.Set(this)
+		this.ParentControl.SetBinding(this)
 	}
 }
 
@@ -480,7 +480,7 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 		} else {
 			return
 		}
-		this.ParentControl.Set(this)
+		this.ParentControl.SetBinding(this)
 	}
 }
 

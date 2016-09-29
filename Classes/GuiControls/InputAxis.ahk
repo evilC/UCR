@@ -53,14 +53,14 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 		if (o == 2){
 			this.__value.Binding := []
 			this.__value.DeviceID := 0
-			this.Set(this.__value)
+			this.SetBinding(this.__value)
 		}
 	}
 	
 	; bo is a "Primitive" BindObject
-	Set(bo, update_ini := 1){
+	SetBinding(bo, update_ini := 1){
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		base.Set(this._IOClasses[bo.IOClass], update_ini)
+		base.SetBinding(this._IOClasses[bo.IOClass], update_ini)
 		
 		; If both value and device are set, or neither are set, then update the binding
 		; ToDo - add in the condition that the binding must have also changed

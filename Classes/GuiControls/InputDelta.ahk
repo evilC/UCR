@@ -62,7 +62,7 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 		UCR._RequestBinding(this)
 	}
 	
-	Set(value, aParams*){
+	SetBinding(value, aParams*){
 		this._IOClasses.RawInput_Mouse_Delta._Deserialize(value)
 		this.__value := this._IOClasses.RawInput_Mouse_Delta
 		this._RequestBinding()

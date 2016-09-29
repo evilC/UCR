@@ -81,7 +81,7 @@ class AHK_KBM_Input extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 		}
 		bo := this._Serialize()
 		bo.Delete("Binding")	; get rid of the binding, so it does not stomp on the current binding
-		this.ParentControl.Set(bo)
+		this.ParentControl.SetBinding(bo)
 	}
 	
 	UpdateMenus(cls){
@@ -198,7 +198,7 @@ class AHK_JoyAxis_Input extends _UCR.Classes.IOClasses.IOClassBase {
 			o -= 100
 			bo.Binding := [o]
 		}
-		this.ParentControl.Set(bo)
+		this.ParentControl.SetBinding(bo)
 	}
 	
 	UpdateMenus(cls){
