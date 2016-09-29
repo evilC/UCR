@@ -104,8 +104,28 @@ class AHK_KBM_Output extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 	static IOType := 1
 	static IOClass := "AHK_KBM_Output"
 
-	SetState(state){
-		tooltip % "UCR| SetState: " state
+	; Used by script authors to set the state of this output
+	SetState(state, delay_done := 0){
+		if (UCR._CurrentState == 2 && !delay_done){
+			fn := this.SetState.Bind(this, state, 1)
+			SetTimer, % fn, % -UCR._GameBindDuration
+		} else {
+			this.State := state
+			max := this.Binding.Length()
+			if (state)
+				i := 1
+			else
+				i := max
+			Loop % max{
+				key := this.Binding[i]
+				name := this.BuildKeyName(key)
+				Send % "{" name (state ? " Down" : " Up") "}"
+				if (state)
+					i++
+				else
+					i--
+			}
+		}
 	}
 	
 	AddMenuItems(){

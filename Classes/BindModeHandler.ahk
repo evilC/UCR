@@ -100,6 +100,12 @@ class _BindModeHandler {
 			;ret := {Binding:[i], DeviceID: deviceid, IOClass: this.IOClassMappings[IOClass]}
 			
 			OutputDebug % "UCR| BindModeHandler: Bind Mode Ended. Binding[1]: " this.SelectedBinding.Binding[1] ", DeviceID: " this.SelectedBinding.DeviceID ", IOClass: " this.SelectedBinding.IOClass
+			; Convert IOClass from input type to output type, if needed.
+			; This should be done inside the BindModeThread, but I am currently unable to pass in the IOClassMappings object
+			old_class := this.SelectedBinding.IOClass
+			if (ObjHasKey(this.IOClassMappings, old_class)){
+				this.SelectedBinding.IOClass := this.IOClassMappings[old_class]
+			}
 			this._Callback.Call(this.SelectedBinding)
 		}
 	}
