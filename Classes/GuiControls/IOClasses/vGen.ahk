@@ -1,6 +1,7 @@
 class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	static IOType := 1
 	static IOClass := "vGen_Output"
+	static IsAnalog := 0
 	
 	static _vGenDeviceTypeNames := {0: "vJoy", 1: "vXBox"}
 	static DllName := "vGenInterface"
@@ -289,6 +290,7 @@ class vJoy_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	static IOClass := "vJoy_Axis_Output"
 	static _NumAxes := 8			; vJoy has 8 Axes
 	static AxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
+	static IsAnalog := 1
 	
 	_JoyMenus := []
 	

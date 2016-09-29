@@ -62,6 +62,7 @@ Class _InputHandler {
 			lu := UCR.BindControlLookup[ControlGUID]
 			;UCR.BindControlLookup[ControlGUID].ChangeStateCallback.Call(e)
 			UCR.BindControlLookup[ControlGUID].OnStateChange(e)
+			UCR._InputEvent(ControlGUID, e)
 		} else {
 			OutputDebug % "UCR| Guid not found in UCR.BindControlLookup"
 		}

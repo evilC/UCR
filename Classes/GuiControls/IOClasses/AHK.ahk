@@ -9,6 +9,7 @@
 class AHK_KBM_Common extends _UCR.Classes.IOClasses.IOClassBase {
 	static IsInitialized := 1
 	static IsAvailable := 1
+	static IsAnalog := 0
 	
 	static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
 	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
@@ -139,6 +140,7 @@ class AHK_KBM_Output extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 class AHK_JoyBtn_Input extends _UCR.Classes.IOClasses.IOClassBase {
 	static IOClass := "AHK_JoyBtn_Input"
 	static IsInitialized := 1
+	static IsAnalog := 0
 
 	_CurrentBinding := 0
 	
@@ -159,6 +161,8 @@ class AHK_JoyBtn_Input extends _UCR.Classes.IOClasses.IOClassBase {
 class AHK_JoyAxis_Input extends _UCR.Classes.IOClasses.IOClassBase {
 	static IOClass := "AHK_JoyAxis_Input"
 	static IsInitialized := 1
+	static IsAnalog := 1
+
 	_JoyMenus := []
 	_StickMenus := []
 	_AxisMenus := []
