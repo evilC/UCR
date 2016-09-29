@@ -2,6 +2,8 @@
 
 Wire up the SetState outputs for keyboard / mouse
 
+Check if ProfileSelect saves value properly.
+ProfileChanged(id) sets .value, but .Get() returns __value
 ################################################################
 
 For IOControls, rename Get() and Set() to GetBinding() and SetBinding().
@@ -19,8 +21,6 @@ Convert BindMode Thread to use ThreadHeader
 Standard methods eg .IsBound() for IOClasses
 
 Remove _InputHandler?
-
-Re-Add all the plugins
 
 Add Titan API back in
 

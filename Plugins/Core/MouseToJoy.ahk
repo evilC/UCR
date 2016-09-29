@@ -105,7 +105,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		if (val == "Any" || val == 0){
 			val := ""
 		}
-		this.GuiControls.MouseID.Get() := val
+		this.GuiControls.MouseID.Set(val)
 		GuiControl, , % this.GuiControls.MouseID.hwnd, % val
 	}
 	
@@ -169,7 +169,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 
 		if (dox){
 			;OutputDebug, % "UCR| x: " this.CurrX " (" UCR.Libraries.StickOps.InternalToAHK(this.CurrX) "), y: " this.CurrY
-			ox := this.GuiControls.OutputAxisX.Get()
+			ox := this.GuiControls.OutputAxisX.GetBinding()
 			if (ox.DeviceID && ox.Binding[1]){
 				this.GuiControls.OutputAxisX.SetState(UCR.Libraries.StickOps.InternalToAHK(this.CurrX))
 				GuiControl, , % this.hSliderX, % UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
@@ -177,7 +177,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		}
 		
 		if (doy){
-			oy := this.GuiControls.OutputAxisY.Get()
+			oy := this.GuiControls.OutputAxisY.GetBinding()
 			if (oy.DeviceID && oy.Binding[1]){
 				this.GuiControls.OutputAxisY.SetState(UCR.Libraries.StickOps.InternalToAHK(this.CurrY))
 				GuiControl, , % this.hSliderY, % UCR.Libraries.StickOps.InternalToAHK(this.CurrY)

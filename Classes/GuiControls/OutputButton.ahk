@@ -64,7 +64,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 				return
 			} else if (o = 2){
 				; Clear Binding
-				this.Get()._UnRegister()
+				this.GetBinding()._UnRegister()
 				this.__value.Binding := []
 				this.__value.DeviceID := 0
 				this.Set(this.__value)

@@ -95,10 +95,8 @@ class OneSwitchPulse extends _UCR.Classes.Plugin {
 	InputActivity(ControlGuid, state){
 		if (ControlGuid == this.GuiControls.Toggle.id)
 			return	; ignore input from the Toggle Button
-		; ToDo: Get() is probably changing to GetBinding(), this may need to change at some point.
-		ctrl := UCR.BindControlLookup[ControlGUID].Get()
-		if (ctrl.IsAnalog){
-			; ToDo: Implement IsAnalog() for BindObjects
+		bo := UCR.BindControlLookup[ControlGUID].GetBinding()
+		if (bo.IsAnalog){
 			OutputDebug % "UCR| InputActivity (Axis)"
 			;this.DelayTimers()
 			this.SetTimerState(0)
