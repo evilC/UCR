@@ -503,7 +503,7 @@ Class _UCR extends _UCRBase {
 	; This is fired after the input is processed, and is solely for the purpose of UCR being able to detect that activity is happening.
 	_InputEvent(ipt, state){
 		for hwnd, obj in this._InputActivitySubscriptions {
-			cb := obj.callback, profile_id := obj.pro
+			cb := obj.callback, profile_id := obj.profile_id
 			if (IsObject(obj.callback)  && ObjHasKey(this._ActiveInputThreads, obj.profile_id))
 				obj.callback.Call(ipt, state)
 		}
