@@ -83,24 +83,6 @@ Class _Profile {
 				plugin := this.Plugins[this.PluginOrder[A_Index]]
 				plugin._RequestBinding()
 			}
-			
-			/*
-			OutputDebug % "UCR| Starting Input Thread for thread #" this.id " ( " this.Name " )"
-			this._InputThread := AhkThread("InputThread := new _InputThread(""" this.id """," ObjShare(UCR._InputHandler.InputEvent.Bind(UCR._InputHandler)) ")`n" UCR._InputThreadScript)
-			While !this._InputThread.ahkgetvar.autoexecute_done
-				Sleep 10 ; wait until variable has been set.
-			;OutputDebug % "UCR| Input Thread for thread #" this.id " ( " this.Name " ) has started"
-			; Get thread-safe boundfunc object for thread's SetHotkeyState
-			this._SetHotkeyState := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetHotkeyState"))
-			this._SetButtonBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetButtonBinding"))
-			this._SetAxisBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetAxisBinding"))
-			this._SetDeltaBinding := ObjShare(this._InputThread.ahkgetvar("_InterfaceSetDeltaBinding"))
-			; Load bindings
-			Loop % this.PluginOrder.length() {
-				plugin := this.Plugins[this.PluginOrder[A_Index]]
-				plugin._RequestBinding()
-			}
-			*/
 		}
 	}
 	
@@ -117,12 +99,16 @@ Class _Profile {
 	}
 	
 	; Delete requested
-	_Delete(){
-		; ToDo: Delete child plugins
+	OnClose(){
+		; Remove child plugins
+		for id, plugin in this.Plugins {
+			this._RemovePlugin(plugin)
+		}
+		Gui, % this.hwnd ":Destroy"
 	}
 	
 	__Delete(){
-		Gui, % this.hwnd ":Destroy"
+		
 	}
 	
 	_CreateGui(){
@@ -249,6 +235,7 @@ Class _Profile {
 	
 	; Delete a plugin
 	_RemovePlugin(plugin){
+		plugin.OnClose()
 		ControlGetPos, , , , height_frame, ,% "ahk_id " plugin.hFrame
 		Gui, % plugin.hwnd ":Destroy"
 		Gui, % plugin.hFrame ":Destroy"

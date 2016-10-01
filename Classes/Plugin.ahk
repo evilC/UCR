@@ -11,8 +11,6 @@ Class Plugin {
 	
 	;_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
 	static _CustomControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1, ProfileSelect: 1}
-
-	#Include Functions\IsEmptyAssoc.ahk
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -87,14 +85,14 @@ Class Plugin {
 	; Save plugin to disk
 	_Serialize(){
 		obj := {Type: this.Type, name: this.Name}
-		if (!this.IsEmptyAssoc(this.GuiControls)){
+		if (!IsEmptyAssoc(this.GuiControls)){
 			obj.GuiControls := {}
 			for name, ctrl in this.GuiControls {
 				obj.GuiControls[name] := ctrl._Serialize()
 			}
 		}
 		
-		if (!this.IsEmptyAssoc(this.IOControls)){
+		if (!IsEmptyAssoc(this.IOControls)){
 			obj.IOControls := {}
 			for name, ctrl in this.IOControls {
 				obj.IOControls[name] := ctrl._Serialize()
@@ -153,27 +151,24 @@ Class Plugin {
 		}
 	}
 	
+	; The plugin was closed - the plugin was either removed from the profile...
+	; ... or the parent profile was deleted
 	OnClose(){
 		OutputDebug % "UCR| Plugin " this.name " closing"
 		for name, obj in this.GuiControls {
-			obj._KillReferences()
+			obj.OnClose()
 		}
 		
 		for name, obj in this.IOControls {
-			obj._KillReferences()
+			obj.OnClose()
 		}
 		
 		this.GuiControls := ""
 		this.IOControls := ""
-		
-		try {
-			this._KillReferences()
-		}
 	}
 	
 	; The user clicked the close button on the plugin
 	_Close(){
-		this.OnClose()
 		this.ParentProfile._RemovePlugin(this)
 	}
 }
