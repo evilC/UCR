@@ -9,29 +9,6 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 	_IOClasses := {}
 	__value := 0
 	
-	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		base.__New(parent.hwnd, aParams*)
-		this.ParentPlugin := parent
-		this.name := name
-		this.ChangeValueCallback := ChangeValueCallback
-		this.ChangeStateCallback := ChangeStateCallback
-		
-		UCR._RegisterGuiControl(this)
-
-		for i, name in this._IOClassNames {
-			;this._IOClasses[name] := new %name%(this)
-			call:= _UCR.Classes.IOClasses[name]
-			this._IOClasses[name] := new call(this)
-			;_UCR.Classes.IOClasses.
-			if (!this._IOClasses.IsInitialized) {
-				this._IOClasses[name]._Init()
-			}
-		}
-		
-		this._BuildMenu()
-		this.SetControlState()
-	}
-	
 	__Delete(){
 		OutputDebug % "UCR| InputAxis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}

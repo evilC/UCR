@@ -8,23 +8,7 @@ class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 	;__value := {DeviceID: 0, axis: 0}
 	_IOClasses := {}
 	__New(parent, name, ChangeValueCallback, aParams*){
-		base.__New(parent.hwnd, aParams*)
-		this.ParentPlugin := parent
-		this.name := name
-		this.ChangeValueCallback := ChangeValueCallback
-		
-		for i, name in this._IOClassNames {
-			;this._IOClasses[name] := new %name%(this)
-			call:= _UCR.Classes.IOClasses[name]
-			this._IOClasses[name] := new call(this)
-
-			if (!this._IOClasses.IsInitialized) {
-				this._IOClasses[name]._Init()
-			}
-		}
-		
-		this._BuildMenu()
-		this.SetControlState()
+		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
 	}
 	
 	__Delete(){
