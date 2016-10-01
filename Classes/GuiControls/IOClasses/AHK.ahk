@@ -66,28 +66,24 @@ class AHK_KBM_Input extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 		block := this.ParentControl.AddMenuItem("Block", "Block", this._ChangedValue.Bind(this, 2))
 		suppress := this.ParentControl.AddMenuItem("Suppress Repeats", "SuppressRepeats", this._ChangedValue.Bind(this, 3))
 		this._DisableItems := [wild, block, suppress]
+		this._OptionNames :=  ["wild", "block", "suppress"]
 	}
 	
 	_ChangedValue(o){
-		if (o == 1){
-			; Wild
-			this.BindOptions.wild := !this.BindOptions.wild
-		} else if (o == 2){
-			; Block
-			this.BindOptions.block := !this.BindOptions.block
-		} else if (o == 3){
-			; Suppress
-			this.BindOptions.suppress := !this.BindOptions.suppress
-		}
+		opt := this._OptionNames[o]
+		this.BindOptions[opt] := !this.BindOptions[opt]
+
 		bo := this._Serialize()
 		bo.Delete("Binding")	; get rid of the binding, so it does not stomp on the current binding
 		this.ParentControl.SetBinding(bo)
 	}
 	
 	UpdateMenus(cls){
+		OutputDebug % "UCR| Updatemenus - " this.BindOptions.block
 		state := ((cls == this.IOClass) && this.ParentControl.GetBinding().Binding[1])
 		for i, item in this._DisableItems {
 			item.SetEnableState(state)
+			this._DisableItems[i].SetCheckState(this.BindOptions[this._OptionNames[i]])
 		}
 	}
 
