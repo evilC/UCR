@@ -186,6 +186,8 @@ Class _InputThread {
 		TimerRunning := 0
 		DetectionState := 0		; Whether or not we are allowed to have hotkeys or be running the timer
 		
+		#Include Functions\IsEmptyAssoc.ahk
+		
 		__New(Callback){
 			this.Callback := Callback
 			this.TimerFn := this.ButtonWatcher.Bind(this)
@@ -283,11 +285,6 @@ Class _InputThread {
 		BuildHotkeyString(bo){
 			return bo.Deviceid "Joy" bo.Binding[1]
 		}
-		
-		; Is an associative array empty?
-		IsEmptyAssoc(assoc){
-			return !assoc._NewEnum()[k, v]
-		}
 	}
 
 	; Listens for Joystick Axis input using AHK's GetKeyState() function
@@ -300,6 +297,8 @@ Class _InputThread {
 			
 			this.TimerFn := this.StickWatcher.Bind(this)
 		}
+		
+		#Include Functions\IsEmptyAssoc.ahk
 		
 		UpdateBinding(ControlGUID, bo){
 			static AHKAxisList := ["X","Y","Z","R","U","V"]
@@ -357,11 +356,6 @@ Class _InputThread {
 		InputEvent(ControlGUID, state){
 			this.Callback.Call(ControlGUID, state)
 		}
-		
-		; Is an associative array empty?
-		IsEmptyAssoc(assoc){
-			return !assoc._NewEnum()[k, v]
-		}
 	}
 
 	; Listens for Joystick Hat input using AHK's GetKeyState() function
@@ -378,7 +372,9 @@ Class _InputThread {
 		; Which cardinal directions are pressed for each of the 8 compass directions, plus centre
 		; Order is U, R, D, L
 		static PovMap := {-1: [0,0,0,0], 1: [1,0,0,0], 2: [1,1,0,0] , 3: [0,1,0,0], 4: [0,1,1,0], 5: [0,0,1,0], 6: [0,0,1,1], 7: [0,0,0,1], 8: [1,0,0,1]}
-		
+
+		#Include Functions\IsEmptyAssoc.ahk
+
 		__New(Callback){
 			this.Callback := Callback
 			
@@ -460,20 +456,13 @@ Class _InputThread {
 				}
 			}
 		}
-		
-		; Is an associative array empty?
-		IsEmptyAssoc(assoc){
-			return !assoc._NewEnum()[k, v]
-			;for k, v in assoc {
-			;	return 0
-			;}
-			;return 1
-		}
 	}
 	
 	class RawInput_Mouse_Delta {
 		_DeltaBindings := {}
 		Registered := 0
+		
+		#Include Functions\IsEmptyAssoc.ahk
 		
 		__New(Callback){
 			this.Callback := Callback
@@ -605,10 +594,5 @@ Class _InputThread {
 		;		this.InputEvent(obj, {x: 0, y: 0})
 		;	}
 		;}
-		
-		; Is an associative array empty?
-		IsEmptyAssoc(assoc){
-			return !assoc._NewEnum()[k, v]
-		}
 	}
 }

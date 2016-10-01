@@ -34,6 +34,8 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	; Needed so we can merge two cardinal mappings from two plugins to get a diagonal
 	static _POVStates := {}
 	
+	#Include Functions\IsEmptyAssoc.ahk
+	
 	_Init(){
 		;if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
 		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
@@ -156,7 +158,6 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 				}
 				this._DeviceHandles[this._vGenDeviceType, this.DeviceID] := dev
 				OutputDebug % "UCR| IOClass " this.IOClass " Acquired Stick " this.DeviceID
-				;msgbox % this.IsEmptyAssoc(this._StickControlGUIDs[this.DeviceID])
 				return 1
 			}
 		} else {
@@ -178,13 +179,6 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	
 	_GetDevTypeName(){
 		return this._vGenDeviceTypeNames[this._vGenDeviceType]
-	}
-	
-	IsEmptyAssoc(assoc){
-		for k, v in assoc {
-			return 0
-		}
-		return 1
 	}
 	
 	UpdateMenus(cls){

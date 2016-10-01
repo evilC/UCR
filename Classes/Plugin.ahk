@@ -11,6 +11,8 @@ Class Plugin {
 	
 	;_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
 	static _CustomControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1, ProfileSelect: 1}
+
+	#Include Functions\IsEmptyAssoc.ahk
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -176,12 +178,5 @@ Class Plugin {
 		try {
 			this._KillReferences()
 		}
-	}
-	
-	IsEmptyAssoc(assoc){
-		for k, v in assoc {
-			return 0
-		}
-		return 1
 	}
 }
