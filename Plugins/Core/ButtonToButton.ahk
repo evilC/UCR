@@ -32,11 +32,11 @@ class ButtonToButton extends _UCR.Classes.Plugin {
 		if (this.GuiControls.Toggle.Get()){
 			; Toggle mode - Toggle the state of the output when the input goes down
 			if (e){
-				this.GuiControls.OB1.Set(!this.OutputButtons.OB1.Get())
+				this.IOControls.OB1.Set(!this.IOControls.OB1.Get())
 			}
 		} else {
 			; Normal mode - Set the state of the output to match the state of the input
-			this.GuiControls.OB1.Set(e)
+			this.IOControls.OB1.Set(e)
 		}
 	}
 }

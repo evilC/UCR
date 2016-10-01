@@ -7,11 +7,10 @@ Class Plugin {
 	ID := 0						; Unique ID for the plugin
 	Name := ""					; The name the user chose for the plugin
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
-	InputDeltas := {}
-	ProfileSelects := {}		; An associative array, indexed by name, of Profile Select GuiControls
+	IOControls := {}			; An associative array, indexed by name, of child IOControls
 	
-	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
-	_CustomControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1, ProfileSelect: 1}
+	;_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
+	static _CustomControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1, ProfileSelect: 1}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -23,12 +22,13 @@ Class Plugin {
 	AddControl(type, name, ChangeValueCallback, aParams*){
 		if (ObjHasKey(this._CustomControls, type)){
 			call:= _UCR.Classes.GuiControls[type]
-			this.GuiControls[name] := new call(this, name, ChangeValueCallback, aParams*)
+			this.IOControls[name] := new call(this, name, ChangeValueCallback, aParams*)
+			return this.IOControls[name]
 		} else {
 			call:= _UCR.Classes.GuiControls.GuiControl
 			this.GuiControls[name] := new call(this, type, name, ChangeValueCallback, aParams*)
+			return this.GuiControls[name]
 		}
-		return this.GuiControls[name]
 	}
 	
 	; === Private ===
@@ -85,9 +85,18 @@ Class Plugin {
 	; Save plugin to disk
 	_Serialize(){
 		obj := {Type: this.Type, name: this.Name}
-		obj.GuiControls := {}
-		for name, ctrl in this.GuiControls {
-			obj.GuiControls[name] := ctrl._Serialize()
+		if (!this.IsEmptyAssoc(this.GuiControls)){
+			obj.GuiControls := {}
+			for name, ctrl in this.GuiControls {
+				obj.GuiControls[name] := ctrl._Serialize()
+			}
+		}
+		
+		if (!this.IsEmptyAssoc(this.IOControls)){
+			obj.IOControls := {}
+			for name, ctrl in this.IOControls {
+				obj.IOControls[name] := ctrl._Serialize()
+			}
 		}
 		/*
 		Loop % this._SerializeList.length(){
@@ -107,14 +116,13 @@ Class Plugin {
 		for name, ctrl in obj.GuiControls {
 			this.GuiControls[name]._Deserialize(ctrl)
 		}
-		/*
-		Loop % this._SerializeList.length(){
-			key := this._SerializeList[A_Index]
-			for name, ctrl in obj[key] {
-				this[key, name]._Deserialize(ctrl)
-			}
+		for name, ctrl in obj.IOControls {
+			this.IOControls[name]._Deserialize(ctrl)
 		}
-		*/
+
+
+
+
 	}
 	
 	_OnActive(){
@@ -156,22 +164,31 @@ Class Plugin {
 		if (IsFunc(this["OnDelete"])){
 			this.OnDelete()
 		}
+		
 		; Remove input bindings etc here
 		; Some attempt is also made to free resources so destructors fire, though this is a WIP
-		/*
-		this.InputButtons := ""
-		for Name, obj in this.InputAxes {
-			UCR._InputHandler.SetAxisBinding(obj, 1)
-			obj._KillReferences()
-		}
-		*/
+
 		for name, obj in this.GuiControls {
 			obj._KillReferences()
 		}
+		
+		for name, obj in this.IOControls {
+			obj._KillReferences()
+		}
+		
 		this.GuiControls := ""
+		this.IOControls := ""
+		
 		this.ParentProfile._RemovePlugin(this)
 		try {
 			this._KillReferences()
 		}
+	}
+	
+	IsEmptyAssoc(assoc){
+		for k, v in assoc {
+			return 0
+		}
+		return 1
 	}
 }

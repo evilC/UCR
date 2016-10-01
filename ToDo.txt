@@ -8,6 +8,8 @@ Needs to be this way, so that plugins can iterate all their bindings
 
 Standardize Getters and Setters for IOControls etc - more stuff can be in base classes
 
+Helper funcs (eg IsEmptyAssoc, CreateGUID) to includes
+
 Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
 
 Fix BindMode thread not being passed IOClassMappings

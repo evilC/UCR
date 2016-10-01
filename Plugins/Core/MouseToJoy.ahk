@@ -169,19 +169,19 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 
 		if (dox){
 			;OutputDebug, % "UCR| x: " this.CurrX " (" UCR.Libraries.StickOps.InternalToAHK(this.CurrX) "), y: " this.CurrY
-			ox := this.GuiControls.OutputAxisX.GetBinding()
+			ox := this.IOControls.OutputAxisX.GetBinding()
 			if (ox.DeviceID && ox.Binding[1]){
 				cx := UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
-				this.GuiControls.OutputAxisX.Set(cx)
+				this.IOControls.OutputAxisX.Set(cx)
 				GuiControl, , % this.hSliderX, % cx
 			}
 		}
 		
 		if (doy){
-			oy := this.GuiControls.OutputAxisY.GetBinding()
+			oy := this.IOControls.OutputAxisY.GetBinding()
 			if (oy.DeviceID && oy.Binding[1]){
 				cy := UCR.Libraries.StickOps.InternalToAHK(this.CurrY)
-				this.GuiControls.OutputAxisY.Set(cy)
+				this.IOControls.OutputAxisY.Set(cy)
 				GuiControl, , % this.hSliderY, % cy
 			}
 		}

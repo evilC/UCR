@@ -54,7 +54,7 @@ class ButtonToAxis extends _UCR.Classes.Plugin {
 			}
 		}
 		out := UCR.Libraries.StickOps.InternalToAHK(out)
-		this.GuiControls["OutputAxis" axis].Set(out)
+		this.IOControls["OutputAxis" axis].Set(out)
 		GuiControl, , % this["hSlider" axis], % out
 	}
 }
