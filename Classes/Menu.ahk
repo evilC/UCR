@@ -86,12 +86,12 @@ class _Menu extends _MenuBase {
 		return this
 	}
 	
-	_KillReferences(){
+	OnClose(){
 		for id, menu in this.MenusByID {
-			menu._KillReferences()
+			menu.OnClose()
 		}
 		for id, item in this.ItemsByID {
-			item._KillReferences()
+			item.OnClose()
 		}
 		Menu, % this.id, Delete
 		this.ItemsByID := {}
@@ -184,7 +184,7 @@ class _Menu extends _MenuBase {
 			return this.parent.AddSubMenu(aParams*)
 		}
 		
-		_KillReferences(){
+		OnClose(){
 			
 		}
 	}

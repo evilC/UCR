@@ -88,8 +88,8 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 	}
 	
 	; Kill references so destructor can fire
-	_KillReferences(){
-		base._KillReferences()
+	OnClose(){
+		base.OnClose()
 		this.JoyMenus := []
 		;~ GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
 	}

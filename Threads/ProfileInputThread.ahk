@@ -1,5 +1,6 @@
 ; ToDo: Split IOClasses out into individual files
 ; ToDo: Rename these type of IOClasses to IOInputClasses?
+#Include Functions\IsEmptyAssoc.ahk
 
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
@@ -186,8 +187,6 @@ Class _InputThread {
 		TimerRunning := 0
 		DetectionState := 0		; Whether or not we are allowed to have hotkeys or be running the timer
 		
-		#Include Functions\IsEmptyAssoc.ahk
-		
 		__New(Callback){
 			this.Callback := Callback
 			this.TimerFn := this.ButtonWatcher.Bind(this)
@@ -260,7 +259,7 @@ Class _InputThread {
 					this.HeldButtons.Delete(bindstring)
 					;OutputDebug % "UCR| AHK_JoyBtn_Input Key event 0 for GuiControl " ControlGUID
 					this.Callback.Call(ControlGUID, 0)
-					if (this.IsEmptyAssoc(this.HeldButtons)){
+					if (IsEmptyAssoc(this.HeldButtons)){
 						this.TimerWanted := 0
 						this.ProcessTimerState()
 						return
@@ -298,8 +297,6 @@ Class _InputThread {
 			this.TimerFn := this.StickWatcher.Bind(this)
 		}
 		
-		#Include Functions\IsEmptyAssoc.ahk
-		
 		UpdateBinding(ControlGUID, bo){
 			static AHKAxisList := ["X","Y","Z","R","U","V"]
 			dev := bo.DeviceID, axis := bo.Binding[1]
@@ -309,7 +306,7 @@ Class _InputThread {
 				str := this.ControlMappings[ControlGUID]
 				this.StickBindings.Delete(str)
 				this.ControlMappings.Delete(ControlGUID)
-				if (this.IsEmptyAssoc(this.StickBindings)){
+				if (IsEmptyAssoc(this.StickBindings)){
 					this.TimerWanted := 0
 				}
 			}
@@ -373,8 +370,6 @@ Class _InputThread {
 		; Order is U, R, D, L
 		static PovMap := {-1: [0,0,0,0], 1: [1,0,0,0], 2: [1,1,0,0] , 3: [0,1,0,0], 4: [0,1,1,0], 5: [0,0,1,0], 6: [0,0,1,1], 7: [0,0,0,1], 8: [1,0,0,1]}
 
-		#Include Functions\IsEmptyAssoc.ahk
-
 		__New(Callback){
 			this.Callback := Callback
 			
@@ -423,7 +418,7 @@ Class _InputThread {
 				bindstring := this.ControlMappings[ControlGUID].bindstring
 				this.HatBindings[bindstring].Delete(ControlGUID)
 				this.ControlMappings.Delete(ControlGUID)
-				if (this.IsEmptyAssoc(this.HatBindings[bindstring])){
+				if (IsEmptyAssoc(this.HatBindings[bindstring])){
 					this.HatBindings.Delete(bindstring)
 					;OutputDebug % "UCR| AHK_JoyHat_Input Removing Hat Bindstring " bindstring
 				}
@@ -462,8 +457,6 @@ Class _InputThread {
 		_DeltaBindings := {}
 		Registered := 0
 		
-		#Include Functions\IsEmptyAssoc.ahk
-		
 		__New(Callback){
 			this.Callback := Callback
 			this.MouseMoveFn := this.OnMouseMove.Bind(this)
@@ -471,6 +464,11 @@ Class _InputThread {
 			this.hwnd := hwnd
 		}
 		
+		; Is an associative array empty?
+		IsEmptyAssoc(assoc){
+			return !assoc._NewEnum()[k, v]
+		}
+
 		UpdateBinding(ControlGUID, bo){
 			OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
 			this.RemoveBinding(ControlGUID)
@@ -483,7 +481,13 @@ Class _InputThread {
 		
 		RemoveBinding(ControlGUID){
 			this._DeltaBindings.Delete(ControlGUID)
-			if (this.Registered && this.IsEmptyAssoc(this._DeltaBindings)){
+			found := 0
+			for k, v in this._DeltaBindings {
+				found := 1
+				break
+			}
+			OutputDebug % "UCR| after: " str
+			if (this.Registered && IsEmptyAssoc(this._DeltaBindings)){
 				this.UnRegisterMouse()
 			}
 		}

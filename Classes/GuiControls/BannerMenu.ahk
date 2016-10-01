@@ -37,8 +37,8 @@ class _BannerMenu extends _Menu {
 		; do nothing
 	}
 	
-	_KillReferences(){
-		base._KillReferences()
+	OnClose(){
+		base.OnClose()
 		fn := this.OpenMenuFn
 		GuiControl, -g, % this.hReadout, % fn
 		this.OpenMenuFn := ""

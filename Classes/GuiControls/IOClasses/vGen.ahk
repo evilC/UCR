@@ -34,8 +34,6 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	; Needed so we can merge two cardinal mappings from two plugins to get a diagonal
 	static _POVStates := {}
 	
-	#Include Functions\IsEmptyAssoc.ahk
-	
 	_Init(){
 		;if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
 		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
@@ -123,7 +121,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	_UnRegister(){
 		this._SetStickControlGuid(this.DeviceID, this.ParentControl.id, 0)
 		OutputDebug % "UCR| _UnRegister - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
-		if (this.IsEmptyAssoc(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
+		if (IsEmptyAssoc(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
 			this._Relinquish(this.DeviceID)
 		}
 	}
@@ -146,7 +144,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	}
 	
 	_AttemptAcquire(){
-		if (this.IsEmptyAssoc(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
+		if (IsEmptyAssoc(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
 			;VarSetCapacity(dev, A_PtrSize)
 			acq := DllCall(this.DllName "\AcquireDev", "uint", this.DeviceID, "uint", this._vGenDeviceType, "Ptr*", dev, "Cdecl")
 			if (acq){

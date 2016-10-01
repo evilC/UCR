@@ -70,8 +70,8 @@ class ProfileSelect extends _UCR.Classes.GuiControls._BannerMenu {
 	}
 	
 	; Kill references so destructor can fire
-	_KillReferences(){
-		base._KillReferences()
+	OnClose(){
+		base.OnClose()
 		this.ChangeValueCallback := ""
 		UCR.UnSubscribeToProfileTreeChange(this.hwnd)
 	}

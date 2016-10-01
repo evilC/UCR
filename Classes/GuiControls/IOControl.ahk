@@ -40,6 +40,12 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			this.ChangeValueCallback.Call(this.__value)
 	}
 
+	RemoveBinding(){
+		this.__value.Binding := []			; clear the old Binding
+		this.__value.DeviceID := 0
+		this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
+	}
+	
 	Get(){
 		return this.State
 	}
@@ -64,8 +70,7 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	_BindModeEnded(bo){
 		if (this.__value.IOClass && this.__value.IOClass != bo.IOClass){
 			; There is an existing, different IOClass
-			this.Binding := []			; clear the old Binding
-			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
+			this.RemoveBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 		}
 		this.SetBinding(bo)
 	}
@@ -77,6 +82,16 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			this.State := e
 			this.ChangeStateCallback.Call(e)
 		}
+	}
+	
+	OnClose(){
+		;OutputDebug % "UCR| IOControl " this.id " fired OnClose event"
+		;GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
+		this.ChangeValueCallback := ""
+		this.ChangeStateCallback := ""
+		this._IOClasses := ""
+		base.OnClose()
+		this.RemoveBinding()
 	}
 	
 	_Serialize(){

@@ -20,11 +20,8 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	; Kill references so destructor can fire
-	_KillReferences(){
-		base._KillReferences()
-		GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
-		this.ChangeValueCallback := ""
-		this.ChangeStateCallback := ""
+	OnClose(){
+		base.OnClose()
 		this._KeyOnlyOptions := ""
 	}
 	

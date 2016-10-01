@@ -634,6 +634,7 @@ Class _UCR {
 	__DeleteProfile(id){
 		; Remove profile's entry from ProfileTree
 		profile := this.Profiles[id]
+		profile.OnClose()
 		treenode := this.ProfileTree[profile.ParentProfile]
 		for k, v in treenode {
 			if (v == id){

@@ -13,12 +13,6 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 		OutputDebug % "UCR| InputAxis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
-	_KillReferences(){
-		base._KillReferences()
-		this.ChangeValueCallback := ""
-		this.ChangeStateCallback := ""
-	}
-	
 	_BuildMenu(){
 		for i, cls in this._IOClasses {
 			cls.AddMenuItems()

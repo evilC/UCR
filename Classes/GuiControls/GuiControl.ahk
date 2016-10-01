@@ -36,7 +36,7 @@ class GuiControl {
 		OutputDebug % "UCR| GuiControl " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
-	_KillReferences(){
+	OnClose(){
 		this._SetGlabel(0)
 		this.ChangeValueFn := ""
 		this.ChangeValueCallback := ""

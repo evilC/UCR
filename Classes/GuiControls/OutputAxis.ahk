@@ -15,11 +15,6 @@ class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 		OutputDebug % "UCR| OutputAxis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
-	_KillReferences(){
-		base._KillReferences()
-		this.ChangeValueCallback := ""
-	}
-	
 	_BuildMenu(){
 		for i, cls in this._IOClasses {
 			cls.AddMenuItems()

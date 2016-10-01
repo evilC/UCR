@@ -34,9 +34,10 @@ class ProfileSwitcher extends _UCR.Classes.Plugin {
 	}
 	
 	; In order to free memory when a plugin is closed, we must free references to this object
-	_KillReferences(){
+	OnClose(){
 		GuiControl -g, % this.hTest0
 		GuiControl -g, % this.hTest1
+		base.OnClose()
 	}
 		
 }

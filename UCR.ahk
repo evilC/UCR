@@ -28,6 +28,7 @@ return
 #Include Classes\Profile.ahk
 
 #include Libraries\JSON.ahk
+#include Functions\IsEmptyAssoc.ahk
 
 ; Called if the user closes the GUI
 GuiClose(hwnd){

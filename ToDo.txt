@@ -1,6 +1,8 @@
 Plugin _OnInactive can no longer release held buttons
 
-Fix crash on close of InputDelta
+Profile close not triggering plugin close
+
+InputDelta probably doesn't turn off in BindMode
 
 Switch Absolute / Relative naming for MouseToJoy
 
