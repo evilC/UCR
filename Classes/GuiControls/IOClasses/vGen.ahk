@@ -120,7 +120,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	
 	_UnRegister(){
 		this._SetStickControlGuid(this.DeviceID, this.ParentControl.id, 0)
-		OutputDebug % "UCR| _UnRegister - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
+		OutputDebug % "UCR| vGen_Output _UnRegister - IOClass " this.IOClass ", DevType: " this._GetDevTypeName() ", Device " this.DeviceID " of " this._NumSticks
 		if (IsEmptyAssoc(this._StickControlGUIDs[this._vGenDeviceType, this.DeviceID])){
 			this._Relinquish(this.DeviceID)
 		}
@@ -167,7 +167,9 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	}
 	
 	_Relinquish(DeviceID){
-		rel := DllCall(this.DllName "\RelinquishDev", "Ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "Cdecl")
+		handle := this._DeviceHandles[this._vGenDeviceType, this.DeviceID]
+		OutputDebug % "UCR| vGen _Relinquish Relinquishing " this._vGenDeviceType " device " DeviceID ", handle " this._DeviceHandles[this._vGenDeviceType, this.DeviceID]
+		rel := DllCall(this.DllName "\RelinquishDev", "Ptr", handle, "Cdecl")
 		this._DeviceHandles[this._vGenDeviceType, this.DeviceID] := 0
 		if (rel == 0){
 			OutputDebug % "UCR| IOClass " this.IOClass " Relinquished Stick " this.DeviceID
@@ -253,6 +255,8 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	UpdateBinding(){
 		if (this.DeviceID && this.Binding[1]){
 			this._Register()
+		} else {
+			this._UnRegister()
 		}
 	}
 	
@@ -450,7 +454,11 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 	
 	UpdateBinding(){
 		if (this.DeviceID && this.Binding[1]){
+			OutputDebug % "UCR| vXBox UpdateBinding Registering"
 			this._Register()
+		} else {
+			OutputDebug % "UCR| vXBox UpdateBinding UnRegistering"
+			this._UnRegister()
 		}
 	}
 	

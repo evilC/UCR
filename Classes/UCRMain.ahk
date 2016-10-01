@@ -776,7 +776,7 @@ Class _UCR {
 			OutputDebug % "UCR| Warning! Tried to _RequestBinding without a BindObject set!"
 			return
 		}
-		outputdebug % "UCR| _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID
+		outputdebug % "UCR| UCRMain _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID ", IOClass: " bo.IOClass
 		;ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
 		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, ObjShare(bo))
 	}

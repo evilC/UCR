@@ -40,8 +40,6 @@ class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 			Text := this._DefaultBanner
 		}
 		this.SetCueBanner(Text)
-		; Tell vGen etc to Acquire sticks
-		this.__value.UpdateBinding()
 		; Update the Menus etc of all the IOClasses in this control
 		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)

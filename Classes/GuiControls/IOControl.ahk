@@ -27,9 +27,11 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		return this.__value
 	}
 	
-	SetBinding(value, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
-		this._IOClasses[value.IOClass]._Deserialize(value)
-		this.__value := this._IOClasses[value.IOClass]
+	SetBinding(bo, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
+		if (bo.IOClass != this.GetBinding().IOClass)
+			this.RemoveBinding()
+		this._IOClasses[bo.IOClass]._Deserialize(bo)
+		this.__value := this._IOClasses[bo.IOClass]
 		if (update_guicontrol)
 			this.SetControlState()
 		if (update_ini){
@@ -42,7 +44,7 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 
 	RemoveBinding(){
 		this.__value.Binding := []			; clear the old Binding
-		this.__value.DeviceID := 0
+		; Do not clear DeviceID, so vGen etc know which device to release
 		this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 	}
 	
@@ -58,9 +60,16 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	; All IOControls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){
-		if (IsObject(this.__value)){
+		bo := this.GetBinding()
+		if (IsObject(bo)){
 			;OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
-			UCR._RequestBinding(this)
+			if (bo.IOType){
+				; Output Type
+				bo.UpdateBinding()
+			} else {
+				; Input Type
+				UCR._RequestBinding(this)
+			}
 		}
 	}
 

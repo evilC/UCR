@@ -27,16 +27,10 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 	; Builds the list of options in the DropDownList
 	SetControlState(){
 		base.SetControlState()
-		; Tell vGen etc to Acquire sticks
-		this.__value.UpdateBinding()
 		; Update the Menus etc of all the IOClasses in this control
 		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)
 		}
-		;joy := (this.__value.Type >= 2 && this.__value.Type <= 6)
-		;for n, opt in this.JoyMenus {
-		;	opt.SetEnableState(joy)
-		;}
 	}
 	
 	; Used by script authors to set the state of this output
@@ -70,17 +64,6 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 				this.SetBinding(this.__value)
 			}
 		}
-	}
-	
-	; Bind Mode has ended.
-	; A "Primitive" BindObject will be passed, along with the IOClass of the detected input.
-	; The Primitive contains just the Binding property and optionally the DeviceID property.
-	_BindModeEnded(bo){
-		this.SetBinding(bo)
-	}
-	
-	_RequestBinding(){
-		; override base and do nothing
 	}
 	
 	__Delete(){
