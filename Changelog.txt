@@ -4,6 +4,10 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.0 - ??
+! Major back-end changes. Things that worked before may well not work now.
+= Switch Absolute / Relative naming for MouseToJoy
+
 0.0.18 - 16th Sept 2016
 + Added Console output via Titan One GCDAPI
   You can now output to consoles like you would output to vJoy.
