@@ -12,8 +12,6 @@ Remove _InputHandler?
 
 Add Titan API back in
 
-Not relinquishing when switching from vXBox to vJoy
-
 Take a look at encoding of hat directions.
 ATM, input is AHK Joy only, so only 1 hat, so Binding[1] can hold hat direction
 for multi-hat IOClasses (eg vGen), this is currently encoded as (HatNum * 100) + Dir (eg 101, 201, 301, 401 for North of each 4 hats).
