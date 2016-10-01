@@ -119,10 +119,6 @@ Class Plugin {
 		for name, ctrl in obj.IOControls {
 			this.IOControls[name]._Deserialize(ctrl)
 		}
-
-
-
-
 	}
 	
 	_OnActive(){
@@ -150,11 +146,8 @@ Class Plugin {
 	
 	; Call _RequestBinding on all child controls
 	_RequestBinding(){
-		Loop % this._SerializeList.length(){
-			key := this._SerializeList[A_Index]
-			for name, ctrl in this[key] {
-				ctrl._RequestBinding()
-			}
+		for name, ctrl in this.IOControls {
+			ctrl._RequestBinding()
 		}
 	}
 	
