@@ -33,10 +33,6 @@ class ProfileSwitcher extends _UCR.Classes.Plugin {
 			SoundBeep, 300, 200
 	}
 	
-	OnDelete(){
-		
-	}
-	
 	; In order to free memory when a plugin is closed, we must free references to this object
 	_KillReferences(){
 		GuiControl -g, % this.hTest0

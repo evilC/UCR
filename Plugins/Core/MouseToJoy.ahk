@@ -94,12 +94,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.InputDeltas.MouseDelta.UnRegister()
 	}
 	
-	; Plugin was deleted - stop watching mouse
-	OnDelete(){
-		;this.MouseDelta.UnRegister()
-		;this.MouseDelta := ""
-	}
-	
 	MouseSelectChanged(){
 		GuiControlGet, val,, % this.hSelectMouse
 		if (val == "Any" || val == 0){
