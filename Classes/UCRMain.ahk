@@ -30,8 +30,6 @@ Class _UCR {
 	; Default User Settings
 	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, StartMinimized: 0}, GuiControls: {ShowJoystickNames: 1}}
 	
-	#Include Functions\CreateGUID.ahk
-	
 	__New(){
 		; ============== Init section - This needs to be done first ========
 		; Set super-global UCR to point to class instance
@@ -607,7 +605,7 @@ Class _UCR {
 	; Creates a new profile and assigns it a unique ID, if needed.
 	_CreateProfile(name, id := 0, parent := 0){
 		if (id = 0){
-			id := this.CreateGUID()
+			id := CreateGUID()
 		}
 		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile

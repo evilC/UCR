@@ -29,6 +29,7 @@ return
 
 #include Libraries\JSON.ahk
 #include Functions\IsEmptyAssoc.ahk
+#Include Functions\CreateGUID.ahk
 
 ; Called if the user closes the GUI
 GuiClose(hwnd){

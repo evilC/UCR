@@ -1,6 +1,7 @@
 ; An OOP wrapper for AHK's menu system
 ; Uses GUIDs to anonymize menus and ensure uniqueness of names
-class _Menu extends _MenuBase {
+
+class _Menu {
 	Parent := 0
 	Enabled := 1
 	ItemsByID := {}
@@ -9,7 +10,7 @@ class _Menu extends _MenuBase {
 	MenusByName := {}
 	
 	__New(text := ""){
-		this.id := this.CreateGUID()
+		this.id := CreateGUID()
 		this.text := text
 		Menu, % this.id, Add
 	}
@@ -104,7 +105,7 @@ class _Menu extends _MenuBase {
 		;OutputDebug % "UCR| Menu " this.text " fired destructor"
 	}
 
-	class MenuItem extends _MenuBase {
+	class MenuItem {
 		parent := 0		; Pointer to parent menu
 		name := ""		; Name that this item is referred to by
 		text := ""		; The text of the menu entry
@@ -113,7 +114,7 @@ class _Menu extends _MenuBase {
 		
 		__New(parent, text, name, callback){
 			this.parent := parent, this.text := text, this.callback := callback, this.name := name
-			this.id := Menu.CreateGUID()
+			this.id := CreateGUID()
 			Menu, % parent.id, Add, % text, % callback
 		}
 		
@@ -190,19 +191,4 @@ class _Menu extends _MenuBase {
 	}
 }
 
-Class _MenuBase {
-	; ToDo - why does include not work?
-	;#include Functions\CreateGUID.ahk
-	; By jNizM - https://autohotkey.com/boards/viewtopic.php?f=6&t=4732&p=87497#p87497
-	CreateGUID(){
-		VarSetCapacity(foo_guid, 16, 0)
-		if !(DllCall("ole32.dll\CoCreateGuid", "Ptr", &foo_guid))
-		{
-			VarSetCapacity(tmp_guid, 38 * 2 + 1)
-			DllCall("ole32.dll\StringFromGUID2", "Ptr", &foo_guid, "Ptr", &tmp_guid, "Int", 38 + 1)
-			fin_guid := StrGet(&tmp_guid, "UTF-16")
-		}
-		return SubStr(fin_guid, 2, 36)
-	}
-}
 
