@@ -486,16 +486,7 @@ Class _InputThread {
 			OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
 			this.RemoveBinding(ControlGUID)
 			if (bo.Binding[1]){
-				keyname := this.BuildHotkeyString(bo)
-				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
-				try {
-					hotkey, % keyname, % fn, On
-				}
-				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
-				;hotkey, % keyname " up", % fn, On
-				OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
-				;this._CurrentBinding := keyname
-				this._DeltaBindings[ControlGUID] := keyname
+				this._DeltaBindings[ControlGUID] := 1
 				if (!this.Registered)
 					this.RegisterMouse()
 			}
@@ -600,7 +591,8 @@ Class _InputThread {
 			state := {axes: xy, MouseID: ThisMouse}
 			for ControlGuid, obj in this._DeltaBindings {
 				;this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
-				this.Callback.Call(ControlGuid, state)	; ToDo: This should be a proper I/O object type, like Buttons or Axes
+				;OutputDebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
+				this.Callback.Call(ControlGuid, state)
 			}
 	 
 			; There is no message for "Stopped", so simulate one

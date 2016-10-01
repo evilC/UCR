@@ -80,7 +80,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.AddControl("RelativeRadio", 0, "Radio", "x270 ym",, 0)
 		this.AddControl("DDL", "ModeSelect", this.ModeSelect.Bind(this), "x575 w100 ym AltSubmit", "Mode: Absolute||Mode: Relative")
 		
-		this.AddControl("InputDelta", "MD1", this.MouseEvent.Bind(this), "xm w200")
+		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "xm w200")
 		
 		;this.MouseTimeoutFn := this.OnMouseTimeout.Bind(this)
 		;this.MouseTimeoutFn := this.MouseEvent.Bind(this, {x: 0, y: 0})

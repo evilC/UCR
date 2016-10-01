@@ -1,13 +1,10 @@
 ########## Required before public testing can begin ############
 
 Plugin _OnInactive can no longer release held buttons
-Make IOControls seperate array to GuiControls
-Needs to be this way, so that plugins can iterate all their bindings
 
 ################################################################
 
-Standardize Getters and Setters for IOControls etc - more stuff can be in base classes
-Standardize contructors for IOControls
+BindOption checks in InputButton menus not working
 
 Helper funcs (eg IsEmptyAssoc, CreateGUID) to includes
 
