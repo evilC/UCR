@@ -15,29 +15,6 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	_IOClasses := {}
 	
 	
-	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		base.__New(parent.hwnd, aParams*)
-		this.ParentPlugin := parent
-		this.Name := name
-		this.ID := UCR.CreateGUID()
-		this.ChangeValueCallback := ChangeValueCallback
-		this.ChangeStateCallback := ChangeStateCallback
-		UCR._RegisterGuiControl(this)
-
-		for i, name in this._IOClassNames {
-			;this._IOClasses[name] := new %name%(this)
-			call:= _UCR.Classes.IOClasses[name]
-			this._IOClasses[name] := new call(this)
-
-			if (!this._IOClasses.IsInitialized) {
-				this._IOClasses[name]._Init()
-			}
-		}
-		this._BuildMenu()
-		
-		this.SetControlState()
-	}
-	
 	__Delete(){
 		OutputDebug % "UCR| InputButton " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
@@ -89,48 +66,4 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 			}
 		}
 	}
-	
-	; Bind Mode has ended.
-	; A "Primitive" BindObject will be passed, along with the IOClass of the detected input.
-	; The Primitive contains just the Binding property and optionally the DeviceID property.
-	_BindModeEnded(bo){
-		if (this.__value.IOClass && this.__value.IOClass != bo.IOClass){
-			; There is an existing, different IOClass
-			this.Binding := []			; clear the old Binding
-			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
-		}
-		this.SetBinding(bo)
-	}
-	
-	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
-	; ... then it can be re-built by calling this method on each control.
-	_RequestBinding(){
-		if (IsObject(this.__value)){
-			;OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
-			UCR._RequestBinding(this)
-		}
-	}
-	
-	SetBinding(bo, update_ini := 1){
-		;OutputDebug % "UCR| InputButton Set: class: " bo.IOClass ", code: " bo.Binding[1] ", DeviceID: " bo.DeviceID
-		;this.MergeObject(this._IOClasses[bo.IOClass], bo)
-		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		base.SetBinding(this._IOClasses[bo.IOClass], update_ini)
-		
-		; ToDo - add in the condition that the binding must have also changed
-		; Request the new binding from the Profile's InputThread.
-		; If the IOClass was the same as before, the old binding will be deleted automatically
-		this._RequestBinding()
-	}
-	
-	MergeObject(src, patch){
-		for k, v in patch {
-			if (IsObject(v)){
-				this.MergeObject(src[k], v)
-			} else {
-				src[k] := v
-			}
-		}
-	}
-
 }

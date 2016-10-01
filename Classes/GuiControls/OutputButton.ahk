@@ -79,13 +79,6 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 		this.SetBinding(bo)
 	}
 	
-	; bo is a "Primitive" BindObject
-	SetBinding(bo, update_ini := 1){
-		;OutputDebug % "UCR| Set: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
-		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		base.SetBinding(this._IOClasses[bo.IOClass], update_ini)
-	}
-
 	_RequestBinding(){
 		; override base and do nothing
 	}
