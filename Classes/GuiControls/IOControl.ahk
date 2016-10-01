@@ -32,8 +32,10 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		this.__value := this._IOClasses[value.IOClass]
 		if (update_guicontrol)
 			this.SetControlState()
-		if (update_ini)
+		if (update_ini){
 			this.ParentPlugin._ControlChanged(this)
+			this._RequestBinding()
+		}
 		if (fire_callback && IsObject(this.ChangeValueCallback))
 			this.ChangeValueCallback.Call(this.__value)
 	}
@@ -66,7 +68,6 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 		}
 		this.SetBinding(bo)
-		this._RequestBinding()
 	}
 	
 	; Called by InputThread when an Input changes state

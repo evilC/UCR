@@ -34,25 +34,6 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 		}
 	}
 	
-	; bo is a "Primitive" BindObject
-	SetBinding(bo, update_ini := 1){
-		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		base.SetBinding(this._IOClasses[bo.IOClass], update_ini)
-		
-		; If both value and device are set, or neither are set, then update the binding
-		; ToDo - add in the condition that the binding must have also changed
-		if ((this.__value.Binding[1] && this.__value.DeviceID) || (!this.__value.Binding[1] && !this.__value.DeviceID)){
-			UCR._RequestBinding(this)
-		}
-	}
-	
-	; All Input types should implement this function, so that if the Input Thread for the profile is terminated...
-	; ... then it can be re-built by calling this method on each control.
-	_RequestBinding(){
-		;UCR.RequestAxisBinding(this)
-		UCR._RequestBinding(this)
-	}
-	
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetControlState(){
 		if (this.__value.DeviceID || this.__value.Binding[1]){

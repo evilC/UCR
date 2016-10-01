@@ -20,13 +20,6 @@ class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 		this.ChangeValueCallback := ""
 	}
 	
-	; bo is a "Primitive" BindObject
-	SetBinding(bo, update_ini := 1){
-		;OutputDebug % "UCR| Set: class: " bo.IOClass ", code: " bo.Binding[1] ", wild: " bo.BindOptions.wild
-		this._IOClasses[bo.IOClass]._Deserialize(bo)
-		base.SetBinding(this._IOClasses[bo.IOClass], update_ini)
-	}
-	
 	_BuildMenu(){
 		for i, cls in this._IOClasses {
 			cls.AddMenuItems()
