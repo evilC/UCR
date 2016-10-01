@@ -95,7 +95,7 @@ Class _InputThread {
 			; This code is rigged so that either AHK_KBM_Input or AHK_JoyBtn_Input or both will not clash...
 			; ... As long as all are turned on or off together, you won't get weird results.
 			if (A_IsSuspended == state){
-				OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkeys " (state ? "On" : "Off")
+				OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state
@@ -212,7 +212,7 @@ Class _InputThread {
 		SetDetectionState(state){
 			; Are we already in the requested state?
 			if (A_IsSuspended == state){
-				OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Button detection " (state ? "On" : "Off")
+				OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state
@@ -456,6 +456,7 @@ Class _InputThread {
 	class RawInput_Mouse_Delta {
 		_DeltaBindings := {}
 		Registered := 0
+		DetectionState := 0
 		
 		__New(Callback){
 			this.Callback := Callback
@@ -481,12 +482,6 @@ Class _InputThread {
 		
 		RemoveBinding(ControlGUID){
 			this._DeltaBindings.Delete(ControlGUID)
-			found := 0
-			for k, v in this._DeltaBindings {
-				found := 1
-				break
-			}
-			OutputDebug % "UCR| after: " str
 			if (this.Registered && IsEmptyAssoc(this._DeltaBindings)){
 				this.UnRegisterMouse()
 			}
@@ -494,13 +489,16 @@ Class _InputThread {
 		
 		SetDetectionState(state){
 			OutputDebug % "UCR| InputDelta SetDetectionState " state
-			;~ ; Are we already in the requested state?
-			;~ if (A_IsSuspended == state){
-				;~ OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Button detection " (state ? "On" : "Off")
-				;~ Suspend, % (state ? "Off" : "On")
-			;~ }
-			;~ this.DetectionState := state
-			;~ this.ProcessTimerState()
+			this.DetectionState := state
+			this._ProcessDetectionState()
+		}
+		
+		_ProcessDetectionState(){
+			if (this.DetectionState && !this.Registered && !IsEmptyAssoc(this._DeltaBindings)){
+				this.RegisterMouse()
+			} else if (!this.DetectionState && this.Registered){
+				this.UnRegisterMouse()
+			}
 		}
 		
 		RegisterMouse(){
