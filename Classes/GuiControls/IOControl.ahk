@@ -5,7 +5,6 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
 		this.Name := name
-		this.ID := UCR.CreateGUID()
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
 		UCR._RegisterGuiControl(this)
