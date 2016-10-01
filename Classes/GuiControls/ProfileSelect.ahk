@@ -48,7 +48,7 @@ class ProfileSelect extends _UCR.Classes.GuiControls._BannerMenu {
 
 	; A new selection was made in the Profile Picker
 	ProfileChanged(id){
-		this.value := id
+		this.Set(id)
 	}
 	
 	Get(){
@@ -77,14 +77,11 @@ class ProfileSelect extends _UCR.Classes.GuiControls._BannerMenu {
 	}
 	
 	_Serialize(){
-		;val := this.__value._Serialize()
-		;val._ControlType := this._ControlType
-		;return val
-		return this.__value._Serialize()
+		return this.__value
 	}
 	
 	_Deserialize(obj){
 		; Pass 0 to Set so we don't save while we are loading
-		this.Set(obj.value, 0)
+		this.Set(obj, 0)
 	}
 }

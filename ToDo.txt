@@ -4,8 +4,6 @@ Plugin _OnInactive can no longer release held buttons
 Make IOControls seperate array to GuiControls
 Needs to be this way, so that plugins can iterate all their bindings
 
-Check if ProfileSelect saves value properly.
-ProfileChanged(id) sets .value, but .Get() returns __value
 ################################################################
 
 Standardize Getters and Setters for IOControls etc - more stuff can be in base classes
