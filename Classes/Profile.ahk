@@ -17,6 +17,8 @@ Class _Profile {
 	InheritsFromParent := 0	
 	_HotkeysActive := 0
 	
+	#Include Functions\CreateGUID.ahk
+	
 	__New(id, name, parent){
 		static fn
 		this.ID := id
@@ -194,7 +196,7 @@ Class _Profile {
 		name := this._GetUniqueName(plugin)
 		if (name = 0)
 			return
-		id := UCR.CreateGUID()
+		id := this.CreateGUID()
 		this.PluginOrder.push(id)
 		this.Plugins[id] := new %plugin%(id, name, this)
 		this.Plugins[id].Type := plugin

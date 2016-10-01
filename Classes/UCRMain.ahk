@@ -1,5 +1,5 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
-Class _UCR extends _UCRBase {
+Class _UCR {
 	Version := "0.1.0"				; The version of the main application
 	SettingsVersion := "0.0.6"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
@@ -29,6 +29,8 @@ Class _UCR extends _UCRBase {
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	; Default User Settings
 	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, StartMinimized: 0}, GuiControls: {ShowJoystickNames: 1}}
+	
+	#Include Functions\CreateGUID.ahk
 	
 	__New(){
 		; ============== Init section - This needs to be done first ========
