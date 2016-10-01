@@ -15,7 +15,6 @@ return
 ; If you wish to be able to debug plugins, include them in UCRDebug.ahk
 ; The file does not have to exist, and this line can be safely commented out
 #Include *iUCRDebug.ahk
-#Include Functions\CreateGUID.ahk
 
 ; Include the main classes
 #Include Classes\UCRMain.ahk
