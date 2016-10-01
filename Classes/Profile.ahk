@@ -100,9 +100,11 @@ Class _Profile {
 	OnClose(){
 		; Remove child plugins
 		for id, plugin in this.Plugins {
-			this._RemovePlugin(plugin)
+			; Close plugin, but do not remove binding as thread is closing anyway
+			this._RemovePlugin(plugin, 0)
 		}
 		Gui, % this.hwnd ":Destroy"
+		this.hwnd := 0
 	}
 	
 	__Delete(){
@@ -165,12 +167,14 @@ Class _Profile {
 	
 	; Show the GUI
 	_Show(){
-		Gui, % this.hwnd ":Show", % "h" UCR.CurrentSize.h - UCR.TOP_PANEL_HEIGHT
+		if (this.hwnd)
+			Gui, % this.hwnd ":Show", % "h" UCR.CurrentSize.h - UCR.TOP_PANEL_HEIGHT
 	}
 	
 	; Hide the GUI
 	_Hide(){
-		Gui, % this.hwnd ":Hide"
+		if (this.hwnd)
+			Gui, % this.hwnd ":Hide"
 	}
 	
 	; User clicked Add Plugin button
@@ -232,8 +236,8 @@ Class _Profile {
 	}
 	
 	; Delete a plugin
-	_RemovePlugin(plugin){
-		plugin.OnClose()
+	_RemovePlugin(plugin, remove_binding := 1){
+		plugin.OnClose(remove_binding)
 		ControlGetPos, , , , height_frame, ,% "ahk_id " plugin.hFrame
 		Gui, % plugin.hwnd ":Destroy"
 		Gui, % plugin.hFrame ":Destroy"

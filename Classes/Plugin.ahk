@@ -153,14 +153,14 @@ Class Plugin {
 	
 	; The plugin was closed - the plugin was either removed from the profile...
 	; ... or the parent profile was deleted
-	OnClose(){
+	OnClose(remove_binding := 1){
 		OutputDebug % "UCR| Plugin " this.name " closing"
 		for name, obj in this.GuiControls {
 			obj.OnClose()
 		}
 		
 		for name, obj in this.IOControls {
-			obj.OnClose()
+			obj.OnClose(remove_binding)
 		}
 		
 		this.GuiControls := ""

@@ -84,14 +84,16 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		}
 	}
 	
-	OnClose(){
+	OnClose(remove_binding := 1){
 		;OutputDebug % "UCR| IOControl " this.id " fired OnClose event"
 		;GuiControl, % this.ParentPlugin.hwnd ":-g", % this.hwnd
 		this.ChangeValueCallback := ""
 		this.ChangeStateCallback := ""
 		this._IOClasses := ""
 		base.OnClose()
-		this.RemoveBinding()
+		if (remove_binding){
+			this.RemoveBinding()
+		}
 	}
 	
 	_Serialize(){

@@ -20,8 +20,8 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	; Kill references so destructor can fire
-	OnClose(){
-		base.OnClose()
+	OnClose(remove_binding := 1){
+		base.OnClose(remove_binding)
 		this._KeyOnlyOptions := ""
 	}
 	

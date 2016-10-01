@@ -1,8 +1,5 @@
 Plugin _OnInactive can no longer release held buttons
 
-Stop plugins from removing bindings on profile close
-Trying to communicate with thread as it is closing = boom
-
 Switch Absolute / Relative naming for MouseToJoy
 
 Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
