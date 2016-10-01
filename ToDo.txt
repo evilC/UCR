@@ -2,6 +2,8 @@ Plugin _OnInactive can no longer release held buttons
 
 Fix crash on close of InputDelta
 
+Switch Absolute / Relative naming for MouseToJoy
+
 Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
 
 Fix BindMode thread not being passed IOClassMappings
