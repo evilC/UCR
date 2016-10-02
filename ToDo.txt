@@ -1,5 +1,8 @@
 Plugin _OnInactive can no longer release held buttons
 
+Profile Inheritance option not always showing in Profile Toolbox
+Try adding menus to profiles and putting option in there?
+
 Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
 
 Joystick button bindings need to be turned off for outputbuttons
