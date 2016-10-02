@@ -121,10 +121,9 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 					if (en){
 						this.LibraryLoaded := 1
 						this.LoadLibraryLog .= "OK.`n"
-						this.LoadLibraryLog .= "Loaded vJoy DLL version " this.GetvJoyVersion() "`n"
-						_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
-						_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 1
-						_UCR.Classes.IOClasses.vGen_Output.IsInitialized := 1
+						ver := DllCall(DllFile "\GetvJoyVersion", "Cdecl")
+						this.LoadLibraryLog .= "Loaded vJoy DLL version " ver "`n"
+						this._SetInitState(hModule)
 						;vb := DllCall(DllFile "\isVBusExist", "Cdecl")
 						;msgbox % "UCR| " this.LoadLibraryLog
 						return 1
@@ -140,11 +139,24 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		}
 		this.LoadLibraryLog .= "`nFailed to load valid  " DllFile "`n"
 		this.LibraryLoaded := 0
-		_UCR.Classes.IOClasses.vGen_Output._hModule := 0
-		_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 0
-		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := 1
+		this._SetInitState(0)
 		return 0
 	}
+	
+	_SetInitState(hMoudule){
+		state := (hModule != 0)
+		_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
+		_UCR.Classes.IOClasses.vGen_Output.IsAvailable := state
+		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := state
+		UCR.IOClassMenu.AddSubMenu("vJoy", "vJoy")
+			.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
+	}
+	
+	ShowvJoyLog(){
+		Clipboard := this.LoadLibraryLog
+		msgbox % this.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
+	}
+	
 	
 	SetButtonState(state){
 		; DWORD SetDevButton(HDEVICE hDev, UINT Button, BOOL Press);

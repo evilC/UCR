@@ -220,10 +220,12 @@ Class _UCR {
 		this.MainMenu.AddSubMenu("&View", "View")
 			.AddMenuItem("&Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized"))
 			.parent.AddMenuItem("&Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
-		this.MainMenu.AddSubMenu("&Debug", "Debug")
-			.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
-		this.MainMenu.AddSubMenu("&Titan Device", "Titan")
-			.AddMenuItem("Detect current output type...", "DetectType", this._MenuHandler.Bind(this, "DetectTitanType"))
+		;this.MainMenu.AddSubMenu("&Debug", "Debug")
+		;	.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
+		this.IOClassMenu := this.MainMenu.AddSubMenu("&IOClasses", "IOClasses")
+			;.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
+		;this.MainMenu.AddSubMenu("&Titan Device", "Titan")
+		;	.AddMenuItem("Detect current output type...", "DetectType", this._MenuHandler.Bind(this, "DetectTitanType"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
@@ -247,8 +249,6 @@ Class _UCR {
 		} else if (name = "ShowJoystickNames"){
 			this.UserSettings.GuiControls[name] := !this.UserSettings.GuiControls[name]
 			this.MainMenu.MenusByName["GuiControls"].ItemsByName[name].ToggleCheck()
-		} else if (name = "ShowvJoyLog"){
-			this.ShowvJoyLog()
 		} else if (name = "DetectTitanType"){
 			this.Libraries.Titan.Acquire()
 			type := this.Libraries.Titan.OutputNames[this.Libraries.Titan.Connections.output]
@@ -874,11 +874,6 @@ Class _UCR {
 		return {x: cx, y: cy}
 	}
 
-	ShowvJoyLog(){
-		Clipboard := this.Libraries.vJoy.LoadLibraryLog
-		msgbox % this.Libraries.vJoy.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
-	}
-	
 	MergeObject(src, patch){
 		for k, v in patch {
 			if (IsObject(v)){
