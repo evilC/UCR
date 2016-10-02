@@ -3,7 +3,7 @@
 class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "InputButton"
 	static _IsOutput := 0
-	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
+	static _BindModeMappings := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
 	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
 	static _DefaultBanner := "Select an Input Button"
 	
@@ -47,7 +47,7 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 			; Option selected from list
 			if (o = 1){
 				; Bind
-				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this))
+				UCR.RequestBindMode(this._BindModeMappings, this._BindModeEnded.Bind(this))
 				return
 			} else if (o == 2){
 				this.SetBinding(0)

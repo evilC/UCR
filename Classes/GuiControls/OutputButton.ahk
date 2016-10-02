@@ -4,7 +4,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 	static _ControlType := "OutputButton"
 	static _DefaultBanner := "Select an Output Button"
 	static _IsOutput := 1
-	static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Output"}
+	static _BindModeMappings := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Output"}
 	static _IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vJoy_Hat_Output", "vXBox_Button_Output", "vXBox_Hat_Output"]
 
 	State := 0
@@ -45,7 +45,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 			if (o = 1){
 				; Bind
 				;UCR._RequestBinding(this)
-				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this)) ;*[UCR]
+				UCR.RequestBindMode(this._BindModeMappings, this._BindModeEnded.Bind(this)) ;*[UCR]
 				return
 			} else if (o = 2){
 				; Clear Binding
