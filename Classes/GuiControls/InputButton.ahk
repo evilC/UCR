@@ -7,13 +7,6 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
 	static _DefaultBanner := "Select an Input Button"
 	
-	; Public vars
-	State := -1			; State of the input. -1 is unset. GET ONLY
-	; Internal vars describing the bindstring
-	__value := 0		; Holds the BindObject class
-	; Other internal vars
-	_IOClasses := {}
-	
 	
 	__Delete(){
 		OutputDebug % "UCR| InputButton " this.name " in plugin " this.ParentPlugin.name " fired destructor"
