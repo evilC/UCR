@@ -5,7 +5,7 @@ class BindObject {
 	static IOClass := "BindObject"
 	
 	DeviceID := 0 		; Device ID, eg Stick ID for Joystick input or vGen output
-	Binding := 0		; Codes of the input(s) for the Binding. Is an indexed array once set
+	Binding := []		; Codes of the input(s) for the Binding. Is an indexed array once set
 						; Normally a single element, but for KBM could be up to 4 modifiers plus a key/button
 	
 	IsBound(){
@@ -17,7 +17,7 @@ class BindObject {
 	}
 	
 	_Serialize(){
-		return 0
+		return {DeviceID: this.DeviceID, Binding: this.Binding}
 	}
 	
 	_Deserialize(obj){

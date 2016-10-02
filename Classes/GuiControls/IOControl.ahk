@@ -38,8 +38,9 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		if (bo == 0){
 			bo := new _UCR.Classes.IOClasses.BindObject()
 		}
-		if (bo.IOClass != this.GetBinding().IOClass){
-			this.GetBinding().ClearBinding()
+		cb := this.GetBinding()
+		if (bo.IOClass != cb.IOClass || bo.DeviceID != cb.DeviceID){
+			cb.ClearBinding()
 			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 		}
 		this._IOClasses[bo.IOClass]._Deserialize(bo)

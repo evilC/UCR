@@ -360,24 +360,19 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	}
 
 	_ChangedValue(o){
-		bo := this.ParentControl.GetBinding()
+		bo := this.ParentControl.GetBinding()._Serialize()
+		bo.IOClass := this.IOClass
 		if (o < 9){
 			; Stick selected
-			this.DeviceID := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := bo.Binding[1]
-			}
+			bo.DeviceID := o
 		} else if (o > 100 && o < 229){
 			; Button selected
 			o -= 100
-			this.Binding[1] := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := bo.DeviceID
-			}
+			bo.Binding := [o]
 		} else {
 			return
 		}
-		this.ParentControl.SetBinding(this)
+		this.ParentControl.SetBinding(bo)
 	}
 
 }
@@ -419,24 +414,19 @@ class vJoy_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	}
 	
 	_ChangedValue(o){
-		bo := this.ParentControl.GetBinding()
+		bo := this.ParentControl.GetBinding()._Serialize()
+		bo.IOClass := this.IOClass
 		if (o < 9){
 			; Stick selected
-			this.DeviceID := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := bo.Binding[1]
-			}
+			bo.DeviceID := o
 		} else if (o > 100 && o < 109){
 			; Axis selected
 			o -= 100
-			this.Binding[1] := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := bo.DeviceID
-			}
+			bo.Binding[1] := o
 		} else {
 			return
 		}
-		this.ParentControl.SetBinding(this)
+		this.ParentControl.SetBinding(bo)
 	}
 }
 
@@ -475,20 +465,14 @@ class vJoy_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	}
 	
 	_ChangedValue(o){
-		bo := this.ParentControl.GetBinding()
+		bo := this.ParentControl.GetBinding()._Serialize()
 		if (o <= this._NumSticks){
 			; Stick selected
-			this.DeviceID := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := bo.Binding[1]
-			}
+			bo.DeviceID := o
 		} else if (o > 100 && o <= (this._NumHats * 100) + 4){
 			; Button selected
 			;o -= 100
-			this.Binding[1] := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := bo.DeviceID
-			}
+			bo.Binding := [o]
 		} else {
 			return
 		}
@@ -540,24 +524,19 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 	}
 	
 	_ChangedValue(o){
-		bo := this.ParentControl.GetBinding()
+		bo := this.ParentControl.GetBinding()._Serialize()
+		bo.IOClass := this.IOClass
 		if (o < 5){
 			; Stick selected
-			this.DeviceID := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.Binding[1] := bo.Binding[1]
-			}
+			bo.DeviceID := o
 		} else if (o > 100 && o < 111){
 			; Button selected
 			o -= 100
-			this.Binding[1] := o
-			if (bo._vGenDeviceType == this._vGenDeviceType){
-				this.DeviceID := bo.DeviceID
-			}
+			bo.Binding := [o]
 		} else {
 			return
 		}
-		this.ParentControl.SetBinding(this)
+		this.ParentControl.SetBinding(bo)
 	}
 }
 
