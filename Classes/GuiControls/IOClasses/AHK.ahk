@@ -87,10 +87,6 @@ class AHK_KBM_Input extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 		}
 	}
 
-	_Delete(){
-		this.RemoveBinding()
-	}
-	
 	__Delete(){
 		OutputDebug % "UCR| AHK_KBM_Input Freed"
 	}
@@ -139,10 +135,6 @@ class AHK_JoyBtn_Input extends _UCR.Classes.IOClasses.IOClassBase {
 	static IsAnalog := 0
 
 	_CurrentBinding := 0
-	
-	_Delete(){
-		this.RemoveBinding()
-	}
 	
 	BuildHumanReadable(){
 		return "Stick " this.DeviceID " Button " this.Binding[1]
