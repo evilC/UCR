@@ -30,7 +30,7 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetControlState(){
-		if (this.__value.DeviceID || this.__value.Binding[1]){
+		if (this.IsBound()){
 			this.SetCueBanner(this.__value.BuildHumanReadable())
 		} else {
 			this.SetCueBanner("Select an Input Axis")

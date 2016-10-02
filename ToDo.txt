@@ -6,8 +6,6 @@ Joystick button bindings need to be turned off for outputbuttons
 When suspend, off happens, these become active even though they are not wanted.
 Non-fatal as the bind handler does not accept them
 
-Standard methods eg .IsBound() for IOClasses
-
 Remove _InputHandler?
 
 Rename _BindTypes to _BindMappings?
@@ -20,3 +18,14 @@ ATM, input is AHK Joy only, so only 1 hat, so Binding[1] can hold hat direction
 for multi-hat IOClasses (eg vGen), this is currently encoded as (HatNum * 100) + Dir (eg 101, 201, 301, 401 for North of each 4 hats).
 This requires some processing at run-time that could maybe be avoided by adding an extra property to that IOClass
 Move Hat# to BindOptions?
+
+RemoveBinding -> _Delete
+
+OutputButtons are triggering UCR._RequestBinding on load, should not be.
+Buttons seem to have class _IsOutput not IOType
+
+Set BindObject IOType to 0?
+Means unset IOType will eval false
+Will mean bumping input to 1 and output to 2
+
+Make OutputAxis extend InputAxis

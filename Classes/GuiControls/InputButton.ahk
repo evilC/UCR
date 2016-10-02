@@ -35,7 +35,7 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetControlState(){
-		if (this.__value.Binding[1] || this.__value.DeviceID){
+		if (this.IsBound()){
 			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner
@@ -43,7 +43,7 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 		this.SetCueBanner(Text)
 		; Update the Menus etc of all the IOClasses in this control
 		for i, cls in this._IOClasses {
-			cls.UpdateMenus(this.__value.IOClass)
+			cls.UpdateMenus(this.GetBinding().IOClass)
 		}
 	}
 	
@@ -57,9 +57,7 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 				UCR.RequestBindMode(this._BindTypes, this._BindModeEnded.Bind(this))
 				return
 			} else if (o == 2){
-				this.__value.Binding := []
-				this.__value.DeviceID := 0
-				this.SetBinding(this.__value)
+				this.SetBinding(0)
 			}
 		}
 	}

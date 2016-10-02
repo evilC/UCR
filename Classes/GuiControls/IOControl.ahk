@@ -1,3 +1,8 @@
+; IOControls keep an _IOClasses array containing one class for each IOClass of binding that they support, plus a base BindObject class (for "Unbound")
+; As the user selects different kinds of Input or Output from the control, the appropriate class is swapped out from the array into .__value
+; This allow the various options etc for each class to persist if the user swaps around IOClasses in one session.
+; It also means that classes do not have to be instantiated on the fly
+
 class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	State := -1		; Holds current state of Input
 	_IOClasses := {}
@@ -9,7 +14,7 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		this.ChangeValueCallback := ChangeValueCallback
 		this.ChangeStateCallback := ChangeStateCallback
 		UCR._RegisterGuiControl(this)
-
+		this.__value := new _UCR.Classes.IOClasses.BindObject()
 		for i, name in this._IOClassNames {
 			call:= _UCR.Classes.IOClasses[name]
 			this._IOClasses[name] := new call(this)
@@ -27,9 +32,16 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		return this.__value
 	}
 	
-	SetBinding(bo, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
-		if (bo.IOClass != this.GetBinding().IOClass)
-			this.RemoveBinding()
+	; Changes the binding of an IOControl
+	; 
+	SetBinding(bo := 0, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
+		if (bo == 0){
+			bo := new _UCR.Classes.IOClasses.BindObject()
+		}
+		if (bo.IOClass != this.GetBinding().IOClass){
+			this.GetBinding().ClearBinding()
+			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
+		}
 		this._IOClasses[bo.IOClass]._Deserialize(bo)
 		this.__value := this._IOClasses[bo.IOClass]
 		if (update_guicontrol)
@@ -42,12 +54,6 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			this.ChangeValueCallback.Call(this.__value)
 	}
 
-	RemoveBinding(){
-		this.__value.Binding := []			; clear the old Binding
-		; Do not clear DeviceID, so vGen etc know which device to release
-		this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
-	}
-	
 	IsBound(){
 		return this.GetBinding().IsBound()
 	}
@@ -60,19 +66,24 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		this.State := state
 	}
 
-	
-	; All IOControls should implement this function, so that if the Input Thread for the profile is terminated...
-	; ... then it can be re-built by calling this method on each control.
+	; Handles updating of Bindings for IOControls
+	; For Input bindings, this will be a request to the Input Thread
+	; For Output bindings, this will be a request to the IOClass itself
 	_RequestBinding(){
 		bo := this.GetBinding()
+		if (bo.IOClass == "BindObject")
+			return	; Do not request BindObject class bindings - clearing a binding is done with the appropriate IOClass
 		if (IsObject(bo)){
-			;OutputDebug % "UCR| GuiControl " this.id " Requesting Binding from InputHandler"
-			if (bo.IOType){
+			if (bo.IOType == 1){
 				; Output Type
+				OutputDebug % "UCR| IOControl _RequestBinding - " this.name " Calling UpdateBinding on BindObject - IOType: " bo.IOType
 				bo.UpdateBinding()
-			} else {
+			} else if (bo.IOType == 0){
 				; Input Type
 				UCR._RequestBinding(this)
+				OutputDebug % "UCR| IOControl _RequestBinding - " this.name " Requesting Binding from InputHandler - IOType: " bo.IOType
+			} else {
+				OutputDebug % "UCR| IOControl _RequestBinding - " this.name " WARNING: Not recognized IOType of " bo.IOType
 			}
 		}
 	}
@@ -81,10 +92,6 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	; A "Primitive" BindObject will be passed, along with the IOClass of the detected input.
 	; The Primitive contains just the Binding property and optionally the DeviceID property.
 	_BindModeEnded(bo){
-		if (this.__value.IOClass && this.__value.IOClass != bo.IOClass){
-			; There is an existing, different IOClass
-			this.RemoveBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
-		}
 		this.SetBinding(bo)
 	}
 	
@@ -105,16 +112,18 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		this._IOClasses := ""
 		base.OnClose()
 		if (remove_binding){
-			this.RemoveBinding()
+			this.SetBinding(0, 0, 0, 0)
 		}
 	}
 	
 	_Serialize(){
-		return this.__value._Serialize()
+		return this.GetBinding()._Serialize()
 	}
 	
 	_Deserialize(obj){
 		; Pass 0 to Set so we don't save while we are loading
-		this.SetBinding(obj, 0)
+		if (IsObject(obj)){
+			this.SetBinding(obj, 0)
+		}
 	}
 }

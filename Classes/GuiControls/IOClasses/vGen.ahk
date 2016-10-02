@@ -68,6 +68,10 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
 	}
 	
+	IsBound(){
+		return (this.DeviceID != 0)
+	}
+	
 	_LoadLibrary(){
 		this.LoadLibraryLog := ""
 

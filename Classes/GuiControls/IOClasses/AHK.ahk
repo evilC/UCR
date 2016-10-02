@@ -176,6 +176,10 @@ class AHK_JoyAxis_Input extends _UCR.Classes.IOClasses.IOClassBase {
 		}
 	}
 	
+	IsBound(){
+		return (this.DeviceID != 0)
+	}
+	
 	_ChangedValue(o){
 		bo := {IOClass: "AHK_JoyAxis_Input"}
 		if (o < 9){

@@ -24,15 +24,6 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 
 	}
 	
-	; Builds the list of options in the DropDownList
-	SetControlState(){
-		base.SetControlState()
-		; Update the Menus etc of all the IOClasses in this control
-		for i, cls in this._IOClasses {
-			cls.UpdateMenus(this.__value.IOClass)
-		}
-	}
-	
 	; Used by script authors to set the state of this output
 	Set(state, delay_done := 0){
 		static PovMap := {0: {x:0, y:0}, 1: {x: 0, y: 1}, 2: {x: 1, y: 0}, 3: {x: 0, y: 2}, 4: {x: 2, y: 0}}

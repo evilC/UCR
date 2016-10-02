@@ -15,6 +15,10 @@ class IOClassBase extends _UCR.Classes.IOClasses.BindObject {
 		this._Deserialize(obj)
 	}
 	
+	IsBound(){
+		return (this.Binding.length() > 0)
+	}
+	
 	_Serialize(){
 		return {Binding: this.Binding, BindOptions: this.BindOptions, IOClass: this.IOClass, DeviceID: this.DeviceID}
 	}

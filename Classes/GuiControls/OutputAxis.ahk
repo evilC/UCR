@@ -34,7 +34,7 @@ class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	SetControlState(){
-		if (this.__value.Binding[1] || this.__value.DeviceID){
+		if (this.IsBound()){
 			Text := this.__value.BuildHumanReadable()
 		} else {
 			Text := this._DefaultBanner
