@@ -215,8 +215,8 @@ Class _UCR {
 	; Creates the objects for the Main Menu
 	_CreateMainMenu(){
 		this.MainMenu := new _Menu()
-		this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
-			.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
+		;this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
+		;	.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
 		this.MainMenu.AddSubMenu("&View", "View")
 			.AddMenuItem("&Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized"))
 			.parent.AddMenuItem("&Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
@@ -246,16 +246,24 @@ Class _UCR {
 		if (name = "MinimizeToTray" || name = "StartMinimized"){
 			this.UserSettings.MinimizeOptions[name] := !this.UserSettings.MinimizeOptions[name]
 			this.MainMenu.MenusByName["View"].ItemsByName[name].ToggleCheck()
-		} else if (name = "ShowJoystickNames"){
+		}
+
+		/*
+		else if (name = "ShowJoystickNames"){
 			this.UserSettings.GuiControls[name] := !this.UserSettings.GuiControls[name]
 			this.MainMenu.MenusByName["GuiControls"].ItemsByName[name].ToggleCheck()
-		} else if (name = "DetectTitanType"){
+		}
+		*/
+		
+		/*
+		else if (name = "DetectTitanType"){
 			this.Libraries.Titan.Acquire()
 			type := this.Libraries.Titan.OutputNames[this.Libraries.Titan.Connections.output]
 			if (!type)
 				type := "Not connected"
 			msgbox % "Currently plugged in as type: "type
 		}
+		*/
 		this._SaveSettings()
 	}
 	
