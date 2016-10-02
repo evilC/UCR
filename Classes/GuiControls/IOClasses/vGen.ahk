@@ -1,5 +1,5 @@
 class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
-	static IOType := 1
+	static IOType := 2
 	static IOClass := "vGen_Output"
 	static IsAnalog := 0
 	

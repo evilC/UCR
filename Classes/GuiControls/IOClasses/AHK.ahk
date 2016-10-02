@@ -94,7 +94,7 @@ class AHK_KBM_Input extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 
 ; IOClass for AHK Keyboard and Mouse Output GuiControls
 class AHK_KBM_Output extends _UCR.Classes.IOClasses.AHK_KBM_Common {
-	static IOType := 1
+	static IOType := 2
 	static IOClass := "AHK_KBM_Output"
 
 	; Used by script authors to set the state of this output
