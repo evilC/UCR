@@ -17,7 +17,3 @@ ATM, input is AHK Joy only, so only 1 hat, so Binding[1] can hold hat direction
 for multi-hat IOClasses (eg vGen), this is currently encoded as (HatNum * 100) + Dir (eg 101, 201, 301, 401 for North of each 4 hats).
 This requires some processing at run-time that could maybe be avoided by adding an extra property to that IOClass
 Move Hat# to BindOptions?
-
-Set BindObject IOType to 0?
-Means unset IOType will eval false
-Will mean bumping input to 1 and output to 2
