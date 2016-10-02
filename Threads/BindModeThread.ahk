@@ -39,15 +39,24 @@ class _BindMapper {
 	SetDetectionState(state, IOClassMappingsPtr){
 		if (state == this.DetectionState)
 			return
-		;IOClassMappings := ObjShare(IOClassMappingsPtr)
-		; ToDo: Why can I not pass this array through with ObjShare?
-		static _BindTypes := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
-		;for name, ret in IOClassMappings {
-		for name, ret in _BindTypes {
-			;OutputDebug % "UCR| BindModeThread Starting watcher " name " with return type " ret
+		IOClassMappings := {}
+		IOClassMappings := this.IndexedToAssoc(ObjShare(IOClassMappingsPtr))
+		for name, ret in IOClassMappings {
+			OutputDebug % "UCR| BindModeThread Starting watcher " name " with return type " ret
 			this.IOClasses[name].SetDetectionState(state, ret)
 		}
 		this.DetectionState := state
+	}
+	
+	; Converts an Indexed array of objects to an associative array
+	; If you pass an associative array via ObjShare, you cannot enumerate it
+	; So it is converted to an indexed array of objects, this converts it back.
+	IndexedToAssoc(arr){
+		ret := {}
+		Loop % arr.length(){
+			obj := arr[A_Index], ret[obj.k] := obj.v
+		}
+		return ret
 	}
 
 	; ==================================================================================================================

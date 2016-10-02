@@ -2,8 +2,6 @@ Plugin _OnInactive can no longer release held buttons
 
 Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
 
-Fix BindMode thread not being passed IOClassMappings
-
 Convert BindMode Thread to use ThreadHeader
 
 Standard methods eg .IsBound() for IOClasses

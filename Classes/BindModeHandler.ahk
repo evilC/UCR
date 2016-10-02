@@ -57,9 +57,21 @@ class _BindModeHandler {
 		} else {
 			Gui, % this.hBindModePrompt ":Hide"
 		}
-		;this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
-		;this._BindModeThread.SetHotkeyState(state, enablejoystick)
-		this._BindModeThread.SetDetectionState(state, ObjShare(this.IOClassMappings))
+		; Convert associative array to indexed, as ObjShare breaks associative array enumeration
+		IOClassMappings := this.AssocToIndexed(this.IOClassMappings)
+		this._BindModeThread.SetDetectionState(state, ObjShare(IOClassMappings))
+	}
+	
+	; Converts an associative array to an indexed array of objects
+	; If you pass an associative array via ObjShare, you cannot enumerate it
+	; So each base key/value pair is added to an indexed array
+	; And the thread can re-build the associative array on the other end.
+	AssocToIndexed(arr){
+		ret := []
+		for k, v in arr {
+			ret.push({k: k, v: v})
+		}
+		return ret
 	}
 	
 	; The BindModeThread calls back here
