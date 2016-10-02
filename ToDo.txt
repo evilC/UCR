@@ -18,9 +18,6 @@ for multi-hat IOClasses (eg vGen), this is currently encoded as (HatNum * 100) +
 This requires some processing at run-time that could maybe be avoided by adding an extra property to that IOClass
 Move Hat# to BindOptions?
 
-OutputButtons are triggering UCR._RequestBinding on load, should not be.
-Buttons seem to have class _IsOutput not IOType
-
 Set BindObject IOType to 0?
 Means unset IOType will eval false
 Will mean bumping input to 1 and output to 2
