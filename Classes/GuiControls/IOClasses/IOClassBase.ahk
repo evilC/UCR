@@ -7,10 +7,6 @@ class IOClassBase extends _UCR.Classes.IOClasses.BindObject {
 					; Normally a single element, but for KBM could be up to 4 modifiers plus a key/button
 	BindOptions := {}	; Options for Binding - eg wild / block for KBM
 
-	IsBound(){
-		return (this.DeviceID && this.Binding.length())
-	}
-	
 	__New(parent, obj := 0){
 		this.ParentControl := parent
 		if (obj == 0){
