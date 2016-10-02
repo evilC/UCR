@@ -2,6 +2,10 @@ Plugin _OnInactive can no longer release held buttons
 
 Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
 
+Joystick button bindings need to be turned off for outputbuttons
+When suspend, off happens, these become active even though they are not wanted.
+Non-fatal as the bind handler does not accept them
+
 Convert BindMode Thread to use ThreadHeader
 
 Standard methods eg .IsBound() for IOClasses

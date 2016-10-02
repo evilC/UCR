@@ -41,16 +41,14 @@ class _BindModeHandler {
 		this.EndKey := 0
 		this.HeldModifiers := {}
 		this.ModifierCount := 0
+		; IOClassMappings controls which type each IOClass reports as.
+		; ie we need the AHK_KBM_Input class to report as AHK_KBM_Output when we are binding an output key
 		this.IOClassMappings := IOClassMappings
-		
-		; When detecting an output, tell the Bind Handler to ignore physical joysticks...
-		; ... as output cannot be "sent" to physical sticks
-		;this.SetHotkeyState(1, !hk._IsOutput)
-		this.SetHotkeyState(1, 1)
+		this.SetHotkeyState(1)
 	}
 	
 	; Turns on or off the hotkeys
-	SetHotkeyState(state, enablejoystick := 1){
+	SetHotkeyState(state){
 		if (state){
 			Gui, % this.hBindModePrompt ":Show"
 			UCR.MoveWindowToCenterOfGui(this.hBindModePrompt)
