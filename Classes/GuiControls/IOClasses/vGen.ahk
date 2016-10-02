@@ -298,6 +298,16 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		return {hat: hat, dir: o}
 	}
 	
+	UpdateBinding(){
+		if (this.DeviceID && this.Binding[1]){
+			OutputDebug % "UCR| " this.IOClass " UpdateBinding Registering"
+			this._Register()
+		} else {
+			OutputDebug % "UCR| " this.IOClass " UpdateBinding UnRegistering"
+			this._UnRegister()
+		}
+	}
+
 	_Deserialize(obj){
 		base._Deserialize(obj)
 	}
@@ -349,14 +359,6 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 		}
 	}
 
-	UpdateBinding(){
-		if (this.DeviceID && this.Binding[1]){
-			this._Register()
-		} else {
-			this._UnRegister()
-		}
-	}
-	
 	_ChangedValue(o){
 		bo := this.ParentControl.GetBinding()
 		if (o < 9){
@@ -416,12 +418,6 @@ class vJoy_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 		}
 	}
 	
-	UpdateBinding(){
-		if (this.DeviceID && this.Binding[1]){
-			this._Register()
-		}
-	}
-	
 	_ChangedValue(o){
 		bo := this.ParentControl.GetBinding()
 		if (o < 9){
@@ -475,12 +471,6 @@ class vJoy_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 			Loop 4 {
 				menu.AddMenuItem(this._HatDirections[A_Index], A_Index, this._ChangedValue.Bind(this, A_Index + offset))
 			}
-		}
-	}
-	
-	UpdateBinding(){
-		if (this.DeviceID && this.Binding[1]){
-			this._Register()
 		}
 	}
 	
@@ -547,16 +537,6 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 			this._JoyMenus.Push(menu)
 		}
 
-	}
-	
-	UpdateBinding(){
-		if (this.DeviceID && this.Binding[1]){
-			OutputDebug % "UCR| vXBox UpdateBinding Registering"
-			this._Register()
-		} else {
-			OutputDebug % "UCR| vXBox UpdateBinding UnRegistering"
-			this._UnRegister()
-		}
 	}
 	
 	_ChangedValue(o){
