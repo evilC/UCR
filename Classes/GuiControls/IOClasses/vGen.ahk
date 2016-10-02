@@ -466,6 +466,7 @@ class vJoy_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	
 	_ChangedValue(o){
 		bo := this.ParentControl.GetBinding()._Serialize()
+		bo.IOClass := this.IOClass
 		if (o <= this._NumSticks){
 			; Stick selected
 			bo.DeviceID := o
@@ -476,7 +477,7 @@ class vJoy_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 		} else {
 			return
 		}
-		this.ParentControl.SetBinding(this)
+		this.ParentControl.SetBinding(bo)
 	}
 }
 
