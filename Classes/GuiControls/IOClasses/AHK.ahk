@@ -79,7 +79,7 @@ class AHK_KBM_Input extends _UCR.Classes.IOClasses.AHK_KBM_Common {
 	}
 	
 	UpdateMenus(cls){
-		OutputDebug % "UCR| Updatemenus - " this.BindOptions.block
+		;OutputDebug % "UCR| Updatemenus - " this.BindOptions.block
 		state := ((cls == this.IOClass) && this.ParentControl.GetBinding().Binding[1])
 		for i, item in this._DisableItems {
 			item.SetEnableState(state)
