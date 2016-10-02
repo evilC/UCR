@@ -1,16 +1,11 @@
 ﻿; ======================================================================== INPUT AXIS ===============================================================
 class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "InputAxis"
-	static _BindTypes := {AHK_JoyAxis_Input: "AHK_JoyAxis_Input"}
 	static _IOClassNames := ["AHK_JoyAxis_Input"]
-	
-	_OptionMap := []
-	State := -1
-	_IOClasses := {}
-	__value := 0
+	static _Text := "Input"
 	
 	__Delete(){
-		OutputDebug % "UCR| InputAxis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
+		OutputDebug % "UCR| " this._Text "Axis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
 	}
 	
 	_BuildMenu(){
@@ -33,7 +28,7 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 		if (this.IsBound()){
 			this.SetCueBanner(this.__value.BuildHumanReadable())
 		} else {
-			this.SetCueBanner("Select an Input Axis")
+			this.SetCueBanner("Select an " this._Text " Axis")
 		}
 		for i, cls in this._IOClasses {
 			cls.UpdateMenus(this.__value.IOClass)

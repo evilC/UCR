@@ -1,25 +1,17 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
-class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
+class OutputAxis extends _UCR.Classes.GuiControls.InputAxis {
 	static _ControlType := "OutputAxis"
 	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
-	static _DefaultBanner := "Select an Output Axis"
+	static _Text := "Output"
+
 	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
 	
-	;__value := {DeviceID: 0, axis: 0}
-	_IOClasses := {}
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
 	}
 	
 	__Delete(){
 		OutputDebug % "UCR| OutputAxis " this.name " in plugin " this.ParentPlugin.name " fired destructor"
-	}
-	
-	_BuildMenu(){
-		for i, cls in this._IOClasses {
-			cls.AddMenuItems()
-		}
-		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	
 	; Plugin Authors call this to set the state of the output axis
@@ -32,22 +24,4 @@ class OutputAxis extends _UCR.Classes.GuiControls.IOControl {
 			this.State := State
 		}
 	}
-	
-	SetControlState(){
-		if (this.IsBound()){
-			Text := this.__value.BuildHumanReadable()
-		} else {
-			Text := this._DefaultBanner
-		}
-		this.SetCueBanner(Text)
-		; Update the Menus etc of all the IOClasses in this control
-		for i, cls in this._IOClasses {
-			cls.UpdateMenus(this.__value.IOClass)
-		}
-	}
-	
-	_ChangedValue(o){
-
-	}
-	
 }

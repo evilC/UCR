@@ -25,5 +25,3 @@ Buttons seem to have class _IsOutput not IOType
 Set BindObject IOType to 0?
 Means unset IOType will eval false
 Will mean bumping input to 1 and output to 2
-
-Make OutputAxis extend InputAxis
