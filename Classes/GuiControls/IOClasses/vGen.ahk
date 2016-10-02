@@ -35,9 +35,10 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	static _POVStates := {}
 	
 	_Init(){
-		;if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
 		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
 			return
+		this._LoadLibrary()
+		/*
 		dllpath := "Resources\" this.DllName ".dll"
 		hModule := DllCall("LoadLibrary", "Str", dllpath, "Ptr")
 		if (hModule == 0){
@@ -47,6 +48,11 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 			OutputDebug % "UCR| IOClass " this.IOClass " Loaded " dllpath
 			_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 1
 		}
+		_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
+		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
+		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := 1
+		*/
+		
 		_UCR.Classes.IOClasses.vGen_Output._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
@@ -60,9 +66,84 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
-		_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
-		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
+	}
+	
+	_LoadLibrary(){
+		this.LoadLibraryLog := ""
+
+		; Check if vJoy is installed. Even with the DLL, if vJoy is not installed it will not work...
+		; Find vJoy install folder by looking for registry key.
+		if (A_Is64bitOS && A_PtrSize != 8){
+			SetRegView 64
+		}
+		RegRead vJoyFolder, HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1, InstallLocation
+
+		if (!vJoyFolder){
+			this.LoadLibraryLog .= "ERROR: Could not find the vJoy Registry Key.`n`nvJoy does not appear to be installed.`nPlease ensure you have installed vJoy from`n`nhttp://vjoystick.sourceforge.net."
+			return 0
+		}
+		
+		; Try to find location of correct DLL.
+		; vJoy versions prior to 2.0.4 241214 lack these registry keys - if key not found, advise update.
+		if (A_PtrSize == 8){
+			; 64-Bit AHK
+			DllKey := "DllX64Location"
+		} else {
+			; 32-Bit AHK
+			DllKey := "DllX86Location"
+		}
+		RegRead DllFolder, HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1, % DllKey
+
+		if (!DllFolder){
+			; Could not find registry entry. Advise vJoy update.
+			this.LoadLibraryLog .= "A vJoy install was found in " vJoyFolder ", but the relevant registry entries were not found.`nPlease update vJoy to the latest version from `n`nhttp://vjoystick.sourceforge.net."
+			return 0
+		}
+
+		DllFolder .= "\"
+
+		; All good so far, try and load the DLL
+		DllFile := "vGenInterface.dll"
+		this.LoadLibraryLog := "vJoy Install Detected. Trying to load " DllFile "...`n"
+		CheckLocations := [DllFolder DllFile]
+
+		hModule := 0
+		Loop % CheckLocations.Maxindex() {
+			this.LoadLibraryLog .= "Checking " CheckLocations[A_Index] "... "
+			if (FileExist(CheckLocations[A_Index])){
+				this.LoadLibraryLog .= "FOUND.`nTrying to load.. "
+				hModule := DLLCall("LoadLibrary", "Str", CheckLocations[A_Index])
+				if (hModule){
+					this.hModule := hModule
+					this.LoadLibraryLog .= "OK.`n"
+					this.LoadLibraryLog .= "Checking driver enabled... "
+					en := DllCall(DllFile "\vJoyEnabled", "Cdecl")
+					if (en){
+						this.LibraryLoaded := 1
+						this.LoadLibraryLog .= "OK.`n"
+						this.LoadLibraryLog .= "Loaded vJoy DLL version " this.GetvJoyVersion() "`n"
+						_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
+						_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 1
+						_UCR.Classes.IOClasses.vGen_Output.IsInitialized := 1
+						;vb := DllCall(DllFile "\isVBusExist", "Cdecl")
+						;msgbox % "UCR| " this.LoadLibraryLog
+						return 1
+					} else {
+						this.LoadLibraryLog .= "FAILED.`n"
+					}
+				} else {
+					this.LoadLibraryLog .= "FAILED.`n"
+				}
+			} else {
+				this.LoadLibraryLog .= "NOT FOUND.`n"
+			}
+		}
+		this.LoadLibraryLog .= "`nFailed to load valid  " DllFile "`n"
+		this.LibraryLoaded := 0
+		_UCR.Classes.IOClasses.vGen_Output._hModule := 0
+		_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 0
 		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := 1
+		return 0
 	}
 	
 	SetButtonState(state){
