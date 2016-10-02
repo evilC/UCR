@@ -4,8 +4,20 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.0 - ??
+0.1.0 - 2nd Oct 2016
+! WARNING! Lots of files changed, INI (Settings file) format changed!
+  YOU ARE ADVISED TO BACK UP YOUR OLD UCR FOLDER AND MAKE A NEW ONE
 ! Major back-end changes. Things that worked before may well not work now.
+  Please report issues on the forums or on the issue tracker on GitHub.com/evilC/UCR
+! The Titan API has not been re-implemented in this release.
+  It will follow. Please continue to use 0.0.x if you need Titan.
++ The vGen API now replaces the old vJoy API and allows vXBox as well as vJoy devices.
+  vJoy 2.1.7 or greater is required, you can get it from here:
+  https://sourceforge.net/projects/vjoystick/files/Beta%202.x/
+! Also required for vGen is the SCPVBus driver, which can be found here:
+  http://evilc.com/files/tmp/ScpVBus-x64.zip
+  Download it, uncompress the ZIP, and open a command prompt as admin
+  Run install.bat to add the driver, remove.bat to remove it
 = Switch Absolute / Relative naming for MouseToJoy
 
 0.0.18 - 16th Sept 2016

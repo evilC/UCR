@@ -1,7 +1,5 @@
 Plugin _OnInactive can no longer release held buttons
 
-vXBox / vJoy do not relinquish on change of DeviceID
-
 Profile Inheritance option not always showing in Profile Toolbox
 Try adding menus to profiles and putting option in there?
 
