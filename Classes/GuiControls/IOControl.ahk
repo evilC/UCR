@@ -48,6 +48,10 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
 	}
 	
+	IsBound(){
+		return this.GetBinding().IsBound()
+	}
+	
 	Get(){
 		return this.State
 	}
