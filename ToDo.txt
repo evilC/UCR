@@ -6,8 +6,6 @@ Joystick button bindings need to be turned off for outputbuttons
 When suspend, off happens, these become active even though they are not wanted.
 Non-fatal as the bind handler does not accept them
 
-Convert BindMode Thread to use ThreadHeader
-
 Standard methods eg .IsBound() for IOClasses
 
 Remove _InputHandler?

@@ -24,6 +24,8 @@ Class _UCR {
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
 	_InputThreadScript := ""		; Set in Ctor
+	_ThreadHeader := "`n#Persistent`n#NoTrayIcon`n#MaxHotkeysPerInterval 9999`n"
+	_ThreadFooter := "`nautoexecute_done := 1`nreturn`n"
 	_LoadedInputThreads := {}		; ProfileID-indexed sparse array of loaded input threads
 	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
@@ -57,8 +59,9 @@ Class _UCR {
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
 		
 		; Cache script for profile InputThreads
-		this._InputThreadScript := Script	"`n#Persistent`n#NoTrayIcon`n#MaxHotkeysPerInterval 9999`nautoexecute_done := 1`nreturn`n"
+		this._InputThreadScript := this._ThreadFooter Script 
 		
+		/*
 		if (this.UserSettings.GuiControls.ShowJoystickNames){
 			; Load the Joystick OEM name DLL
 			#DllImport,joystick_OEM_name,%A_ScriptDir%\Resources\JoystickOEMName.dll\joystick_OEM_name,double,,CDecl AStr
@@ -68,6 +71,7 @@ Class _UCR {
 				;~ ExitApp
 			;~ }
 		}
+		*/
 		
 		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
 		
