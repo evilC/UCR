@@ -17,9 +17,7 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 	
 	_ChangedValue(o){
 		if (o == 2){
-			this.__value.Binding := []
-			this.__value.DeviceID := 0
-			this.SetBinding(this.__value)
+			this.SetBinding(0)
 		}
 	}
 	

@@ -88,14 +88,18 @@ Class Plugin {
 		if (!IsEmptyAssoc(this.GuiControls)){
 			obj.GuiControls := {}
 			for name, ctrl in this.GuiControls {
-				obj.GuiControls[name] := ctrl._Serialize()
+				s := ctrl._Serialize()
+				if (IsObject(s))
+					obj.GuiControls[name] := s
 			}
 		}
 		
 		if (!IsEmptyAssoc(this.IOControls)){
 			obj.IOControls := {}
 			for name, ctrl in this.IOControls {
-				obj.IOControls[name] := ctrl._Serialize()
+				s := ctrl._Serialize()
+				if (IsObject(s))
+					obj.IOControls[name] := s
 			}
 		}
 		/*

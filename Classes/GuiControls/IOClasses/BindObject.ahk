@@ -17,7 +17,7 @@ class BindObject {
 	}
 	
 	_Serialize(){
-		return {Binding: this.Binding, DeviceID: this.DeviceID}
+		return 0
 	}
 	
 	_Deserialize(obj){
