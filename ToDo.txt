@@ -11,6 +11,7 @@ Standard methods eg .IsBound() for IOClasses
 Remove _InputHandler?
 
 Add Titan API back in
+Deferring until I know if it is possible to set stick type (eg XBox, PS) via the API
 
 Take a look at encoding of hat directions.
 ATM, input is AHK Joy only, so only 1 hat, so Binding[1] can hold hat direction
