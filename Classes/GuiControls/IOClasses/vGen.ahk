@@ -317,7 +317,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 class vJoy_Base extends _UCR.Classes.IOClasses.vGen_Output {
 	static _vGenDeviceType := 0		; 0 = vJoy, 1 = vXBox
 	static _NumSticks := 8			; vJoy has 8 sticks
-	static _Prefix := "vJoy"	
+	static _Prefix := "vJoy"
 }
 
 class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
