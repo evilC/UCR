@@ -90,15 +90,14 @@ class GuiControl {
 	}
 	
 	_Serialize(){
-		obj := {value: this.__value}
-		return obj
+		return this.Get()
 	}
 	
 	_Deserialize(obj){
-		this.Set(obj.value, 0)
+		this.Set(obj, 0)
 		; Fire callback so plugins can initialize internal vars
 		if (IsObject(this.ChangeValueCallback)){
-			this.ChangeValueCallback.Call(obj.value)
+			this.ChangeValueCallback.Call(obj)
 		}
 	}
 }
