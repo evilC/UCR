@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.1 - 9th Oct 2016
++ Re-Added Titan One API
+
 0.1.0 - 2nd Oct 2016
 ! WARNING! Lots of files changed, INI (Settings file) format changed!
   YOU ARE ADVISED TO BACK UP YOUR OLD UCR FOLDER AND MAKE A NEW ONE
