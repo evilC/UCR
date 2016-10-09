@@ -317,7 +317,7 @@ class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static HatDirections := ["Up", "Right", "Down", "Left"]
 	
 	BuildHumanReadable(){
-		return this._Prefix " Titan One Hat " this.BuildHatName(this.Binding[1])
+		return this._Prefix " Titan One D-Pad " this.BuildHatName(this.Binding[1])
 	}
 	
 	BuildHatName(id){
@@ -326,7 +326,7 @@ class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	
 	AddMenuItems(){
 		OutputDebug % "UCR| Hat AddMenuItems. this.Connections.Output=" this.Connections.Output
-		menu := this.ParentControl.AddSubMenu("Titan One Hat", "TitanOneHat")
+		menu := this.ParentControl.AddSubMenu("Titan One D-Pad", "TitanOneHat")
 		Loop % this._NumDirections {
 			menu.AddMenuItem(this.BuildHatName(A_Index), A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
 		}
