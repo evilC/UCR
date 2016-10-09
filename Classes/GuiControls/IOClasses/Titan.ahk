@@ -1,4 +1,5 @@
 ﻿class TitanOne_Output extends _UCR.Classes.IOClasses.IOClassBase {
+	static IOType := 2
 	static IsInitialized := 0
 	static IsAvailable := 0
 	static _hModule := 0
@@ -14,11 +15,11 @@
 	; Maps Hat directions to Identifiers. Array of Arrays. Order is U, R, D, L
 	static HatMappings := [13,16,14,15]	; 1 POV, Order is U, R, D, L
 	
-	UCRMenuOutput := {}
+	static UCRMenuOutput := {}
 
-	Connections := 0	; Type of input + output that the Titan is currently set to.
-						; Has Input + Output properties. Each will be one of the OutputNames (eg "XB360").
-	WriteArray := {}	; Holds the Identifier Array
+	static Connections := 0	; Type of input + output that the Titan is currently set to.
+							; Has Input + Output properties. Each will be one of the OutputNames (eg "XB360").
+	static WriteArray := {}	; Holds the Identifier Array
 	
 	_Init(){
 		if (_UCR.Classes.IOClasses.TitanOne_Output.IsInitialized)
@@ -127,15 +128,16 @@
 	Acquire(){
 		; Depending on what device is connected, instantiate the appropriate class
 		t := A_TickCount + 2000
-		while (A_TickCount < t && (!IsObject(this.Connections := this.GetConnections()))){
+		while (A_TickCount < t && (!IsObject(op := this.GetConnections()))){
 			sleep 10
 		}
-		if (this.Connections == 0){
+		_UCR.Classes.IOClasses.TitanOne_Output.Connections := op
+		if (op == 0){
 			return 0
 		}
 		
 		for i, name in this.OutputOrder {
-			this.UCRMenuOutput[name].SetCheckState(name == this.Connections.Output)
+			this.UCRMenuOutput[name].SetCheckState(name == op)
 		}
 		return 1
 	}
@@ -203,18 +205,15 @@
 	}
 	
 	SetHatState(state){
+		id := this.HatMappings[this.Binding[1]]
+		OutputDebug % "UCR| SetHatState - output type=" this.Connections.Output ", Binding=" this.Binding[1] ", id=" id
 		if (this.Connections.Output){
-			this.SetIdentifier(13, state)
+			this.SetIdentifier(id, state)
 		}
-		;~ this.Connections := {Output: "XB360"}	; ToDo: FIX!!
-		;~ id := this.HatMappings[this.Binding[1]]
-		;~ OutputDebug % "UCR| SetHatState - output type=" this.Connections.Output ", Binding=" this.Binding[1] ", id=" id
-		;~ if (this.Connections.Output){
-			;~ this.SetIdentifier(id, state)
-		;~ }
 	}
 }
 
+; ======================================== BUTTON ==========================================
 class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Button_Output"
 	static _NumButtons := 12
@@ -228,6 +227,7 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 	
 	AddMenuItems(){
+		OutputDebug % "UCR| Button AddMenuItems - this.Connections.Output=" this.Connections.Output
 		menu := this.ParentControl.AddSubMenu("Titan One Buttons", "TitanOneButtons")
 		Loop % this._NumButtons {
 			btn := A_Index
@@ -262,6 +262,7 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 }
 
+; ======================================== AXIS ==========================================
 class TitanOne_Axis_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Axis_Output"
 	static _NumAxes := 6
@@ -309,40 +310,7 @@ class TitanOne_Axis_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 }
 
-class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
-	static IOClass := "TitanOne_Hat_Output"
-	static _NumDirections := 4
-	static HatDirections := ["Up", "Right", "Down", "Left"]
-	
-	BuildHumanReadable(){
-		return this._Prefix " Titan One Hat " this.HatDirections[this.Binding[1]]
-	}
-
-	AddMenuItems(){
-		menu := this.ParentControl.AddSubMenu("Titan One Hat", "TitanOneHat")
-		Loop % this._NumDirections {
-			menu.AddMenuItem(this.BuildHatName(A_Index), A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
-		}
-	}
-	
-	_ChangedValue(o){
-		bo := this.ParentControl.GetBinding()._Serialize()
-		bo.IOClass := this.IOClass
-		if (o <= this._NumDirections){
-			; Direction selected
-			bo.Binding := [o]
-		} else {
-			return
-		}
-		this.ParentControl.SetBinding(bo)
-	}
-	
-	Set(state){
-		this.SetHatState(state)
-		this.Write()
-	}
-}
-/*
+; ======================================== HAT ==========================================
 class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Hat_Output"
 	static _NumDirections := 4
@@ -357,12 +325,13 @@ class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 	
 	AddMenuItems(){
+		OutputDebug % "UCR| Hat AddMenuItems. this.Connections.Output=" this.Connections.Output
 		menu := this.ParentControl.AddSubMenu("Titan One Hat", "TitanOneHat")
 		Loop % this._NumDirections {
 			menu.AddMenuItem(this.BuildHatName(A_Index), A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
 		}
 	}
-	
+
 	_ChangedValue(o){
 		bo := this.ParentControl.GetBinding()._Serialize()
 		bo.IOClass := this.IOClass
@@ -376,9 +345,8 @@ class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 	
 	Set(state){
+		OutputDebug % "UCR| Set " state
 		this.SetHatState(state)
 		this.Write()
 	}
 }
-*/
-
