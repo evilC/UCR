@@ -378,7 +378,7 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 			this._JoyMenus.Push(menu)
 			Loop % chunksize {
 				btn := A_Index + offset
-				menu.AddMenuItem(btn, btn, this._ChangedValue.Bind(this, 100 + btn))	; Set the callback when selected
+				menu.AddMenuItem(btn, btn, this._ChangedValue.Bind(this, btn))	; Set the callback when selected
 				this._JoyMenus.Push(menu)
 			}
 		}
@@ -387,9 +387,8 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	_ChangedValue(o){
 		bo := this.ParentControl.GetBinding()._Serialize()
 		bo.IOClass := this.IOClass
-		if (o > 100 && o < 229){
+		if (o <= this._NumButtons){
 			; Button selected
-			o -= 100
 			bo.Binding := [o]
 		} else {
 			return
