@@ -11,6 +11,8 @@
 	
 	static ButtonMappings := {}
 	static AxisMappings := {}
+	; Maps Hat directions to Identifiers. Array of Arrays. Order is U, R, D, L
+	static HatMappings := [13,16,14,15]	; 1 POV, Order is U, R, D, L
 	
 	UCRMenuOutput := {}
 
@@ -164,7 +166,12 @@
 
 	; Passes the WriteArray to the API
 	Write(){
-		return DllCall("gcdapi\gcapi_Write", "uint", this.WriteArray.Ptr, "char")
+		if (this.Connections.Output){
+			return DllCall("gcdapi\gcapi_Write", "uint", this.WriteArray.Ptr, "char")
+		} else {
+			OutputDebug % "UCR| Titan API - Tried to write with no output set"
+			return 0
+		}
 	}
 
 	; Returns type of controller for the input and output port
@@ -193,6 +200,18 @@
 			state := (state * 2) - 100 ; Convert from 0..100 to -100...+100
 			this.SetIdentifier(this.AxisMappings[this.Connections.Output, this.Binding[1]].id, state)
 		}
+	}
+	
+	SetHatState(state){
+		if (this.Connections.Output){
+			this.SetIdentifier(13, state)
+		}
+		;~ this.Connections := {Output: "XB360"}	; ToDo: FIX!!
+		;~ id := this.HatMappings[this.Binding[1]]
+		;~ OutputDebug % "UCR| SetHatState - output type=" this.Connections.Output ", Binding=" this.Binding[1] ", id=" id
+		;~ if (this.Connections.Output){
+			;~ this.SetIdentifier(id, state)
+		;~ }
 	}
 }
 
@@ -290,60 +309,76 @@ class TitanOne_Axis_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 }
 
+class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
+	static IOClass := "TitanOne_Hat_Output"
+	static _NumDirections := 4
+	static HatDirections := ["Up", "Right", "Down", "Left"]
+	
+	BuildHumanReadable(){
+		return this._Prefix " Titan One Hat " this.HatDirections[this.Binding[1]]
+	}
 
-
+	AddMenuItems(){
+		menu := this.ParentControl.AddSubMenu("Titan One Hat", "TitanOneHat")
+		Loop % this._NumDirections {
+			menu.AddMenuItem(this.BuildHatName(A_Index), A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
+		}
+	}
+	
+	_ChangedValue(o){
+		bo := this.ParentControl.GetBinding()._Serialize()
+		bo.IOClass := this.IOClass
+		if (o <= this._NumDirections){
+			; Direction selected
+			bo.Binding := [o]
+		} else {
+			return
+		}
+		this.ParentControl.SetBinding(bo)
+	}
+	
+	Set(state){
+		this.SetHatState(state)
+		this.Write()
+	}
+}
 /*
-		menu := this.ParentControl.AddSubMenu("Titan Axis", "TitanAxis")
-		offset := 100
-		Loop 6 {
-			str := ""
-			TitanAxes := UCR.Libraries.Titan.GetAxisNames()
-			axis := A_Index
-			str := " ( ", i := 0
-			for console, axes in TitanAxes {
-				if (!axes[axis])
-					continue
-				if (i){
-					str .= " / "
-				}
-				str .= console " " axes[axis]
-				i++
-			}
-			str .= ")"
-
-			;names := GetAxisNames
-			menu.AddMenuItem(A_Index str, A_Index, this._ChangedValue.Bind(this, offset + A_Index))
+class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
+	static IOClass := "TitanOne_Hat_Output"
+	static _NumDirections := 4
+	static HatDirections := ["Up", "Right", "Down", "Left"]
+	
+	BuildHumanReadable(){
+		return this._Prefix " Titan One Hat " this.BuildHatName(this.Binding[1])
+	}
+	
+	BuildHatName(id){
+		return this.HatDirections[id]
+	}
+	
+	AddMenuItems(){
+		menu := this.ParentControl.AddSubMenu("Titan One Hat", "TitanOneHat")
+		Loop % this._NumDirections {
+			menu.AddMenuItem(this.BuildHatName(A_Index), A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
 		}
-		
-		
-		
-				state := Round(state/327.67)
-				UCR.Libraries.Titan.SetAxisByIndex(this.__value.Axis, state)
-
-
-		*/
-		
-		/*
-		TitanButtons := UCR.Libraries.Titan.GetButtonNames()
-		menu := this.AddSubMenu("Titan Buttons", "TitanButtons")
-		Loop 13 {
-			btn := A_Index
-			str := " ( ", i := 0
-			for console, buttons in TitanButtons {
-				if (!buttons[btn])
-					continue
-				if (i){
-					str .= " / "
-				}
-				str .= console " " buttons[btn]
-				i++
-			}
-			str .= ")"
-			menu.AddMenuItem(A_Index str, "Button" A_Index, this._ChangedValue.Bind(this, 10000 + A_Index))
+	}
+	
+	_ChangedValue(o){
+		bo := this.ParentControl.GetBinding()._Serialize()
+		bo.IOClass := this.IOClass
+		if (o <= this._NumDirections){
+			; Direction selected
+			bo.Binding := [o]
+		} else {
+			return
 		}
+		this.ParentControl.SetBinding(bo)
+	}
+	
+	Set(state){
+		this.SetHatState(state)
+		this.Write()
+	}
+}
+*/
 
-		menu := this.AddSubMenu("Titan Hat", "TitanHat")
-		Loop 4 {
-			menu.AddMenuItem(HatDirections[A_Index], HatDirections[A_Index], this._ChangedValue.Bind(this, 10210 + A_Index))	; Set the callback when selected
-		}
-		*/
