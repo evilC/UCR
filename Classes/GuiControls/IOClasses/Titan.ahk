@@ -7,8 +7,9 @@
 	static InputNames := {0x10: "PS3", 0x20: "XB360", 0x30: "Wii", 0x40: "PS4", 0x50: "XB1"}
 	static OutputCodes := {PS3: 0x1, XB360: 0x2, PS4: 0x3, XB1: 0x4}
 	static OutputNames := {0x1: "PS3", 0x2: "XB360", 0x3: "PS4", 0x4: "XB1"}
+	static OutputOrder := ["XB360", "XB1", "PS3", "PS4"]
 	
-	static ButtonMappings := {XB360: [19]}
+	static ButtonMappings := {}
 
 	Connections := 0	; Type of input + output that the Titan is currently set to.
 						; Has Input + Output properties. Each will be one of the OutputNames (eg "XB360").
@@ -27,6 +28,46 @@
 		if (loaded){
 			this.Acquire()
 		}
+		
+		this.ButtonMappings.XB360 := [{name: "A", id: 19}
+			, {name: "B", id: 18}
+			, {name: "X", id: 20}
+			, {name: "Y", id: 17}
+			, {name: "LB", id: 6}
+			, {name: "RB", id: 3}
+			, {}, {}
+			, {name: "LS", id: 8}
+			, {name: "RS", id: 5}
+			, {name: "Back", id: 1}
+			, {name: "Start", id: 2}
+			, {name: "XBox", id: 0}]
+		this.ButtonMappings.XB1 := this.ButtonMappings.XB360
+		this.ButtonMappings.PS3 := [{name: "Cross", id: 19}
+			, {name: "Circle", id: 18}
+			, {name: "Square", id: 20}
+			, {name: "Triangle", id: 17}
+			, {name: "L1", id: 6}
+			, {name: "R1", id: 3}
+			, {name: "L2", id: 7}
+			, {name: "R2", id: 4}
+			, {name: "LS", id: 8}
+			, {name: "RS", id: 5}
+			, {name: "Select", id: 1}
+			, {name: "Start", id: 2}
+			, {name: "Playstation", id: 0}]
+		this.ButtonMappings.PS4 := [{name: "Cross", id: 19}
+			, {name: "Circle", id: 18}
+			, {name: "Square", id: 20}
+			, {name: "Triangle", id: 17}
+			, {name: "L1", id: 6}
+			, {name: "R1", id: 3}
+			, {name: "L2", id: 7}
+			, {name: "R2", id: 4}
+			, {name: "LS", id: 8}
+			, {name: "RS", id: 5}
+			, {name: "Share", id: 1}
+			, {name: "Options", id: 2}
+			, {name: "Playstation", id: 0}]
 	}
 	
 	; Library loading and logging
@@ -104,7 +145,7 @@
 	}
 	
 	SetButtonState(state){
-		this.SetIdentifier(this.ButtonMappings[this.Connections.Output, this.Binding[1]], state)
+		this.SetIdentifier(this.ButtonMappings[this.Connections.Output, this.Binding[1]].id, state)
 	}
 }
 
@@ -123,7 +164,17 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("Titan One Buttons", "TitanOneButtons")
 		Loop % this._NumButtons {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
+			btn := A_Index
+			str := ""
+			for i, ot in this.OutputOrder {
+				n := this.ButtonMappings[ot, btn].name
+				if (n){
+					if (str)
+						str .= " / "
+					str .= ot " " n
+				}
+			}
+			menu.AddMenuItem(A_Index " (" str " )", A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
 		}
 	}
 
