@@ -354,23 +354,27 @@ class vJoy_Stick extends _UCR.Classes.IOClasses.vJoy_Base {
 
 class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	static IOClass := "vJoy_Button_Output"
-	
-	_JoyMenus := []
 	static _NumButtons := 128		; vJoy has 128 Buttons
-	
+
+	_JoyMenus := []
+
 	Set(state){
 		base.SetButtonState(state)
 	}
 	
 	BuildHumanReadable(){
-		return "vJoy Stick " this.DeviceID ", Button " this.Binding[1]
+		return this._Prefix " Stick " this.DeviceID ", Button " this.BuildButtonName(this.Binding[1])
+	}
+	
+	BuildButtonName(id){
+		return id
 	}
 	
 	AddMenuItems(){
 		chunksize := 16
 		Loop % round(this._NumButtons / chunksize) {
 			offset := (A_Index-1) * chunksize
-			menu := this.ParentControl.AddSubMenu("vJoy Buttons " offset + 1 "-" offset + chunksize, "vJoyBtns" A_Index)
+			menu := this.ParentControl.AddSubMenu(this._Prefix " Buttons " offset + 1 "-" offset + chunksize, this._Prefix "Btns" A_Index)
 			this._JoyMenus.Push(menu)
 			Loop % chunksize {
 				btn := A_Index + offset
@@ -383,10 +387,7 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	_ChangedValue(o){
 		bo := this.ParentControl.GetBinding()._Serialize()
 		bo.IOClass := this.IOClass
-		if (o < 9){
-			; Stick selected
-			bo.DeviceID := o
-		} else if (o > 100 && o < 229){
+		if (o > 100 && o < 229){
 			; Button selected
 			o -= 100
 			bo.Binding := [o]
@@ -541,21 +542,17 @@ class vXBox_Stick extends _UCR.Classes.IOClasses.vXBox_Base {
 	}
 }
 
-class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
+class vXBox_Button_Output extends _UCR.Classes.IOClasses.vJoy_Button_Output {
 	static IOClass := "vXBox_Button_Output"
-	
-	_JoyMenus := []
+	static _Prefix := "vXBox"
+	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
 	static _ButtonNames := ["A", "B", "X", "Y", "LB", "RB", "Back","Start", "LS", "RS"]
 	static _NumButtons := 10			; vXBox has 10 Buttons
 	
-	Set(state){
-		base.SetButtonState(state)
+	BuildButtonName(id){
+		return this._ButtonNames[id]
 	}
 	
-	BuildHumanReadable(){
-		return "vXBox Stick " this.DeviceID ", Button " this._ButtonNames[this.Binding[1]]
-	}
-
 	AddMenuItems(){
 		menu := this.ParentControl.AddSubMenu("vXBox Buttons", "vXBoxButtons")
 		this._JoyMenus.Push(menu)
@@ -563,19 +560,6 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 			menu.AddMenuItem(this._ButtonNames[A_Index], A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
 			this._JoyMenus.Push(menu)
 		}
-	}
-	
-	_ChangedValue(o){
-		bo := this.ParentControl.GetBinding()._Serialize()
-		bo.IOClass := this.IOClass
-		if (o > 100 && o < 111){
-			; Button selected
-			o -= 100
-			bo.Binding := [o]
-		} else {
-			return
-		}
-		this.ParentControl.SetBinding(bo)
 	}
 }
 
