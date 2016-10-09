@@ -13,7 +13,8 @@ Just add filter? Check if return type is not in mappings, and if so, do not fire
 Remove _InputHandler?
 
 Add Titan API back in
-Deferring until I know if it is possible to set stick type (eg XBox, PS) via the API
+Hat not working properly, this.Connections.Output does not seem to be set
+Commit 0f2803581af379b4d3c0c75f34977302ada1c829
 
 Take a look at encoding of hat directions.
 ATM, input is AHK Joy only, so only 1 hat, so Binding[1] can hold hat direction
