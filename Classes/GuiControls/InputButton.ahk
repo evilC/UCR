@@ -18,10 +18,9 @@ class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	_BuildMenu(){
+		; Bind mode is used for AHK_KBM_Input, AHK_JoyBtn_Input and AHK_JoyHat_Input, so handle the menu here
 		this.AddMenuItem("Select Binding", "SelectBinding", this._ChangedValue.Bind(this, 1))
-		for i, cls in this._IOClasses {
-			cls.AddMenuItems()
-		}
+		this.__BuildMenu()
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	

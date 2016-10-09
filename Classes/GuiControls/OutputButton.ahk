@@ -4,7 +4,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 	static _ControlType := "OutputButton"
 	static _DefaultBanner := "Select an Output Button"
 	static _BindModeMappings := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Output"}
-	static _IOClassNames := ["AHK_KBM_Output", "vJoy_Button_Output", "vJoy_Hat_Output", "vXBox_Button_Output", "vXBox_Hat_Output"]
+	static _IOClassNames := ["AHK_KBM_Output", "vJoy_Stick", "vJoy_Button_Output", "vJoy_Hat_Output", "vXBox_Button_Output", "vXBox_Hat_Output"]
 
 	State := 0
 	JoyMenus := []
@@ -16,11 +16,8 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 	
 	_BuildMenu(){
 		this.AddMenuItem("Select Keyboard / Mouse Binding...", "AHK_KBM_Output", this._ChangedValue.Bind(this, 1))
-		for i, cls in this._IOClasses {
-			cls.AddMenuItems()
-		}
+		this.__BuildMenu()
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
-
 	}
 	
 	; Used by script authors to set the state of this output

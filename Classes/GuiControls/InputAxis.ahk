@@ -9,9 +9,7 @@ class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	_BuildMenu(){
-		for i, cls in this._IOClasses {
-			cls.AddMenuItems()
-		}
+		this.__BuildMenu()
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
 	}
 	

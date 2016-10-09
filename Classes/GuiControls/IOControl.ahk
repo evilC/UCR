@@ -28,6 +28,13 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		this.SetControlState()
 	}
 	
+	; GuiControls can call this to add menu items for supported IOClasses
+	__BuildMenu(){
+		for i, cls in this._IOClassNames {
+			this._IOClasses[cls].AddMenuItems()
+		}
+	}
+	
 	GetBinding(){
 		return this.__value
 	}
