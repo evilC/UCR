@@ -1,4 +1,48 @@
-﻿		/*
+﻿class TitanOne_Output extends _UCR.Classes.IOClasses.IOClassBase {
+	_Init(){
+		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
+			return
+		this._LoadLibrary()
+	}
+}
+
+class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
+	static IOClass := "TitanOne_Button_Output"
+	static _NumButtons := 12
+	
+	BuildHumanReadable(){
+		return this._Prefix " Titan One Buttton " this.BuildButtonName(this.Binding[1])
+	}
+	
+	BuildButtonName(id){
+		return id
+	}
+	
+	AddMenuItems(){
+		menu := this.ParentControl.AddSubMenu("Titan One Buttons", "TitanOneButtons")
+		Loop % this._NumButtons {
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
+		}
+	}
+
+	_ChangedValue(o){
+		bo := this.ParentControl.GetBinding()._Serialize()
+		bo.IOClass := this.IOClass
+		if (o <= this._NumButtons){
+			; Button selected
+			bo.Binding := [o]
+		} else {
+			return
+		}
+		this.ParentControl.SetBinding(bo)
+	}
+}
+
+
+
+
+
+/*
 		menu := this.ParentControl.AddSubMenu("Titan Axis", "TitanAxis")
 		offset := 100
 		Loop 6 {
