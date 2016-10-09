@@ -115,7 +115,13 @@ class _Menu {
 		__New(parent, text, name, callback){
 			this.parent := parent, this.text := text, this.callback := callback, this.name := name
 			this.id := CreateGUID()
+			if (callback == 0){
+				callback := this.DoNothing.Bind(this)
+			}
 			Menu, % parent.id, Add, % text, % callback
+		}
+		
+		DoNothing(aParams*){
 		}
 		
 		Icon(FileName, IconNumber := "", IconWidth := ""){
