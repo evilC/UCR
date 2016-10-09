@@ -509,6 +509,38 @@ class vXBox_Base extends _UCR.Classes.IOClasses.vGen_Output {
 	static _Prefix := "vXBox"	
 }
 
+; Handles selection of vJoy Stick
+class vXBox_Stick extends _UCR.Classes.IOClasses.vXBox_Base {
+	static IOClass := "vXBox_Stick"
+	
+	AddMenuItems(){
+		menu := this.ParentControl.AddSubMenu("vXBox Stick", "vXBoxStick")
+		Loop % this._NumSticks {
+			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
+		}
+	}
+	
+	BuildHumanReadable(){
+		return "vXBox Stick " this.DeviceID " (No Selection)"
+	}
+
+	_ChangedValue(o){
+		t := this.ParentControl.GetBinding()._vGenDeviceType
+		bo := this.ParentControl.GetBinding()._Serialize()
+		if (t != this._vGenDeviceType){
+			bo.IOClass := this.IOClass
+		}
+		
+		if (o < 9){
+			; Stick selected
+			bo.DeviceID := o
+		} else {
+			return
+		}
+		this.ParentControl.SetBinding(bo)
+	}
+}
+
 class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 	static IOClass := "vXBox_Button_Output"
 	
@@ -521,37 +553,22 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vXBox_Base {
 	}
 	
 	BuildHumanReadable(){
-		str := "vXBox Stick " this.DeviceID
-		if (this.Binding[1]){
-			str .=  ", Button " this._ButtonNames[this.Binding[1]]
-		} else {
-			str .= " (No Button Selected)"
-		}
-		return str
+		return "vXBox Stick " this.DeviceID ", Button " this._ButtonNames[this.Binding[1]]
 	}
 
 	AddMenuItems(){
-		menu := this.ParentControl.AddSubMenu("vXBox Stick", "vXBoxStick")
-		Loop % this._NumSticks {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
-		}
-		
 		menu := this.ParentControl.AddSubMenu("vXBox Buttons", "vXBoxButtons")
 		this._JoyMenus.Push(menu)
 		Loop 10 {
 			menu.AddMenuItem(this._ButtonNames[A_Index], A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
 			this._JoyMenus.Push(menu)
 		}
-
 	}
 	
 	_ChangedValue(o){
 		bo := this.ParentControl.GetBinding()._Serialize()
 		bo.IOClass := this.IOClass
-		if (o < 5){
-			; Stick selected
-			bo.DeviceID := o
-		} else if (o > 100 && o < 111){
+		if (o > 100 && o < 111){
 			; Button selected
 			o -= 100
 			bo.Binding := [o]
