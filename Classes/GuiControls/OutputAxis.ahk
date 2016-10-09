@@ -1,7 +1,7 @@
 ﻿; ======================================================================== OUTPUT AXIS ===============================================================
 class OutputAxis extends _UCR.Classes.GuiControls.InputAxis {
 	static _ControlType := "OutputAxis"
-	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output"]
+	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output", "TitanOne_Axis_Output"]
 	static _Text := "Output"
 
 	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]

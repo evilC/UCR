@@ -42,13 +42,14 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 	MyOutputChangedValue(value){
 		this.vAxis := value.Binding[1]
 		this.vDevice := value.DeviceID
+		this.OutputBound := value.IsBound()
 	}
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
 		GuiControl, , % this.hSliderIn, % value
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
-		if (this.vAxis && this.vDevice){
+		if (this.OutputBound){
 			if (this.GuiControls.Deadzone.Get()){
 				value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.Get())
 			}
@@ -64,9 +65,7 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 			}
 			value := UCR.Libraries.StickOps.InternalToAHK(value)
 			GuiControl, , % this.hSliderOut, % value
-			;value := UCR.Libraries.StickOps.AHKToVjoy(value)
 			this.IOControls.OA1.Set(value)
 		}
-		*/
 	}
 }
