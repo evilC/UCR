@@ -325,14 +325,14 @@ class vJoy_Stick extends _UCR.Classes.IOClasses.vJoy_Base {
 	static IOClass := "vJoy_Stick"
 	
 	AddMenuItems(){
-		menu := this.ParentControl.AddSubMenu("vJoy Stick", "vJoyStick")
+		menu := this.ParentControl.AddSubMenu(this._Prefix " Stick", this._Prefix "Stick")
 		Loop % this._NumSticks {
 			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
 		}
 	}
 	
 	BuildHumanReadable(){
-		return "vJoy Stick " this.DeviceID " (No Selection)"
+		return this._Prefix " Stick " this.DeviceID " (No Selection)"
 	}
 
 	_ChangedValue(o){
@@ -511,35 +511,11 @@ class vXBox_Base extends _UCR.Classes.IOClasses.vGen_Output {
 }
 
 ; Handles selection of vJoy Stick
-class vXBox_Stick extends _UCR.Classes.IOClasses.vXBox_Base {
+class vXBox_Stick extends _UCR.Classes.IOClasses.vJoy_Stick {
 	static IOClass := "vXBox_Stick"
-	
-	AddMenuItems(){
-		menu := this.ParentControl.AddSubMenu("vXBox Stick", "vXBoxStick")
-		Loop % this._NumSticks {
-			menu.AddMenuItem(A_Index, A_Index, this._ChangedValue.Bind(this, A_Index))
-		}
-	}
-	
-	BuildHumanReadable(){
-		return "vXBox Stick " this.DeviceID " (No Selection)"
-	}
-
-	_ChangedValue(o){
-		t := this.ParentControl.GetBinding()._vGenDeviceType
-		bo := this.ParentControl.GetBinding()._Serialize()
-		if (t != this._vGenDeviceType){
-			bo.IOClass := this.IOClass
-		}
-		
-		if (o < 9){
-			; Stick selected
-			bo.DeviceID := o
-		} else {
-			return
-		}
-		this.ParentControl.SetBinding(bo)
-	}
+	static _Prefix := "vXBox"
+	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
+	static _NumSticks := 4			; vXBox has 4 sticks
 }
 
 class vXBox_Button_Output extends _UCR.Classes.IOClasses.vJoy_Button_Output {
