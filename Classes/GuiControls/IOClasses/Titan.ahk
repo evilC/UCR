@@ -1,8 +1,43 @@
 ﻿class TitanOne_Output extends _UCR.Classes.IOClasses.IOClassBase {
+	static IsInitialized := 0
+	static IsAvailable := 0
+	static _hModule := 0
+	
 	_Init(){
-		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
+		if (_UCR.Classes.IOClasses.TitanOne_Output.IsInitialized)
 			return
 		this._LoadLibrary()
+	}
+	
+	_LoadLibrary(){
+		this.LoadLibraryLog := ""
+		hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll", "Ptr")
+		this.LoadLibraryLog .= "Loading Resources\gcdapi.dll returned " hModule "`n"
+		if (hModule){
+			; Initialize the API
+			ret := DllCall("gcdapi\gcdapi_Load", "char")
+			this.LoadLibraryLog .= "gcdapi\gcdapi_Load returned " ret "`n"
+			if (ret){
+				this.LoadLibraryLog .= "Titan One library loaded OK`n"
+				this._SetInitState(hMoudule)
+				return
+			}
+		}
+		this._SetInitState(0)
+	}
+	
+	_SetInitState(hMoudule){
+		state := (hModule != 0)
+		_UCR.Classes.IOClasses.TitanOne_Output._hModule := hModule
+		_UCR.Classes.IOClasses.TitanOne_Output.IsAvailable := state
+		_UCR.Classes.IOClasses.TitanOne_Output.IsInitialized := state
+		UCR.IOClassMenu.AddSubMenu("Titan One", "TitanOne")
+			.AddMenuItem("Show &Titan One Log...", "ShowTitanOneLog", this.ShowLog.Bind(this))
+	}
+	
+	ShowLog(){
+		Clipboard := this.LoadLibraryLog
+		msgbox % this.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
 	}
 }
 
