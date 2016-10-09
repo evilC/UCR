@@ -3,12 +3,33 @@
 	static IsAvailable := 0
 	static _hModule := 0
 	
+	static InputCodes := {PS3: 0x10, XB360: 0x20, Wii: 0x30, PS4: 0x40, XB1: 0x50}
+	static InputNames := {0x10: "PS3", 0x20: "XB360", 0x30: "Wii", 0x40: "PS4", 0x50: "XB1"}
+	static OutputCodes := {PS3: 0x1, XB360: 0x2, PS4: 0x3, XB1: 0x4}
+	static OutputNames := {0x1: "PS3", 0x2: "XB360", 0x3: "PS4", 0x4: "XB1"}
+	
+	static ButtonMappings := {XB360: [19]}
+
+	Connections := 0	; Type of input + output that the Titan is currently set to.
+						; Has Input + Output properties. Each will be one of the OutputNames (eg "XB360").
+	WriteArray := {}	; Holds the Identifier Array
+	
 	_Init(){
 		if (_UCR.Classes.IOClasses.TitanOne_Output.IsInitialized)
 			return
-		this._LoadLibrary()
+		loaded := this._LoadLibrary()
+		; Set Capacity for Write Array, and get a pointer to it
+		this.WriteArray.SetCapacity("GCINPUT", 36)
+		this.WriteArray.Ptr := this.WriteArray.GetAddress("GCINPUT")
+		; Initialize the Write Array to all Zeros
+		this.Reset()
+
+		if (loaded){
+			this.Acquire()
+		}
 	}
 	
+	; Library loading and logging
 	_LoadLibrary(){
 		this.LoadLibraryLog := ""
 		hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll", "Ptr")
@@ -20,12 +41,31 @@
 			if (ret){
 				this.LoadLibraryLog .= "Titan One library loaded OK`n"
 				this._SetInitState(hMoudule)
-				return
+				return 1
 			}
 		}
 		this._SetInitState(0)
+		return 0
 	}
 	
+	; Get the connection information.
+	; Titan API seems to take a while to wake up at the start, so a timer is used
+	Acquire(){
+		; Depending on what device is connected, instantiate the appropriate class
+		t := A_TickCount + 2000
+		while (A_TickCount < t && (!IsObject(this.Connections := this.GetConnections()))){
+			sleep 10
+		}
+		if (this.Connections == 0){
+			return 0
+		}
+	}
+	
+	ShowLog(){
+		Clipboard := this.LoadLibraryLog
+		msgbox % this.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
+	}
+
 	_SetInitState(hMoudule){
 		state := (hModule != 0)
 		_UCR.Classes.IOClasses.TitanOne_Output._hModule := hModule
@@ -34,10 +74,37 @@
 		UCR.IOClassMenu.AddSubMenu("Titan One", "TitanOne")
 			.AddMenuItem("Show &Titan One Log...", "ShowTitanOneLog", this.ShowLog.Bind(this))
 	}
+
+	; Resets all Identifiers in the WriteArray to 0
+	Reset(){
+		DllCall("RtlFillMemory", "Ptr", this.WriteArray.Ptr, "Ptr", 36, "Char",0 ) ; Zero fill memory
+	}
+
+	; Sets the value of one of the identifiers
+	SetIdentifier(index, state){
+		NumPut(state, this.WriteArray.Ptr, index, "char")
+	}
+
+	; ------------------------ API calls ----------------------------
+
+	; Passes the WriteArray to the API
+	Write(){
+		return DllCall("gcdapi\gcapi_Write", "uint", this.WriteArray.Ptr, "char")
+	}
+
+	; Returns type of controller for the input and output port
+	GetConnections(){
+		VarSetCapacity(GCAPI_REPORT , 500)
+		if (!DllCall("gcdapi\gcapi_Read", "Ptr", &GCAPI_REPORT, "Char" )){
+			return 0
+		}
+		output := NumGet(GCAPI_REPORT, 0, "char")
+		input := NumGet(GCAPI_REPORT, 1, "char")
+		return {output: this.OutputNames[output], input: this.OutputNames[input]}
+	}
 	
-	ShowLog(){
-		Clipboard := this.LoadLibraryLog
-		msgbox % this.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
+	SetButtonState(state){
+		this.SetIdentifier(this.ButtonMappings[this.Connections.Output, this.Binding[1]], state)
 	}
 }
 
@@ -70,6 +137,11 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 			return
 		}
 		this.ParentControl.SetBinding(bo)
+	}
+	
+	Set(state){
+		this.SetButtonState(state)
+		this.Write()
 	}
 }
 
