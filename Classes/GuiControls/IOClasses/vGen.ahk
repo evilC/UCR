@@ -34,12 +34,18 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	; Needed so we can merge two cardinal mappings from two plugins to get a diagonal
 	static _POVStates := {}
 	
+	UCRMenuOutput := {}
+	
 	_Init(){
 		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
 			return
-		this._LoadLibrary()
 		this.UCRMenuEntry := UCR.IOClassMenu.AddSubMenu("vJoy", "vJoy")
-			.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
+		this.UCRMenuEntry.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
+		this.UCRMenuOutput.vJoyInstalled := this.UCRMenuEntry.AddMenuItem("vJoy Installed (Required)", "vJoyInstalled").Disable()
+		this.UCRMenuOutput.SCPVBusInstalled := this.UCRMenuEntry.AddMenuItem("SCPVBus Installed (Required for vXBox)", "SCPVBusInstalled").Disable()
+		this.UCRMenuOutput.InstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Install SCPVBus", "InstallSCPVBus").Disable()
+		this.UCRMenuOutput.UninstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Uninstall SCPVBus", "UninstallSCPVBus").Disable()
+		this._LoadLibrary()
 		
 		_UCR.Classes.IOClasses.vGen_Output._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
@@ -62,7 +68,8 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	
 	_LoadLibrary(){
 		this.LoadLibraryLog := ""
-
+		this.UCRMenuOutput.vJoyInstalled.UnCheck()
+		
 		; Check if vJoy is installed. Even with the DLL, if vJoy is not installed it will not work...
 		; Find vJoy install folder by looking for registry key.
 		if (A_Is64bitOS && A_PtrSize != 8){
@@ -91,7 +98,8 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 			this.LoadLibraryLog .= "A vJoy install was found in " vJoyFolder ", but the relevant registry entries were not found.`nPlease update vJoy to the latest version from `n`nhttp://vjoystick.sourceforge.net."
 			return 0
 		}
-
+		this.UCRMenuOutput.vJoyInstalled.Check()
+		
 		DllFolder .= "\"
 
 		; All good so far, try and load the DLL
@@ -115,9 +123,14 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 						this.LoadLibraryLog .= "OK.`n"
 						ver := DllCall(DllFile "\GetvJoyVersion", "Cdecl")
 						this.LoadLibraryLog .= "Loaded vJoy DLL version " ver "`n"
+						vb := this.IsVBusExist()
+						if (vb){
+							this.LoadLibraryLog .= "SCPVBus is installed`n"
+						} else {
+							this.LoadLibraryLog .= "SCPVBus is not installed (Non fatal)`n"
+						}
+						this.UCRMenuOutput.SCPVBusInstalled.SetCheckState(vb)
 						this._SetInitState(hModule)
-						;vb := DllCall(DllFile "\isVBusExist", "Cdecl")
-						;msgbox % "UCR| " this.LoadLibraryLog
 						return 1
 					} else {
 						this.LoadLibraryLog .= "FAILED.`n"
@@ -170,6 +183,11 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		ret := DllCall(this.DllName "\SetDevPov", "ptr", this._DeviceHandles[this._vGenDeviceType, this.DeviceID], "uint", h.hat, "Float", angle, "Cdecl")
 	}
 
+	IsVBusExist(){
+		ret := DllCall(this.DllName "\isVBusExist", "Cdecl")
+		return (ret == 0)
+	}
+	
 	_UpdatePovAngles(state, old_state, change){
 		;OutputDebug % "UCR| _UpdatePovAngles received change of: x= " change.x ", y= " change.y ", state= " state
 		ret := old_state.clone()
