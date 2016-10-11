@@ -4,6 +4,13 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.2 - 11th Oct 2016
+= Fix: vXBox Buttons can now be selected in the OutputButton control.
++ ScpVBus (Required for vXBox) now packaged with UCR.
+  I will probably put in a download routine at some point
+  But this will do as a stop-gap
++ ScpVBus can be installed / uninstalled from within UCR via the IOClasses > vJoy menu.
+
 0.1.1 - 9th Oct 2016
 + Re-Added Titan One API
 

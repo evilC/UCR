@@ -35,6 +35,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	static _POVStates := {}
 	
 	UCRMenuOutput := {}
+	ScpVBusInstalled := 0
 	
 	_Init(){
 		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
@@ -43,8 +44,8 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		this.UCRMenuEntry.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
 		this.UCRMenuOutput.vJoyInstalled := this.UCRMenuEntry.AddMenuItem("vJoy Installed (Required)", "vJoyInstalled").Disable()
 		this.UCRMenuOutput.SCPVBusInstalled := this.UCRMenuEntry.AddMenuItem("SCPVBus Installed (Required for vXBox)", "SCPVBusInstalled").Disable()
-		this.UCRMenuOutput.InstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Install SCPVBus", "InstallSCPVBus").Disable()
-		this.UCRMenuOutput.UninstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Uninstall SCPVBus", "UninstallSCPVBus").Disable()
+		this.UCRMenuOutput.InstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Install SCPVBus (Will Restart UCR)", "InstallSCPVBus", this.InstallUninstallScpVBus.Bind(this,1)).Disable()
+		this.UCRMenuOutput.UninstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Uninstall SCPVBus (Will Restart UCR)", "UninstallSCPVBus", this.InstallUninstallScpVBus.Bind(this,0)).Disable()
 		this._LoadLibrary()
 		
 		_UCR.Classes.IOClasses.vGen_Output._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
@@ -129,7 +130,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 						} else {
 							this.LoadLibraryLog .= "SCPVBus is not installed (Non fatal)`n"
 						}
-						this.UCRMenuOutput.SCPVBusInstalled.SetCheckState(vb)
+						this.SetScpVBusState(vb)
 						this._SetInitState(hModule)
 						return 1
 					} else {
@@ -160,6 +161,30 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		msgbox % this.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
 	}
 	
+	InstallUninstallScpVBus(state){
+		if (state == this.ScpVBusInstalled)
+			return
+		if (state){
+			RunWait, *Runas devcon.exe install ScpVBus.inf root\ScpVBus, % A_ScriptDir "\Resources\ScpVBus", UseErrorLevel
+		} else {
+			RunWait, *Runas devcon.exe remove root\ScpVBus, % A_ScriptDir "\Resources\ScpVBus", UseErrorLevel
+		}
+		if (ErrorLevel == "ERROR")
+			return 0
+		Reload
+		;~ ex := this.IsVBusExist()
+		;~ if (ex != state)
+			;~ return 0
+		;~ this.SetScpVBusState(state)
+		;~ return 1
+	}
+	
+	SetScpVBusState(state){
+		this.UCRMenuOutput.InstallSCPVBus.SetEnableState(!state)
+		this.UCRMenuOutput.UninstallSCPVBus.SetEnableState(state)
+		this.ScpVBusInstalled := state
+		this.UCRMenuOutput.SCPVBusInstalled.SetCheckState(state)
+	}
 	
 	SetButtonState(state){
 		; DWORD SetDevButton(HDEVICE hDev, UINT Button, BOOL Press);
