@@ -5,6 +5,8 @@ Key:
 + : Added feature
 
 0.1.2 - 11th Oct 2016
+! Warning! this version is still a little clunky.
+  IOClass options (eg to install SCPVBus) do not appear until you add a remapper plugin.
 = Fix: vXBox Buttons can now be selected in the OutputButton control.
 + ScpVBus (Required for vXBox) now packaged with UCR.
   I will probably put in a download routine at some point
