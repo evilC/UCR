@@ -532,7 +532,7 @@ class vXBox_Button_Output extends _UCR.Classes.IOClasses.vJoy_Button_Output {
 		menu := this.ParentControl.AddSubMenu("vXBox Buttons", "vXBoxButtons")
 		this._JoyMenus.Push(menu)
 		Loop 10 {
-			menu.AddMenuItem(this._ButtonNames[A_Index], A_Index, this._ChangedValue.Bind(this, 100 + A_Index))	; Set the callback when selected
+			menu.AddMenuItem(this._ButtonNames[A_Index], A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
 			this._JoyMenus.Push(menu)
 		}
 	}
