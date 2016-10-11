@@ -16,7 +16,7 @@ class _Menu {
 	}
 	
 	; text = What text will appear as in the parent menu
-	AddMenuItem(text, ItemName, callback := ""){
+	AddMenuItem(text, ItemName, callback := 0){
 		return this._AddItem(text, ItemName, callback)
 	}
 	
@@ -36,7 +36,7 @@ class _Menu {
 	}
 	
 	; 
-	_AddItem(text, ItemName, callback){
+	_AddItem(text, ItemName, callback := 0){
 		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
@@ -112,7 +112,7 @@ class _Menu {
 		callback := 0		; The BoundFunc to call when the item is selected
 		Checked := 0
 		
-		__New(parent, text, name, callback){
+		__New(parent, text, name, callback := 0){
 			this.parent := parent, this.text := text, this.callback := callback, this.name := name
 			this.id := CreateGUID()
 			if (callback == 0){
