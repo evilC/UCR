@@ -1,3 +1,7 @@
+IOClasses not initialized (eg vJoy does not load) on UCR start if no plugins present.
+Needs partial re-engineer of IOClass system.
+Split menus etc off into different IOClass?
+
 Plugin _OnInactive can no longer release held buttons
 
 Profile Inheritance option not always showing in Profile Toolbox
