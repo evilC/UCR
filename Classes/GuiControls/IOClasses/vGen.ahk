@@ -38,20 +38,8 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
 			return
 		this._LoadLibrary()
-		/*
-		dllpath := "Resources\" this.DllName ".dll"
-		hModule := DllCall("LoadLibrary", "Str", dllpath, "Ptr")
-		if (hModule == 0){
-			OutputDebug % "UCR| IOClass " this.IOClass " Failed to load " dllpath
-			_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 0
-		} else {
-			OutputDebug % "UCR| IOClass " this.IOClass " Loaded " dllpath
-			_UCR.Classes.IOClasses.vGen_Output.IsAvailable := 1
-		}
-		_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
-		;ret := DllCall(this.DllName "\isVBusExist", "Cdecl int")
-		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := 1
-		*/
+		this.UCRMenuEntry := UCR.IOClassMenu.AddSubMenu("vJoy", "vJoy")
+			.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
 		
 		_UCR.Classes.IOClasses.vGen_Output._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
@@ -152,8 +140,6 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
 		_UCR.Classes.IOClasses.vGen_Output.IsAvailable := state
 		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := state
-		UCR.IOClassMenu.AddSubMenu("vJoy", "vJoy")
-			.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
 	}
 	
 	ShowvJoyLog(){
