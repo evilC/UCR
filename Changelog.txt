@@ -5,6 +5,8 @@ Key:
 + : Added feature
 
 0.1.3 - ???
++ Added a new AxisSplitter plugin.
+  Useful eg for mapping a normal axis to two xbox triggers.
 = IOControls got a standard width and height.
   Some plugins may look a little wonky until I can make a layout pass on them.
 = The ButtonToAxis plugin is now called the ButtonsToAxis plugin
