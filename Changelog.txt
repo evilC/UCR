@@ -19,6 +19,7 @@ Key:
 = Fixed checking of currently active output type in the Titan One API  
 = Fixed saving of Standard GuiControl (editboxes etc) values
 = XBox button / Playstation button now bindable as an output for Titan IOControls
+= The Invert option in the MouseToJoy plugin now works in Absolute and Relative modes
 
 0.1.2 - 11th Oct 2016
 ! Warning! this version is still a little clunky.

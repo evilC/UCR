@@ -18,19 +18,19 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	
 	Init(){
 		title_row := 25
-		x_row := 45
+		x_row := 55
 		y_row := x_row + 25
 		Gui, Add, Text, % "xm y" x_row+3, X AXIS
 		Gui, Add, Text, % "xm y" y_row+3, Y AXIS
 		
 		; Relative mode
-		Gui, Add, GroupBox, % "x50 ym w125 Section h" y_row+25, % "Relative Mode"
+		Gui, Add, GroupBox, % "Center x50 ym w125 Section h" y_row+35, % "Relative"
 		Gui, Add, Text, % "xs+5 y" title_row, Scale Factor
 		this.AddControl("Edit", "RelativeScaleX", this.RelativeScaleChanged.Bind(this, "X"), "x70 w30 y" x_row, 10)
 		;~ Gui, Add, Button, % "x+5 yp hwndhwnd", Calibrate
 		;~ fn := this.Calibrate.Bind(this, "X")
 		;~ GuiControl +g, % hwnd, % fn
-		Gui, Add, Text, % "x120 w40 center y" title_row-5, Timeout
+		Gui, Add, Text, % "x120 w40 center y" title_row, Timeout
 		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this, "X"), "x120 w40 y" x_row - 10, 50)
 		
 		Gui, Add, Text, % "x120 w40 center y" y_row - 10, Threshold
@@ -43,29 +43,30 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.AddControl("RelativeTimeoutY", this.TimeoutChanged.Bind(this, "Y"), "x120 w40 y" y_row, 50)
 		
 		; Absolute Mode
-		Gui, Add, GroupBox, % "x185 ym w115 Section h" y_row+25, % "Absolute Mode"
+		Gui, Add, GroupBox, % "Center x185 ym w55 Section h" y_row+35, % "Absolute"
 		;Gui, Add, Text, % "x200 w40 center y" title_row, Timeout
 		;this.AddControl("AbsoluteTimeoutX", this.TimeoutChanged.Bind(this, 2, "X"), "x200 w40 y" x_row, 10)
 		;this.AddControl("AbsoluteTimeoutY", this.TimeoutChanged.Bind(this, 2, "Y"), "x200 w40 y" y_row, 10)
-		Gui, Add, Text, % "xs+5 center y" title_row, Scale Factor
-		this.AddControl("Edit", "AbsoluteScaleFactorX", this.AbsoluteScaleChanged.Bind(this, "X"), "xs+5 w45 y" x_row, 1)
-		this.AddControl("Edit", "AbsoluteScaleFactorY", this.AbsoluteScaleChanged.Bind(this, "Y"), "xs+5 w45 y" y_row, 1)
+		Gui, Add, Text, % "Center xs+15 center w30 y" title_row, Scale`nFactor
+		this.AddControl("Edit", "AbsoluteScaleFactorX", this.AbsoluteScaleChanged.Bind(this, "X"), "xs+15 w30 y" x_row, 1)
+		this.AddControl("Edit", "AbsoluteScaleFactorY", this.AbsoluteScaleChanged.Bind(this, "Y"), "xs+15 w30 y" y_row, 1)
 		
 		; Tweaks
-		Gui, Add, Text, % "x+25 w20 center y" title_row, Invert
+		Gui, Add, GroupBox, % "Center x245 ym w55 Section h" y_row+35, % "Common"
+		Gui, Add, Text, % "xs+15 w20 center y" title_row+10, Invert
 		this.AddControl("CheckBox", "InvertX", 0, "xp+5 y" x_row+3, "", 0)
 		this.AddControl("CheckBox", "InvertY", 0, "xp y" y_row+3, "", 0)
 		
 		; Mouse Selection
-		Gui, Add, GroupBox, % "x305 ym w110 Section h" y_row+25, % "Input"
-		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "x310 w100 y" (x_row + y_row) / 2)
+		Gui, Add, GroupBox, % "x305 ym w110 Section h" y_row+35, % "Input"
+		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "x310 w100 y" x_row)
 		; Outputs
-		Gui, Add, GroupBox, % "x425 ym w130 Section h" y_row+25, % "Outputs"
+		Gui, Add, GroupBox, % "x420 ym w140 Section h" y_row+35, % "Outputs"
 		this.AddControl("OutputAxis", "OutputAxisX", 0, "x425 w125 y" x_row - 20)
 		this.AddControl("OutputAxis", "OutputAxisY", 0, "x425 w125 y" y_row)
-		Gui, Add, Slider, % "hwndhwnd x550 y" x_row
+		Gui, Add, Slider, % "hwndhwnd x560 y" x_row
 		this.hSliderX := hwnd
-		Gui, Add, Slider, % "hwndhwnd x550 y" y_row
+		Gui, Add, Slider, % "hwndhwnd x560 y" y_row
 		this.hSliderY := hwnd
 		
 		this.AddControl("DDL", "ModeSelect", this.ModeSelect.Bind(this), "x575 w100 ym AltSubmit", "Mode: Relative||Mode: Absolute")
@@ -105,6 +106,10 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		; The "Range" for a given axis is -50 to +50
 		try {
 			x := value.axes.x, y := value.axes.y, ax := Abs(x), ay := Abs(y), MouseID := value.MouseID, dox := (x != ""), doy := (y != "")
+			if (this.GuiControls.InvertX.Get())
+				x *= -1
+			if (this.GuiControls.InvertY.Get())
+				y *= -1
 		} catch {
 			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
 			; This seems to fix it, but this should probably be properly investigated.
@@ -129,8 +134,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		} else {
 			; Absolute
 			if (dox){
-				if (this.GuiControls.InvertX.Get())
-					x *= -1
 				this.CurrX += ( x * this.AbsoluteScaleFactor.X )
 				if (this.CurrX > 50)
 					this.CurrX := 50
@@ -139,8 +142,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			}
 			
 			if (doy){
-				if (this.GuiControls.InvertY.Get())
-					y *= -1
 				this.CurrY += ( y * this.AbsoluteScaleFactor.Y )
 				if (this.CurrY > 50)
 					this.CurrY := 50
