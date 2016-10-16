@@ -21,28 +21,31 @@
 							; Has Input + Output properties. Each will be one of the OutputNames (eg "XB360").
 	static WriteArray := {}	; Holds the Identifier Array
 	
+	; All class properties that need to be common across all variants of this IOClass are stored on the base class
+	static BaseClass := _UCR.Classes.IOClasses.TitanOne_Output
+	
 	_Init(){
-		if (_UCR.Classes.IOClasses.TitanOne_Output.IsInitialized)
+		if (this.BaseClass.IsInitialized)
 			return
 		OutputDebug % "UCR| Initializing Titan One API"
-		this.UCRMenuEntry := UCR.IOClassMenu.AddSubMenu("Titan One", "TitanOne")
-		this.UCRMenuEntry.AddMenuItem("Show &Titan One Log...", "ShowTitanOneLog", this.ShowLog.Bind(this))
-		this.UCRMenuEntry.AddMenuItem("Refresh Connected Devices", "RefreshConnections", this.Acquire.Bind(this))
-		menu := this.UCRMenuEntry.AddSubMenu("Connected Output Device", "CurrentOutputDevice")
+		this.BaseClass.UCRMenuEntry := UCR.IOClassMenu.AddSubMenu("Titan One", "TitanOne")
+		this.BaseClass.UCRMenuEntry.AddMenuItem("Show &Titan One Log...", "ShowTitanOneLog", this.ShowLog.Bind(this))
+		this.BaseClass.UCRMenuEntry.AddMenuItem("Refresh Connected Devices", "RefreshConnections", this.Acquire.Bind(this))
+		menu := this.BaseClass.UCRMenuEntry.AddSubMenu("Connected Output Device", "CurrentOutputDevice")
 		for i, name in this.OutputOrder {
 			item := menu.AddMenuItem(name, name, 0)
 			item.Disable()
-			this.UCRMenuOutput[name] := item
+			this.BaseClass.UCRMenuOutput[name] := item
 		}
 
 		loaded := this._LoadLibrary()
 		; Set Capacity for Write Array, and get a pointer to it
-		this.WriteArray.SetCapacity("GCINPUT", 36)
-		this.WriteArray.Ptr := this.WriteArray.GetAddress("GCINPUT")
+		this.BaseClass.WriteArray.SetCapacity("GCINPUT", 36)
+		this.BaseClass.WriteArray.Ptr := this.BaseClass.WriteArray.GetAddress("GCINPUT")
 		; Initialize the Write Array to all Zeros
 		this.Reset()
 
-		this.ButtonMappings.XB360 := [{name: "A", id: 19}
+		this.BaseClass.ButtonMappings.XB360 := [{name: "A", id: 19}
 			, {name: "B", id: 18}
 			, {name: "X", id: 20}
 			, {name: "Y", id: 17}
@@ -54,8 +57,8 @@
 			, {name: "Back", id: 1}
 			, {name: "Start", id: 2}
 			, {name: "XBox", id: 0}]
-		this.ButtonMappings.XB1 := this.ButtonMappings.XB360
-		this.ButtonMappings.PS3 := [{name: "Cross", id: 19}
+		this.BaseClass.ButtonMappings.XB1 := this.BaseClass.ButtonMappings.XB360
+		this.BaseClass.ButtonMappings.PS3 := [{name: "Cross", id: 19}
 			, {name: "Circle", id: 18}
 			, {name: "Square", id: 20}
 			, {name: "Triangle", id: 17}
@@ -68,7 +71,7 @@
 			, {name: "Select", id: 1}
 			, {name: "Start", id: 2}
 			, {name: "Playstation", id: 0}]
-		this.ButtonMappings.PS4 := [{name: "Cross", id: 19}
+		this.BaseClass.ButtonMappings.PS4 := [{name: "Cross", id: 19}
 			, {name: "Circle", id: 18}
 			, {name: "Square", id: 20}
 			, {name: "Triangle", id: 17}
@@ -82,37 +85,37 @@
 			, {name: "Options", id: 2}
 			, {name: "Playstation", id: 0}]
 		
-		this.AxisMappings.XB360 := [{name: "LX", id: 11}
+		this.BaseClass.AxisMappings.XB360 := [{name: "LX", id: 11}
 			,{name: "LY", id: 12}
 			,{name: "RX", id: 9}
 			,{name: "RY", id: 10}
 			,{name: "LT", id: 7}
 			,{name: "RT", id: 4}]
-		this.AxisMappings.XB1 := this.AxisMappings.XB360
-		this.AxisMappings.PS3 := [{name: "LX", id: 11}
+		this.BaseClass.AxisMappings.XB1 := this.BaseClass.AxisMappings.XB360
+		this.BaseClass.AxisMappings.PS3 := [{name: "LX", id: 11}
 			,{name: "LY", id: 12}
 			,{name: "RX", id: 9}
 			,{name: "RY", id: 10}]
-		this.AxisMappings.PS4 := this.AxisMappings.PS3
+		this.BaseClass.AxisMappings.PS4 := this.BaseClass.AxisMappings.PS3
 	}
 	
 	; Library loading and logging
 	_LoadLibrary(){
-		this.LoadLibraryLog := ""
+		this.BaseClass.LoadLibraryLog := ""
 		hModule := DLLCall("LoadLibrary", "Str", "Resources\gcdapi.dll", "Ptr")
-		this.LoadLibraryLog .= "Loading Resources\gcdapi.dll returned " hModule "`n"
+		this.BaseClass.LoadLibraryLog .= "Loading Resources\gcdapi.dll returned " hModule "`n"
 		if (hModule){
 			; Initialize the API
 			ret := DllCall("gcdapi\gcdapi_Load", "char")
-			this.LoadLibraryLog .= "gcdapi\gcdapi_Load returned " ret "`n"
+			this.BaseClass.LoadLibraryLog .= "gcdapi\gcdapi_Load returned " ret "`n"
 			if (ret){
-				this.LoadLibraryLog .= "Titan One DLL loaded OK, checking for connected devices...`n"
+				this.BaseClass.LoadLibraryLog .= "Titan One DLL loaded OK, checking for connected devices...`n"
 				ret := this.Acquire()
 				if (ret){
-					this.LoadLibraryLog .= "Titan One Input type is: " this.Connections.Input "`n"
-					this.LoadLibraryLog .= "Titan One Output type is: " this.Connections.Output "`n"
+					this.BaseClass.LoadLibraryLog .= "Titan One Input type is: " this.BaseClass.Connections.Input "`n"
+					this.BaseClass.LoadLibraryLog .= "Titan One Output type is: " this.BaseClass.Connections.Output "`n"
 				} else {
-					this.LoadLibraryLog .= "No connected devices were detected.`n"
+					this.BaseClass.LoadLibraryLog .= "No connected devices were detected.`n"
 				}
 				this._SetInitState(hMoudule)
 				return 1
@@ -131,7 +134,7 @@
 		while (A_TickCount < t && (!IsObject(op := this.GetConnections()))){
 			sleep 10
 		}
-		_UCR.Classes.IOClasses.TitanOne_Output.Connections := op
+		this.BaseClass.Connections := op
 		if (op == 0){
 			return 0
 		}
@@ -143,33 +146,34 @@
 	}
 	
 	ShowLog(){
-		Clipboard := this.LoadLibraryLog
-		msgbox % this.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
+		Clipboard := this.BaseClass.LoadLibraryLog
+		msgbox % this.BaseClass.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
 	}
 
 	_SetInitState(hMoudule){
+		OutputDebug % "UCR| Titan One API Initialized"
 		state := (hModule != 0)
-		_UCR.Classes.IOClasses.TitanOne_Output._hModule := hModule
-		_UCR.Classes.IOClasses.TitanOne_Output.IsAvailable := state
-		_UCR.Classes.IOClasses.TitanOne_Output.IsInitialized := state
+		this.BaseClass._hModule := hModule
+		this.BaseClass.IsAvailable := state
+		this.BaseClass.IsInitialized := 1
 	}
 
 	; Resets all Identifiers in the WriteArray to 0
 	Reset(){
-		DllCall("RtlFillMemory", "Ptr", this.WriteArray.Ptr, "Ptr", 36, "Char",0 ) ; Zero fill memory
+		DllCall("RtlFillMemory", "Ptr", this.BaseClass.WriteArray.Ptr, "Ptr", 36, "Char",0 ) ; Zero fill memory
 	}
 
 	; Sets the value of one of the identifiers
 	SetIdentifier(index, state){
-		NumPut(state, this.WriteArray.Ptr, index, "char")
+		NumPut(state, this.BaseClass.WriteArray.Ptr, index, "char")
 	}
 
 	; ------------------------ API calls ----------------------------
 
 	; Passes the WriteArray to the API
 	Write(){
-		if (this.Connections.Output){
-			return DllCall("gcdapi\gcapi_Write", "uint", this.WriteArray.Ptr, "char")
+		if (this.BaseClass.Connections.Output){
+			return DllCall("gcdapi\gcapi_Write", "uint", this.BaseClass.WriteArray.Ptr, "char")
 		} else {
 			OutputDebug % "UCR| Titan API - Tried to write with no output set"
 			return 0
@@ -192,22 +196,22 @@
 	}
 	
 	SetButtonState(state){
-		if (this.Connections.Output){
-			this.SetIdentifier(this.ButtonMappings[this.Connections.Output, this.Binding[1]].id, state)
+		if (this.BaseClass.Connections.Output){
+			this.SetIdentifier(this.BaseClass.ButtonMappings[this.BaseClass.Connections.Output, this.Binding[1]].id, state)
 		}
 	}
 	
 	SetAxisState(state){
-		if (this.Connections.Output){
+		if (this.BaseClass.Connections.Output){
 			state := (state * 2) - 100 ; Convert from 0..100 to -100...+100
-			this.SetIdentifier(this.AxisMappings[this.Connections.Output, this.Binding[1]].id, state)
+			this.SetIdentifier(this.BaseClass.AxisMappings[this.BaseClass.Connections.Output, this.Binding[1]].id, state)
 		}
 	}
 	
 	SetHatState(state){
 		id := this.HatMappings[this.Binding[1]]
-		OutputDebug % "UCR| SetHatState - output type=" this.Connections.Output ", Binding=" this.Binding[1] ", id=" id
-		if (this.Connections.Output){
+		OutputDebug % "UCR| SetHatState - output type=" this.BaseClass.Connections.Output ", Binding=" this.Binding[1] ", id=" id
+		if (this.BaseClass.Connections.Output){
 			this.SetIdentifier(id, state)
 		}
 	}
@@ -227,13 +231,13 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 	
 	AddMenuItems(){
-		OutputDebug % "UCR| Button AddMenuItems - this.Connections.Output=" this.Connections.Output
+		OutputDebug % "UCR| Button AddMenuItems - this.BaseClass.Connections.Output=" this.BaseClass.Connections.Output
 		menu := this.ParentControl.AddSubMenu("Titan One Buttons", "TitanOneButtons")
 		Loop % this._NumButtons {
 			btn := A_Index
 			str := ""
 			for i, ot in this.OutputOrder {
-				n := this.ButtonMappings[ot, btn].name
+				n := this.BaseClass.ButtonMappings[ot, btn].name
 				if (n){
 					if (str)
 						str .= " / "
@@ -281,7 +285,7 @@ class TitanOne_Axis_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 			ax := A_Index
 			str := ""
 			for i, ot in this.OutputOrder {
-				n := this.AxisMappings[ot, ax].name
+				n := this.BaseClass.AxisMappings[ot, ax].name
 				if (n){
 					if (str)
 						str .= " / "
@@ -325,7 +329,7 @@ class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 	
 	AddMenuItems(){
-		OutputDebug % "UCR| Hat AddMenuItems. this.Connections.Output=" this.Connections.Output
+		OutputDebug % "UCR| Hat AddMenuItems. this.BaseClass.Connections.Output=" this.BaseClass.Connections.Output
 		menu := this.ParentControl.AddSubMenu("Titan One D-Pad", "TitanOneHat")
 		Loop % this._NumDirections {
 			menu.AddMenuItem(this.BuildHatName(A_Index), A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected

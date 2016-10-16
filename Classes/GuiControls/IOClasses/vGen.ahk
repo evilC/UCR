@@ -35,20 +35,24 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	static _POVStates := {}
 	
 	static UCRMenuOutput := {}
-	ScpVBusInstalled := 0
+	static ScpVBusInstalled := 0
+	
+	; All class properties that need to be common across all variants of this IOClass are stored on the base class
+	static BaseClass := _UCR.Classes.IOClasses.vGen_Output
 	
 	_Init(){
-		if (_UCR.Classes.IOClasses.vGen_Output.IsInitialized)
+		if (this.BaseClass.IsInitialized)
 			return
-		this.UCRMenuEntry := UCR.IOClassMenu.AddSubMenu("vJoy", "vJoy")
-		this.UCRMenuEntry.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
-		this.UCRMenuOutput.vJoyInstalled := this.UCRMenuEntry.AddMenuItem("vJoy Installed (Required)", "vJoyInstalled").Disable()
-		this.UCRMenuOutput.SCPVBusInstalled := this.UCRMenuEntry.AddMenuItem("SCPVBus Installed (Required for vXBox)", "SCPVBusInstalled").Disable()
-		this.UCRMenuOutput.InstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Install SCPVBus (Will Restart UCR)", "InstallSCPVBus", this.InstallUninstallScpVBus.Bind(this,1)).Disable()
-		this.UCRMenuOutput.UninstallSCPVBus := this.UCRMenuEntry.AddMenuItem("Uninstall SCPVBus (Will Restart UCR)", "UninstallSCPVBus", this.InstallUninstallScpVBus.Bind(this,0)).Disable()
+		OutputDebug % "UCR| Initializing vJoy API"
+		this.BaseClass.UCRMenuEntry := UCR.IOClassMenu.AddSubMenu("vJoy", "vJoy")
+		this.BaseClass.UCRMenuEntry.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this.ShowvJoyLog.Bind(this))
+		this.BaseClass.UCRMenuOutput.vJoyInstalled := this.BaseClass.UCRMenuEntry.AddMenuItem("vJoy Installed (Required)", "vJoyInstalled").Disable()
+		this.BaseClass.UCRMenuOutput.SCPVBusInstalled := this.BaseClass.UCRMenuEntry.AddMenuItem("SCPVBus Installed (Required for vXBox)", "SCPVBusInstalled").Disable()
+		this.BaseClass.UCRMenuOutput.InstallSCPVBus := this.BaseClass.UCRMenuEntry.AddMenuItem("Install SCPVBus (Will Restart UCR)", "InstallSCPVBus", this.InstallUninstallScpVBus.Bind(this,1)).Disable()
+		this.BaseClass.UCRMenuOutput.UninstallSCPVBus := this.BaseClass.UCRMenuEntry.AddMenuItem("Uninstall SCPVBus (Will Restart UCR)", "UninstallSCPVBus", this.InstallUninstallScpVBus.Bind(this,0)).Disable()
 		this._LoadLibrary()
 		
-		_UCR.Classes.IOClasses.vGen_Output._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		this.BaseClass._POVStates.vJoy_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
@@ -57,7 +61,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
 		
-		_UCR.Classes.IOClasses.vGen_Output._POVStates.vXBox_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
+		this.BaseClass._POVStates.vXBox_Hat_Output := [[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]
 		,[{x:0, y: 0},{x:0, y: 0},{x:0, y: 0},{x:0, y: 0}]]
@@ -69,7 +73,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	
 	_LoadLibrary(){
 		this.LoadLibraryLog := ""
-		this.UCRMenuOutput.vJoyInstalled.UnCheck()
+		this.BaseClass.UCRMenuOutput.vJoyInstalled.UnCheck()
 		
 		; Check if vJoy is installed. Even with the DLL, if vJoy is not installed it will not work...
 		; Find vJoy install folder by looking for registry key.
@@ -99,7 +103,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 			this.LoadLibraryLog .= "A vJoy install was found in " vJoyFolder ", but the relevant registry entries were not found.`nPlease update vJoy to the latest version from `n`nhttp://vjoystick.sourceforge.net."
 			return 0
 		}
-		this.UCRMenuOutput.vJoyInstalled.Check()
+		this.BaseClass.UCRMenuOutput.vJoyInstalled.Check()
 		
 		DllFolder .= "\"
 
@@ -151,9 +155,9 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	
 	_SetInitState(hMoudule){
 		state := (hModule != 0)
-		_UCR.Classes.IOClasses.vGen_Output._hModule := hModule
-		_UCR.Classes.IOClasses.vGen_Output.IsAvailable := state
-		_UCR.Classes.IOClasses.vGen_Output.IsInitialized := state
+		this.BaseClass._hModule := hModule
+		this.BaseClass.IsAvailable := state
+		this.BaseClass.IsInitialized := 1
 	}
 	
 	ShowvJoyLog(){
@@ -162,7 +166,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	}
 	
 	InstallUninstallScpVBus(state){
-		if (state == this.ScpVBusInstalled)
+		if (state == this.BaseClass.ScpVBusInstalled)
 			return
 		if (state){
 			RunWait, *Runas devcon.exe install ScpVBus.inf root\ScpVBus, % A_ScriptDir "\Resources\ScpVBus", UseErrorLevel
@@ -180,10 +184,10 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	}
 	
 	SetScpVBusState(state){
-		this.UCRMenuOutput.InstallSCPVBus.SetEnableState(!state)
-		this.UCRMenuOutput.UninstallSCPVBus.SetEnableState(state)
-		this.ScpVBusInstalled := state
-		this.UCRMenuOutput.SCPVBusInstalled.SetCheckState(state)
+		this.BaseClass.UCRMenuOutput.InstallSCPVBus.SetEnableState(!state)
+		this.BaseClass.UCRMenuOutput.UninstallSCPVBus.SetEnableState(state)
+		this.BaseClass.ScpVBusInstalled := state
+		this.BaseClass.UCRMenuOutput.SCPVBusInstalled.SetCheckState(state)
 	}
 	
 	SetButtonState(state){

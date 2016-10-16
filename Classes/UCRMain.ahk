@@ -94,7 +94,7 @@ Class _UCR {
 
 		; Initialize IOClasses
 		; This will add menu entries to the IOClasses menu, and load DLLs etc.
-		for name, cls in this.Classes.IOClasses {
+		for name, cls in _UCR.Classes.IOClasses {
 			if (name == "__Class")
 				continue
 			OutputDebug % "UCR| Initializing IOClass " name
