@@ -94,11 +94,11 @@ Class _UCR {
 
 		; Initialize IOClasses
 		; This will add menu entries to the IOClasses menu, and load DLLs etc.
-		for cls, obj in _UCR.Classes.IOClasses {
+		for name, cls in this.Classes.IOClasses {
 			if (cls == "__Class")
 				continue
 			;OutputDebug % "UCR| Initializing IOClass " cls
-			obj._Init()
+			cls._Init()
 		}
 
 		; Load list of plugins and update Plugin Select
