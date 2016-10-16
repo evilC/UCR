@@ -75,7 +75,7 @@ Class _UCR {
 		
 		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
 		
-		; Provide a common repository of libraries for plugins (vJoy, HID libs etc)
+		; Provide a common repository of libraries for plugins
 		this._LoadLibraries()
 		
 		; Start the input detection system
