@@ -448,7 +448,7 @@ class vJoy_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 		if (this.Binding[1]){
 			str .= ", Axis " this.Binding[1]
 		} else {
-			str .= " (No Axis Selected)"
+			str .= "`n(No Axis Selected)"
 		}
 		return str
 	}
