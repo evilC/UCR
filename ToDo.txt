@@ -1,6 +1,10 @@
 Profiles linked to global profile not kept active in other profiles.
 Ticking inherit from parent does not pre-load profiles that are linked to the parent.
 
+Investigate effect of saving on performance - esp big pauses.
+Suspect calling serialize on all objects locks them up and causes problems.
+Cache values? Move to random access storage? SQLite?
+
 Plugin _OnInactive can no longer release held buttons
 
 Profile Inheritance option not always showing in Profile Toolbox
