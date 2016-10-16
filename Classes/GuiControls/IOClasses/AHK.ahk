@@ -172,7 +172,7 @@ class AHK_JoyAxis_Input extends _UCR.Classes.IOClasses.IOClassBase {
 		if (this.DeviceID && this.Binding[1]){
 			return "Stick " this.DeviceID ", Axis " this.Binding[1]
 		} else if (this.DeviceID){
-			return "Pick an Axis (Stick " this.DeviceID ")"
+			return "Stick " this.DeviceID "`n(No Axis Selected)"
 		}
 	}
 	
