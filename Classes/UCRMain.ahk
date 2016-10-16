@@ -97,7 +97,7 @@ Class _UCR {
 		for name, cls in _UCR.Classes.IOClasses {
 			if (name == "__Class")
 				continue
-			OutputDebug % "UCR| Initializing IOClass " name
+			;OutputDebug % "UCR| Initializing IOClass " name
 			cls._Init()
 		}
 
