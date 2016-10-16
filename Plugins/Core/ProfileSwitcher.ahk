@@ -9,7 +9,7 @@ class ProfileSwitcher extends _UCR.Classes.Plugin {
 		this.AddControl("InputButton", "MyHk1", 0, this.MyHkChangedState.Bind(this), "x150 yp w200")
 		
 		Gui, Add, Text, xm, % "Change to this profile on press"
-		this.AddControl("ProfileSelect", "Profile1", this.ProfileSelectEvent.Bind(this, 1), "x170 yp-2 w380", 0)
+		this.AddControl("ProfileSelect", "Profile1", 0, "x170 yp-2 w380", 0)
 		
 		; Button to test profile change
 		Gui, Add, Button, x+5 yp-2 hwndhTest1, Test
@@ -18,7 +18,7 @@ class ProfileSwitcher extends _UCR.Classes.Plugin {
 		GuiControl +g, % this.hTest1, % fn
 		
 		Gui, Add, Text, xm, % "Change to this profile on release"
-		this.AddControl("ProfileSelect", "Profile0", this.ProfileSelectEvent.Bind(this, 0), "x170 yp-2 w380", 0)		
+		this.AddControl("ProfileSelect", "Profile0", 0, "x170 yp-2 w380", 0)		
 		
 		; Button to test profile change
 		Gui, Add, Button, x+5 yp hwndhTest0, Test
@@ -29,6 +29,7 @@ class ProfileSwitcher extends _UCR.Classes.Plugin {
 
 	; The hotkey was pressed to change profile
 	MyHkChangedState(e){
+		;OutputDebug % "UCR| profile: " this.GuiControls["Profile" e].Get()
 		if !(UCR.ChangeProfile(this.GuiControls["Profile" e].Get()))
 			SoundBeep, 300, 200
 	}

@@ -10,7 +10,8 @@ Class Plugin {
 	IOControls := {}			; An associative array, indexed by name, of child IOControls
 	
 	;_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
-	static _CustomControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1, ProfileSelect: 1}
+	static _IOControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1}
+	static _CustomControls := {ProfileSelect: 1}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -20,10 +21,14 @@ Class Plugin {
 	; === Plugins can call these commands to add various GuiControls to their Gui ===
 	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
 	AddControl(type, name, ChangeValueCallback, aParams*){
-		if (ObjHasKey(this._CustomControls, type)){
+		if (ObjHasKey(this._IOControls, type)){
 			call:= _UCR.Classes.GuiControls[type]
 			this.IOControls[name] := new call(this, name, ChangeValueCallback, aParams*)
 			return this.IOControls[name]
+		} else if (ObjHasKey(this._CustomControls, type)){
+			call:= _UCR.Classes.GuiControls[type]
+			this.GuiControls[name] := new call(this, name, ChangeValueCallback, aParams*)
+			return this.GuiControls[name]
 		} else {
 			call:= _UCR.Classes.GuiControls.GuiControl
 			this.GuiControls[name] := new call(this, type, name, ChangeValueCallback, aParams*)
