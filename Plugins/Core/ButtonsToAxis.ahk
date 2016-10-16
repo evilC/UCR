@@ -14,8 +14,8 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 		Gui, Add, GroupBox, Center xm ym w270 h70 section, Input Buttons
 		Gui, Add, Text, % "Center xs+5 yp+15 w" iow, Low
 		Gui, Add, Text, % "Center x+10 w" iow " yp", High
-		this.AddControl("InputButton", "Up", 0, this.ButtonInput.Bind(this, 1), " xs+5 yp+15")
-		this.AddControl("InputButton", "Down", 0, this.ButtonInput.Bind(this, 2), "x+10 yp")
+		this.AddControl("InputButton", "IB1", 0, this.ButtonInput.Bind(this, 1), " xs+5 yp+15")
+		this.AddControl("InputButton", "IB2", 0, this.ButtonInput.Bind(this, 2), "x+10 yp")
 
 		Gui, Add, GroupBox, Center x290 ym w100 h70 section, Settings
 		Gui, Add, Text, % "Center xs+5 yp+25 w90", Deflection `%
