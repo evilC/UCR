@@ -220,7 +220,7 @@
 ; ======================================== BUTTON ==========================================
 class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Button_Output"
-	static _NumButtons := 12
+	static _NumButtons := 13
 	
 	BuildHumanReadable(){
 		return this._Prefix " Titan One Buttton " this.BuildButtonName(this.Binding[1])
