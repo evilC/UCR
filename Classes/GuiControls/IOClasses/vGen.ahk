@@ -34,7 +34,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 	; Needed so we can merge two cardinal mappings from two plugins to get a diagonal
 	static _POVStates := {}
 	
-	UCRMenuOutput := {}
+	static UCRMenuOutput := {}
 	ScpVBusInstalled := 0
 	
 	_Init(){

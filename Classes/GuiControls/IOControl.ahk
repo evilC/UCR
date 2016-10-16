@@ -18,10 +18,6 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		for i, name in this._IOClassNames {
 			call:= _UCR.Classes.IOClasses[name]
 			this._IOClasses[name] := new call(this)
-
-			if (!this._IOClasses.IsInitialized) {
-				this._IOClasses[name]._Init()
-			}
 		}
 		this._BuildMenu()
 		

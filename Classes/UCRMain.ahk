@@ -91,7 +91,16 @@ Class _UCR {
 		
 		; Create the Main Gui
 		this._CreateGui()
-		
+
+		; Initialize IOClasses
+		; This will add menu entries to the IOClasses menu, and load DLLs etc.
+		for cls, obj in _UCR.Classes.IOClasses {
+			if (cls == "__Class")
+				continue
+			;OutputDebug % "UCR| Initializing IOClass " cls
+			obj._Init()
+		}
+
 		; Load list of plugins and update Plugin Select
 		this._LoadPluginList()
 		this._UpdatePluginSelect()
