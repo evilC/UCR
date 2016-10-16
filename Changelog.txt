@@ -5,6 +5,9 @@ Key:
 + : Added feature
 
 0.1.3 - ???
+= The ButtonToAxis plugin is now called the ButtonsToAxis plugin
+  It now remaps two InputButton controls to one OutputAxis control.
+  It now also has a "Deflection %" setting to control how much it moves the axis
 = The menu entries in the main UCR menu for each IOClass now show properly on first start.
   You no longer have to add a Plugin to load vJoy / Titan APIs etc.
 = Fixed checking of currently active output type in the Titan One API  
