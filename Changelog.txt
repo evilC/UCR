@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.3 - ???
+0.1.3 - 16th Oct 2016
 + Added a new AxisSplitter plugin.
   Useful eg for mapping a normal axis to two xbox triggers.
 = IOControls got a standard width and height.
