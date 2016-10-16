@@ -11,6 +11,7 @@ Key:
 = The menu entries in the main UCR menu for each IOClass now show properly on first start.
   You no longer have to add a Plugin to load vJoy / Titan APIs etc.
 = Fixed checking of currently active output type in the Titan One API  
+= Fixed saving of Standard GuiControl (editboxes etc) values
 
 0.1.2 - 11th Oct 2016
 ! Warning! this version is still a little clunky.

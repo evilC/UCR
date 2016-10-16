@@ -89,7 +89,7 @@ Class Plugin {
 			obj.GuiControls := {}
 			for name, ctrl in this.GuiControls {
 				s := ctrl._Serialize()
-				if (IsObject(s))
+				if (s != "")
 					obj.GuiControls[name] := s
 			}
 		}

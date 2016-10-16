@@ -1,5 +1,3 @@
-Standard GuiControls not remembering value
-
 Plugin _OnInactive can no longer release held buttons
 
 Profile Inheritance option not always showing in Profile Toolbox
