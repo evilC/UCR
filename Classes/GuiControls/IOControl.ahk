@@ -36,10 +36,10 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 				h := 1
 			}
 		}
-		if (!w){
-			optstr .= " h40"
-		}
 		if (!h){
+			optstr .= " h35"
+		}
+		if (!w){
 			optstr .= " w125"
 		}
 		return optstr

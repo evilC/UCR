@@ -61,7 +61,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "x310 w100 y" (x_row + y_row) / 2)
 		; Outputs
 		Gui, Add, GroupBox, % "x425 ym w130 Section h" y_row+25, % "Outputs"
-		this.AddControl("OutputAxis", "OutputAxisX", 0, "x425 w125 y" x_row)
+		this.AddControl("OutputAxis", "OutputAxisX", 0, "x425 w125 y" x_row - 20)
 		this.AddControl("OutputAxis", "OutputAxisY", 0, "x425 w125 y" y_row)
 		Gui, Add, Slider, % "hwndhwnd x550 y" x_row
 		this.hSliderX := hwnd
