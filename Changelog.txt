@@ -5,9 +5,12 @@ Key:
 + : Added feature
 
 0.1.3 - ???
+= IOControls got a standard width and height.
+  Some plugins may look a little wonky until I can make a layout pass on them.
 = The ButtonToAxis plugin is now called the ButtonsToAxis plugin
   It now remaps two InputButton controls to one OutputAxis control.
   It now also has a "Deflection %" setting to control how much it moves the axis
+= The AxisToButton plugin is now called AxisToButtons
 = The menu entries in the main UCR menu for each IOClass now show properly on first start.
   You no longer have to add a Plugin to load vJoy / Titan APIs etc.
 = Fixed checking of currently active output type in the Titan One API  

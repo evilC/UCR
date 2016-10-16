@@ -36,13 +36,15 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 				h := 1
 			}
 		}
+		out := optstr
 		if (!h){
-			optstr .= " h35"
+			out .= " h35"
 		}
 		if (!w){
-			optstr .= " w125"
+			out .= " w125"
 		}
-		return optstr
+		OutputDebug % "UCR| Changing options from " optstr " to " out
+		return out
 	}
 	
 	; GuiControls can call this to add menu items for supported IOClasses

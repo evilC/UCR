@@ -2,27 +2,31 @@
 Remaps a physical joystick axis to a pair of button outputs
 Requires the StickOps library and the vJoy library
 */
-class AxisToButton extends _UCR.Classes.Plugin {
-	Type := "Remapper (Axis To Button)"
+class AxisToButtons extends _UCR.Classes.Plugin {
+	Type := "Remapper (Axis To Buttons)"
 	Description := "Maps a joystick axis input to a pair of button outputs"
 	LastState := 0
 	; Set up the GUI to allow the user to select inputs and outputs
 	Init(){
-		Gui, Add, Text, % "xm w125 Center", Input Axis
-		Gui, Add, Text, % "x+5 yp w100 Center", Input Preview
-		Gui, Add, Text, % "x+5 yp w40 Center", Invert
-		Gui, Add, Text, % "x+5 yp w40 Center", Deadzone
-		Gui, Add, Text, % "x+25 yp w150 Center", Output Button 1
-		Gui, Add, Text, % "x+5 yp w150 Center", Output Button 2
-		
-		this.AddControl("InputAxis", "InputAxis", 0, this.MyInputChangedState.Bind(this), "xm w125")
-		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
+		iow := 125
+		Gui, Add, GroupBox, Center xm ym w280 h70 section, Input Axis
+		Gui, Add, Text, % "Center xs+5 yp+15 w" iow, Axis
+		Gui, Add, Text, % "Center x+10 w" 99 " ys+15", Preview
+		this.AddControl("InputAxis", "InputAxis", 0, this.MyInputChangedState.Bind(this), "xs+5 yp+15")
+		Gui, Add, Slider, % "hwndhwnd x+10 yp+5 w" iow, 50
 		this.hSliderIn := hwnd
-		this.AddControl("CheckBox", "Invert", 0, "x+20 yp+3 w30")
-		this.AddControl("Edit", "Deadzone", 0, "x+10 yp-3 w30", "20")
-		Gui, Add, Text, % "x+0 yp+3", `%
-		this.AddControl("OutputButton", "OB1", 0, "x+25 yp-2 w150")
-		this.AddControl("OutputButton", "OB2", 0, "x+5 yp-2 w150")
+
+		Gui, Add, GroupBox, Center x295 ym w100 h70 section, Settings
+		Gui, Add, Text, % "Center xs+5 yp+20", Invert
+		Gui, Add, Text, % "Center x+5 yp", Deadzone`%
+		this.AddControl("CheckBox", "Invert", 0, "xs+15 yp+20")
+		this.AddControl("Edit", "Deadzone", 0, "x+5 yp-3 w30", "20")
+		
+		Gui, Add, GroupBox, Center x400 ym w270 h70 section, Output Buttons
+		Gui, Add, Text, % "Center xs+5 yp+15 w" iow, Low
+		Gui, Add, Text, % "Center x+10 w" iow " yp", High
+		this.AddControl("OutputButton", "OB1", 0, "xs+5 yp+15")
+		this.AddControl("OutputButton", "OB2", 0, "x+5 yp")
 	}
 	
 	; The user moved the selected input axis. Manipulate the output buttons accordingly
