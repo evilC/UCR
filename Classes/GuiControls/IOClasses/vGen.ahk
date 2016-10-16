@@ -396,11 +396,11 @@ class vJoy_Button_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	}
 	
 	BuildHumanReadable(){
-		return this._Prefix " Stick " this.DeviceID ", Button " this.BuildButtonName(this.Binding[1])
+		return this._Prefix " Stick " this.DeviceID ", " this.BuildButtonName(this.Binding[1])
 	}
 	
 	BuildButtonName(id){
-		return id
+		return "Button " id
 	}
 	
 	AddMenuItems(){
@@ -446,11 +446,15 @@ class vJoy_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Base {
 	BuildHumanReadable(){
 		str := this._Prefix " Stick " this.DeviceID
 		if (this.Binding[1]){
-			str .= ", Axis " this.Binding[1]
+			str .= ", " this.BuildAxisName(this.Binding[1])
 		} else {
 			str .= "`n(No Axis Selected)"
 		}
 		return str
+	}
+	
+	BuildAxisName(axis){
+		return "Axis " axis
 	}
 	
 	AddMenuItems(){
@@ -577,6 +581,10 @@ class vXBox_Axis_Output extends _UCR.Classes.IOClasses.vJoy_Axis_Output {
 	static _Prefix := "vXBox"
 	static _vGenDeviceType := 1		; 0 = vJoy, 1 = vXBox
 	static AxisList := ["LS X", "LS Y", "RT", "RS X", "RS Y", "LT"]
+	
+	BuildAxisName(axis){
+		return this.AxisList[axis]
+	}
 }
 
 class vXBox_Hat_Output extends _UCR.Classes.IOClasses.vJoy_Hat_Output {
