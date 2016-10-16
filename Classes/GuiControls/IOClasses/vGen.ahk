@@ -365,7 +365,7 @@ class vJoy_Stick extends _UCR.Classes.IOClasses.vJoy_Base {
 	}
 	
 	BuildHumanReadable(){
-		return this._Prefix " Stick " this.DeviceID " (No Selection)"
+		return this._Prefix " Stick " this.DeviceID "`n(No Button Selected)"
 	}
 
 	_ChangedValue(o){
