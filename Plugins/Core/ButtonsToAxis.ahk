@@ -7,7 +7,7 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 	Description := "Remaps two InputButtons to one OutputAxis"
 	
 	AxisButtonStates := [0,0]
-	DeflectionValues := [-50,50]
+	DeflectionValues := []
 	
 	Init(){
 		iow := 125
