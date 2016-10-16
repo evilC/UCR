@@ -1,6 +1,4 @@
-IOClasses not initialized (eg vJoy does not load) on UCR start if no plugins present.
-Needs partial re-engineer of IOClass system.
-Split menus etc off into different IOClass?
+Standard GuiControls not remembering value
 
 Plugin _OnInactive can no longer release held buttons
 
