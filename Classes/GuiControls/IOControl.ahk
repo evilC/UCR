@@ -8,6 +8,7 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	_IOClasses := {}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		aParams[1] := this.SetDefaultOptions(aParams[1])
 		base.__New(parent.hwnd, aParams*)
 		this.ParentPlugin := parent
 		this.Name := name
@@ -22,6 +23,26 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		this._BuildMenu()
 		
 		this.SetControlState()
+	}
+	
+	SetDefaultOptions(optstr){
+		opts := StrSplit(optstr, A_Space)
+		w := 0, h := 0
+		for i, opt in opts {
+			c := SubStr(opt, 1, 1)
+			if (c = "w"){
+				w := 1
+			} else if (c = "h"){
+				h := 1
+			}
+		}
+		if (!w){
+			optstr .= " h40"
+		}
+		if (!h){
+			optstr .= " w125"
+		}
+		return optstr
 	}
 	
 	; GuiControls can call this to add menu items for supported IOClasses
