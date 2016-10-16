@@ -137,7 +137,7 @@
 		}
 		
 		for i, name in this.OutputOrder {
-			this.UCRMenuOutput[name].SetCheckState(name == op)
+			this.BaseClass.UCRMenuOutput[name].SetCheckState(name == op.output)
 		}
 		return 1
 	}
