@@ -315,13 +315,11 @@ Class _UCR {
 	; Also maintains a list of the active threads, so they can be managed on profile change
 	_SetProfileInputThreadState(id, state){
 		if (state){
-			;this._InputThreadStates[id] := 1
 			this._LoadedInputThreads[id] := 1
 			this.Profiles[id]._StartInputThread()
 		} else {
 			this._LoadedInputThreads.Delete(id)	; Remove key entirely for "off"
 			this.Profiles[id]._StopInputThread()
-			;this._InputThreadStates.Delete(id)
 		}
 	}
 	
@@ -438,7 +436,6 @@ Class _UCR {
 		profile := this.profiles[id]
 		;OutputDebug % "UCR| Activating " id " (" profile.name ")"
 		profile._Activate()
-		;this._InputThreadStates[id] := 2
 		this._ActiveInputThreads[id] := profile
 	}
 	
@@ -447,7 +444,6 @@ Class _UCR {
 		;OutputDebug % "UCR| Deactivating " id " (" profile.name ")"
 		profile._DeActivate()
 		this._ActiveInputThreads.Delete(id)
-		;this._InputThreadStates[id] := 1
 	}
 	
 	ActivateProfilesInheritedBy(id){
