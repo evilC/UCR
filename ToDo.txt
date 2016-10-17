@@ -2,6 +2,10 @@
 
 Remove _ActiveInputThreads, _LoadedInputThreads, ActivateProfilesInheritedBy() etc...
 
+Activate new profile, then activate inherited profiles
+Finally, asynchronously PreLoad profiles.
+Should make profile switching smoother
+
 *********************************************************
 
 Investigate effect of saving on performance - esp big pauses.
