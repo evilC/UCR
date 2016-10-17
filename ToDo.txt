@@ -8,6 +8,9 @@ ActivateProfilesInheritedBy()
 etc...
 Give profiles a state (0=InActive, 1=PreLoaded, 2=Active) and let the profile handle transitions.
 Cache profile states in UCR._InputThreadStates
+Inherits checkbox not wired up
+Re-work entry and exit to Bind Mode - On entry set all Active profiles to PreLoaded
+, then on exit use _BuildNewProfileStates to re-build required states
 
 Investigate effect of saving on performance - esp big pauses.
 Suspect calling serialize on all objects locks them up and causes problems.

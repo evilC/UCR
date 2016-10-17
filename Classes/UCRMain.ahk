@@ -347,6 +347,11 @@ Class _UCR {
 			OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
 		}
 
+		; Change current profile to new profile
+		this.CurrentProfile := new_profile
+		
+		this._ProfileToolbox.ResetProfileColors()
+
 		; NEW CODE START
 		new_profile_states := this._BuildNewProfileStates(id)
 		; Set new state for currently active profiles
@@ -363,19 +368,15 @@ Class _UCR {
 		}
 		; NEW CODE END
 		
-		; Change current profile to new profile
-		this.CurrentProfile := new_profile
-		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
 		
 		;UCR.Libraries.TTS.Speak(this.CurrentProfile.Name)
 		
-		; Clear Profile Toolbox colours and start setting new ones
-		this._ProfileToolbox.ResetProfileColors()
-		this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+		; Set Profile Toolbox highlights for Global profile
 		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
+		; Update InheritsFromParent checkbox in Profile Toolbox
 		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
 		
 		;~ ; Start running new profile
@@ -424,8 +425,22 @@ Class _UCR {
 		return ret
 	}
 
-	; Tells a profile to change State and updates UCR's cache of profile states
+	; Tells a profile to change State
+	; Also updates UCR's cache of profile states, and updates the GUI to reflect new state
 	_SetProfileState(id, state){
+		; Update ProfileToolbox display
+		if (state == 2){
+			if (id == this.CurrentProfile.id)
+				this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+			else
+				this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00ffaa})
+		} else if (state == 1){
+			this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00bfff})
+		} else {
+			this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0xffffff})
+		}
+		
+		; Change state
 		if (this._InputThreadStates[id] != state){
 			this.Profiles[id].SetState(state)
 			this._InputThreadStates[id] := state
