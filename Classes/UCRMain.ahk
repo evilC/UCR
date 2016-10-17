@@ -28,6 +28,7 @@ Class _UCR {
 	_ThreadFooter := "`nautoexecute_done := 1`nreturn`n"
 	_LoadedInputThreads := {}		; ProfileID-indexed sparse array of loaded input threads
 	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
+	_InputThreadStates := {}
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	; Default User Settings
 	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, StartMinimized: 0}, GuiControls: {ShowJoystickNames: 1}}
@@ -120,6 +121,7 @@ Class _UCR {
 		; Start the Global Profile
 		this._SetProfileInputThreadState(1,1)
 		this.Profiles.1._Activate()
+		this._InputThreadStates[1] := 2
 		
 		; Start the Current Profile
 		this.ChangeProfile(SettingsObj.CurrentProfile, 0)
@@ -309,14 +311,17 @@ Class _UCR {
 	}
 	
 	; Turns on or off the "Input Thread" for a given profile
+	; This does not turn on input detection, it just starts the thread and loads the hotkeys
 	; Also maintains a list of the active threads, so they can be managed on profile change
-	_SetProfileInputThreadState(profile, state){
+	_SetProfileInputThreadState(id, state){
 		if (state){
-			this._LoadedInputThreads[profile] := 1
-			this.Profiles[profile]._StartInputThread()
+			;this._InputThreadStates[id] := 1
+			this._LoadedInputThreads[id] := 1
+			this.Profiles[id]._StartInputThread()
 		} else {
-			this._LoadedInputThreads.Delete(profile)	; Remove key entirely for "off"
-			this.Profiles[profile]._StopInputThread()
+			this._LoadedInputThreads.Delete(id)	; Remove key entirely for "off"
+			this.Profiles[id]._StopInputThread()
+			;this._InputThreadStates.Delete(id)
 		}
 	}
 	
@@ -326,13 +331,12 @@ Class _UCR {
 	ChangeProfile(id, save := 1){
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
-		newprofile := this.Profiles[id]
+		new_profile := this.Profiles[id]
 		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
-			;~ ; Do nothing if we are changing to the currently active profile
-			;~ if (id = this.CurrentProfile.id)
-				;~ return 1
-			OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
+			; A profile is currently active, de-activate old profiles.
+			OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " new_profile.Name
+			
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
 			
@@ -342,11 +346,27 @@ Class _UCR {
 			; De-Activate profiles which are no longer required
 			this.DeactivatePofilesNotInheritedBy(id)
 		} else {
-			OutputDebug % "UCR| Changing Profile for first time to: " newprofile.Name
+			OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
+		}
+
+		; NEW CODE START
+		new_profile_states := this._BuildNewProfileStates(id)
+		; Set new state for currently active profiles
+		for old_pid, state in this._InputThreadStates {
+			if (old_pid == 1)
+				continue
+			this._SetProfileState(old_pid, new_profile_states[old_pid])
+			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
 		}
 		
+		; Bring any new profiles to the required state
+		for new_pid, state in new_profile_states {
+			this._SetProfileState(new_pid, state)
+		}
+		; NEW CODE END
+		
 		; Change current profile to new profile
-		this.CurrentProfile := newprofile
+		this.CurrentProfile := new_profile
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
@@ -381,11 +401,44 @@ Class _UCR {
 		}
 		return 1
 	}
+
+	; These two functions work out, given a profile ID, which profiles need to be loaded and activated.
+	; Takes into account profile inheritance, and "linked" profiles (those pointed to by ProfileSwitcher plugins)
+	_BuildNewProfileStates(id){
+		profile := this.Profiles[id]
+		ret := this.__BuildNewProfileStates(id)
+		if (profile.InheritsFromParent && profile.ParentProfile){
+			ret[profile.ParentProfile] := 2	; Add the parent profile, and set it to state 2 (Active)
+			ret := this.__BuildNewProfileStates(profile.ParentProfile, ret)	; Add profiles which are linked to the parent
+		}
+		ret[id] := 2	; Make sure the new profile is in the list, and that it is set to Active
+		return ret
+	}
+	__BuildNewProfileStates(id, merge := 0){
+		if (merge == 0)
+			ret := {}
+		else
+			ret := merge.clone()
+		profile := this.Profiles[id]
+		for i, unused in profile._LinkedProfiles {
+			ret[i] := 1	; Add the new profile to the list, and set it's state to 1 (PreLoaded)
+		}
+		return ret
+	}
+
+	; Tells a profile to change State and updates UCR's cache of profile states
+	_SetProfileState(id, state){
+		if (this._InputThreadStates[id] != state){
+			this.Profiles[id].SetState(state)
+			this._InputThreadStates[id] := state
+		}
+	}
 	
 	ActivateInputThread(id){
 		profile := this.profiles[id]
 		;OutputDebug % "UCR| Activating " id " (" profile.name ")"
 		profile._Activate()
+		;this._InputThreadStates[id] := 2
 		this._ActiveInputThreads[id] := profile
 	}
 	
@@ -394,6 +447,7 @@ Class _UCR {
 		;OutputDebug % "UCR| Deactivating " id " (" profile.name ")"
 		profile._DeActivate()
 		this._ActiveInputThreads.Delete(id)
+		;this._InputThreadStates[id] := 1
 	}
 	
 	ActivateProfilesInheritedBy(id){

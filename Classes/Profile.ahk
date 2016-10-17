@@ -15,7 +15,8 @@ Class _Profile {
 	_LinkedProfiles := {}	; Profiles with which this one is associated
 	__LinkedProfiles := {}	; Table of plugin to profile links, used to build _LinkedProfiles
 	InheritsFromParent := 0	
-	_HotkeysActive := 0
+	State := 0				; State of the profile. 0=InActive, 1=InputThread loaded, but disabled, 2=Active (InputThread active)
+	StateNames := {0: "Inactive", 1: "PreLoaded", 2: "Active"}
 	
 	__New(id, name, parent){
 		static fn
@@ -127,9 +128,13 @@ Class _Profile {
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
+	SetState(state){
+		OutputDebug % "UCR| SetState for profile " this.Name " setting state to " this.StateNames[state]
+	}
+	
 	; The profile became active
 	_Activate(){
-		if (this._HotkeysActive)
+		if (this.State == 2)
 			return
 		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
 		if (this.InputThread == 0){
@@ -139,7 +144,7 @@ Class _Profile {
 		;this._SetHotkeyState(1)
 		this.InputThread.SetDetectionState(1)
 
-		this._HotkeysActive := 1
+		this.State := 2
 		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
@@ -151,7 +156,7 @@ Class _Profile {
 	
 	; The profile went inactive
 	_DeActivate(){
-		if (!this._HotkeysActive)
+		if (this.State == 0)
 			return
 		;if (this.InputThread != 0){
 			;this._SetHotkeyState(0)
