@@ -29,7 +29,42 @@ Class _Profile {
 		;this._StartInputThread()
 		this._CreateGui()
 	}
-	
+
+	; Sets the State of the Profile
+	; 0 = InActive (Profile stopped, InputThread not loaded)
+	; 1 = Preloaded (Profile stopped, InputThread loaded but disabled)
+	; 2 = Active (Profile started, InputThread loaded and enabled)
+	SetState(state){
+		if (this.State == state)
+			return
+		OutputDebug % "UCR| SetState for profile " this.Name " setting state to " this.StateNames[state]
+		; Start or stop the InputThread
+		if (state){
+			; InputThread needs to be active in some way
+			if (this.State < 1){
+				this._StartInputThread()
+			}
+			; Activate if State is 2, Deactivate if State is 1
+			a := state - 1
+		} else {
+			; De-Activate
+			if (this.State){
+				this._StopInputThread()
+			}
+			a := 0
+		}
+		
+		; Activate / Deactivate profile (Cause timers etc in the profile to stop)
+		if (a){
+			this._Activate()
+		} else {
+			this._DeActivate()
+		}
+		
+		; Set State
+		this.State := state	
+	}
+
 	; Updates the list of "Linked" profiles...
 	; plugin = plugin altering it's link status with a profile
 	; profile = profile that the plugin is altering it's relation to
@@ -126,10 +161,6 @@ Class _Profile {
 		Gui, Color, 777777
 		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
 		Gui, % hOld ":Default"	; Restore previous default Gui
-	}
-	
-	SetState(state){
-		OutputDebug % "UCR| SetState for profile " this.Name " setting state to " this.StateNames[state]
 	}
 	
 	; The profile became active

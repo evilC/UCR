@@ -338,11 +338,11 @@ Class _UCR {
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
 			
-			; Stop threads which are no longer required
-			this.StopThreadsNotLinkedToProfileId(id)
+			;~ ; Stop threads which are no longer required
+			;~ this.StopThreadsNotLinkedToProfileId(id)
 			
-			; De-Activate profiles which are no longer required
-			this.DeactivatePofilesNotInheritedBy(id)
+			;~ ; De-Activate profiles which are no longer required
+			;~ this.DeactivatePofilesNotInheritedBy(id)
 		} else {
 			OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
 		}
@@ -378,18 +378,18 @@ Class _UCR {
 		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
 		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
 		
-		; Start running new profile
-		this._SetProfileInputThreadState(id,1)
-		this.ActivateInputThread(this.CurrentProfile.id)
+		;~ ; Start running new profile
+		;~ this._SetProfileInputThreadState(id,1)
+		;~ this.ActivateInputThread(this.CurrentProfile.id)
 		
 		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
 		
-		; Make sure all linked or inherited profiles have active input threads
-		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
+		;~ ; Make sure all linked or inherited profiles have active input threads
+		;~ this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
 		
-		; Activate profiles which are inherited
-		this.ActivateProfilesInheritedBy(id)
+		;~ ; Activate profiles which are inherited
+		;~ this.ActivateProfilesInheritedBy(id)
 		
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 		
