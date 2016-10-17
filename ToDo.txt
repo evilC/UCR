@@ -1,21 +1,17 @@
+********* Re-work profile switching system ************
+
 Profiles linked to global profile not kept active in other profiles.
-Ticking inherit from parent does not pre-load profiles that are linked to the parent.
-Re-work profile switching system, it's a mess.
-Remove
-_ActiveInputThreads
-_LoadedInputThreads
-ActivateProfilesInheritedBy()
-etc...
-Give profiles a state (0=InActive, 1=PreLoaded, 2=Active) and let the profile handle transitions.
-Cache profile states in UCR._InputThreadStates
-Inherits checkbox not wired up
+
+Remove _ActiveInputThreads, _LoadedInputThreads, ActivateProfilesInheritedBy() etc...
+
 Re-work entry and exit to Bind Mode - On entry set all Active profiles to PreLoaded
-, then on exit use _BuildNewProfileStates to re-build required states
+then on exit use _BuildNewProfileStates to re-build required states
+
+*********************************************************
 
 Investigate effect of saving on performance - esp big pauses.
 Suspect calling serialize on all objects locks them up and causes problems.
 Cache values? Move to random access storage? SQLite?
-
 Plugin _OnInactive can no longer release held buttons
 
 Profile Inheritance option not always showing in Profile Toolbox

@@ -324,8 +324,12 @@ Class _UCR {
 	}
 	
 	; We wish to change profile. This may happen due to user input, or application changing
+	; This is the function which ultimately decides which profiles should be active...
+	; ... and which profiles should be "PreLoaded" (InputThread running, but detection suspended)
 	; Save param can be set to 0 to not save when changing profile ...
 	; ... eg so that when _LoadSettings() calls ChangeProfile, we do not save while loading.
+	; ChangeProfile will accept the profile id of the current profile...
+	; ... which will cause it to re-evaluate which profiles are inherited or linked
 	ChangeProfile(id, save := 1){
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
@@ -522,9 +526,13 @@ Class _UCR {
 		}
 	}
 	
+	; The user changed the InheritsFromParent setting for a profile
+	; Reload profiles as appropriate, and save settings
 	SetProfileInheritsState(id, state){
 		this.profiles[id].InheritsFromParent := state
-		this._SaveSettings()
+		; Change to the Current Profile, to force load of inherited profile
+		; This will also force a save of settings
+		this.ChangeProfile(this.CurrentProfile.id)
 	}
 	
 	ProfileLinksChanged(){
