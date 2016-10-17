@@ -414,6 +414,7 @@ Class _UCR {
 			ret[profile.ParentProfile] := 2	; Add the parent profile, and set it to state 2 (Active)
 			ret := this.__BuildNewProfileStates(profile.ParentProfile, ret)	; Add profiles which are linked to the parent
 		}
+		ret := this.__BuildNewProfileStates(1, ret)	; Add profiles which are linked to the Global profile
 		ret[id] := 2	; Make sure the new profile is in the list, and that it is set to Active
 		return ret
 	}

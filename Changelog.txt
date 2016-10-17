@@ -4,6 +4,12 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.4 - ???
+= Re-Work of profile changing code
+= Profiles linked to by the Global profile are now PreLoaded
+  ie if you have a ProfileSwitcher plugin in the Global profile
+  then the profile that it points to will always be PreLoaded (in memory)
+
 0.1.3 - 16th Oct 2016
 + Added a new AxisSplitter plugin.
   Useful eg for mapping a normal axis to two xbox triggers.
