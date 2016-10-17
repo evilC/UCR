@@ -1,7 +1,5 @@
 ********* Re-work profile switching system ************
 
-Profiles linked to global profile not kept active in other profiles.
-
 Remove _ActiveInputThreads, _LoadedInputThreads, ActivateProfilesInheritedBy() etc...
 
 Re-work entry and exit to Bind Mode - On entry set all Active profiles to PreLoaded
