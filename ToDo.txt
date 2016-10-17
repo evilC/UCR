@@ -1,5 +1,13 @@
 Profiles linked to global profile not kept active in other profiles.
 Ticking inherit from parent does not pre-load profiles that are linked to the parent.
+Re-work profile switching system, it's a mess.
+Remove
+_ActiveInputThreads
+_LoadedInputThreads
+ActivateProfilesInheritedBy()
+etc...
+Give profiles a state (0=InActive, 1=PreLoaded, 2=Active) and let the profile handle transitions.
+Cache profile states in UCR._InputThreadStates
 
 Investigate effect of saving on performance - esp big pauses.
 Suspect calling serialize on all objects locks them up and causes problems.
@@ -26,3 +34,6 @@ This requires some processing at run-time that could maybe be avoided by adding 
 Move Hat# to BindOptions?
 
 IsEmptyAssoc in Plugin not working? GuiControls always in INI even if empty
+
+From old ToDo:
+* Sort out _RequestBinding / _RefreshBinding - may already be done?
