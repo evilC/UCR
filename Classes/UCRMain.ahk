@@ -599,7 +599,7 @@ Class _UCR {
 	_InputEvent(ControlGuid, state){
 		for hwnd, obj in this._InputActivitySubscriptions {
 			cb := obj.callback, profile_id := obj.profile_id
-			if (IsObject(obj.callback)  && ObjHasKey(this._ActiveInputThreads, obj.profile_id))
+			if (IsObject(obj.callback)  && ObjHasKey(this._InputThreadStates, obj.profile_id))
 				obj.callback.Call(ControlGuid, state)
 		}
 	}
