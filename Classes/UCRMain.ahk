@@ -886,10 +886,8 @@ Class _UCR {
 			this._CurrentState := this._State.InputBind
 			; De-Activate all active profiles, to make sure they do not interfere with the bind process
 			this._DeActivateProfiles()
+			; Start Bind Mode, pass callback to _BindModeEnded which gets fired when user makes a selection
 			this._BindModeHandler.StartBindMode(IOClassMappings, this._BindModeEnded.Bind(this, callback))
-			;bo := new AHK_KBM_Input()
-			;bo.Binding.push(33)
-			;this._BindModeEnded(hk, bo)
 			return 1
 		}
 	}
@@ -897,7 +895,7 @@ Class _UCR {
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, primitive){
 		OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
-		this._ActivateProfiles()
+		this.ChangeProfile(this.CurrentProfile.id)
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)
 	}
@@ -907,23 +905,18 @@ Class _UCR {
 		this._InputHandler.SetDeltaBinding(delta)
 	}
 	
-	; Activates all profiles in the _ActiveInputThreads array.
-	_ActivateProfiles(){
-		for p_id, p in this._ActiveInputThreads {
-			outputdebug % "UCR| Activating profile " p.name
-			p._Activate()
-		}
-	}
-	
-	; DeActivates all profiles in the _ActiveInputThreads array
+	; DeActivates all profiles in the _InputThreadStates array
 	; We don't want hotkeys or plugins active while in Bind Mode...
+	; Use ChangeProfile() on the current profile to re-activate.
 	_DeActivateProfiles(){
-		for p_id, p in this._ActiveInputThreads {
-			outputdebug % "UCR| DeActivating profile " p.name
-			p._DeActivate()
+		for p_id, state in this._InputThreadStates {
+			if (state == 2){
+				this._SetProfileState(p_id, 1)
+				outputdebug % "UCR| _DeActivateProfiles changing state of profile " this.Profiles[p_id].name " from Active to PreLoaded"
+			}
 		}
 	}
-	
+
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
 	_GetProfileName(){
 		c := 1

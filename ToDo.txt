@@ -2,9 +2,6 @@
 
 Remove _ActiveInputThreads, _LoadedInputThreads, ActivateProfilesInheritedBy() etc...
 
-Re-work entry and exit to Bind Mode - On entry set all Active profiles to PreLoaded
-then on exit use _BuildNewProfileStates to re-build required states
-
 *********************************************************
 
 Investigate effect of saving on performance - esp big pauses.
