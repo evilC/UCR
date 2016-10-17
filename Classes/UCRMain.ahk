@@ -27,7 +27,6 @@ Class _UCR {
 	_ThreadHeader := "`n#Persistent`n#NoTrayIcon`n#MaxHotkeysPerInterval 9999`n"
 	_ThreadFooter := "`nautoexecute_done := 1`nreturn`n"
 	_LoadedInputThreads := {}		; ProfileID-indexed sparse array of loaded input threads
-	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
 	_InputThreadStates := {}
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	; Default User Settings
@@ -119,9 +118,7 @@ Class _UCR {
 		}
 		
 		; Start the Global Profile
-		this._SetProfileInputThreadState(1,1)
-		this.Profiles.1._Activate()
-		this._InputThreadStates[1] := 2
+		this._SetProfileState(1, 2)
 		
 		; Start the Current Profile
 		this.ChangeProfile(SettingsObj.CurrentProfile, 0)
@@ -310,19 +307,6 @@ Class _UCR {
 		this.CurrentProfile._AddPlugin()
 	}
 	
-	; Turns on or off the "Input Thread" for a given profile
-	; This does not turn on input detection, it just starts the thread and loads the hotkeys
-	; Also maintains a list of the active threads, so they can be managed on profile change
-	_SetProfileInputThreadState(id, state){
-		if (state){
-			this._LoadedInputThreads[id] := 1
-			this.Profiles[id]._StartInputThread()
-		} else {
-			this._LoadedInputThreads.Delete(id)	; Remove key entirely for "off"
-			this.Profiles[id]._StopInputThread()
-		}
-	}
-	
 	; We wish to change profile. This may happen due to user input, or application changing
 	; This is the function which ultimately decides which profiles should be active...
 	; ... and which profiles should be "PreLoaded" (InputThread running, but detection suspended)
@@ -330,7 +314,12 @@ Class _UCR {
 	; ... eg so that when _LoadSettings() calls ChangeProfile, we do not save while loading.
 	; ChangeProfile will accept the profile id of the current profile...
 	; ... which will cause it to re-evaluate which profiles are inherited or linked
-	ChangeProfile(id, save := 1){
+	ChangeProfile(id := 0, save := 1){
+		if (id == 0){
+			; No passed ID, assume current profile
+			; Used to refresh state of linked / inherited profiles etc
+			id := this.CurrentProfile.id
+		}
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
 		new_profile := this.Profiles[id]
@@ -342,11 +331,6 @@ Class _UCR {
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
 			
-			;~ ; Stop threads which are no longer required
-			;~ this.StopThreadsNotLinkedToProfileId(id)
-			
-			;~ ; De-Activate profiles which are no longer required
-			;~ this.DeactivatePofilesNotInheritedBy(id)
 		} else {
 			OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
 		}
@@ -356,12 +340,9 @@ Class _UCR {
 		
 		this._ProfileToolbox.ResetProfileColors()
 
-		; NEW CODE START
 		new_profile_states := this._BuildNewProfileStates(id)
 		; Set new state for currently active profiles
 		for old_pid, state in this._InputThreadStates {
-			if (old_pid == 1)
-				continue
 			this._SetProfileState(old_pid, new_profile_states[old_pid])
 			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
 		}
@@ -370,31 +351,18 @@ Class _UCR {
 		for new_pid, state in new_profile_states {
 			this._SetProfileState(new_pid, state)
 		}
-		; NEW CODE END
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
-		
-		;UCR.Libraries.TTS.Speak(this.CurrentProfile.Name)
 		
 		; Set Profile Toolbox highlights for Global profile
 		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
 		; Update InheritsFromParent checkbox in Profile Toolbox
 		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
 		
-		;~ ; Start running new profile
-		;~ this._SetProfileInputThreadState(id,1)
-		;~ this.ActivateInputThread(this.CurrentProfile.id)
-		
 		; Make the new profile's Gui visible
 		this.CurrentProfile._Show()
-		
-		;~ ; Make sure all linked or inherited profiles have active input threads
-		;~ this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
-		
-		;~ ; Activate profiles which are inherited
-		;~ this.ActivateProfilesInheritedBy(id)
 		
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 		
@@ -416,6 +384,7 @@ Class _UCR {
 		}
 		ret := this.__BuildNewProfileStates(1, ret)	; Add profiles which are linked to the Global profile
 		ret[id] := 2	; Make sure the new profile is in the list, and that it is set to Active
+		ret[1] := 2		; The Global profile is always active
 		return ret
 	}
 	__BuildNewProfileStates(id, merge := 0){
@@ -431,99 +400,29 @@ Class _UCR {
 	}
 
 	; Tells a profile to change State
-	; Also updates UCR's cache of profile states, and updates the GUI to reflect new state
+	; Also updates UCR's cache of profile states, and updates the ProfileToolBox to reflect the new state
 	_SetProfileState(id, state){
 		; Update ProfileToolbox display
 		if (state == 2){
-			if (id == this.CurrentProfile.id)
+			if (id == this.CurrentProfile.id){
+				; Profile is Active as it is the Current Profile
 				this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
-			else
+			} else {
+				; Profile is Active as it is Inherited by the Current Profile
 				this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00ffaa})
+			}
 		} else if (state == 1){
+			; Profile is PreLoaded
 			this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00bfff})
 		} else {
+			; Profile is InActive
 			this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0xffffff})
 		}
 		
-		; Change state
+		; Change the state of the Profile
 		if (this._InputThreadStates[id] != state){
 			this.Profiles[id].SetState(state)
 			this._InputThreadStates[id] := state
-		}
-	}
-	
-	ActivateInputThread(id){
-		profile := this.profiles[id]
-		;OutputDebug % "UCR| Activating " id " (" profile.name ")"
-		profile._Activate()
-		this._ActiveInputThreads[id] := profile
-	}
-	
-	DeActivateInputThread(id){
-		profile := this.profiles[id]
-		;OutputDebug % "UCR| Deactivating " id " (" profile.name ")"
-		profile._DeActivate()
-		this._ActiveInputThreads.Delete(id)
-	}
-	
-	ActivateProfilesInheritedBy(id){
-		pp_id := this.profiles[id].ParentProfile
-		if (this.profiles[id].InheritsfromParent && pp_id != id){
-			this._ProfileToolbox.SetProfileColor(pp_id, {fore: 0x0, back: 0x00ffaa})
-			this.ActivateInputThread(pp_id)
-		}
-	}
-	
-	DeactivatePofilesNotInheritedBy(id){
-		for p_id, p in this._ActiveInputThreads {
-			if (p_id == id || p._IsGlobal || (p.InheritsfromParent && p.ParentProfle == id)){
-				continue
-			}
-			this.DeActivateInputThread(p_id)
-		}
-	}
-	
-	StopThreadsNotLinkedToProfileId(id){
-		; Stop the InputThread of any profiles that are no longer linked
-		; _LoadedInputThreads may be modified by this operation, so iterate a cloned version.
-		loaded_threads := this._LoadedInputThreads.clone()
-		profile := this.Profiles[id]
-		if (profile.InheritsFromParent && profile.ParentProfile){
-			inc_ids := {profile.ParentProfile: 1}
-			for p_id, p in this.profiles[profile.ParentProfile]._LinkedProfiles {
-				inc_ids[p_id] := 1
-			}
-		} else {
-			inc_ids := {}
-		}
-		for p_id, state in loaded_threads {
-			if (! (p_id == id || p_id == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, p_id) || ObjHasKey(this.Profiles[id]._LinkedProfiles, p_id) || ObjHasKey(inc_ids, p_id))){
-				OutputDebug % "UCR| StopThreadsNotLinkedToProfileId stopping thread"
-				this._SetProfileInputThreadState(p_id,0)
-				this._ProfileToolbox.UnSetProfileColor(p_id)
-			}
-		}
-	}
-	
-	StartThreadsLinkedToProfileId(id){
-		; Start the InputThreads for any linked profiles
-		profile := this.profiles[id]
-		profile_list := [profile._LinkedProfiles]
-		; If this profile Inherits from parent, then add the parent's _LinkedProfiles to the list
-		if (profile.InheritsFromParent && profile.ParentProfile){
-			this._SetProfileInputThreadState(profile.ParentProfile,1)	; Start the parent also
-			profile_list.push(this.profiles[profile.ParentProfile]._LinkedProfiles)
-		}
-		Loop % profile_list.length() {
-			for p_id, state in profile_list[A_Index] {
-				if (p_id = id)
-					continue
-				p := this.Profiles[p_id]
-				if (p.InputThread = 0){
-					this._SetProfileInputThreadState(p_id,1)
-				}
-				this._ProfileToolbox.SetProfileColor(p_id, {fore: 0x0, back: 0x00bfff})
-			}
 		}
 	}
 	
@@ -536,11 +435,9 @@ Class _UCR {
 		this.ChangeProfile(this.CurrentProfile.id)
 	}
 	
+	; Called when the user changes the setting in a ProfileSwitcher plugin
 	ProfileLinksChanged(){
-		if (!this.CurrentProfile.id)
-			return
-		this.StopThreadsNotLinkedToProfileId(this.CurrentProfile.id)
-		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
+		this.ChangeProfile(this.CurrentProfile.id)
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 	}
 	
@@ -738,8 +635,6 @@ Class _UCR {
 				break
 			}
 		}
-		; Terminate profile input thread
-		this._SetProfileInputThreadState(profile.id,0)
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}

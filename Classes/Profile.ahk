@@ -134,6 +134,8 @@ Class _Profile {
 	
 	; Delete requested
 	OnClose(){
+		; Kill the InputThread
+		this._StopInputThread()
 		; Remove child plugins
 		for id, plugin in this.Plugins {
 			; Close plugin, but do not remove binding as thread is closing anyway
@@ -170,9 +172,7 @@ Class _Profile {
 		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
 		if (this.InputThread == 0){
 			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
-			UCR._SetProfileInputThreadState(this.id,1)
 		}
-		;this._SetHotkeyState(1)
 		this.InputThread.SetDetectionState(1)
 
 		this.State := 2
