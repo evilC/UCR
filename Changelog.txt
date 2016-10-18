@@ -6,7 +6,8 @@ Key:
 
 0.1.4 - ???
 = Re-Work of profile changing code
-= Profiles linked to by the Global profile are now PreLoaded
+  Profile changes should now feel more responsive
+= Profiles linked to by the Global profile are now always PreLoaded
   ie if you have a ProfileSwitcher plugin in the Global profile
   then the profile that it points to will always be PreLoaded (in memory)
 

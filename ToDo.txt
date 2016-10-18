@@ -1,11 +1,3 @@
-********* Re-work profile switching system ************
-
-On profile change, activate new profile, then activate inherited profiles
-Finally, asynchronously PreLoad profiles.
-Should make profile switching smoother
-
-*********************************************************
-
 Investigate effect of saving on performance - esp big pauses.
 Suspect calling serialize on all objects locks them up and causes problems.
 Cache values? Move to random access storage? SQLite?

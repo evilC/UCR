@@ -335,22 +335,46 @@ Class _UCR {
 		} else {
 			OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
 		}
+		
+		; Reset the highlights in the ProfileToolbox
+		this._ProfileToolbox.ResetProfileColors()
 
 		; Change current profile to new profile
 		this.CurrentProfile := new_profile
 		this.CurrentPID := id
-		
-		this._ProfileToolbox.ResetProfileColors()
 
 		new_profile_states := this._BuildNewProfileStates(id)
-		; Set new state for currently active profiles
+
+		; Stop any active Profiles that need to be stopped
+		; Anything that is state 2 in _InputThreadStates and not present in new_profile_states has to die...
 		for old_pid, state in this._InputThreadStates {
+			if (state != 2)
+				continue
 			this._SetProfileState(old_pid, new_profile_states[old_pid])
 			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
 		}
 		
-		; Bring any new profiles to the required state
+		; Activate the new profile
+		this._SetProfileState(id, 2)
+
+		; Next Activate other profiles (eg Inherited, Global) that need to be active
 		for new_pid, state in new_profile_states {
+			if (state != 2)
+				continue
+			this._SetProfileState(new_pid, state)
+		}
+		
+		; Beyond this point, time is not really a factor.
+		; Profiles and their InputThreads should be in the correct state, and ready to process input
+		; ToDo: Look into making some of the rest of this function into an Asynch timer?
+		
+		; Make the new profile's Gui visible
+		this.CurrentProfile._Show()
+
+		; Finally PreLoad any linked profiles
+		for new_pid, state in new_profile_states {
+			if (state != 1)
+				continue
 			this._SetProfileState(new_pid, state)
 		}
 		
@@ -362,9 +386,6 @@ Class _UCR {
 		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
 		; Update InheritsFromParent checkbox in Profile Toolbox
 		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
-		
-		; Make the new profile's Gui visible
-		this.CurrentProfile._Show()
 		
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 		
@@ -385,7 +406,8 @@ Class _UCR {
 			ret := this.__BuildNewProfileStates(profile.ParentProfile, ret)	; Add profiles which are linked to the parent
 		}
 		ret := this.__BuildNewProfileStates(1, ret)	; Add profiles which are linked to the Global profile
-		ret[id] := 2	; Make sure the new profile is in the list, and that it is set to Active
+		;ret[id] := 2	; Make sure the new profile is in the list, and that it is set to Active
+		ret.Delete(id)	; Make sure that the new profile itself did not make it into the list
 		ret[1] := 2		; The Global profile is always active
 		return ret
 	}
