@@ -2,9 +2,6 @@
 
 Add CurrentPID property to UCR to save accessing the profile object all the time
 
-Test setting / clearing profile for ProfileSwitcher
-Calls UCR.ProfileLinksChanged
-
 On profile change, activate new profile, then activate inherited profiles
 Finally, asynchronously PreLoad profiles.
 Should make profile switching smoother
