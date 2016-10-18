@@ -4,13 +4,14 @@ Class _UCR {
 	SettingsVersion := "0.0.6"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
-	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
+	_GameBindDuration := 0			; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0				; The current state of the application
-	;Profiles := []				; A hwnd-indexed sparse array of instances of _Profile objects
+	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
 	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
 	ProfileTree := {}				; A lookup table for Profile order. A sparse array of Parent IDs, containing Ordered Arrays of Profile IDs
-	Libraries := {}				; A name indexed array of instances of library objects
+	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
+	CurrentPID := 0					; The ID of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	BindControlLookup := {}			; Allows bind threads to find the plugin that
@@ -318,7 +319,7 @@ Class _UCR {
 		if (id == 0){
 			; No passed ID, assume current profile
 			; Used to refresh state of linked / inherited profiles etc
-			id := this.CurrentProfile.id
+			id := this.CurrentPID
 		}
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
@@ -337,6 +338,7 @@ Class _UCR {
 
 		; Change current profile to new profile
 		this.CurrentProfile := new_profile
+		this.CurrentPID := id
 		
 		this._ProfileToolbox.ResetProfileColors()
 
@@ -404,7 +406,7 @@ Class _UCR {
 	_SetProfileState(id, state){
 		; Update ProfileToolbox display
 		if (state == 2){
-			if (id == this.CurrentProfile.id){
+			if (id == this.CurrentPID){
 				; Profile is Active as it is the Current Profile
 				this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
 			} else {
@@ -432,17 +434,17 @@ Class _UCR {
 		this.profiles[id].InheritsFromParent := state
 		; Change to the Current Profile, to force load of inherited profile
 		; This will also force a save of settings
-		this.ChangeProfile(this.CurrentProfile.id)
+		this.ChangeProfile(this.CurrentPID)
 	}
 	
 	; Called when the user changes the setting in a ProfileSwitcher plugin
 	ProfileLinksChanged(){
-		this.ChangeProfile(this.CurrentProfile.id)
+		this.ChangeProfile(this.CurrentPID)
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 	}
 	
 	UpdateCurrentProfileReadout(){
-		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentProfile.id)
+		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentPID)
 	}
 	
 	BuildProfilePathName(id){
@@ -606,7 +608,7 @@ Class _UCR {
 	
 	; user clicked the Delete Profile button
 	_DeleteProfile(){
-		id := this.CurrentProfile.id
+		id := this.CurrentPID
 		if (id = 1 || id = 2)
 			return
 		pp := this.CurrentProfile.ParentProfile
@@ -790,7 +792,7 @@ Class _UCR {
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, primitive){
 		OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
-		this.ChangeProfile(this.CurrentProfile.id, 0)	; Do not save on change profile, bind mode will already cause a save
+		this.ChangeProfile(this.CurrentPID, 0)	; Do not save on change profile, bind mode will already cause a save
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)
 	}
@@ -870,7 +872,7 @@ Class _UCR {
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {SettingsVersion: this.SettingsVersion
-		, CurrentProfile: this.CurrentProfile.id
+		, CurrentProfile: this.CurrentPID
 		, CurrentSize: this.CurrentSize
 		, CurrentPos: this.CurrentPos
 		, UserSettings: this.UserSettings
