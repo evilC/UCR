@@ -1,3 +1,5 @@
+No point in processing each profile more than once
+
 Investigate effect of saving on performance - esp big pauses.
 Suspect calling serialize on all objects locks them up and causes problems.
 Cache values? Move to random access storage? SQLite?
