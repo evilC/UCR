@@ -1,7 +1,5 @@
 ********* Re-work profile switching system ************
 
-Add CurrentPID property to UCR to save accessing the profile object all the time
-
 On profile change, activate new profile, then activate inherited profiles
 Finally, asynchronously PreLoad profiles.
 Should make profile switching smoother
