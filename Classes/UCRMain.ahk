@@ -120,7 +120,7 @@ Class _UCR {
 		; Start the Global Profile
 		this._SetProfileState(1, 2)
 		
-		; Start the Current Profile
+		; Start the Current Profile, do not save
 		this.ChangeProfile(SettingsObj.CurrentProfile, 0)
 		
 		; Watch window position and size using MessageFilter thread
@@ -790,7 +790,7 @@ Class _UCR {
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, primitive){
 		OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
-		this.ChangeProfile(this.CurrentProfile.id)
+		this.ChangeProfile(this.CurrentProfile.id, 0)	; Do not save on change profile, bind mode will already cause a save
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)
 	}
