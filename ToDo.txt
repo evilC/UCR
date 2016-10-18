@@ -1,3 +1,4 @@
+In UCR.ChangeProfile, at each iteration through new_profile_states, clone it and remove items from list.
 No point in processing each profile more than once
 
 Investigate effect of saving on performance - esp big pauses.
