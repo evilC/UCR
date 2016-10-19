@@ -1,6 +1,14 @@
 In UCR.ChangeProfile, at each iteration through new_profile_states, clone it and remove items from list.
 No point in processing each profile more than once
 
+Implement "Pause Button" to DeActivate all profiles.
+Needs to cater for the situation where we are "Paused" and enter Bind Mode.
+Once Bind Mode ends, it needs to know to not re-activate profiles
+Also, some visual / audible feedback should be given to let the user know that UCR is paused
+
+Implement Mouse to Keyboard.
+Extend Mouse To Joystick?
+
 Investigate effect of saving on performance - esp big pauses.
 Suspect calling serialize on all objects locks them up and causes problems.
 Cache values? Move to random access storage? SQLite?
