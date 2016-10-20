@@ -2,6 +2,8 @@ In UCR.ChangeProfile, at each iteration through new_profile_states, clone it and
 No point in processing each profile more than once
 
 Saw Orphaned profile in Barrie's INI. Not sure how it happened. Investigate
+Mitigation: Add Telemetry to UCR. Number of profiles, active threads, etc. Statusbar?
+This will assist in detecting when a profile has become orphaned etc.
 
 BuildProfilePathName getting called sometimes for a profile when it's parent has not loaded because it cannot get the parent profile.
 Repro:
