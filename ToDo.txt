@@ -18,7 +18,9 @@ Are likely to always be able to cause problems like this. Will have to load all 
 Already mechanism to force path update, UCR.FireProfileTreeChangeCallbacks()
 Also should maybe load profiles top-down by iterating obj.ProfileTree, instead of obj.Profiles?
 
-M2J - Sometimes DeviceID seems to get set to 0
+IOControl DeviceID sometimes seems to get set to 0
+Seen with various output types (vJoy, Titan) - not sure on whether it happens with input types.
+Generally clearing binding and/or restarting UCR works around.
 
 Implement "Pause Button" to DeActivate all profiles.
 Needs to cater for the situation where we are "Paused" and enter Bind Mode.
