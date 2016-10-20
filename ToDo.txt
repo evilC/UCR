@@ -1,9 +1,20 @@
 In UCR.ChangeProfile, at each iteration through new_profile_states, clone it and remove items from list.
 No point in processing each profile more than once
 
-BuildProfilePathName getting called sometimes for a profile when it's parent has not loaded?
-I think profiles are loading in ID order, so if a profile happens to link to a profile with a higher ID,
-it would fail? Maybe other way around?
+Saw Orphaned profile in Barrie's INI. Not sure how it happened. Investigate
+
+BuildProfilePathName getting called sometimes for a profile when it's parent has not loaded because it cannot get the parent profile.
+Repro:
+Profile 111 is a child of 333
+Profile 222 has a ProfileSwitcher that points to 111
+Profile 111 loads
+Profile 222 loads, ProfileSwitcher points to 111, so it looks up 111 (Loaded)
+It needs to build path to root, so as 111 is a child of 333, it looks up the name of 333 = Boom (333 not loaded).
+Something like this may also be able to cause orphaned profiles?
+Resolution:
+Are likely to always be able to cause problems like this. Will have to load all profiles, then have ProfileSwitchers update path.
+Already mechanism to force path update, UCR.FireProfileTreeChangeCallbacks()
+Also should maybe load profiles top-down by iterating obj.ProfileTree, instead of obj.Profiles?
 
 M2J - Sometimes DeviceID seems to get set to 0
 

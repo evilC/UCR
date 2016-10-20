@@ -473,13 +473,15 @@ Class _UCR {
 		if (!ObjHasKey(this.profiles, id))
 			return ""
 		str := this.Profiles[id].Name
-		while (this.Profiles[id].ParentProfile != 0){
-			p := this.Profiles[id], pp := this.Profiles[p.ParentProfile]
+		i := id
+		while (this.Profiles[i].ParentProfile != 0){
+			p := this.Profiles[i], pp := this.Profiles[p.ParentProfile]
 			if (!IsObject(pp)){
-				return "FAILED TO GET NAME"
+				OutputDebug % "UCR| WARNING! BuildProfilePathName called on profile " id " which has a parent that is not loaded yet (" p.ParentProfile ")"
+				return "BuildProfilePathName_ERROR"
 			}
 			str := pp.Name " >> " str
-			id := pp.id
+			i := pp.id
 		}
 		return str
 	}
@@ -626,6 +628,7 @@ Class _UCR {
 		if (id = 0){
 			id := CreateGUID()
 		}
+		OutputDebug % "UCR| Creating Profile " name " with ID " id
 		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile
 		return id
