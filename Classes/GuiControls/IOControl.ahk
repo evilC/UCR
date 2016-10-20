@@ -43,7 +43,7 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		if (!w){
 			out .= " w125"
 		}
-		OutputDebug % "UCR| Changing options from " optstr " to " out
+		;OutputDebug % "UCR| Changing options from " optstr " to " out
 		return out
 	}
 	

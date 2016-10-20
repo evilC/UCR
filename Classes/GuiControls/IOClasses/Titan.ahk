@@ -231,7 +231,7 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 	
 	AddMenuItems(){
-		OutputDebug % "UCR| Button AddMenuItems - this.BaseClass.Connections.Output=" this.BaseClass.Connections.Output
+		;OutputDebug % "UCR| Button AddMenuItems - this.BaseClass.Connections.Output=" this.BaseClass.Connections.Output
 		menu := this.ParentControl.AddSubMenu("Titan One Buttons", "TitanOneButtons")
 		Loop % this._NumButtons {
 			btn := A_Index
@@ -329,7 +329,7 @@ class TitanOne_Hat_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	}
 	
 	AddMenuItems(){
-		OutputDebug % "UCR| Hat AddMenuItems. this.BaseClass.Connections.Output=" this.BaseClass.Connections.Output
+		;OutputDebug % "UCR| Hat AddMenuItems. this.BaseClass.Connections.Output=" this.BaseClass.Connections.Output
 		menu := this.ParentControl.AddSubMenu("Titan One D-Pad", "TitanOneHat")
 		Loop % this._NumDirections {
 			menu.AddMenuItem(this.BuildHatName(A_Index), A_Index, this._ChangedValue.Bind(this, A_Index))	; Set the callback when selected
