@@ -475,6 +475,9 @@ Class _UCR {
 		str := this.Profiles[id].Name
 		while (this.Profiles[id].ParentProfile != 0){
 			p := this.Profiles[id], pp := this.Profiles[p.ParentProfile]
+			if (!IsObject(pp)){
+				return "FAILED TO GET NAME"
+			}
 			str := pp.Name " >> " str
 			id := pp.id
 		}

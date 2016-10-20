@@ -1,6 +1,12 @@
 In UCR.ChangeProfile, at each iteration through new_profile_states, clone it and remove items from list.
 No point in processing each profile more than once
 
+BuildProfilePathName getting called sometimes for a profile when it's parent has not loaded?
+I think profiles are loading in ID order, so if a profile happens to link to a profile with a higher ID,
+it would fail? Maybe other way around?
+
+M2J - Sometimes DeviceID seems to get set to 0
+
 Implement "Pause Button" to DeActivate all profiles.
 Needs to cater for the situation where we are "Paused" and enter Bind Mode.
 Once Bind Mode ends, it needs to know to not re-activate profiles
