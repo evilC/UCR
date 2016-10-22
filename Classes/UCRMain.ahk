@@ -8,6 +8,7 @@ Class _UCR {
 	_CurrentState := 0				; The current state of the application
 	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
 	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
+	_ProfileSettingsCache := {}		; A unique-id indexed sparse array of settings objects for each Profile
 	ProfileTree := {}				; A lookup table for Profile order. A sparse array of Parent IDs, containing Ordered Arrays of Profile IDs
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
@@ -138,8 +139,10 @@ Class _UCR {
 	GuiClose(hwnd){
 		if (hwnd = this.hwnd){
 			while (this._SavingToDisk){
-				; Wait for save to complete
-				sleep 100
+				; Stop timer and force save
+				fn := this.SaveSettingsTimerFn
+				SetTimer, % fn, Off
+				this.__SaveSettings()
 			}
 			ExitApp
 		}
@@ -631,6 +634,7 @@ Class _UCR {
 		OutputDebug % "UCR| Creating Profile " name " with ID " id
 		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile
+		this._ProfileSettingsCache[id] := profile._Serialize()
 		return id
 	}
 	
@@ -748,7 +752,7 @@ Class _UCR {
 		this._SavingToDisk := 1
 		fn := this.SaveSettingsTimerFn
 		SetTimer, % fn, Off
-		SetTimer, % fn, -1000
+		SetTimer, % fn, -30000
 	}
 	
 	__SaveSettings(){
@@ -770,6 +774,7 @@ Class _UCR {
 	}
 	; A child profile changed in some way
 	_ProfileChanged(profile){
+		this._ProfileSettingsCache[profile.id] := profile._Serialize()
 		this._SaveSettings()
 	}
 	
@@ -904,11 +909,8 @@ Class _UCR {
 		, CurrentSize: this.CurrentSize
 		, CurrentPos: this.CurrentPos
 		, UserSettings: this.UserSettings
-		, Profiles: {}
+		, Profiles: this._ProfileSettingsCache
 		, ProfileTree: this.ProfileTree}
-		for id, profile in this.Profiles {
-			obj.Profiles[id] := profile._Serialize()
-		}
 		return obj
 	}
 	

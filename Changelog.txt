@@ -5,6 +5,9 @@ Key:
 + : Added feature
 
 0.1.4 - ???
+= Changes to how settings are saved
+  UCR now saves 30s after a change, rather than 1s.
+  Profile's settings are now cached, so less work is done when we save.
 = Re-Work of profile changing code
   Profile changes should now feel more responsive
 = Profiles linked to by the Global profile are now always PreLoaded
