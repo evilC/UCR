@@ -567,6 +567,7 @@ Class _UCR {
 		if (!IsObject(this.ProfileTree[parent]))
 			this.ProfileTree[parent] := []
 		this.ProfileTree[parent].push(id)
+		this._ProfileSettingsCache[id] := this.Profiles[id]._Serialize()
 		this.UpdateProfileToolbox()
 		this.ChangeProfile(id)
 	}
@@ -634,7 +635,6 @@ Class _UCR {
 		OutputDebug % "UCR| Creating Profile " name " with ID " id
 		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile
-		this._ProfileSettingsCache[id] := profile._Serialize()
 		return id
 	}
 	
@@ -922,6 +922,7 @@ Class _UCR {
 		for id, profile in obj.Profiles {
 			this._CreateProfile(profile.Name, id, profile.ParentProfile)
 			this.Profiles[id]._Deserialize(profile)
+			this._ProfileSettingsCache[id] := profile
 			this.Profiles[id]._Hide()
 		}
 		;this.CurrentProfile := this.Profiles[obj.CurrentProfile]
