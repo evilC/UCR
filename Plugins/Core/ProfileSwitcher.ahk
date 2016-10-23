@@ -29,8 +29,12 @@ class ProfileSwitcher extends _UCR.Classes.Plugin {
 
 	; The hotkey was pressed to change profile
 	MyHkChangedState(e){
-		;OutputDebug % "UCR| profile: " this.GuiControls["Profile" e].Get()
-		if !(UCR.ChangeProfile(this.GuiControls["Profile" e].Get()))
+		new_profile := this.GuiControls["Profile" e].Get()
+		;OutputDebug % "UCR| new_profile: " new_profile ", Current: " UCR.CurrentPID
+		if (!new_profile || UCR.CurrentPID == new_profile)
+			return	; Filter repeats and unbound profiles
+		;OutputDebug % "UCR| ProfileSwitcher changing to: " new_profile
+		if (!UCR.ChangeProfile(new_profile))
 			SoundBeep, 300, 200
 	}
 	
