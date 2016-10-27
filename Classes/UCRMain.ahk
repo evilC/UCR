@@ -353,7 +353,9 @@ Class _UCR {
 		for old_pid, state in this._InputThreadStates {
 			if (state != 2)
 				continue
-			new_state := new_profile_states[old_pid] == "" ? 0 : new_profile_states[old_pid]
+			new_state := new_profile_states[old_pid]
+			if (new_state == "")
+				new_state := 0
 			this._SetProfileState(old_pid, new_state)
 			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
 		}

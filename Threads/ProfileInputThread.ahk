@@ -274,7 +274,7 @@ Class _InputThread {
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher " ControlGUID
-			} else if (!this.TimerWanted && this.TimerRunning){
+			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher " ControlGUID
@@ -330,7 +330,7 @@ Class _InputThread {
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
 				OutputDebug % "UCR| AHK_JoyAxis_Input Started AxisWatcher"
-			} else if (!this.TimerWanted && this.TimerRunning){
+			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
 				OutputDebug % "UCR| AHK_JoyAxis_Input Stopped AxisWatcher"
@@ -404,7 +404,7 @@ Class _InputThread {
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher"
-			} else if (!this.TimerWanted && this.TimerRunning){
+			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher"
