@@ -26,7 +26,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 		static PovAngles := {0: {0:-1, 1:0, 2:18000}, 1:{0:9000, 1:4500, 2:13500}, 2:{0:27000, 1:31500, 2:22500}}
 		static Axes := ["x", "y"]
 		if (UCR._CurrentState == 2 && !delay_done){
-			fn := this.SetState.Bind(this, state, 1)
+			fn := this.Set.Bind(this, state, 1)
 			SetTimer, % fn, % -UCR._GameBindDuration
 		} else {
 			this.__value.Set(state)
