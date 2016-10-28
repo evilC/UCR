@@ -32,6 +32,6 @@ class AxisInitializer extends _UCR.Classes.Plugin {
 	}
 	
 	Set(){
-		this.GuiControls.OutputAxis.Set(this.GuiControls.Position.Get())
+		this.IOControls.OutputAxis.Set(this.GuiControls.Position.Get())
 	}
 }
