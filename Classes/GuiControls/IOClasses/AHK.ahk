@@ -211,7 +211,8 @@ class AHK_JoyAxis_Input extends _UCR.Classes.IOClasses.IOClassBase {
 			ji := (GetKeyState(this.DeviceID "JoyInfo"))
 			if (this.DeviceID){
 				Loop 4 {
-					this._AxisMenus[A_Index].SetEnableState(InStr(ji, AHKAxisList[A_Index+2]))
+					i := A_Index+2
+					this._AxisMenus[i].SetEnableState(InStr(ji, AHKAxisList[i]))
 				}
 			}
 		}
