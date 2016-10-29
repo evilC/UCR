@@ -95,7 +95,10 @@
 		this.BaseClass.AxisMappings.PS3 := [{name: "LX", id: 11}
 			,{name: "LY", id: 12}
 			,{name: "RX", id: 9}
-			,{name: "RY", id: 10}]
+			,{name: "RY", id: 10}
+			,{name: "L2", id: 7}
+			,{name: "R2", id: 4}]
+			
 		this.BaseClass.AxisMappings.PS4 := this.BaseClass.AxisMappings.PS3
 	}
 	
