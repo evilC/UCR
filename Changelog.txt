@@ -5,7 +5,9 @@ Key:
 + : Added feature
 
 0.1.4 - ???
-= Fixed AxisInitializer plugin
+= Fixed AxisInitializer plugin not working at all
+= Fixed Titan triggers not sending correct values
+= Fixed Titan PS3/4 triggers being absent from InputAxis
 = Fix for GameBind in OutputAxis and OutputButton IOControls
 = Changes to how settings are saved
   UCR now saves 30s after a change, rather than 1s.

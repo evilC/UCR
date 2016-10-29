@@ -86,18 +86,18 @@
 			, {name: "Playstation", id: 0}]
 		
 		this.BaseClass.AxisMappings.XB360 := [{name: "LX", id: 11}
-			,{name: "LY", id: 12}
-			,{name: "RX", id: 9}
-			,{name: "RY", id: 10}
-			,{name: "LT", id: 7}
-			,{name: "RT", id: 4}]
+			,{name: "LY", id: 12, trigger: 0}
+			,{name: "RX", id: 9, trigger: 0}
+			,{name: "RY", id: 10, trigger: 0}
+			,{name: "LT", id: 7, trigger: 1}
+			,{name: "RT", id: 4, trigger: 1}]
 		this.BaseClass.AxisMappings.XB1 := this.BaseClass.AxisMappings.XB360
 		this.BaseClass.AxisMappings.PS3 := [{name: "LX", id: 11}
-			,{name: "LY", id: 12}
-			,{name: "RX", id: 9}
-			,{name: "RY", id: 10}
-			,{name: "L2", id: 7}
-			,{name: "R2", id: 4}]
+			,{name: "LY", id: 12, trigger: 0}
+			,{name: "RX", id: 9, trigger: 0}
+			,{name: "RY", id: 10, trigger: 0}
+			,{name: "L2", id: 7, trigger: 1}
+			,{name: "R2", id: 4, trigger: 1}]
 			
 		this.BaseClass.AxisMappings.PS4 := this.BaseClass.AxisMappings.PS3
 	}
@@ -206,8 +206,14 @@
 	
 	SetAxisState(state){
 		if (this.BaseClass.Connections.Output){
-			state := (state * 2) - 100 ; Convert from 0..100 to -100...+100
-			this.SetIdentifier(this.BaseClass.AxisMappings[this.BaseClass.Connections.Output, this.Binding[1]].id, state)
+			am := this.BaseClass.AxisMappings[this.BaseClass.Connections.Output, this.Binding[1]]
+			; If this is a half-axis (trigger), then do not stretch to fill full scale
+			; When UCR passes an axis from one object to another, it is always in the scale 0..100
+			; Titan uses -100..100 for normal axes, and 0..100 for triggers
+			; So we just pass the value straight through for triggers, and stretch / shift the scale for normal axes
+			if (!am.trigger)
+				state := (state * 2) - 100 ; Convert from 0..100 to -100...+100
+			this.SetIdentifier(am.id, state)
 		}
 	}
 	
