@@ -1,6 +1,6 @@
 class PauseButton extends _UCR.Classes.Plugin {
 	Type := "PauseButton"
-	Description := "One copy is always present in the global profile"
+	Description := "Pauses / Unpauses all other inputs. Add one to the SuperGlobal profile"
 
 	Init(){
 		Gui, Add, GroupBox, Center xm ym w140 h60 section, Input Button

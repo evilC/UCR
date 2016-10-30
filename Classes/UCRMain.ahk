@@ -119,7 +119,10 @@ Class _UCR {
 		if (this.UserSettings.MinimizeOptions.StartMinimized){
 			this._GuiMinimized()
 		}
-		
+
+		; Start the SuperGlobal Profile
+		this._SetProfileState(-1, 2)
+
 		; Start the Global Profile
 		this._SetProfileState(1, 2)
 		
@@ -232,17 +235,10 @@ Class _UCR {
 	; Creates the objects for the Main Menu
 	_CreateMainMenu(){
 		this.MainMenu := new _Menu()
-		;this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
-		;	.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
 		this.MainMenu.AddSubMenu("&View", "View")
 			.AddMenuItem("&Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized"))
 			.parent.AddMenuItem("&Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
-		;this.MainMenu.AddSubMenu("&Debug", "Debug")
-		;	.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
 		this.IOClassMenu := this.MainMenu.AddSubMenu("&IOClasses", "IOClasses")
-			;.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
-		;this.MainMenu.AddSubMenu("&Titan Device", "Titan")
-		;	.AddMenuItem("Detect current output type...", "DetectType", this._MenuHandler.Bind(this, "DetectTitanType"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
@@ -272,15 +268,6 @@ Class _UCR {
 		}
 		*/
 		
-		/*
-		else if (name = "DetectTitanType"){
-			this.Libraries.Titan.Acquire()
-			type := this.Libraries.Titan.OutputNames[this.Libraries.Titan.Connections.output]
-			if (!type)
-				type := "Not connected"
-			msgbox % "Currently plugged in as type: "type
-		}
-		*/
 		this._SaveSettings()
 	}
 	
@@ -390,7 +377,11 @@ Class _UCR {
 		this._ProfileToolbox.SelectProfileByID(id)
 		
 		; Set Profile Toolbox highlights for Global profile
-		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
+		if (this.CurrentPID != 1)
+			this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
+		; Set Profile Toolbox highlights for SuperGlobal profile
+		if (this.CurrentPID != -1)
+			this._ProfileToolbox.SetProfileColor(-1, {fore: 0x0, back: 0x00ff00})
 		; Update InheritsFromParent checkbox in Profile Toolbox
 		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
 		
@@ -416,6 +407,7 @@ Class _UCR {
 		;ret[id] := 2	; Make sure the new profile is in the list, and that it is set to Active
 		ret.Delete(id)	; Make sure that the new profile itself did not make it into the list
 		ret[1] := 2		; The Global profile is always active
+		ret[-1] := 2	; The SuperGlobal profile is always active
 		return ret
 	}
 	__BuildNewProfileStates(id, merge := 0){
@@ -730,7 +722,10 @@ Class _UCR {
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
 			; Settings file empty or not found, create new settings
-			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [1, 2]}, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
+			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [-1, 1, 2]}
+				, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}
+					, "2": {"Name": "Default", "ParentProfile": "0"}
+					, "-1": {"Name": "SuperGlobal", "ParentProfile": "0"}}}
 		} else {
 			OutputDebug % "UCR| Loading JSON from disk"
 			j := JSON.Load(j)
@@ -845,6 +840,8 @@ Class _UCR {
 	_DeActivateProfiles(){
 		for p_id, state in this._InputThreadStates {
 			if (state == 2){
+				if (p_id == -1)
+					continue	; Do not de-activate the SuperGlobal profile
 				this._SetProfileState(p_id, 1)
 				outputdebug % "UCR| _DeActivateProfiles changing state of profile " this.Profiles[p_id].name " from Active to PreLoaded"
 			}
@@ -858,8 +855,10 @@ Class _UCR {
 			return
 		this._Paused := state
 		if (this._Paused){
+			Gui, % this.hTopPanel ":Color", CC0000
 			this._DeActivateProfiles()
 		} else {
+			Gui, % this.hTopPanel ":Color", Default
 			this.ChangeProfile(this.CurrentPID, 0)	; change profile, but do not save
 		}
 	}
