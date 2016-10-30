@@ -2,6 +2,7 @@
 class InputAxis extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "InputAxis"
 	static _IOClassNames := ["AHK_JoyAxis_Input"]
+	;static _IOClassNames := ["AHK_JoyAxis_Input", "XInput_Axis"]
 	static _Text := "Input"
 	
 	__Delete(){
