@@ -4,6 +4,7 @@ Class _UCR {
 	SettingsVersion := "0.0.6"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
+	_Paused := 0					; 1 if the user has paused UCR via the PauseButton in the Global profile
 	_GameBindDuration := 0			; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0				; The current state of the application
 	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
@@ -850,6 +851,23 @@ Class _UCR {
 		}
 	}
 
+	; Sets the Paused state of UCR.
+	; While paused, all profiles are de-activated.
+	SetPauseState(state){
+		if (this._Paused == state || this._CurrentState != this._State.Normal )
+			return
+		this._Paused := state
+		if (this._Paused){
+			this._DeActivateProfiles()
+		} else {
+			this.ChangeProfile(this.CurrentPID, 0)	; change profile, but do not save
+		}
+	}
+	
+	TogglePauseState(){
+		this.SetPauseState(!this._Paused)
+	}
+	
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
 	_GetProfileName(){
 		c := 1
