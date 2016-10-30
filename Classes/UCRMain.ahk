@@ -1,7 +1,7 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
 Class _UCR {
 	Version := "0.1.4"				; The version of the main application
-	SettingsVersion := "0.0.6"		; The version of the settings file format
+	SettingsVersion := "0.0.7"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
 	_Paused := 0					; 1 if the user has paused UCR via the PauseButton in the Global profile
@@ -764,7 +764,11 @@ Class _UCR {
 	
 	; If SettingsVersion changes, this handles converting the INI file to the new format
 	_UpdateSettings(obj){
-		if (obj.SettingsVersion != "0.0.6"){
+		if (obj.SettingsVersion == "0.0.6"){
+			obj.Profiles[-1] := {"Name": "SuperGlobal", "ParentProfile": "0"}
+			obj.ProfileTree[0].InsertAt(1, -1)
+			obj.SettingsVersion := "0.0.7"
+		} else {
 			msgbox % "This version of UCR does not support INI files from previous versions.`nPlease back up or delete your INI file and re-run UCR."
 			ExitApp
 		}
