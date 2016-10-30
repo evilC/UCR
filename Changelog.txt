@@ -4,7 +4,14 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.4 - ???
+0.1.4 - 30th Oct 2016
++ Added "Pause" mode for UCR
+  When UCR is Paused, all profiles (except the SuperGlobal profile) are DeActivated
+  Useful, eg if you blocked Left Mouse Button in a profile and you need to use it.
++ Added new SuperGlobal profile
+  Plugins in this profile will always be active, even when UCR is Paused
++ Added new "PauseButton" plugin
+  Put this in the SuperGlobal profile, and use it to Pause UCR
 = Fixed AxisInitializer plugin not working at all
 = Fixed Titan triggers not sending correct values
 = Fixed Titan PS3/4 triggers being absent from InputAxis
