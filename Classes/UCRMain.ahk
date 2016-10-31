@@ -336,14 +336,14 @@ Class _UCR {
 
 		new_profile_states := this._BuildNewProfileStates(id)
 
-		; Stop any active Profiles that need to be stopped
-		; Anything that is state 2 in _InputThreadStates and not present in new_profile_states has to die...
+		; Change any active profiles to their new state
 		for old_pid, state in this._InputThreadStates {
 			if (state != 2)
 				continue
 			new_state := new_profile_states[old_pid]
 			if (new_state == "")
 				new_state := 0
+			OutputDebug % "UCR| Setting state for profile " old_pid " to " new_state
 			this._SetProfileState(old_pid, new_state)
 			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
 		}
@@ -375,15 +375,6 @@ Class _UCR {
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
-		
-		; Set Profile Toolbox highlights for Global profile
-		if (this.CurrentPID != 1)
-			this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
-		; Set Profile Toolbox highlights for SuperGlobal profile
-		if (this.CurrentPID != -1)
-			this._ProfileToolbox.SetProfileColor(-1, {fore: 0x0, back: 0x00ff00})
-		; Update InheritsFromParent checkbox in Profile Toolbox
-		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
 		
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 		
@@ -425,11 +416,16 @@ Class _UCR {
 	; Tells a profile to change State
 	; Also updates UCR's cache of profile states, and updates the ProfileToolBox to reflect the new state
 	_SetProfileState(id, state){
+		if (id != -1 && this._Paused && state == 2)
+			state := 1
 		; Update ProfileToolbox display
-		if (state == 2){
-			if (id == this.CurrentPID){
-				; Profile is Active as it is the Current Profile
-				this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+		if (id == this.CurrentPID){
+			; Profile is Active as it is the Current Profile
+			this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+		} else if (state == 2){
+			if (abs(id) == 1){
+				; Profile is active as it is Global or SuperGlobal
+				this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00ff00})
 			} else {
 				; Profile is Active as it is Inherited by the Current Profile
 				this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00ffaa})
@@ -860,11 +856,10 @@ Class _UCR {
 		this._Paused := state
 		if (this._Paused){
 			Gui, % this.hTopPanel ":Color", CC0000
-			this._DeActivateProfiles()
 		} else {
 			Gui, % this.hTopPanel ":Color", Default
-			this.ChangeProfile(this.CurrentPID, 0)	; change profile, but do not save
 		}
+		this.ChangeProfile(this.CurrentPID, 0)	; change profile, but do not save
 	}
 	
 	TogglePauseState(){
