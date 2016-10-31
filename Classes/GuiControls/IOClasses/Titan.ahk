@@ -200,7 +200,7 @@
 	
 	SetButtonState(state){
 		if (this.BaseClass.Connections.Output){
-			this.SetIdentifier(this.BaseClass.ButtonMappings[this.BaseClass.Connections.Output, this.Binding[1]].id, state)
+			this.SetIdentifier(this.BaseClass.ButtonMappings[this.BaseClass.Connections.Output, this.Binding[1]].id, state * 100)
 		}
 	}
 	
