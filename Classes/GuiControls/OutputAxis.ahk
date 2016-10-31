@@ -16,6 +16,10 @@ class OutputAxis extends _UCR.Classes.GuiControls.InputAxis {
 	
 	; Plugin Authors call this to set the state of the output axis
 	Set(state, delay_done := 0){
+		if (state > 100)
+			state := 100
+		else if (state < 0)
+			state := 0
 		if (UCR._CurrentState == 2 && !delay_done){
 			fn := this.Set.Bind(this, state, 1)
 			SetTimer, % fn, % -UCR._GameBindDuration
