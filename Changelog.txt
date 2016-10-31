@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.4 - ???
+0.1.4 - 31st Oct 2016
 + Added "Pause" mode for UCR
   When UCR is Paused, all profiles (except the SuperGlobal profile) are DeActivated
   Useful, eg if you blocked Left Mouse Button in a profile and you need to use it.
