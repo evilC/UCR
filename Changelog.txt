@@ -12,6 +12,9 @@ Key:
   Plugins in this profile will always be active, even when UCR is Paused
 + Added new "PauseButton" plugin
   Put this in the SuperGlobal profile, and use it to Pause UCR
++ Added "Incremental Mode" to the ButtonsToAxis plugin
+  This adjusts the current axis position by the deflection setting on each press
+  of the buttons. The axis does not center when you release a button in this mode.
 = Titan Buttons now send a value of 100 to the Titan API, instead of 1.
   This fixes Titan one L2/R2 button mappings only deflecting the analog button 1%
 = Fixed AxisInitializer plugin not working at all
