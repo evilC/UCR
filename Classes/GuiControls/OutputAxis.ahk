@@ -3,8 +3,10 @@ class OutputAxis extends _UCR.Classes.GuiControls.InputAxis {
 	static _ControlType := "OutputAxis"
 	static _IOClassNames := ["vJoy_Axis_Output", "vXBox_Axis_Output", "TitanOne_Axis_Output"]
 	static _Text := "Output"
-
+	
 	static vJoyAxisList := ["X", "Y", "Z", "Rx", "Ry", "Rz", "S1", "S2"]
+	
+	state := 50	; Default to mid-point on the axis
 	
 	__New(parent, name, ChangeValueCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, 0, aParams*)
