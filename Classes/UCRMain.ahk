@@ -338,12 +338,12 @@ Class _UCR {
 
 		; Change any active profiles to their new state
 		for old_pid, state in this._InputThreadStates {
-			if (state != 2)
-				continue
 			new_state := new_profile_states[old_pid]
+			if (state != 2 || old_pid == id || state == new_state)
+				continue
 			if (new_state == "")
 				new_state := 0
-			OutputDebug % "UCR| Setting state for profile " old_pid " to " new_state
+			OutputDebug % "UCR| ChangeProfile Setting new state for profile " old_pid " to " new_state
 			this._SetProfileState(old_pid, new_state)
 			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
 		}
