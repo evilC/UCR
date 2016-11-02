@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.5 - ???
+= Fixed PLugin ChangeValueCallbacks being fired multiple times with same value on start.
+
 0.1.4 - 31st Oct 2016
 + Added "Pause" mode for UCR
   When UCR is Paused, all profiles (except the SuperGlobal profile) are DeActivated
