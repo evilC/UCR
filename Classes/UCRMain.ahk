@@ -661,6 +661,7 @@ Class _UCR {
 				break
 			}
 		}
+		this._ProfileSettingsCache.Delete(id)
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}
