@@ -18,12 +18,11 @@ Class _UCR {
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	BindControlLookup := {}			; Allows bind threads to find the plugin that
 	PLUGIN_WIDTH := 680				; The Width of a plugin
-	PLUGIN_FRAME_HEIGHT := 300		; The initial height of the plugin area
+	PLUGIN_FRAME_HEIGHT := 200		; The initial height of the plugin area
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
 	SIDE_PANEL_WIDTH := 150			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
-	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
-	;CurrentSize := {w: this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
+	BOTTOM_PANEL_HEIGHT := 50		; The amount of space reserved for the top panel (profile select etc)
 	CurrentSize := {}				; The current size of the app.
 	CurrentPos := {x: "", y: ""}	; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
@@ -226,6 +225,18 @@ Class _UCR {
 		; Parent the ProfilePanel to the main Gui
 		Gui, % this.hwnd ":Add", Gui, % "x0 y+0 ah w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.PLUGIN_FRAME_HEIGHT, % this.hProfilePanel
 
+		; --------------- BottomPanel ----------------
+		Gui, new, HwndHwnd
+		this.hBottomPanel := hwnd
+		Gui % this.hBottomPanel ":-Border"
+		;Gui % this.hBottomPanel ":Color", Blue
+		Gui % this.hBottomPanel ":Margin", 0, 0
+		Gui, % this.hBottomPanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Bottom Panel
+		;Gui, % this.hBottomPanel ":Add", Gui, % "x0 y+0 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
+		Gui, % this.hBottomPanel ":Show"
+		; Parent the BottomPanel to the main Gui
+		Gui, % this.hwnd ":Add", Gui, % "ay x0 y+0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.BOTTOM_PANEL_HEIGHT, % this.hBottomPanel
+
 		; --------------- SidePanel ----------------
 		Gui, new, HwndHwnd
 		this.hSidePanel := hwnd
@@ -236,8 +247,8 @@ Class _UCR {
 		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
 		Gui, % this.hSidePanel ":Show"
 		; Parent the SidePanel to the main Gui
-		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT, % this.hSidePanel
-		
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT +UCR.BOTTOM_PANEL_HEIGHT, % this.hSidePanel
+
 		; Set the initial size of the Main Gui
 		Gui, % this.hwnd ":Show", % "Hide", % "UCR - Universal Control Remapper v" this.Version
 		
