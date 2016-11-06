@@ -162,7 +162,8 @@ Class _Profile {
 		this.hSpacer := hSpacer
 		Gui, Color, 777777
 		;Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
-		Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
+		;Gui, % UCR.hwnd ":Add", Gui, % "x0 y" UCR.TOP_PANEL_HEIGHT " w" UCR.PLUGIN_FRAME_WIDTH " ah h" UCR.GUI_MIN_HEIGHT - UCR.TOP_PANEL_HEIGHT, % this.hwnd
+		Gui, % UCR.hProfilePanel ":Add", Gui, % "x0 y0 ah w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.PLUGIN_FRAME_HEIGHT, % this.hwnd
 		Gui, % hOld ":Default"	; Restore previous default Gui
 	}
 	
@@ -204,8 +205,10 @@ Class _Profile {
 	
 	; Show the GUI
 	_Show(){
-		if (this.hwnd)
-			Gui, % this.hwnd ":Show", % "h" UCR.CurrentSize.h - UCR.TOP_PANEL_HEIGHT
+		if (this.hwnd){
+			rect := this.GetClientRect(UCR.hProfilePanel)
+			Gui, % this.hwnd ":Show", % "w" rect.w " h" rect.h
+		}
 	}
 	
 	; Hide the GUI
@@ -214,6 +217,12 @@ Class _Profile {
 			Gui, % this.hwnd ":Hide"
 	}
 	
+	GetClientRect(hwnd){
+		VarSetCapacity(RC, 16, 0)
+		DllCall("User32.dll\GetClientRect", "Ptr", hwnd, "Ptr", &RC)
+		return {w: NumGet(RC, 8, "Int"), h: Numget(RC, 12, "Int")}
+	}
+
 	; User clicked Add Plugin button
 	_AddPlugin(){
 		GuiControlGet, idx, % UCR.hTopPanel ":", % UCR.hPluginSelect

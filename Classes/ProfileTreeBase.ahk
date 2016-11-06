@@ -6,7 +6,7 @@ class _ProfileTreeBase {
 		Gui +ToolWindow
 		Gui +Resize
 		this.hwnd := hwnd
-		;Gui, Color, Red
+		Gui, Color, Red
 		Gui, Add, TreeView, % "w" UCR.SIDE_PANEL_WIDTH " h100 aw ah hwndhTreeview AltSubmit"
 		this.hTreeview := hTreeview
 		

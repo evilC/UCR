@@ -18,6 +18,7 @@ Class _UCR {
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
 	BindControlLookup := {}			; Allows bind threads to find the plugin that
 	PLUGIN_WIDTH := 680				; The Width of a plugin
+	PLUGIN_FRAME_HEIGHT := 300		; The initial height of the plugin area
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
 	SIDE_PANEL_WIDTH := 150			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
@@ -219,23 +220,38 @@ Class _UCR {
 		; Parent the TopPanel to the main Gui
 		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
 		
+		; --------------- ProfilePanel ----------------
+		Gui, new, HwndhProfilePanel
+		this.hProfilePanel := hProfilePanel
+		Gui % this.hProfilePanel ":-Caption"
+		Gui % this.hProfilePanel ":Color", Black
+		Gui % this.hProfilePanel ":Margin", 0, 0
+
+		; Parent the ProfilePanel to the main Gui
+		Gui, % this.hwnd ":Add", Gui, % "x0 y+0 ah w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.PLUGIN_FRAME_HEIGHT, % this.hProfilePanel
+
 		; --------------- SidePanel ----------------
 		; Add the profile toolbox
 		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
 		
-		Gui, new, HwndHwnd
-		this.hSidePanel := hwnd
-		Gui % this.hSidePanel ":-Caption"
-		;Gui % this.hSidePanel ":Color", Green
-		Gui % this.hSidePanel ":Margin", 0, 0
-		Gui, % this.hSidePanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Profile ToolBox
-		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
-		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this.hSidePanel
+		;~ Gui, new, HwndHwnd
+		;~ this.hSidePanel := hwnd
+		;~ Gui % this.hSidePanel ":-Caption"
+		;~ Gui % this.hSidePanel ":Color", Green
+		;~ Gui % this.hSidePanel ":Margin", 0, 0
+		;~ Gui, % this.hSidePanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Profile ToolBox
+		;~ Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
+		;~ Gui, % this.hSidePanel ":Show"
+		;~ ;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this.hSidePanel
+		;~ Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT, % this.hSidePanel
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT, % this._ProfileToolbox.hwnd
+		
+		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 h, % this._ProfileToolbox.hwnd
 		
 		Gui, % this.hwnd ":Show", % "Hide", % "UCR - Universal Control Remapper v" this.Version
-		;Gui, % this.hwnd ":Show", ,% "UCR - Universal Control Remapper v" this.Version
 		WinGetPos , , , w, h, % "ahk_id " this.hwnd
-		Gui, % this.hwnd ":+Minsize" w "x" h
+		rect := this.GetClientRect(this.hwnd)
+		Gui, % this.hwnd ":+Minsize" rect.w "x" rect.h
 	}
 	
 	; Creates the objects for the Main Menu
@@ -284,9 +300,18 @@ Class _UCR {
 			this.CurrentSize.w := w, this.CurrentSize.h := h
 		}
 		Gui, % this.hwnd ":Show", % xy " h" this.CurrentSize.h " w" this.Currentsize.w
+		;rect := this.GetClientRect(this.hwnd)
+		;Gui, % this._ProfileToolbox.hwnd ":Show", % "h" rect.h
+		;Gui, % this.hSidePanel ":Show", % "h" rect.h
 		;Gui, % this.hwnd ":Show", % xy
 	}
-	
+
+	GetClientRect(hwnd){
+		VarSetCapacity(RC, 16, 0)
+		DllCall("User32.dll\GetClientRect", "Ptr", hwnd, "Ptr", &RC)
+		return {w: NumGet(RC, 8, "Int"), h: Numget(RC, 12, "Int")}
+	}
+
 	_OnMove(wParam, lParam, msg, hwnd){
 		;this.CurrentPos := {x: LoWord(lParam), y: HiWord(lParam)}
 		; Use WinGetPos rather than pos in message, as this is the top left of the Gui, not the client rect
