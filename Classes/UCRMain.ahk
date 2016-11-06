@@ -190,11 +190,7 @@ Class _UCR {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		;start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.SIDE_PANEL_WIDTH
-		;Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
-		;Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
 		
-		;Gui, % this.hwnd ":+Maxsize" start_width
 		; ---------------- TopPanel -------------------
 		Gui, new, HwndhTopPanel
 		this.hTopPanel := hTopPanel
@@ -231,24 +227,21 @@ Class _UCR {
 		Gui, % this.hwnd ":Add", Gui, % "x0 y+0 ah w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.PLUGIN_FRAME_HEIGHT, % this.hProfilePanel
 
 		; --------------- SidePanel ----------------
-		; Add the profile toolbox
-		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
+		Gui, new, HwndHwnd
+		this.hSidePanel := hwnd
+		Gui % this.hSidePanel ":-Caption"
+		;Gui % this.hSidePanel ":Color", Green
+		Gui % this.hSidePanel ":Margin", 0, 0
+		Gui, % this.hSidePanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Profile ToolBox
+		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
+		Gui, % this.hSidePanel ":Show"
+		; Parent the SidePanel to the main Gui
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT, % this.hSidePanel
 		
-		;~ Gui, new, HwndHwnd
-		;~ this.hSidePanel := hwnd
-		;~ Gui % this.hSidePanel ":-Caption"
-		;~ Gui % this.hSidePanel ":Color", Green
-		;~ Gui % this.hSidePanel ":Margin", 0, 0
-		;~ Gui, % this.hSidePanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Profile ToolBox
-		;~ Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
-		;~ Gui, % this.hSidePanel ":Show"
-		;~ ;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this.hSidePanel
-		;~ Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT, % this.hSidePanel
-		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT, % this._ProfileToolbox.hwnd
-		
-		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 h, % this._ProfileToolbox.hwnd
-		
+		; Set the initial size of the Main Gui
 		Gui, % this.hwnd ":Show", % "Hide", % "UCR - Universal Control Remapper v" this.Version
+		
+		; Set the MinSize
 		WinGetPos , , , w, h, % "ahk_id " this.hwnd
 		rect := this.GetClientRect(this.hwnd)
 		Gui, % this.hwnd ":+Minsize" rect.w "x" rect.h

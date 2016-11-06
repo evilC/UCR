@@ -5,9 +5,12 @@ Key:
 + : Added feature
 
 0.1.5 - ???
+! UCR.exe changed in this version.
+  Some autopositioning bugs in AHK_H were found.
 = Fixed PLugin ChangeValueCallbacks being fired multiple times with same value on start.
 = Fixed Profile InputThreads being stopped then restarted when changing to current profile.
 = Deleted profiles are now properly removed from UCR.ini
+= Simplified layout of UCR GUI
 
 0.1.4 - 31st Oct 2016
 + Added "Pause" mode for UCR
