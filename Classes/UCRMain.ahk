@@ -22,8 +22,9 @@ Class _UCR {
 	SIDE_PANEL_WIDTH := 150			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
 	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
-	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
-	CurrentPos := {x: "", y: ""}										; The current position of the app.
+	;CurrentSize := {w: this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
+	CurrentSize := {}				; The current size of the app.
+	CurrentPos := {x: "", y: ""}	; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
 	_InputThreadScript := ""		; Set in Ctor
@@ -44,6 +45,9 @@ Class _UCR {
 		Gui +HwndHwnd
 		this.hwnd := hwnd
 		
+		; We need this on so we can work out the size of the various panes before they are shown.
+		DetectHiddenWindows, On
+
 		; Work out the name of the INI file
 		str := A_ScriptName
 		if (A_IsCompiled)
@@ -185,51 +189,53 @@ Class _UCR {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.SIDE_PANEL_WIDTH
-		Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
-		Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
+		;start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.SIDE_PANEL_WIDTH
+		;Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
+		;Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
 		
 		;Gui, % this.hwnd ":+Maxsize" start_width
-		Gui, new, HwndHwnd
-		this.hTopPanel := hwnd
+		; ---------------- TopPanel -------------------
+		Gui, new, HwndhTopPanel
+		this.hTopPanel := hTopPanel
 		Gui % this.hTopPanel ":-Border"
 		;Gui % this.hTopPanel ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, Main UCR Window
 		
-		; Profile Select DDL
+		; Current profile readout
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
 		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 115
 		this.hCurrentProfile := hCurrentProfile
 		
-		;Gui, % this.hTopPanel ":Add", Button, % "x+5 yp-1 hwndhProfileToolbox w100", Profile Toolbox
-		;this.hProfileToolbox := hProfileToolbox
-		;fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
-		;GuiControl +g, % this.hProfileToolbox, % fn
-		
-		; Add Plugin
+		; Plugin Selection DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
 		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect AltSubmit w" UCR.PLUGIN_FRAME_WIDTH - 150
 		this.hPluginSelect := hPluginSelect
 		
+		; Add Plugin Button
 		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddPlugin x+5 yp-1", Add
 		this.hAddPlugin := hAddPlugin
 		fn := this._AddPlugin.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hAddPlugin, % fn
 		
+		; Parent the TopPanel to the main Gui
 		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
 		
+		; --------------- SidePanel ----------------
 		; Add the profile toolbox
 		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
 		
 		Gui, new, HwndHwnd
 		this.hSidePanel := hwnd
 		Gui % this.hSidePanel ":-Caption"
+		;Gui % this.hSidePanel ":Color", Green
 		Gui % this.hSidePanel ":Margin", 0, 0
 		Gui, % this.hSidePanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Profile ToolBox
-		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah", % this._ProfileToolbox.hwnd
-		Gui % this.hSidePanel ":Show", Hide
-		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
+		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this.hSidePanel
 		
-		;Gui, % this.hwnd ":Show"
+		Gui, % this.hwnd ":Show", % "Hide", % "UCR - Universal Control Remapper v" this.Version
+		;Gui, % this.hwnd ":Show", ,% "UCR - Universal Control Remapper v" this.Version
+		WinGetPos , , , w, h, % "ahk_id " this.hwnd
+		Gui, % this.hwnd ":+Minsize" w "x" h
 	}
 	
 	; Creates the objects for the Main Menu
@@ -273,7 +279,12 @@ Class _UCR {
 	
 	_ShowGui(){
 		xy := (this.CurrentPos.x != "" && this.CurrentPos.y != "" ? "x" this.CurrentPos.x " y" this.CurrentPos.y : "")
+		if (!this.CurrentSize.w || !this.CurrentSize.h){
+			WinGetPos , , , w, h, % "ahk_id " this.hwnd
+			this.CurrentSize.w := w, this.CurrentSize.h := h
+		}
 		Gui, % this.hwnd ":Show", % xy " h" this.CurrentSize.h " w" this.Currentsize.w
+		;Gui, % this.hwnd ":Show", % xy
 	}
 	
 	_OnMove(wParam, lParam, msg, hwnd){

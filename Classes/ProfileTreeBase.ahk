@@ -6,9 +6,10 @@ class _ProfileTreeBase {
 		Gui +ToolWindow
 		Gui +Resize
 		this.hwnd := hwnd
+		;Gui, Color, Red
 		Gui, Add, TreeView, % "w" UCR.SIDE_PANEL_WIDTH " h100 aw ah hwndhTreeview AltSubmit"
 		this.hTreeview := hTreeview
-		;Gui, Show
+		
 		this.TV_EventFn := this.TV_Event.Bind(this)
 		;this.BuildProfileTree()
 	}
