@@ -1,16 +1,6 @@
 Rename AHKToInternal etc - the -50..+50 range is no longer "internal", 0..100 is
 Use the term "Signed" instead.
 
-Repro for IOControls (eg OutputButton) not updating when you make a selection:
-Add ButtonToButton, quit UCR
-OR
-Click Clear on OutputButton, quit UCR
-INI file is in this state for IOControl:
-      "OB1": {
-       "Binding": {},
-       "DeviceID": 0
-      }
-
 In UCR.ChangeProfile, at each iteration through new_profile_states, clone it and remove items from list.
 No point in processing each profile more than once
 

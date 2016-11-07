@@ -59,24 +59,33 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	}
 	
 	; Changes the binding of an IOControl
-	; 
 	SetBinding(bo := 0, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
-		if (bo == 0){
+		; Initialize to empty BindObject if needed
+		isobj := IsObject(bo), known_ioclass := ObjHasKey(this._IOClasses, bo.IOClass)
+		if (bo == 0 || !known_ioclass){
 			bo := new _UCR.Classes.IOClasses.BindObject()
 		}
-		cb := this.GetBinding()
-		if (bo.IOClass != cb.IOClass || bo.DeviceID != cb.DeviceID){
-			cb.ClearBinding()
-			this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
+		
+		; Clear old binding if needed
+		if (this.IsBound()){
+			cb := this.GetBinding()
+			if (bo.IOClass != cb.IOClass || bo.DeviceID != cb.DeviceID){
+				cb.ClearBinding()
+				this._RequestBinding()	; Tell the Input IOClass in the Profile's InputThread to delete the binding
+			}
 		}
-		if (bo.IOType == 0){
-			; Plain BindObject (Unbound)
-			this.__value := bo
-		} else {
+		
+		; Set new value
+		if (known_ioclass){
 			; Bound IOClass
 			this._IOClasses[bo.IOClass]._Deserialize(bo)
 			this.__value := this._IOClasses[bo.IOClass]
+		} else {
+			; Plain BindObject (Unbound)
+			this.__value := bo
 		}
+		
+		; Fire callbacks, Update settings etc
 		if (update_guicontrol)
 			this.SetControlState()
 		if (update_ini){

@@ -369,11 +369,18 @@ class vJoy_Stick extends _UCR.Classes.IOClasses.vJoy_Base {
 	}
 
 	_ChangedValue(o){
-		t := this.ParentControl.GetBinding()._vGenDeviceType
-		bo := this.ParentControl.GetBinding()._Serialize()
-		if (t != this._vGenDeviceType){
-			bo.IOClass := this.IOClass
+		create_new := !this.ParentControl.IsBound()
+		if (!create_new){
+			create_new := (bo._vGenDeviceType != this._vGenDeviceType)
+			if (!create_new){
+				bo := this.ParentControl.GetBinding()._Serialize()
+			}
 		}
+		if (create_new){
+			; Create empty bindobject
+			bo := new _UCR.Classes.IOClasses.BindObject()
+		}
+		bo.IOClass := this.IOClass
 		
 		if (o < 9){
 			; Stick selected

@@ -13,13 +13,13 @@ Key:
   So for now, it is gone. this may change in the future.
 + Added "Save Settings" button and readout to let you know if there are unsaved changes.
   There is also a warning if you try to exit UCR with unsaved changes.
+= Fixed OutputButton getting stuck (Selecting options had no effect) if saved unbound.
 = Improved code that handles the overall layout of the UCR GUI.
   Also added "Bottom Panel" to house the new save button.
   Thanks to HotkeyIt for implementing some fixes to our autopositioning system in AHK_H.
 = Fixed Plugin ChangeValueCallbacks being fired multiple times with same value on start.
 = Fixed Profile InputThreads being stopped then restarted when changing to current profile.
 = Deleted profiles are now properly removed from UCR.ini
-= Simplified layout of UCR GUI
 
 0.1.4 - 31st Oct 2016
 + Added "Pause" mode for UCR
