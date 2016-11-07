@@ -22,7 +22,7 @@ Class _UCR {
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
 	SIDE_PANEL_WIDTH := 150			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
-	BOTTOM_PANEL_HEIGHT := 50		; The amount of space reserved for the top panel (profile select etc)
+	BOTTOM_PANEL_HEIGHT := 30		; The amount of space reserved for the top panel (profile select etc)
 	CurrentSize := {}				; The current size of the app.
 	CurrentPos := {x: "", y: ""}	; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
@@ -80,7 +80,7 @@ Class _UCR {
 		}
 		*/
 		
-		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
+		;this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
 		
 		; Provide a common repository of libraries for plugins
 		this._LoadLibraries()
@@ -99,6 +99,9 @@ Class _UCR {
 		; Create the Main Gui
 		this._CreateGui()
 
+		; Update the Save Status in the BottomPanel
+		this._UpdateSaveReadout(0)
+		
 		; Initialize IOClasses
 		; This will add menu entries to the IOClasses menu, and load DLLs etc.
 		for name, cls in _UCR.Classes.IOClasses {
@@ -146,11 +149,13 @@ Class _UCR {
 	
 	GuiClose(hwnd){
 		if (hwnd = this.hwnd){
-			while (this._SavingToDisk){
+			if (this._SavingToDisk){
 				; Stop timer and force save
-				fn := this.SaveSettingsTimerFn
-				SetTimer, % fn, Off
-				this.__SaveSettings()
+				;fn := this.SaveSettingsTimerFn
+				;SetTimer, % fn, Off
+				msgbox, 4, Warning, Warning! You have unsaved settings which will be lost if you exit now.`nDo you wish to save settings before exiting?
+				IfMsgBox, Yes
+					this.__SaveSettings()
 			}
 			ExitApp
 		}
@@ -220,7 +225,7 @@ Class _UCR {
 		this.hProfilePanel := hProfilePanel
 		Gui % this.hProfilePanel ":-Caption"
 		Gui % this.hProfilePanel ":Color", Black
-		Gui % this.hProfilePanel ":Margin", 0, 0
+		;Gui % this.hProfilePanel ":Margin", 0, 0
 
 		; Parent the ProfilePanel to the main Gui
 		Gui, % this.hwnd ":Add", Gui, % "x0 y+0 ah w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.PLUGIN_FRAME_HEIGHT, % this.hProfilePanel
@@ -228,10 +233,15 @@ Class _UCR {
 		; --------------- BottomPanel ----------------
 		Gui, new, HwndHwnd
 		this.hBottomPanel := hwnd
-		Gui % this.hBottomPanel ":-Border"
-		;Gui % this.hBottomPanel ":Color", Blue
+		Gui % this.hBottomPanel ":-Caption"
+		Gui % this.hBottomPanel ":Color", AAAAAA
 		Gui % this.hBottomPanel ":Margin", 0, 0
-		Gui, % this.hBottomPanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Bottom Panel
+		Gui, % this.hBottomPanel ":Add", Text, % "x5 y8 w100", Save Status:
+		Gui, % this.hBottomPanel ":Add", Text, % "hwndhSaveStatus x+0 yp w150 Center"
+		Gui, % this.hBottomPanel ":Add", Button, % "hwndhSaveSettings x+5 yp-5", Save Settings
+		fn := this._SaveSettingsClicked.Bind(this)
+		GuiControl, +g, % hSaveSettings, % fn
+		this.hSaveStatus := hSaveStatus
 		;Gui, % this.hBottomPanel ":Add", Gui, % "x0 y+0 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
 		Gui, % this.hBottomPanel ":Show"
 		; Parent the BottomPanel to the main Gui
@@ -782,21 +792,43 @@ Class _UCR {
 		return j
 	}
 	
+	; The user clicked the Save Settings button
+	_SaveSettingsClicked(){
+		this.__SaveSettings()
+	}
+	
 	; Save settings to disk
 	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
 	_SaveSettings(){
+		this._UpdateSaveReadout(1)
 		this._SavingToDisk := 1
-		fn := this.SaveSettingsTimerFn
-		SetTimer, % fn, Off
-		SetTimer, % fn, -30000
+		;fn := this.SaveSettingsTimerFn
+		;SetTimer, % fn, Off
+		;SetTimer, % fn, -30000
 	}
 	
 	__SaveSettings(){
 		OutputDebug % "UCR| Saving JSON to disk"
+		this._UpdateSaveReadout(2)
 		obj := this._Serialize()
 		SettingsFile := this._SettingsFile
 		FileReplace(JSON.Dump(obj, ,true), SettingsFile)
 		this._SavingToDisk := 0
+		this._UpdateSaveReadout(0)
+	}
+	
+	; Updates the GUI to let the user know whether there are unsaved changes or not
+	_UpdateSaveReadout(state){
+		if (state == 2){
+			GuiControl, +cRed +Redraw, % this.hSaveStatus
+			GuiControl, , % this.hSaveStatus, Saving to disk ...
+		} else if (state == 1){
+			GuiControl, +cRed +Redraw, % this.hSaveStatus
+			GuiControl, , % this.hSaveStatus, You have unsaved changes
+		} else {
+			GuiControl, +cGreen +Redraw, % this.hSaveStatus
+			GuiControl, , % this.hSaveStatus, No unsaved changes
+		}
 	}
 	
 	; If SettingsVersion changes, this handles converting the INI file to the new format
