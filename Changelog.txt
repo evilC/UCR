@@ -16,7 +16,6 @@ Key:
 = Improved code that handles the overall layout of the UCR GUI.
   Also added "Bottom Panel" to house the new save button.
   Thanks to HotkeyIt for implementing some fixes to our autopositioning system in AHK_H.
-  This is the reason for the updated UCR.exe. Without it, UCR will not lay out correctly.
 = Fixed Plugin ChangeValueCallbacks being fired multiple times with same value on start.
 = Fixed Profile InputThreads being stopped then restarted when changing to current profile.
 = Deleted profiles are now properly removed from UCR.ini
