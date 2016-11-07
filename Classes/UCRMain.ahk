@@ -9,7 +9,7 @@ Class _UCR {
 	_CurrentState := 0				; The current state of the application
 	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
 	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
-	_ProfileSettingsCache := {}		; A unique-id indexed sparse array of settings objects for each Profile
+	;_ProfileSettingsCache := {}		; A unique-id indexed sparse array of settings objects for each Profile
 	ProfileTree := {}				; A lookup table for Profile order. A sparse array of Parent IDs, containing Ordered Arrays of Profile IDs
 	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
@@ -609,7 +609,7 @@ Class _UCR {
 		if (!IsObject(this.ProfileTree[parent]))
 			this.ProfileTree[parent] := []
 		this.ProfileTree[parent].push(id)
-		this._ProfileSettingsCache[id] := this.Profiles[id]._Serialize()
+		;this._ProfileSettingsCache[id] := this.Profiles[id]._Serialize()
 		this.UpdateProfileToolbox()
 		this.ChangeProfile(id)
 	}
@@ -711,7 +711,7 @@ Class _UCR {
 				break
 			}
 		}
-		this._ProfileSettingsCache.Delete(id)
+		;this._ProfileSettingsCache.Delete(id)
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}
@@ -846,7 +846,7 @@ Class _UCR {
 	}
 	; A child profile changed in some way
 	_ProfileChanged(profile){
-		this._ProfileSettingsCache[profile.id] := profile._Serialize()
+		;this._ProfileSettingsCache[profile.id] := profile._Serialize()
 		this._SaveSettings()
 	}
 	
@@ -1001,8 +1001,11 @@ Class _UCR {
 		, CurrentSize: this.CurrentSize
 		, CurrentPos: this.CurrentPos
 		, UserSettings: this.UserSettings
-		, Profiles: this._ProfileSettingsCache
 		, ProfileTree: this.ProfileTree}
+		obj.Profiles := {}
+		for id, profile in this.Profiles {
+			obj.Profiles[id] := profile._Serialize()
+		}
 		return obj
 	}
 	
@@ -1014,7 +1017,7 @@ Class _UCR {
 		for id, profile in obj.Profiles {
 			this._CreateProfile(profile.Name, id, profile.ParentProfile)
 			this.Profiles[id]._Deserialize(profile)
-			this._ProfileSettingsCache[id] := profile
+			;this._ProfileSettingsCache[id] := profile
 			this.Profiles[id]._Hide()
 		}
 		;this.CurrentProfile := this.Profiles[obj.CurrentProfile]

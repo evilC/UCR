@@ -7,7 +7,17 @@ Key:
 0.1.5 - ???
 ! UCR.exe changed in this version.
   Some autopositioning bugs in AHK_H were found.
-= Fixed PLugin ChangeValueCallbacks being fired multiple times with same value on start.
+= Removed automatic saving of changes.
+  This is suspected to be a trigger for some crashes or other undesirable behavior.
+  It also meant that if something went wrong, the user had way of backing out of a change.
+  So for now, it is gone. this may change in the future.
++ Added "Save Settings" button and readout to let you know if there are unsaved changes.
+  There is also a warning if you try to exit UCR with unsaved changes.
+= Improved code that handles the overall layout of the UCR GUI.
+  Also added "Bottom Panel" to house the new save button.
+  Thanks to HotkeyIt for implementing some fixes to our autopositioning system in AHK_H.
+  This is the reason for the updated UCR.exe. Without it, UCR will not lay out correctly.
+= Fixed Plugin ChangeValueCallbacks being fired multiple times with same value on start.
 = Fixed Profile InputThreads being stopped then restarted when changing to current profile.
 = Deleted profiles are now properly removed from UCR.ini
 = Simplified layout of UCR GUI
