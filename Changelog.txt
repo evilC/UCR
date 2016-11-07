@@ -4,7 +4,6 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.5 - ???
 ! UCR.exe changed in this version.
   Some autopositioning bugs in AHK_H were found.
 = Removed automatic saving of changes.
