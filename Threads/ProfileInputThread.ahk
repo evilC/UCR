@@ -43,12 +43,17 @@ Class _InputThread {
 
 	; A request was received from the main thread to update a binding.
 	UpdateBinding(ControlGUID, boPtr){
-		bo := ObjShare(boPtr).clone()
-		;OutputDebug % "UCR| InputThread.UpdateBinding - cls: " bo.IOClass
-		; Direct the request to the appropriate IOClass that handles it
-		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
+		fn := this._UpdateBinding.Bind(this, ControlGUID, boPtr)
+		SetTimer, % fn, -0
 	}
 
+	_UpdateBinding(ControlGUID, boPtr){
+		bo := ObjShare(boPtr)
+		; Direct the request to the appropriate IOClass that handles it
+		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
+		OutputDebug % "UCR| Input Thread After UpdateBinding"
+	}
+	
 	; A request was received from the main thread to set the Dection state
 	SetDetectionState(state){
 		if (state == this.DetectionState)
@@ -380,17 +385,17 @@ Class _InputThread {
 		UpdateBinding(ControlGUID, bo){
 			OutputDebug % "UCR| AHK_JoyHat_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 			this._UpdateArrays(ControlGUID, bo)
-			t := this.TimerWanted, k := ObjHasKey(this.ControlMappings, ControlGUID)
-			fn := this.TimerFn
-			if (t && !k){
-				OutputDebug % "UCR| AHK_JoyHat_Input Stopping Hat Watcher"
-				SetTimer, % fn, Off
-				this.TimerWanted := 0
-			} else if (!t && k){
-				OutputDebug % "UCR| AHK_JoyHat_Input Starting Hat Watcher"
-				this.TimerWanted := 1
-				SetTimer, % fn, 10
-			}
+			;~ t := this.TimerWanted, k := ObjHasKey(this.ControlMappings, ControlGUID)
+			;~ fn := this.TimerFn
+			;~ if (t && !k){
+				;~ OutputDebug % "UCR| AHK_JoyHat_Input Stopping Hat Watcher"
+				;~ SetTimer, % fn, Off
+				;~ this.TimerWanted := 0
+			;~ } else if (!t && k){
+				;~ OutputDebug % "UCR| AHK_JoyHat_Input Starting Hat Watcher"
+				;~ this.TimerWanted := 1
+				;~ SetTimer, % fn, 10
+			;~ }
 		}
 		
 		SetDetectionState(state){
@@ -403,11 +408,11 @@ Class _InputThread {
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Started ButtonWatcher"
+				OutputDebug % "UCR| AHK_JoyBtn_Input Started HatWatcher"
 			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped ButtonWatcher"
+				OutputDebug % "UCR| AHK_JoyBtn_Input Stopped HatWatcher"
 			}
 		}
 
@@ -444,9 +449,9 @@ Class _InputThread {
 					new_state := (this.PovMap[state, obj.dir] == 1)
 					if (obj.state != new_state){
 						obj.state := new_state
-						OutputDebug % "UCR| AHK_JoyHat_Input Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
+						OutputDebug % "UCR| InputThread: AHK_JoyHat_Input Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
 						; Use the thread-safe object to tell the main thread that the hat direction changed state
-						this.Callback.Call(ControlGUID, new_state)
+						;this.Callback.Call(ControlGUID, new_state)
 					}
 				}
 			}
