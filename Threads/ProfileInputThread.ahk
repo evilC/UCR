@@ -44,12 +44,12 @@ Class _InputThread {
 
 	; A request was received from the main thread to update a binding.
 	UpdateBinding(ControlGUID, boPtr){
-		fn := this._UpdateBinding.Bind(this, ControlGUID, boPtr)
+		bo := ObjShare(boPtr)
+		fn := this._UpdateBinding.Bind(this, ControlGUID, bo)
 		SetTimer, % fn, -0
 	}
 	
-	_UpdateBinding(ControlGUID, boPtr){
-		bo := ObjShare(boPtr)
+	_UpdateBinding(ControlGUID, bo){
 		; Direct the request to the appropriate IOClass that handles it
 		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
 		OutputDebug % "UCR| Input Thread After UpdateBinding"
