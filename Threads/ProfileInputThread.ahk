@@ -57,12 +57,16 @@ Class _InputThread {
 
 	; A request was received from the main thread to update all bindings in one go.
 	UpdateBindings(boPtr){
-		fn := this._UpdateBindings.Bind(this, boPtr)
+		bo := ObjShare(boPtr)
+		fn := this._UpdateBindings.Bind(this, bo)
 		SetTimer, % fn, -0
 	}
 
-	_UpdateBindings(boPtr){
-		
+	_UpdateBindings(arr){
+		Loop % arr.length(){
+			b := arr[A_Index]
+			this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
+		}
 	}
 
 

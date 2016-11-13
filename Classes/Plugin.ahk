@@ -160,6 +160,15 @@ Class Plugin {
 		}
 	}
 	
+	; Gather all bindings for this plugin into one array so we can send it to the InputThread all in one go
+	_GetBindings(){
+		Bindings := []
+		for name, ctrl in this.IOControls {
+			Bindings.push({ControlGUID: ctrl.id, BindObject: ctrl.GetBinding()._Serialize()})
+		}
+		return Bindings
+	}
+	
 	; The plugin was closed - the plugin was either removed from the profile...
 	; ... or the parent profile was deleted
 	OnClose(remove_binding := 1){

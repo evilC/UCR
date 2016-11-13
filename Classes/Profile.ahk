@@ -105,7 +105,7 @@ Class _Profile {
 
 			While !this._InputThread.ahkgetvar.autoexecute_done
 				Sleep 10 ; wait until variable has been set.
-			OutputDebug % "UCR| Input Thread for thread #" this.id " ( " this.Name " ) has started"
+			OutputDebug % "UCR| Profile: Input Thread for thread #" this.id " ( " this.Name " ) has started"
 
 			; Get thread-safe boundfunc object for thread's SetHotkeyState
 			this.InputThread := {}
@@ -113,18 +113,23 @@ Class _Profile {
 			this.InputThread.UpdateBindings := ObjShare(this._InputThread.ahkgetvar("InterfaceUpdateBindings"))
 			this.InputThread.SetDetectionState := ObjShare(this._InputThread.ahkgetvar("InterfaceSetDetectionState"))
 			
+			Bindings := []
 			; Load bindings
 			Loop % this.PluginOrder.length() {
 				plugin := this.Plugins[this.PluginOrder[A_Index]]
-				plugin._RequestBinding()
+				;plugin._RequestBinding()
+				for i, b  in plugin._GetBindings() {
+					Bindings.push(b)
+				}
 			}
+			this.InputThread.UpdateBindings(ObjShare(Bindings))
 		}
 	}
 	
 	; Stops the "Input Thread" which handles detection of input for this profile
 	_StopInputThread(){
 		if (this.InputThread != 0){
-			OutputDebug % "UCR| Stopping Input Thread for thread #" this.id " ( " this.Name " )"
+			OutputDebug % "UCR| Profile: Stopping Input Thread for thread #" this.id " ( " this.Name " )"
 			ahkthread_free(this._InputThread)
 			this._InputThread := 0	; Kill thread
 			this.InputThread := 0	; Set var to 0 to indicate thread is off
