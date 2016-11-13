@@ -383,7 +383,7 @@ Class _Profile {
 	}
 
 	_PluginChanged(){
-		OutputDebug % "UCR| Profile " this.Name " called UCR._ProfileChanged()"
+		;OutputDebug % "UCR| Profile " this.Name " called UCR._ProfileChanged()"
 		UCR._ProfileChanged(this)
 	}
 }

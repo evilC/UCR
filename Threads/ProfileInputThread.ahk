@@ -377,6 +377,7 @@ Class _InputThread {
 		}
 		
 		SetDetectionState(state){
+			;OutputDebug % "UCR| AHK_JoyAxis_Input SetDetectionState = " state
 			this.DetectionState := state
 			this.ProcessTimerState()
 		}

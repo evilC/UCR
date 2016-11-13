@@ -118,12 +118,12 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 		if (IsObject(bo)){
 			if (bo.IOType == 2){
 				; Output Type
-				OutputDebug % "UCR| IOControl _RequestBinding - " this.name " Calling UpdateBinding on BindObject - IOType: " bo.IOType
+				;OutputDebug % "UCR| IOControl _RequestBinding - " this.name " Calling UpdateBinding on BindObject - IOType: " bo.IOType
 				bo.UpdateBinding()
 			} else if (bo.IOType == 1){
 				; Input Type
 				UCR._RequestBinding(this)
-				OutputDebug % "UCR| IOControl _RequestBinding - " this.name " Requesting Binding from InputHandler - IOType: " bo.IOType
+				;OutputDebug % "UCR| IOControl _RequestBinding - " this.name " Requesting Binding from InputHandler - IOType: " bo.IOType
 			} else {
 				OutputDebug % "UCR| IOControl _RequestBinding - " this.name " WARNING: Not recognized IOType of " bo.IOType
 			}
