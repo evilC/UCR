@@ -4,6 +4,11 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.6 - ???
+= Reverted back to synchronous communication from main thread -> InputThreads
+= When a profile's InputThread receives bindings upon loading, they are all passed in one call
+  This massively reduces the number of inter-thread calls.
+
 0.1.5 - 7th Nov 2016
 ! UCR.exe changed in this version.
   Some autopositioning bugs in AHK_H were found.
