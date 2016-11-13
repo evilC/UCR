@@ -31,6 +31,7 @@ Class _InputThread {
 		}
 		
 		global InterfaceUpdateBinding := ObjShare(this.UpdateBinding.Bind(this))
+		global InterfaceUpdateBindings := ObjShare(this.UpdateBindings.Bind(this))
 		global InterfaceSetDetectionState := ObjShare(this.SetDetectionState.Bind(this))
 		
 		; Unreachable dummy label for hotkeys to bind to to clear binding
@@ -46,14 +47,25 @@ Class _InputThread {
 		fn := this._UpdateBinding.Bind(this, ControlGUID, boPtr)
 		SetTimer, % fn, -0
 	}
-
+	
 	_UpdateBinding(ControlGUID, boPtr){
 		bo := ObjShare(boPtr)
 		; Direct the request to the appropriate IOClass that handles it
 		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
 		OutputDebug % "UCR| Input Thread After UpdateBinding"
 	}
-	
+
+	; A request was received from the main thread to update all bindings in one go.
+	UpdateBindings(boPtr){
+		fn := this._UpdateBindings.Bind(this, boPtr)
+		SetTimer, % fn, -0
+	}
+
+	_UpdateBindings(boPtr){
+		
+	}
+
+
 	; A request was received from the main thread to set the Dection state
 	SetDetectionState(state){
 		if (state == this.DetectionState)

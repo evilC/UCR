@@ -110,6 +110,7 @@ Class _Profile {
 			; Get thread-safe boundfunc object for thread's SetHotkeyState
 			this.InputThread := {}
 			this.InputThread.UpdateBinding := ObjShare(this._InputThread.ahkgetvar("InterfaceUpdateBinding"))
+			this.InputThread.UpdateBindings := ObjShare(this._InputThread.ahkgetvar("InterfaceUpdateBindings"))
 			this.InputThread.SetDetectionState := ObjShare(this._InputThread.ahkgetvar("InterfaceSetDetectionState"))
 			
 			; Load bindings
