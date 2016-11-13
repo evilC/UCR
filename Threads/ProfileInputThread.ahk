@@ -6,6 +6,8 @@
 Class _InputThread {
 	static IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0, AHK_JoyAxis_Input: 0, RawInput_Mouse_Delta: 0}
 	DetectionState := 0
+	UpdateBindingQueue := []	; An array of bindings waiting to be updated.
+	UpdatingBindings := 0
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		;this.Callback := CallbackPtr
@@ -30,10 +32,13 @@ Class _InputThread {
 			OutputDebug % "UCR| Input Thread WARNING! Loaded No IOClasses!"
 		}
 		
+		; Set up interfaces that the main thread can call
 		global InterfaceUpdateBinding := ObjShare(this.UpdateBinding.Bind(this))
 		global InterfaceUpdateBindings := ObjShare(this.UpdateBindings.Bind(this))
 		global InterfaceSetDetectionState := ObjShare(this.SetDetectionState.Bind(this))
 		
+		; Get a boundfunc for the method that processes binding updates
+		this.BindingQueueFn := this._ProcessBindingQueue.Bind(this)
 		; Unreachable dummy label for hotkeys to bind to to clear binding
 		if(0){
 			UCR_INPUTHREAD_DUMMY_LABEL:
@@ -44,20 +49,22 @@ Class _InputThread {
 
 	; A request was received from the main thread to update a binding.
 	UpdateBinding(ControlGUID, boPtr){
-		bo := ObjShare(boPtr)
+		bo := ObjShare(boPtr).clone()
 		fn := this._UpdateBinding.Bind(this, ControlGUID, bo)
-		SetTimer, % fn, -0
+		SetTimer, % fn, -1
 	}
 	
 	_UpdateBinding(ControlGUID, bo){
 		; Direct the request to the appropriate IOClass that handles it
-		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
-		OutputDebug % "UCR| Input Thread After UpdateBinding"
+		;this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
+		;OutputDebug % "UCR| Input Thread: Added Binding to queue as item# " this.UpdateBindingQueue.length()+1
+		this.UpdateBindingQueue.push({ControlGuid: ControlGuid, BindObject: bo})
+		this._SetBindingQueueTimerState()
 	}
 
 	; A request was received from the main thread to update all bindings in one go.
 	UpdateBindings(boPtr){
-		bo := ObjShare(boPtr)
+		bo := ObjShare(boPtr).clone()
 		fn := this._UpdateBindings.Bind(this, bo)
 		SetTimer, % fn, -0
 	}
@@ -65,11 +72,40 @@ Class _InputThread {
 	_UpdateBindings(arr){
 		Loop % arr.length(){
 			b := arr[A_Index]
-			this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
+			;OutputDebug % "UCR| Input Thread: Directing UpdateBindings to IOClass " b.BindObject.IOClass
+			;this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
+			this.UpdateBindingQueue.push(b)
 		}
+		this._SetBindingQueueTimerState()
 	}
 
-
+	_SetBindingQueueTimerState(){
+		if (this.UpdatingBindings)
+			return
+		if (this.UpdateBindingQueue.length()){
+			fn := this.BindingQueueFn
+			SetTimer, % fn, -0
+		}
+	}
+	
+	; Tried to ensure that binding updates are processed in order
+	; The main thread calls UpdateBinding(s) asyncronously, so if one call interrupts another...
+	; ... eg a call to delte an old binding may end up getting executed after the call to set the new binding.
+	_ProcessBindingQueue(){
+		this.UpdatingBindings := 1
+		queue := this.UpdateBindingQueue.clone()
+		for i, b in queue {
+			;OutputDebug % "UCR| Input Thread: Processing Binding Queue item " i ". IOClass: " b.BindObject.IOClass ", DeviceID: " b.BindObject.DeviceID ", Binding: " b.BindObject.Binding[1]
+			this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
+			this.UpdateBindingQueue.RemoveAt(1)
+		}
+		; If another binding was added whilst we were processing, then re-process again
+		if (this.UpdateBindingQueue.length()){
+			this._ProcessBindingQueue()
+		}
+		this.UpdatingBindings := 0
+	}
+	
 	; A request was received from the main thread to set the Dection state
 	SetDetectionState(state){
 		if (state == this.DetectionState)
@@ -321,7 +357,7 @@ Class _InputThread {
 		UpdateBinding(ControlGUID, bo){
 			static AHKAxisList := ["X","Y","Z","R","U","V"]
 			dev := bo.DeviceID, axis := bo.Binding[1]
-			OutputDebug % "UCR| AHK_JoyAxis_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
+			OutputDebug % "UCR| AHK_JoyAxis_Input Update Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
 			if (ObjHasKey(this.ControlMappings, ControlGUID)){
 				OutputDebug % "UCR| AHK_JoyAxis_Input removing binding"
 				str := this.ControlMappings[ControlGUID]
