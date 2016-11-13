@@ -38,7 +38,8 @@ Class _InputThread {
 		global InterfaceSetDetectionState := ObjShare(this.SetDetectionState.Bind(this))
 		
 		; Get a boundfunc for the method that processes binding updates
-		this.BindingQueueFn := this._ProcessBindingQueue.Bind(this)
+		;this.BindingQueueFn := this._ProcessBindingQueue.Bind(this)
+		
 		; Unreachable dummy label for hotkeys to bind to to clear binding
 		if(0){
 			UCR_INPUTHREAD_DUMMY_LABEL:
@@ -47,66 +48,76 @@ Class _InputThread {
 
 	}
 
-	; A request was received from the main thread to update a binding.
+	;~ ; A request was received from the main thread to update a binding.
+	;~ UpdateBinding(ControlGUID, boPtr){
+		;~ bo := ObjShare(boPtr).clone()
+		;~ fn := this._UpdateBinding.Bind(this, ControlGUID, bo)
+		;~ SetTimer, % fn, -1
+	;~ }
+	
+	;_UpdateBinding(ControlGUID, bo){
 	UpdateBinding(ControlGUID, boPtr){
 		bo := ObjShare(boPtr).clone()
-		fn := this._UpdateBinding.Bind(this, ControlGUID, bo)
-		SetTimer, % fn, -1
-	}
-	
-	_UpdateBinding(ControlGUID, bo){
 		; Direct the request to the appropriate IOClass that handles it
-		;this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
+		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
 		;OutputDebug % "UCR| Input Thread: Added Binding to queue as item# " this.UpdateBindingQueue.length()+1
-		this.UpdateBindingQueue.push({ControlGuid: ControlGuid, BindObject: bo})
-		this._SetBindingQueueTimerState()
+		;this.UpdateBindingQueue.push({ControlGuid: ControlGuid, BindObject: bo})
+		;this._SetBindingQueueTimerState()
 	}
 
 	; A request was received from the main thread to update all bindings in one go.
-	UpdateBindings(boPtr){
-		bo := ObjShare(boPtr).clone()
-		fn := this._UpdateBindings.Bind(this, bo)
-		SetTimer, % fn, -0
-	}
+	;~ UpdateBindings(boPtr){
+		;~ bo := ObjShare(boPtr).clone()
+		;~ fn := this._UpdateBindings.Bind(this, bo)
+		;~ SetTimer, % fn, -0
+	;~ }
 
-	_UpdateBindings(arr){
+	;_UpdateBindings(arr){
+	UpdateBindings(arrPtr){
+		arr := ObjShare(arrPtr).clone()
 		Loop % arr.length(){
 			b := arr[A_Index]
 			;OutputDebug % "UCR| Input Thread: Directing UpdateBindings to IOClass " b.BindObject.IOClass
-			;this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
-			this.UpdateBindingQueue.push(b)
+			this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
+			;this.UpdateBindingQueue.push(b)
 		}
-		this._SetBindingQueueTimerState()
+		;this._SetBindingQueueTimerState()
 	}
 
-	_SetBindingQueueTimerState(){
-		if (this.UpdatingBindings)
-			return
-		if (this.UpdateBindingQueue.length()){
-			fn := this.BindingQueueFn
-			SetTimer, % fn, -0
-		}
-	}
+	;~ _SetBindingQueueTimerState(){
+		;~ if (this.UpdatingBindings)
+			;~ return
+		;~ if (this.UpdateBindingQueue.length()){
+			;~ fn := this.BindingQueueFn
+			;~ SetTimer, % fn, -0
+		;~ }
+	;~ }
 	
-	; Tried to ensure that binding updates are processed in order
-	; The main thread calls UpdateBinding(s) asyncronously, so if one call interrupts another...
-	; ... eg a call to delte an old binding may end up getting executed after the call to set the new binding.
-	_ProcessBindingQueue(){
-		this.UpdatingBindings := 1
-		queue := this.UpdateBindingQueue.clone()
-		for i, b in queue {
-			;OutputDebug % "UCR| Input Thread: Processing Binding Queue item " i ". IOClass: " b.BindObject.IOClass ", DeviceID: " b.BindObject.DeviceID ", Binding: " b.BindObject.Binding[1]
-			this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
-			this.UpdateBindingQueue.RemoveAt(1)
-		}
-		; If another binding was added whilst we were processing, then re-process again
-		if (this.UpdateBindingQueue.length()){
-			this._ProcessBindingQueue()
-		}
-		this.UpdatingBindings := 0
-	}
+	;~ ; Tries to ensure that binding updates are processed in order
+	;~ ; The main thread calls UpdateBinding(s) asyncronously, so if one call interrupts another...
+	;~ ; ... eg a call to delte an old binding may end up getting executed after the call to set the new binding.
+	;~ _ProcessBindingQueue(){
+		;~ this.UpdatingBindings := 1
+		;~ queue := this.UpdateBindingQueue.clone()
+		;~ for i, b in queue {
+			;~ ;OutputDebug % "UCR| Input Thread: Processing Binding Queue item " i ". IOClass: " b.BindObject.IOClass ", DeviceID: " b.BindObject.DeviceID ", Binding: " b.BindObject.Binding[1]
+			;~ this.IOClasses[b.BindObject.IOClass].UpdateBinding(b.ControlGUID, b.BindObject)
+			;~ this.UpdateBindingQueue.RemoveAt(1)
+		;~ }
+		;~ ; If another binding was added whilst we were processing, then re-process again
+		;~ if (this.UpdateBindingQueue.length()){
+			;~ this._ProcessBindingQueue()
+		;~ }
+		;~ this.UpdatingBindings := 0
+	;~ }
 	
 	; A request was received from the main thread to set the Dection state
+	;~ SetDetectionState(state){
+		;~ fn := this._SetDetectionState.Bind(this, state)
+		;~ SetTimer, % fn, -0
+	;~ }
+	
+	;~ _SetDetectionState(state){
 	SetDetectionState(state){
 		if (state == this.DetectionState)
 			return
