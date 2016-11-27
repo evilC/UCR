@@ -368,13 +368,13 @@ Class _UCR {
 		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
 			; A profile is currently active, de-activate old profiles.
-			OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " new_profile.Name
+			;OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " new_profile.Name
 			
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
 			
 		} else {
-			OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
+			;OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
 		}
 		
 		; Reset the highlights in the ProfileToolbox
@@ -393,7 +393,7 @@ Class _UCR {
 				continue
 			if (new_state == "")
 				new_state := 0
-			OutputDebug % "UCR| ChangeProfile Setting new state for profile " old_pid " to " new_state
+			;OutputDebug % "UCR| ChangeProfile Setting new state for profile " old_pid " to " new_state
 			this._SetProfileState(old_pid, new_state)
 			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
 		}
@@ -629,7 +629,7 @@ Class _UCR {
 	MoveProfile(profile_id, parent_id, after){
 		if (parent_id == "")
 			parent_id := 0
-		OutputDebug % "UCR| MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
+		;OutputDebug % "UCR| MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
 		; Do not allowing move of default or global profile
 		if (profile_id < 3 || !ObjHasKey(this.Profiles, profile_id))
 			return 0
@@ -774,7 +774,7 @@ Class _UCR {
 					, "2": {"Name": "Default", "ParentProfile": "0"}
 					, "-1": {"Name": "SuperGlobal", "ParentProfile": "0"}}}
 		} else {
-			OutputDebug % "UCR| Loading JSON from disk"
+			;OutputDebug % "UCR| Loading JSON from disk"
 			j := JSON.Load(j)
 		}
 		
@@ -808,7 +808,7 @@ Class _UCR {
 	}
 	
 	__SaveSettings(){
-		OutputDebug % "UCR| Saving JSON to disk"
+		;OutputDebug % "UCR| Saving JSON to disk"
 		this._UpdateSaveReadout(2)
 		obj := this._Serialize()
 		SettingsFile := this._SettingsFile
@@ -873,7 +873,7 @@ Class _UCR {
 			OutputDebug % "UCR| Warning! Tried to _RequestBinding without a BindObject set!"
 			return
 		}
-		outputdebug % "UCR| UCRMain _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID ", IOClass: " bo.IOClass
+		;outputdebug % "UCR| UCRMain _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID ", IOClass: " bo.IOClass
 		;ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
 		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, ObjShare(bo))
 	}
@@ -896,7 +896,7 @@ Class _UCR {
 	
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, primitive){
-		OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
+		;OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
 		this.ChangeProfile(this.CurrentPID, 0)	; Do not save on change profile, bind mode will already cause a save
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)
@@ -916,7 +916,7 @@ Class _UCR {
 				if (p_id == -1)
 					continue	; Do not de-activate the SuperGlobal profile
 				this._SetProfileState(p_id, 1)
-				outputdebug % "UCR| _DeActivateProfiles changing state of profile " this.Profiles[p_id].name " from Active to PreLoaded"
+				;outputdebug % "UCR| _DeActivateProfiles changing state of profile " this.Profiles[p_id].name " from Active to PreLoaded"
 			}
 		}
 	}

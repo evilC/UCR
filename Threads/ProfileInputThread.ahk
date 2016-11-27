@@ -153,7 +153,7 @@ Class _InputThread {
 				hotkey, % keyname, % fn, On
 				fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				hotkey, % keyname " up", % fn, On
-				OutputDebug % "UCR| AHK_KBM_Input Added hotkey " keyname " for ControlGUID " ControlGUID
+				;OutputDebug % "UCR| AHK_KBM_Input Added hotkey " keyname " for ControlGUID " ControlGUID
 				this._AHKBindings[ControlGUID] := keyname
 			}
 		}
@@ -172,7 +172,7 @@ Class _InputThread {
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
-				OutputDebug % "UCR| AHK_KBM_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
+				;OutputDebug % "UCR| AHK_KBM_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
 				hotkey, % keyname, UCR_INPUTHREAD_DUMMY_LABEL
 				hotkey, % keyname, Off
 				hotkey, % keyname " up", UCR_INPUTHREAD_DUMMY_LABEL
@@ -271,7 +271,7 @@ Class _InputThread {
 				}
 				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				;hotkey, % keyname " up", % fn, On
-				OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
 				;this._CurrentBinding := keyname
 				this._AHKBindings[ControlGUID] := keyname
 			}
@@ -280,7 +280,7 @@ Class _InputThread {
 		SetDetectionState(state){
 			; Are we already in the requested state?
 			if (A_IsSuspended == state){
-				OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
+				;OutputDebug % "UCR| Thread: AHK_JoyBtn_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state
@@ -290,7 +290,7 @@ Class _InputThread {
 		RemoveBinding(ControlGUID){
 			keyname := this._AHKBindings[ControlGUID]
 			if (keyname){
-				OutputDebug % "UCR| AHK_JoyBtn_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
 				try{
 					hotkey, % keyname, UCR_INPUTHREAD_DUMMY_LABEL
 				}
@@ -368,9 +368,9 @@ Class _InputThread {
 		UpdateBinding(ControlGUID, bo){
 			static AHKAxisList := ["X","Y","Z","R","U","V"]
 			dev := bo.DeviceID, axis := bo.Binding[1]
-			OutputDebug % "UCR| AHK_JoyAxis_Input Update Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
+			;OutputDebug % "UCR| AHK_JoyAxis_Input Update Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
 			if (ObjHasKey(this.ControlMappings, ControlGUID)){
-				OutputDebug % "UCR| AHK_JoyAxis_Input removing binding"
+				;OutputDebug % "UCR| AHK_JoyAxis_Input removing binding"
 				str := this.ControlMappings[ControlGUID]
 				this.StickBindings.Delete(str)
 				this.ControlMappings.Delete(ControlGUID)
@@ -398,11 +398,11 @@ Class _InputThread {
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
-				OutputDebug % "UCR| AHK_JoyAxis_Input Started AxisWatcher"
+				;OutputDebug % "UCR| AHK_JoyAxis_Input Started AxisWatcher"
 			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
-				OutputDebug % "UCR| AHK_JoyAxis_Input Stopped AxisWatcher"
+				;OutputDebug % "UCR| AHK_JoyAxis_Input Stopped AxisWatcher"
 			}
 		}
 
@@ -447,7 +447,7 @@ Class _InputThread {
 		
 		; Request from main thread to update binding
 		UpdateBinding(ControlGUID, bo){
-			OutputDebug % "UCR| AHK_JoyHat_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
+			;OutputDebug % "UCR| AHK_JoyHat_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 			this._UpdateArrays(ControlGUID, bo)
 			;~ t := this.TimerWanted, k := ObjHasKey(this.ControlMappings, ControlGUID)
 			;~ fn := this.TimerFn
@@ -472,11 +472,11 @@ Class _InputThread {
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
-				OutputDebug % "UCR| AHK_JoyBtn_Input Started HatWatcher"
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Started HatWatcher"
 			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
-				OutputDebug % "UCR| AHK_JoyBtn_Input Stopped HatWatcher"
+				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped HatWatcher"
 			}
 		}
 
@@ -513,7 +513,7 @@ Class _InputThread {
 					new_state := (this.PovMap[state, obj.dir] == 1)
 					if (obj.state != new_state){
 						obj.state := new_state
-						OutputDebug % "UCR| InputThread: AHK_JoyHat_Input Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
+						;OutputDebug % "UCR| InputThread: AHK_JoyHat_Input Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
 						; Use the thread-safe object to tell the main thread that the hat direction changed state
 						;this.Callback.Call(ControlGUID, new_state)
 					}
@@ -540,7 +540,7 @@ Class _InputThread {
 		}
 
 		UpdateBinding(ControlGUID, bo){
-			OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
+			;OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
 			this.RemoveBinding(ControlGUID)
 			if (bo.Binding[1]){
 				this._DeltaBindings[ControlGUID] := 1
@@ -557,7 +557,7 @@ Class _InputThread {
 		}
 		
 		SetDetectionState(state){
-			OutputDebug % "UCR| InputDelta SetDetectionState " state
+			;OutputDebug % "UCR| InputDelta SetDetectionState " state
 			this.DetectionState := state
 			this._ProcessDetectionState()
 		}
@@ -578,7 +578,7 @@ Class _InputThread {
 			
 			if (this.Registered)
 				return
-			OutputDebug % "UCR| ProfileInputThread registering for mouse delta"
+			;OutputDebug % "UCR| ProfileInputThread registering for mouse delta"
 			if (RAWINPUTDEVICE == 0){
 				VarSetCapacity(RAWINPUTDEVICE, DevSize)
 				NumPut(1, RAWINPUTDEVICE, 0, "UShort")
@@ -599,7 +599,7 @@ Class _InputThread {
 
 			if (!this.Registered)
 				return
-			OutputDebug % "UCR| ProfileInputThread unregistering for mouse delta"
+			;OutputDebug % "UCR| ProfileInputThread unregistering for mouse delta"
 			;fn := this.MouseTimeoutFn
 			;SetTimer, % fn, Off
 			

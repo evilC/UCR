@@ -37,7 +37,7 @@ Class _Profile {
 	SetState(state){
 		if (this.State == state)
 			return
-		OutputDebug % "UCR| SetState for profile " this.Name " setting state to " this.StateNames[state]
+		OutputDebug % "UCR| Profile " this.Name "(" this.id "): SetState to " this.StateNames[state]
 		; Start or stop the InputThread
 		if (state){
 			; InputThread needs to be active in some way
@@ -105,7 +105,7 @@ Class _Profile {
 
 			While !this._InputThread.ahkgetvar.autoexecute_done
 				Sleep 10 ; wait until variable has been set.
-			OutputDebug % "UCR| Profile: Input Thread for thread #" this.id " ( " this.Name " ) has started"
+			OutputDebug % "UCR| Profile " this.Name "(" this.id "): Input Thread started"
 
 			; Get thread-safe boundfunc object for thread's SetHotkeyState
 			this.InputThread := {}
@@ -129,10 +129,10 @@ Class _Profile {
 	; Stops the "Input Thread" which handles detection of input for this profile
 	_StopInputThread(){
 		if (this.InputThread != 0){
-			OutputDebug % "UCR| Profile: Stopping Input Thread for thread #" this.id " ( " this.Name " )"
 			ahkthread_free(this._InputThread)
 			this._InputThread := 0	; Kill thread
 			this.InputThread := 0	; Set var to 0 to indicate thread is off
+			OutputDebug % "UCR| Profile " this.Name "(" this.id "): Input Thread Stopped"
 		}
 		this.UpdateBinding := 0
 		this.SetDetectionState := 0
@@ -175,7 +175,8 @@ Class _Profile {
 	_Activate(){
 		if (this.State == 2)
 			return
-		OutputDebug % "UCR| Activating input thread for profile # " this.id " (" this.name " )"
+		OutputDebug % "UCR| Profile " this.Name "(" this.id "): Input Thread Activated"
+
 		if (this.InputThread == 0){
 			OutputDebug % "UCR| WARNING: Tried to Activate profile # " this.id " (" this.name " ) without an active Input Thread"
 		}
@@ -197,8 +198,8 @@ Class _Profile {
 			return
 		;if (this.InputThread != 0){
 			;this._SetHotkeyState(0)
-			OutputDebug % "UCR| DeActivating input thread for profile # " this.id " (" this.name " )"
 			this.InputThread.SetDetectionState(0)
+			OutputDebug % "UCR| Profile " this.Name "(" this.id "): Input Thread DeActivated"
 		;}
 		this._HotkeysActive := 0
 		Loop % this.PluginOrder.length() {
