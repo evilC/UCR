@@ -186,9 +186,7 @@ Class _Profile {
 		; Fire Activate on each plugin
 		Loop % this.PluginOrder.length() {
 			plugin := this.Plugins[this.PluginOrder[A_Index]]
-			if (IsFunc(plugin["OnActive"])){
-				plugin.OnActive()
-			}
+			plugin._OnActive()	; Call base OnActive method of plugin
 		}
 	}
 	
