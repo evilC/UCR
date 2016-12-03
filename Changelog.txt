@@ -4,7 +4,13 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.6 - ???
+0.1.6 - 3rd Dec 2016
++ The ButtonsToAxis plugin now has settings for Low / Mid / High
+  This enables remapping buttons to a "split axis" such as an XBox trigger.
+  This change breaks the deflection setting of all existing ButtonsToAxis plugins.
+  (Which is only an issue if you used non-standard settings)
+  To fix this you can do a search and replace in your ini file:
+  Find "Deflection" and replace with "DeflectionHigh"
 = Reverted back to synchronous communication from main thread -> InputThreads
 = When a profile's InputThread receives bindings upon loading, they are all passed in one call
   This massively reduces the number of inter-thread calls.

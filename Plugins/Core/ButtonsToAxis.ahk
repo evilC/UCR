@@ -9,34 +9,51 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 	AxisButtonStates := [0,0]
 	DeflectionValues := []
 	IncrementalMode := 0
+	MidPoint := 50
 	
 	Init(){
 		iow := 125
-		Gui, Add, GroupBox, Center xm ym w270 h70 section, Input Buttons
-		Gui, Add, Text, % "Center xs+5 yp+15 w" iow, Low
+		Gui, Add, GroupBox, Center xm ym w270 h85 section, Input Buttons
+		Gui, Add, Text, % "Center xs+5 yp+30 w" iow, Low
 		Gui, Add, Text, % "Center x+10 w" iow " yp", High
 		this.AddControl("InputButton", "IB1", 0, this.ButtonInput.Bind(this, 1), " xs+5 yp+15")
 		this.AddControl("InputButton", "IB2", 0, this.ButtonInput.Bind(this, 2), "x+10 yp")
 
-		Gui, Add, GroupBox, Center x285 ym w120 h70 section, Settings
+		Gui, Add, GroupBox, Center x285 ym w120 h85 section, Settings
 		Gui, Add, Text, % "Center xs+5 yp+15 w110", Deflection `%
-		this.AddControl("Edit", "DeflectionAmount", this.DeflectionChanged.Bind(this), "xs+5 w110 yp+15", 100)
-		this.AddControl("CheckBox", "IncrementalMode", this.IncrementalModeChanged.Bind(this), "xp y+3", "Incremental Mode")
+		Gui, Add, Text, % "Center xs+5 yp+15 w30", Low
+		Gui, Add, Text, % "Center x+5 yp w30", Mid
+		Gui, Add, Text, % "Center x+5 yp w30", High
+		this.AddControl("Edit", "DeflectionLow", this.DeflectionChanged.Bind(this, 1), "xs+5 w30 yp+15", 0)
+		this.AddControl("Edit", "DeflectionMid", this.DeflectionChanged.Bind(this, 0), "x+5 w30 yp", 50)
+		this.AddControl("Edit", "DeflectionHigh", this.DeflectionChanged.Bind(this, 2), "x+5 w30 yp", 100)
+		this.AddControl("CheckBox", "IncrementalMode", this.IncrementalModeChanged.Bind(this), "xs+5 y+3", "Incremental Mode")
 		
-		Gui, Add, GroupBox, Center x410 ym w260 h70 section, Output Axis
-		Gui, Add, Text, % "Center xs+5 yp+15 w" iow, Axis
+		Gui, Add, GroupBox, Center x410 ym w260 h85 section, Output Axis
+		Gui, Add, Text, % "Center xs+5 yp+30 w" iow, Axis
 		Gui, Add, Text, % "Center x+0 w" iow " yp", Preview
 		this.AddControl("OutputAxis", "OA1", 0, "xs+5 yp+15")
 		Gui, Add, Slider, % "hwndhwnd x+0 yp", 50
 		this.hSlider := hwnd
 	}
 	
-	DeflectionChanged(pc){
-		value := 50 * (pc / 100)
-		this.IncrementalDeflectionValues[1] := value * -1
-		this.IncrementalDeflectionValues[2] := value
-		this.DeflectionValues[1] := UCR.Libraries.StickOps.InternalToAHK(value * -1)
-		this.DeflectionValues[2] := UCR.Libraries.StickOps.InternalToAHK(value)
+	OnActive(){
+		if (!this.IncrementalMode){
+			this.SetState(this.MidPoint)
+		}
+	}
+	
+	DeflectionChanged(dir, pc){
+		static sgn := [-1,1]
+		if (dir){
+			value := 50 * (pc / 100)
+			value *= dir
+			this.DeflectionValues[dir] := value
+			this.IncrementalDeflectionValues[dir] := pc * sgn[dir]
+		} else {
+			; Set mid-point
+			this.MidPoint := pc
+		}
 	}
 	
 	IncrementalModeChanged(state){
@@ -59,7 +76,7 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 		} else {
 			; Normal Mode - Set axis to deflection value on press, set to middle on release
 			if (this.AxisButtonStates[1] == this.AxisButtonStates[2]){
-				out := 50
+				out := this.MidPoint
 			} else {
 				if (this.AxisButtonStates[1]){
 					out := this.DeflectionValues[1]
@@ -68,6 +85,10 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 				}
 			}
 		}
+		this.SetState(out)
+	}
+	
+	SetState(out){
 		this.IOControls.OA1.Set(out)
 		GuiControl, , % this.hSlider, % out
 	}
