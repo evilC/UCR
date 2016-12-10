@@ -160,6 +160,19 @@ Class Plugin {
 		}
 	}
 	
+	; Called so that output methods can be initialized
+	; eg vJoy devices acquired etc
+	_ActivateOutputs(){
+		for name, ctrl in this.IOControls {
+			if (ctrl.GetBinding().IOType == 2)
+				ctrl._RequestBinding()
+		}
+	}
+	
+	_DeActivateOutputs(){
+		; ToDo: Implement
+	}
+	
 	; Gather all bindings for this plugin into one array so we can send it to the InputThread all in one go
 	_GetBindings(){
 		Bindings := []

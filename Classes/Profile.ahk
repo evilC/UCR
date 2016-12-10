@@ -43,6 +43,7 @@ Class _Profile {
 			; InputThread needs to be active in some way
 			if (this.State < 1){
 				this._StartInputThread()
+				this._ActivateOutputs()
 			}
 			; Activate if State is 2, Deactivate if State is 1
 			a := state - 1
@@ -50,6 +51,7 @@ Class _Profile {
 			; De-Activate
 			if (this.State){
 				this._StopInputThread()
+				this._DeActivateOutputs()
 			}
 			a := 0
 		}
@@ -117,7 +119,7 @@ Class _Profile {
 			; Load bindings
 			Loop % this.PluginOrder.length() {
 				plugin := this.Plugins[this.PluginOrder[A_Index]]
-				;plugin._RequestBinding()
+				plugin._RequestOutputBindings()	; ToDo - Output bindings should probably not be handled in here.
 				for i, b  in plugin._GetBindings() {
 					Bindings.push(b)
 				}
@@ -136,6 +138,20 @@ Class _Profile {
 		}
 		this.UpdateBinding := 0
 		this.SetDetectionState := 0
+	}
+	
+	_ActivateOutputs(){
+		Loop % this.PluginOrder.length() {
+			plugin := this.Plugins[this.PluginOrder[A_Index]]
+			plugin._ActivateOutputs()
+		}
+	}
+	
+	_DeActivateOutputs(){
+		Loop % this.PluginOrder.length() {
+			plugin := this.Plugins[this.PluginOrder[A_Index]]
+			;plugin._DeActivateOutputs()
+		}
 	}
 	
 	; Delete requested
