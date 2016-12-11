@@ -1,30 +1,37 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
-Class UCRMain extends _UCRBase {
-	Version := "0.0.18"				; The version of the main application
-	SettingsVersion := "0.0.5"		; The version of the settings file format
+Class _UCR {
+	Version := "0.1.7"				; The version of the main application
+	SettingsVersion := "0.0.7"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
-	_GameBindDuration := 0	; The amount of time to wait in GameBind mode (ms)
+	_Paused := 0					; 1 if the user has paused UCR via the PauseButton in the Global profile
+	_GameBindDuration := 0			; The amount of time to wait in GameBind mode (ms)
 	_CurrentState := 0				; The current state of the application
-	;Profiles := []				; A hwnd-indexed sparse array of instances of _Profile objects
+	;Profiles := []					; A hwnd-indexed sparse array of instances of _Profile objects
 	Profiles := {}					; A unique-id indexed sparse array of instances of _Profile objects
+	;_ProfileSettingsCache := {}		; A unique-id indexed sparse array of settings objects for each Profile
 	ProfileTree := {}				; A lookup table for Profile order. A sparse array of Parent IDs, containing Ordered Arrays of Profile IDs
-	Libraries := {}				; A name indexed array of instances of library objects
+	Libraries := {}					; A name indexed array of instances of library objects
 	CurrentProfile := 0				; Points to an Instance of the _Profile class which is the current active profile
+	CurrentPID := 0					; The ID of the _Profile class which is the current active profile
 	PluginList := []				; A list of plugin Types (Lookup to PluginDetails), indexed by order of Plugin Select DDL
 	PluginDetails := {}				; A name-indexed list of plugin Details (Classname, Description etc). Name is ".Type" property of class
+	BindControlLookup := {}			; Allows bind threads to find the plugin that
 	PLUGIN_WIDTH := 680				; The Width of a plugin
+	PLUGIN_FRAME_HEIGHT := 200		; The initial height of the plugin area
 	PLUGIN_FRAME_WIDTH := 720		; The width of the plugin area
 	SIDE_PANEL_WIDTH := 150			; The default width of the side panel
 	TOP_PANEL_HEIGHT := 75			; The amount of space reserved for the top panel (profile select etc)
-	GUI_MIN_HEIGHT := 300			; The minimum height of the app. Required because of the way AHK_H autosize/pos works
-	CurrentSize := {w: this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH, h: this.GUI_MIN_HEIGHT}	; The current size of the app.
-	CurrentPos := {x: "", y: ""}										; The current position of the app.
+	BOTTOM_PANEL_HEIGHT := 30		; The amount of space reserved for the top panel (profile select etc)
+	CurrentSize := {}				; The current size of the app.
+	CurrentPos := {x: "", y: ""}	; The current position of the app.
 	_ProfileTreeChangeSubscriptions := {}	; An hwnd-indexed array of callbacks for things that wish to be notified if the profile tree changes
 	_InputActivitySubscriptions := {}
 	_InputThreadScript := ""		; Set in Ctor
+	_ThreadHeader := "`n#Persistent`n#NoTrayIcon`n#MaxHotkeysPerInterval 9999`n"
+	_ThreadFooter := "`nautoexecute_done := 1`nreturn`n"
 	_LoadedInputThreads := {}		; ProfileID-indexed sparse array of loaded input threads
-	_ActiveInputThreads := {}		; ProfileID-indexed sparse array of active (hotkeys enabled) input threads
+	_InputThreadStates := {}
 	_SavingToDisk := 0				; 1 if in the process of saving to disk. Do not allow exit while this is 1
 	; Default User Settings
 	UserSettings := {MinimizeOptions: {MinimizeToTray: 1, StartMinimized: 0}, GuiControls: {ShowJoystickNames: 1}}
@@ -38,6 +45,9 @@ Class UCRMain extends _UCRBase {
 		Gui +HwndHwnd
 		this.hwnd := hwnd
 		
+		; We need this on so we can work out the size of the various panes before they are shown.
+		DetectHiddenWindows, On
+
 		; Work out the name of the INI file
 		str := A_ScriptName
 		if (A_IsCompiled)
@@ -48,14 +58,17 @@ Class UCRMain extends _UCRBase {
 		; Load the settings file into an object, but do nothing with it for now
 		SettingsObj := this._LoadSettings()
 		; Merge the User Settings onto the default settings
-		this.MergeObject(this.UserSettings, SettingsObj.UserSettings)
+		this.MergeObject(this.UserSettings, SettingsObj.UserSettings) ;*[UCR]
 		; ======================= End of init ==============================
 		
 		this.Minimizer := new _Minimizer(this.hwnd, this._GuiMinimized.Bind(this))
 		
 		FileRead, Script, % A_ScriptDir "\Threads\ProfileInputThread.ahk"
-		this._InputThreadScript := Script	; Cache script for profile InputThreads
 		
+		; Cache script for profile InputThreads
+		this._InputThreadScript := this._ThreadFooter Script 
+		
+		/*
 		if (this.UserSettings.GuiControls.ShowJoystickNames){
 			; Load the Joystick OEM name DLL
 			#DllImport,joystick_OEM_name,%A_ScriptDir%\Resources\JoystickOEMName.dll\joystick_OEM_name,double,,CDecl AStr
@@ -65,10 +78,11 @@ Class UCRMain extends _UCRBase {
 				;~ ExitApp
 			;~ }
 		}
+		*/
 		
-		this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
+		;this.SaveSettingsTimerFn := this.__SaveSettings.Bind(this)		
 		
-		; Provide a common repository of libraries for plugins (vJoy, HID libs etc)
+		; Provide a common repository of libraries for plugins
 		this._LoadLibraries()
 		
 		; Start the input detection system
@@ -84,7 +98,19 @@ Class UCRMain extends _UCRBase {
 		
 		; Create the Main Gui
 		this._CreateGui()
+
+		; Update the Save Status in the BottomPanel
+		this._UpdateSaveReadout(0)
 		
+		; Initialize IOClasses
+		; This will add menu entries to the IOClasses menu, and load DLLs etc.
+		for name, cls in _UCR.Classes.IOClasses {
+			if (name == "__Class")
+				continue
+			;OutputDebug % "UCR| Initializing IOClass " name
+			cls._Init()
+		}
+
 		; Load list of plugins and update Plugin Select
 		this._LoadPluginList()
 		this._UpdatePluginSelect()
@@ -100,12 +126,14 @@ Class UCRMain extends _UCRBase {
 		if (this.UserSettings.MinimizeOptions.StartMinimized){
 			this._GuiMinimized()
 		}
-		
+
+		; Start the SuperGlobal Profile
+		this._SetProfileState(-1, 2)
+
 		; Start the Global Profile
-		this._SetProfileInputThreadState(1,1)
-		this.Profiles.1._Activate()
+		this._SetProfileState(1, 2)
 		
-		; Start the Current Profile
+		; Start the Current Profile, do not save
 		this.ChangeProfile(SettingsObj.CurrentProfile, 0)
 		
 		; Watch window position and size using MessageFilter thread
@@ -121,9 +149,13 @@ Class UCRMain extends _UCRBase {
 	
 	GuiClose(hwnd){
 		if (hwnd = this.hwnd){
-			while (this._SavingToDisk){
-				; Wait for save to complete
-				sleep 100
+			if (this._SavingToDisk){
+				; Stop timer and force save
+				;fn := this.SaveSettingsTimerFn
+				;SetTimer, % fn, Off
+				msgbox, 4, Warning, Warning! You have unsaved settings which will be lost if you exit now.`nDo you wish to save settings before exiting?
+				IfMsgBox, Yes
+					this.__SaveSettings()
 			}
 			ExitApp
 		}
@@ -162,65 +194,87 @@ Class UCRMain extends _UCRBase {
 	_CreateGui(){
 		Gui, % this.hwnd ":Margin", 0, 0
 		Gui, % this.hwnd ":+Resize"
-		start_width := UCR.PLUGIN_FRAME_WIDTH + UCR.SIDE_PANEL_WIDTH
-		Gui, % this.hwnd ":Show", % "Hide w" start_width " h" UCR.GUI_MIN_HEIGHT, % "UCR - Universal Control Remapper v" this.Version
-		Gui, % this.hwnd ":+Minsize" start_width + 15 "x" UCR.GUI_MIN_HEIGHT
 		
-		;Gui, % this.hwnd ":+Maxsize" start_width
-		Gui, new, HwndHwnd
-		this.hTopPanel := hwnd
+		; ---------------- TopPanel -------------------
+		Gui, new, HwndhTopPanel
+		this.hTopPanel := hTopPanel
 		Gui % this.hTopPanel ":-Border"
 		;Gui % this.hTopPanel ":Show", % "x0 y0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, Main UCR Window
 		
-		; Profile Select DDL
+		; Current profile readout
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Current Profile:
 		Gui, % this.hTopPanel ":Add", Edit, % "x100 yp-5 hwndhCurrentProfile Disabled w" UCR.PLUGIN_FRAME_WIDTH - 115
 		this.hCurrentProfile := hCurrentProfile
 		
-		;Gui, % this.hTopPanel ":Add", Button, % "x+5 yp-1 hwndhProfileToolbox w100", Profile Toolbox
-		;this.hProfileToolbox := hProfileToolbox
-		;fn := this._ProfileToolbox.ShowButtonClicked.Bind(this._ProfileToolbox)
-		;GuiControl +g, % this.hProfileToolbox, % fn
-		
-		; Add Plugin
+		; Plugin Selection DDL
 		Gui, % this.hTopPanel ":Add", Text, xm y+10, Plugin Selection:
 		Gui, % this.hTopPanel ":Add", DDL, % "x100 yp-5 hwndhPluginSelect AltSubmit w" UCR.PLUGIN_FRAME_WIDTH - 150
 		this.hPluginSelect := hPluginSelect
 		
+		; Add Plugin Button
 		Gui, % this.hTopPanel ":Add", Button, % "hwndhAddPlugin x+5 yp-1", Add
 		this.hAddPlugin := hAddPlugin
 		fn := this._AddPlugin.Bind(this)
 		GuiControl % this.hTopPanel ":+g", % this.hAddPlugin, % fn
 		
+		; Parent the TopPanel to the main Gui
 		Gui, % this.hwnd ":Add", Gui, % "w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.TOP_PANEL_HEIGHT, % this.hTopPanel
 		
-		; Add the profile toolbox
-		;Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this._ProfileToolbox.hwnd
-		
+		; --------------- ProfilePanel ----------------
+		Gui, new, HwndhProfilePanel
+		this.hProfilePanel := hProfilePanel
+		Gui % this.hProfilePanel ":-Caption"
+		Gui % this.hProfilePanel ":Color", Black
+		;Gui % this.hProfilePanel ":Margin", 0, 0
+
+		; Parent the ProfilePanel to the main Gui
+		Gui, % this.hwnd ":Add", Gui, % "x0 y+0 ah w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.PLUGIN_FRAME_HEIGHT, % this.hProfilePanel
+
+		; --------------- BottomPanel ----------------
+		Gui, new, HwndHwnd
+		this.hBottomPanel := hwnd
+		Gui % this.hBottomPanel ":-Caption"
+		Gui % this.hBottomPanel ":Color", AAAAAA
+		Gui % this.hBottomPanel ":Margin", 0, 0
+		Gui, % this.hBottomPanel ":Add", Text, % "x5 y8 w100", Save Status:
+		Gui, % this.hBottomPanel ":Add", Text, % "hwndhSaveStatus x+0 yp w150 Center"
+		Gui, % this.hBottomPanel ":Add", Button, % "hwndhSaveSettings x+5 yp-5", Save Settings
+		fn := this._SaveSettingsClicked.Bind(this)
+		GuiControl, +g, % hSaveSettings, % fn
+		this.hSaveStatus := hSaveStatus
+		;Gui, % this.hBottomPanel ":Add", Gui, % "x0 y+0 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
+		Gui, % this.hBottomPanel ":Show"
+		; Parent the BottomPanel to the main Gui
+		Gui, % this.hwnd ":Add", Gui, % "ay x0 y+0 w" UCR.PLUGIN_FRAME_WIDTH " h" UCR.BOTTOM_PANEL_HEIGHT, % this.hBottomPanel
+
+		; --------------- SidePanel ----------------
 		Gui, new, HwndHwnd
 		this.hSidePanel := hwnd
 		Gui % this.hSidePanel ":-Caption"
+		;Gui % this.hSidePanel ":Color", Green
 		Gui % this.hSidePanel ":Margin", 0, 0
 		Gui, % this.hSidePanel ":Add", Text, % "x5 y5 aw Center w" UCR.SIDE_PANEL_WIDTH, Profile ToolBox
-		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah", % this._ProfileToolbox.hwnd
-		Gui % this.hSidePanel ":Show", Hide
-		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH " h" UCR.GUI_MIN_HEIGHT, % this.hSidePanel
+		Gui, % this.hSidePanel ":Add", Gui, % "x0 y+5 aw ah w" UCR.SIDE_PANEL_WIDTH + 20, % this._ProfileToolbox.hwnd
+		Gui, % this.hSidePanel ":Show"
+		; Parent the SidePanel to the main Gui
+		Gui, % this.hwnd ":Add", Gui, % "x" UCR.PLUGIN_FRAME_WIDTH " ym aw ah w" UCR.SIDE_PANEL_WIDTH + 20 " h" UCR.TOP_PANEL_HEIGHT + UCR.PLUGIN_FRAME_HEIGHT +UCR.BOTTOM_PANEL_HEIGHT, % this.hSidePanel
+
+		; Set the initial size of the Main Gui
+		Gui, % this.hwnd ":Show", % "Hide", % "UCR - Universal Control Remapper v" this.Version
 		
-		;Gui, % this.hwnd ":Show"
+		; Set the MinSize
+		WinGetPos , , , w, h, % "ahk_id " this.hwnd
+		rect := this.GetClientRect(this.hwnd)
+		Gui, % this.hwnd ":+Minsize" rect.w "x" rect.h
 	}
 	
 	; Creates the objects for the Main Menu
 	_CreateMainMenu(){
 		this.MainMenu := new _Menu()
-		this.MainMenu.AddSubMenu("Gui&Controls", "GuiControls")
-			.AddMenuItem("Show Joystick &Names (Requires Restart)", "ShowJoystickNames", this._MenuHandler.Bind(this, "ShowJoystickNames"))
 		this.MainMenu.AddSubMenu("&View", "View")
 			.AddMenuItem("&Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized"))
 			.parent.AddMenuItem("&Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
-		this.MainMenu.AddSubMenu("&Debug", "Debug")
-			.AddMenuItem("Show &vJoy Log...", "ShowvJoyLog", this._MenuHandler.Bind(this, "ShowvJoyLog"))
-		this.MainMenu.AddSubMenu("&Titan Device", "Titan")
-			.AddMenuItem("Detect current output type...", "DetectType", this._MenuHandler.Bind(this, "DetectTitanType"))
+		this.IOClassMenu := this.MainMenu.AddSubMenu("&IOClasses", "IOClasses")
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
@@ -241,26 +295,37 @@ Class UCRMain extends _UCRBase {
 		if (name = "MinimizeToTray" || name = "StartMinimized"){
 			this.UserSettings.MinimizeOptions[name] := !this.UserSettings.MinimizeOptions[name]
 			this.MainMenu.MenusByName["View"].ItemsByName[name].ToggleCheck()
-		} else if (name = "ShowJoystickNames"){
+		}
+
+		/*
+		else if (name = "ShowJoystickNames"){
 			this.UserSettings.GuiControls[name] := !this.UserSettings.GuiControls[name]
 			this.MainMenu.MenusByName["GuiControls"].ItemsByName[name].ToggleCheck()
-		} else if (name = "ShowvJoyLog"){
-			this.ShowvJoyLog()
-		} else if (name = "DetectTitanType"){
-			this.Libraries.Titan.Acquire()
-			type := this.Libraries.Titan.OutputNames[this.Libraries.Titan.Connections.output]
-			if (!type)
-				type := "Not connected"
-			msgbox % "Currently plugged in as type: "type
 		}
+		*/
+		
 		this._SaveSettings()
 	}
 	
 	_ShowGui(){
 		xy := (this.CurrentPos.x != "" && this.CurrentPos.y != "" ? "x" this.CurrentPos.x " y" this.CurrentPos.y : "")
+		if (!this.CurrentSize.w || !this.CurrentSize.h){
+			WinGetPos , , , w, h, % "ahk_id " this.hwnd
+			this.CurrentSize.w := w, this.CurrentSize.h := h
+		}
 		Gui, % this.hwnd ":Show", % xy " h" this.CurrentSize.h " w" this.Currentsize.w
+		;rect := this.GetClientRect(this.hwnd)
+		;Gui, % this._ProfileToolbox.hwnd ":Show", % "h" rect.h
+		;Gui, % this.hSidePanel ":Show", % "h" rect.h
+		;Gui, % this.hwnd ":Show", % xy
 	}
-	
+
+	GetClientRect(hwnd){
+		VarSetCapacity(RC, 16, 0)
+		DllCall("User32.dll\GetClientRect", "Ptr", hwnd, "Ptr", &RC)
+		return {w: NumGet(RC, 8, "Int"), h: Numget(RC, 12, "Int")}
+	}
+
 	_OnMove(wParam, lParam, msg, hwnd){
 		;this.CurrentPos := {x: LoWord(lParam), y: HiWord(lParam)}
 		; Use WinGetPos rather than pos in message, as this is the top left of the Gui, not the client rect
@@ -284,70 +349,82 @@ Class UCRMain extends _UCRBase {
 		this.CurrentProfile._AddPlugin()
 	}
 	
-	; Turns on or off the "Input Thread" for a given profile
-	; Also maintains a list of the active threads, so they can be managed on profile change
-	_SetProfileInputThreadState(profile, state){
-		if (state){
-			this._LoadedInputThreads[profile] := 1
-			this.Profiles[profile]._StartInputThread()
-		} else {
-			this._LoadedInputThreads.Delete(profile)	; Remove key entirely for "off"
-			this.Profiles[profile]._StopInputThread()
-		}
-	}
-	
 	; We wish to change profile. This may happen due to user input, or application changing
+	; This is the function which ultimately decides which profiles should be active...
+	; ... and which profiles should be "PreLoaded" (InputThread running, but detection suspended)
 	; Save param can be set to 0 to not save when changing profile ...
 	; ... eg so that when _LoadSettings() calls ChangeProfile, we do not save while loading.
-	ChangeProfile(id, save := 1){
+	; ChangeProfile will accept the profile id of the current profile...
+	; ... which will cause it to re-evaluate which profiles are inherited or linked
+	ChangeProfile(id := 0, save := 1){
+		if (id == 0){
+			; No passed ID, assume current profile
+			; Used to refresh state of linked / inherited profiles etc
+			id := this.CurrentPID
+		}
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
-		newprofile := this.Profiles[id]
+		new_profile := this.Profiles[id]
 		; Check if there is currently an active profile
 		if (IsObject(this.CurrentProfile)){
-			;~ ; Do nothing if we are changing to the currently active profile
-			;~ if (id = this.CurrentProfile.id)
-				;~ return 1
-			OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " newprofile.Name
+			; A profile is currently active, de-activate old profiles.
+			;OutputDebug % "UCR| Changing Profile from " this.CurrentProfile.Name " to: " new_profile.Name
+			
 			; Make the Gui of the current profile invisible
 			this.CurrentProfile._Hide()
 			
-			; Stop threads which are no longer required
-			this.StopThreadsNotLinkedToProfileId(id)
-			
-			; De-Activate profiles which are no longer required
-			this.DeactivatePofilesNotInheritedBy(id)
 		} else {
-			OutputDebug % "UCR| Changing Profile for first time to: " newprofile.Name
+			;OutputDebug % "UCR| Changing Profile for first time to: " new_profile.Name
 		}
 		
+		; Reset the highlights in the ProfileToolbox
+		this._ProfileToolbox.ResetProfileColors()
+
 		; Change current profile to new profile
-		this.CurrentProfile := newprofile
+		this.CurrentProfile := new_profile
+		this.CurrentPID := id
+
+		new_profile_states := this._BuildNewProfileStates(id)
+
+		; Change any active profiles to their new state
+		for old_pid, state in this._InputThreadStates {
+			new_state := new_profile_states[old_pid]
+			if (state != 2 || old_pid == id || state == new_state)
+				continue
+			if (new_state == "")
+				new_state := 0
+			;OutputDebug % "UCR| ChangeProfile Setting new state for profile " old_pid " to " new_state
+			this._SetProfileState(old_pid, new_state)
+			new_profile_states.Delete(old_pid)	; This profile's new state has been set, remove it from the list
+		}
+		
+		; Activate the new profile
+		this._SetProfileState(id, 2)
+
+		; Next Activate other profiles (eg Inherited, Global) that need to be active
+		for new_pid, state in new_profile_states {
+			if (state != 2)
+				continue
+			this._SetProfileState(new_pid, state)
+		}
+		
+		; Beyond this point, time is not really a factor.
+		; Profiles and their InputThreads should be in the correct state, and ready to process input
+		; ToDo: Look into making some of the rest of this function into an Asynch timer?
+		
+		; Make the new profile's Gui visible
+		this.CurrentProfile._Show()
+
+		; Finally PreLoad any linked profiles
+		for new_pid, state in new_profile_states {
+			if (state != 1)
+				continue
+			this._SetProfileState(new_pid, state)
+		}
 		
 		; Update Gui to reflect new current profile
 		this.UpdateCurrentProfileReadout()
 		this._ProfileToolbox.SelectProfileByID(id)
-		
-		;UCR.Libraries.TTS.Speak(this.CurrentProfile.Name)
-		
-		; Clear Profile Toolbox colours and start setting new ones
-		this._ProfileToolbox.ResetProfileColors()
-		this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
-		this._ProfileToolbox.SetProfileColor(1, {fore: 0x0, back: 0x00ff00})
-		this._ProfileToolbox.SetProfileInherit(this.CurrentProfile.InheritsfromParent)
-		
-		; Start running new profile
-		this._SetProfileInputThreadState(id,1)
-		this.ActivateInputThread(this.CurrentProfile.id)
-		
-		; Make the new profile's Gui visible
-		this.CurrentProfile._Show()
-		
-		; Make sure all linked or inherited profiles have active input threads
-		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
-		
-		; Activate profiles which are inherited
-		this.ActivateProfilesInheritedBy(id)
 		
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 		
@@ -357,107 +434,99 @@ Class UCRMain extends _UCRBase {
 		}
 		return 1
 	}
-	
-	ActivateInputThread(id){
-		profile := this.profiles[id]
-		;OutputDebug % "UCR| Activating " id " (" profile.name ")"
-		profile._Activate()
-		this._ActiveInputThreads[id] := profile
-	}
-	
-	DeActivateInputThread(id){
-		profile := this.profiles[id]
-		;OutputDebug % "UCR| Deactivating " id " (" profile.name ")"
-		profile._DeActivate()
-		this._ActiveInputThreads.Delete(id)
-	}
-	
-	ActivateProfilesInheritedBy(id){
-		pp_id := this.profiles[id].ParentProfile
-		if (this.profiles[id].InheritsfromParent && pp_id != id){
-			this._ProfileToolbox.SetProfileColor(pp_id, {fore: 0x0, back: 0x00ffaa})
-			this.ActivateInputThread(pp_id)
-		}
-	}
-	
-	DeactivatePofilesNotInheritedBy(id){
-		for p_id, p in this._ActiveInputThreads {
-			if (p_id == id || p._IsGlobal || (p.InheritsfromParent && p.ParentProfle == id)){
-				continue
-			}
-			this.DeActivateInputThread(p_id)
-		}
-	}
-	
-	StopThreadsNotLinkedToProfileId(id){
-		; Stop the InputThread of any profiles that are no longer linked
-		; _LoadedInputThreads may be modified by this operation, so iterate a cloned version.
-		loaded_threads := this._LoadedInputThreads.clone()
+
+	; These two functions work out, given a profile ID, which profiles need to be loaded and activated.
+	; Takes into account profile inheritance, and "linked" profiles (those pointed to by ProfileSwitcher plugins)
+	_BuildNewProfileStates(id){
 		profile := this.Profiles[id]
+		ret := this.__BuildNewProfileStates(id)
 		if (profile.InheritsFromParent && profile.ParentProfile){
-			inc_ids := {profile.ParentProfile: 1}
-			for p_id, p in this.profiles[profile.ParentProfile]._LinkedProfiles {
-				inc_ids[p_id] := 1
+			ret[profile.ParentProfile] := 2	; Add the parent profile, and set it to state 2 (Active)
+			ret := this.__BuildNewProfileStates(profile.ParentProfile, ret)	; Add profiles which are linked to the parent
+		}
+		ret := this.__BuildNewProfileStates(1, ret)	; Add profiles which are linked to the Global profile
+		;ret[id] := 2	; Make sure the new profile is in the list, and that it is set to Active
+		ret.Delete(id)	; Make sure that the new profile itself did not make it into the list
+		ret[1] := 2		; The Global profile is always active
+		ret[-1] := 2	; The SuperGlobal profile is always active
+		return ret
+	}
+	__BuildNewProfileStates(id, merge := 0){
+		if (merge == 0)
+			ret := {}
+		else
+			ret := merge.clone()
+		profile := this.Profiles[id]
+		for i, unused in profile._LinkedProfiles {
+			ret[i] := 1	; Add the new profile to the list, and set it's state to 1 (PreLoaded)
+		}
+		return ret
+	}
+
+	; Tells a profile to change State
+	; Also updates UCR's cache of profile states, and updates the ProfileToolBox to reflect the new state
+	_SetProfileState(id, state){
+		if (id != -1 && this._Paused && state == 2)
+			state := 1
+		; Update ProfileToolbox display
+		if (id == this.CurrentPID){
+			; Profile is Active as it is the Current Profile
+			this._ProfileToolbox.SetProfileColor(id, {fore: 0xffffff, back: 0xff9933})	; Fake default selection box
+		} else if (state == 2){
+			if (abs(id) == 1){
+				; Profile is active as it is Global or SuperGlobal
+				this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00ff00})
+			} else {
+				; Profile is Active as it is Inherited by the Current Profile
+				this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00ffaa})
 			}
+		} else if (state == 1){
+			; Profile is PreLoaded
+			this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0x00bfff})
 		} else {
-			inc_ids := {}
+			; Profile is InActive
+			this._ProfileToolbox.SetProfileColor(id, {fore: 0x0, back: 0xffffff})
 		}
-		for p_id, state in loaded_threads {
-			if (! (p_id == id || p_id == 1 || ObjHasKey(this.Profiles[1]._LinkedProfiles, p_id) || ObjHasKey(this.Profiles[id]._LinkedProfiles, p_id) || ObjHasKey(inc_ids, p_id))){
-				OutputDebug % "UCR| StopThreadsNotLinkedToProfileId stopping thread"
-				this._SetProfileInputThreadState(p_id,0)
-				this._ProfileToolbox.UnSetProfileColor(p_id)
-			}
-		}
-	}
-	
-	StartThreadsLinkedToProfileId(id){
-		; Start the InputThreads for any linked profiles
-		profile := this.profiles[id]
-		profile_list := [profile._LinkedProfiles]
-		; If this profile Inherits from parent, then add the parent's _LinkedProfiles to the list
-		if (profile.InheritsFromParent && profile.ParentProfile){
-			this._SetProfileInputThreadState(profile.ParentProfile,1)	; Start the parent also
-			profile_list.push(this.profiles[profile.ParentProfile]._LinkedProfiles)
-		}
-		Loop % profile_list.length() {
-			for p_id, state in profile_list[A_Index] {
-				if (p_id = id)
-					continue
-				p := this.Profiles[p_id]
-				if (p._InputThread = 0){
-					this._SetProfileInputThreadState(p_id,1)
-				}
-				this._ProfileToolbox.SetProfileColor(p_id, {fore: 0x0, back: 0x00bfff})
-			}
+		
+		; Change the state of the Profile
+		if (this._InputThreadStates[id] != state){
+			this.Profiles[id].SetState(state)
+			this._InputThreadStates[id] := state
 		}
 	}
 	
+	; The user changed the InheritsFromParent setting for a profile
+	; Reload profiles as appropriate, and save settings
 	SetProfileInheritsState(id, state){
 		this.profiles[id].InheritsFromParent := state
-		this._SaveSettings()
+		; Change to the Current Profile, to force load of inherited profile
+		; This will also force a save of settings
+		this.ChangeProfile(this.CurrentPID)
 	}
 	
+	; Called when the user changes the setting in a ProfileSwitcher plugin
 	ProfileLinksChanged(){
-		if (!this.CurrentProfile.id)
-			return
-		this.StopThreadsNotLinkedToProfileId(this.CurrentProfile.id)
-		this.StartThreadsLinkedToProfileId(this.CurrentProfile.id)
+		this.ChangeProfile(this.CurrentPID)
 		WinSet,Redraw,,% "ahk_id " this._ProfileToolbox.hTreeview
 	}
 	
 	UpdateCurrentProfileReadout(){
-		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentProfile.id)
+		GuiControl, % this.hTopPanel ":", % this.hCurrentProfile, % this.BuildProfilePathName(this.CurrentPID)
 	}
 	
 	BuildProfilePathName(id){
 		if (!ObjHasKey(this.profiles, id))
 			return ""
 		str := this.Profiles[id].Name
-		while (this.Profiles[id].ParentProfile != 0){
-			p := this.Profiles[id], pp := this.Profiles[p.ParentProfile]
+		i := id
+		while (this.Profiles[i].ParentProfile != 0){
+			p := this.Profiles[i], pp := this.Profiles[p.ParentProfile]
+			if (!IsObject(pp)){
+				OutputDebug % "UCR| WARNING! BuildProfilePathName called on profile " id " which has a parent that is not loaded yet (" p.ParentProfile ")"
+				return "BuildProfilePathName_ERROR"
+			}
 			str := pp.Name " >> " str
-			id := pp.id
+			i := pp.id
 		}
 		return str
 	}
@@ -487,13 +556,22 @@ Class UCRMain extends _UCRBase {
 		this._InputActivitySubscriptions.Delete(hwnd)
 	}
 	
+	_RegisterGuiControl(ctrl, delete := 0){
+		if (delete){
+			this.BindControlLookup.Delete(ctrl.id)
+		} else {
+			;OutputDebug % "UCR| Registering GuiControl "
+			this.BindControlLookup[ctrl.id] := ctrl
+		}
+	}
+	
 	; There was input activity on a profile
 	; This is fired after the input is processed, and is solely for the purpose of UCR being able to detect that activity is happening.
-	_InputEvent(ipt, state){
+	_InputEvent(ControlGuid, state){
 		for hwnd, obj in this._InputActivitySubscriptions {
-			cb := obj.callback, profile_id := obj.pro
-			if (IsObject(obj.callback)  && ObjHasKey(this._ActiveInputThreads, obj.profile_id))
-				obj.callback.Call(ipt, state)
+			cb := obj.callback, profile_id := obj.profile_id
+			if (IsObject(obj.callback)  && ObjHasKey(this._InputThreadStates, obj.profile_id))
+				obj.callback.Call(ControlGuid, state)
 		}
 	}
 	
@@ -531,6 +609,7 @@ Class UCRMain extends _UCRBase {
 		if (!IsObject(this.ProfileTree[parent]))
 			this.ProfileTree[parent] := []
 		this.ProfileTree[parent].push(id)
+		;this._ProfileSettingsCache[id] := this.Profiles[id]._Serialize()
 		this.UpdateProfileToolbox()
 		this.ChangeProfile(id)
 	}
@@ -550,7 +629,7 @@ Class UCRMain extends _UCRBase {
 	MoveProfile(profile_id, parent_id, after){
 		if (parent_id == "")
 			parent_id := 0
-		OutputDebug % "UCR| MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
+		;OutputDebug % "UCR| MoveProfile: profile: " profile_id ", parent: " parent_id ", after: " after
 		; Do not allowing move of default or global profile
 		if (profile_id < 3 || !ObjHasKey(this.Profiles, profile_id))
 			return 0
@@ -593,8 +672,9 @@ Class UCRMain extends _UCRBase {
 	; Creates a new profile and assigns it a unique ID, if needed.
 	_CreateProfile(name, id := 0, parent := 0){
 		if (id = 0){
-			id := this.CreateGUID()
+			id := CreateGUID()
 		}
+		OutputDebug % "UCR| Creating Profile " name " with ID " id
 		profile := new _Profile(id, name, parent)
 		this.Profiles[id] := profile
 		return id
@@ -602,7 +682,7 @@ Class UCRMain extends _UCRBase {
 	
 	; user clicked the Delete Profile button
 	_DeleteProfile(){
-		id := this.CurrentProfile.id
+		id := this.CurrentPID
 		if (id = 1 || id = 2)
 			return
 		pp := this.CurrentProfile.ParentProfile
@@ -620,6 +700,7 @@ Class UCRMain extends _UCRBase {
 	__DeleteProfile(id){
 		; Remove profile's entry from ProfileTree
 		profile := this.Profiles[id]
+		profile.OnClose()
 		treenode := this.ProfileTree[profile.ParentProfile]
 		for k, v in treenode {
 			if (v == id){
@@ -630,8 +711,7 @@ Class UCRMain extends _UCRBase {
 				break
 			}
 		}
-		; Terminate profile input thread
-		this._SetProfileInputThreadState(profile.id,0)
+		;this._ProfileSettingsCache.Delete(id)
 		; Kill profile object
 		this.profiles.Delete(profile.id)
 	}
@@ -651,18 +731,17 @@ Class UCRMain extends _UCRBase {
 		Loop, Files, % A_ScriptDir "\Plugins\*.ahk", FR
 		{
 			FileRead,plugincode,% A_LoopFileFullPath
-			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+_Plugin",classname)
+			RegExMatch(plugincode,"i)class\s+(\w+)\s+extends\s+",classname)
 			already_loaded := 0
 			; Check if the classname already exists.
-			if (IsObject(%classname1%)){
-				cls := %classname1%
-				if (cls.base.__Class = "_Plugin"){
+			if (IsObject(_UCR.Classes.Plugins[classname1])){
 					; Existing class extends plugin
 					; Class has been included via other means (eg to debug it), so do not try to include again.
 					already_loaded := 1
-				}
 			}
-			dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
+			;dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _Plugin {`n}`n" plugincode)
+			dllthread := AhkThread("#NoTrayIcon`ntest := new " classname1 "()`ntype := test.type, description := test.description, autoexecute_done := 1`nLoop {`nsleep 10`n}`nclass _UCR {`nclass Classes{`nclass Plugin{`n}`n}`n}`n" plugincode)
+			
 			t := A_TickCount + 1000
 			While !(autoexecute_done := dllthread.ahkgetvar.autoexecute_done) && A_TickCount < t
 				Sleep 10
@@ -690,9 +769,12 @@ Class UCRMain extends _UCRBase {
 		FileRead, j, % this._SettingsFile
 		if (j = ""){
 			; Settings file empty or not found, create new settings
-			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [1, 2]}, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}, "2": {"Name": "Default", "ParentProfile": "0"}}}
+			j := {"CurrentProfile":"2", "SettingsVersion": this.SettingsVersion, "ProfileTree": {0: [-1, 1, 2]}
+				, "Profiles":{"1":{"Name": "Global", "ParentProfile": "0"}
+					, "2": {"Name": "Default", "ParentProfile": "0"}
+					, "-1": {"Name": "SuperGlobal", "ParentProfile": "0"}}}
 		} else {
-			OutputDebug % "UCR| Loading JSON from disk"
+			;OutputDebug % "UCR| Loading JSON from disk"
 			j := JSON.Load(j)
 		}
 		
@@ -710,81 +792,61 @@ Class UCRMain extends _UCRBase {
 		return j
 	}
 	
+	; The user clicked the Save Settings button
+	_SaveSettingsClicked(){
+		this.__SaveSettings()
+	}
+	
 	; Save settings to disk
 	; ToDo: improve. Only the thing that changed needs to be re-serialized. Cache values.
 	_SaveSettings(){
+		this._UpdateSaveReadout(1)
 		this._SavingToDisk := 1
-		fn := this.SaveSettingsTimerFn
-		SetTimer, % fn, Off
-		SetTimer, % fn, -1000
+		;fn := this.SaveSettingsTimerFn
+		;SetTimer, % fn, Off
+		;SetTimer, % fn, -30000
 	}
 	
 	__SaveSettings(){
-		OutputDebug % "UCR| Saving JSON to disk"
+		;OutputDebug % "UCR| Saving JSON to disk"
+		this._UpdateSaveReadout(2)
 		obj := this._Serialize()
 		SettingsFile := this._SettingsFile
 		FileReplace(JSON.Dump(obj, ,true), SettingsFile)
 		this._SavingToDisk := 0
+		this._UpdateSaveReadout(0)
 	}
+	
+	; Updates the GUI to let the user know whether there are unsaved changes or not
+	_UpdateSaveReadout(state){
+		if (state == 2){
+			GuiControl, +cRed +Redraw, % this.hSaveStatus
+			GuiControl, , % this.hSaveStatus, Saving to disk ...
+		} else if (state == 1){
+			GuiControl, +cRed +Redraw, % this.hSaveStatus
+			GuiControl, , % this.hSaveStatus, You have unsaved changes
+		} else {
+			GuiControl, +cGreen +Redraw, % this.hSaveStatus
+			GuiControl, , % this.hSaveStatus, No unsaved changes
+		}
+	}
+	
 	; If SettingsVersion changes, this handles converting the INI file to the new format
 	_UpdateSettings(obj){
-		if (obj.SettingsVersion = "0.0.1"){
-			; Upgrade from 0.0.1 to 0.0.2
-			; Convert profiles from name-indexed to unique-id indexed
-			oldprofiles := obj.Profiles.clone()
-			obj.Profiles := {}
-			obj.ProfileTree := {0: [1, 2]}
-			obj.CurrentProfile := 2
-			for name, profile in oldprofiles {
-				if (name = "global"){
-					id := 1
-				} else if (name = "default"){
-					id := 2
-				} else {
-					id := this.CreateGUID()
-					obj.ProfileTree[0].push(id)
-				}
-				profile.id := id
-				profile.Name := name
-				profile.ParentProfile := 0
-				obj.Profiles[id] := profile
-			}
-			obj.SettingsVersion := "0.0.2"
-		}
-		
-		if (obj.SettingsVersion = "0.0.2"){
-			obj.CurrentSize.w := this.PLUGIN_FRAME_WIDTH + this.SIDE_PANEL_WIDTH
-			obj.SettingsVersion := "0.0.3"
-		}
-		
-		if (obj.SettingsVersion = "0.0.3"){
-			for id, profile in obj.Profiles {
-				oldplugins := profile.Plugins.clone()
-				oldorder := profile.PluginOrder
-				profile.Plugins := {}
-				profile.PluginOrder := []
-				Loop % oldorder.length() {
-					name := oldorder[A_Index]
-					plugin := oldplugins[name]
-					plugin.name := name
-					id := this.CreateGUID()
-					profile.Plugins[id] := plugin
-					profile.PluginOrder.push(id)
-				}
-			}
-			obj.SettingsVersion := "0.0.4"
-		}
-		if (obj.SettingsVersion = "0.0.4"){
-			for id, profile in obj.Profiles {
-				profile.InheritsFromParent := 0
-			}
-			obj.SettingsVersion := "0.0.5"
+		if (obj.SettingsVersion == "0.0.6"){
+			obj.Profiles[-1] := {"Name": "SuperGlobal", "ParentProfile": "0"}
+			obj.ProfileTree[0].InsertAt(1, -1)
+			obj.SettingsVersion := "0.0.7"
+		} else {
+			msgbox % "This version of UCR does not support INI files from previous versions.`nPlease back up or delete your INI file and re-run UCR."
+			ExitApp
 		}
 		; Default to making no changes
 		return obj
 	}
 	; A child profile changed in some way
 	_ProfileChanged(profile){
+		;this._ProfileSettingsCache[profile.id] := profile._Serialize()
 		this._SaveSettings()
 	}
 	
@@ -804,52 +866,40 @@ Class UCRMain extends _UCRBase {
 		return 0
 	}
 	
-	; The user selected the "Bind" option from an Input/OutputButton GuiControl,
-	;  or changed an option such as "Wild" in an InputButton
-	_RequestBinding(hk, delta := 0){
-		if (delta = 0){
-			; Change Buttons requested - start Bind Mode.
-			if (this._CurrentState == this._State.Normal){
-				this._CurrentState := this._State.InputBind
-				; De-Activate all active profiles, to make sure they do not interfere with the bind process
-				this._DeActivateProfiles()
-				this._BindModeHandler.StartBindMode(hk, this._BindModeEnded.Bind(this))
-				return 1
-			}
-			return 0
-		} else {
-			; Change option (eg wild, passthrough) requested
-			bo := hk.value.clone()
-			for k, v in delta {
-				bo[k] := v
-			}
-			if (this._InputHandler.IsBindable(hk, bo)){
-				hk.value := bo
-				this._InputHandler.SetButtonBinding(hk)
-			}
+	; A plugin is requesting that we register a binding with an input thread
+	_RequestBinding(ctrl){
+		bo := ctrl._Serialize()
+		if (!IsObject(bo)){
+			OutputDebug % "UCR| Warning! Tried to _RequestBinding without a BindObject set!"
+			return
+		}
+		;outputdebug % "UCR| UCRMain _RequestBinding - bo.Binding[1]: " bo.Binding[1] ", DeviceID: " bo.DeviceID ", IOClass: " bo.IOClass
+		;ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, bo)
+		ctrl.ParentPlugin.ParentProfile.InputThread.UpdateBinding(ctrl.id, ObjShare(bo))
+	}
+	
+	; A plugin is requesting a new Binding via Bind Mode (User pressing inputs they wish to bind)
+	; Can also be used to request a binding for outputs, if the output has a corresponding input IOClass (eg Keyboard + Mouse)
+	; IOClassMappings defines for each IOClass detected as input, what IOClass to map it to...
+	; ... this is generally itself or a corresponding output IOClass
+	; eg a request for a AHK_KBM_Output IOClass Binding would use AHK_KBM_Input as the detection IOClass
+	RequestBindMode(IOClassMappings, callback){
+		if (this._CurrentState == this._State.Normal){
+			this._CurrentState := this._State.InputBind
+			; De-Activate all active profiles, to make sure they do not interfere with the bind process
+			this._DeActivateProfiles()
+			; Start Bind Mode, pass callback to _BindModeEnded which gets fired when user makes a selection
+			this._BindModeHandler.StartBindMode(IOClassMappings, this._BindModeEnded.Bind(this, callback))
+			return 1
 		}
 	}
 	
-	; Bind Mode Ended.
-	; Decide whether or not binding is valid, and if so set binding and re-enable inputs
-	_BindModeEnded(hk, bo){
-		;OutputDebug % "UCR| Bind Mode Ended: " bo.Buttons[1].code
-		if (hk._IsOutput){
-			hk.value := bo
-		} else {
-			if (this._InputHandler.IsBindable(hk, bo)){
-				hk.value := bo
-				this._InputHandler.SetButtonBinding(hk)
-			}
-		}
-		; Re-Activate profiles that were deactivated
-		this._ActivateProfiles()
+	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
+	_BindModeEnded(callback, primitive){
+		;OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
+		this.ChangeProfile(this.CurrentPID, 0)	; Do not save on change profile, bind mode will already cause a save
 		this._CurrentState := this._State.Normal
-	}
-	
-	; Request an axis binding.
-	RequestAxisBinding(axis){
-		this._InputHandler.SetAxisBinding(axis)
+		callback.Call(primitive)
 	}
 	
 	; Request a Mouse Axis Delta binding
@@ -857,21 +907,36 @@ Class UCRMain extends _UCRBase {
 		this._InputHandler.SetDeltaBinding(delta)
 	}
 	
-	; Activates all profiles in the _ActiveInputThreads array.
-	_ActivateProfiles(){
-		for p_id, p in this._ActiveInputThreads {
-			outputdebug % "UCR| Activating profile " p.name
-			p._Activate()
+	; DeActivates all profiles in the _InputThreadStates array
+	; We don't want hotkeys or plugins active while in Bind Mode...
+	; Use ChangeProfile() on the current profile to re-activate.
+	_DeActivateProfiles(){
+		for p_id, state in this._InputThreadStates {
+			if (state == 2){
+				if (p_id == -1)
+					continue	; Do not de-activate the SuperGlobal profile
+				this._SetProfileState(p_id, 1)
+				;outputdebug % "UCR| _DeActivateProfiles changing state of profile " this.Profiles[p_id].name " from Active to PreLoaded"
+			}
 		}
 	}
-	
-	; DeActivates all profiles in the _ActiveInputThreads array
-	; We don't want hotkeys or plugins active while in Bind Mode...
-	_DeActivateProfiles(){
-		for p_id, p in this._ActiveInputThreads {
-			outputdebug % "UCR| DeActivating profile " p.name
-			p._DeActivate()
+
+	; Sets the Paused state of UCR.
+	; While paused, all profiles are de-activated.
+	SetPauseState(state){
+		if (this._Paused == state || this._CurrentState != this._State.Normal )
+			return
+		this._Paused := state
+		if (this._Paused){
+			Gui, % this.hTopPanel ":Color", CC0000
+		} else {
+			Gui, % this.hTopPanel ":Color", Default
 		}
+		this.ChangeProfile(this.CurrentPID, 0)	; change profile, but do not save
+	}
+	
+	TogglePauseState(){
+		this.SetPauseState(!this._Paused)
 	}
 	
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
@@ -919,31 +984,25 @@ Class UCRMain extends _UCRBase {
 		return {x: cx, y: cy}
 	}
 
-	ShowvJoyLog(){
-		Clipboard := this.Libraries.vJoy.LoadLibraryLog
-		msgbox % this.Libraries.vJoy.LoadLibraryLog "`n`nThis information has been copied to the clipboard"
-	}
-	
-	MergeObject(base, patch){
+	MergeObject(src, patch){
 		for k, v in patch {
 			if (IsObject(v)){
-				this.MergeObject(base[k], v)
+				this.MergeObject(src[k], v)
 			} else {
-				base[k] := v
+				src[k] := v
 			}
-			
 		}
 	}
 
 	; Serialize this object down to the bare essentials for loading it's state
 	_Serialize(){
 		obj := {SettingsVersion: this.SettingsVersion
-		, CurrentProfile: this.CurrentProfile.id
+		, CurrentProfile: this.CurrentPID
 		, CurrentSize: this.CurrentSize
 		, CurrentPos: this.CurrentPos
 		, UserSettings: this.UserSettings
-		, Profiles: {}
 		, ProfileTree: this.ProfileTree}
+		obj.Profiles := {}
 		for id, profile in this.Profiles {
 			obj.Profiles[id] := profile._Serialize()
 		}
@@ -958,6 +1017,7 @@ Class UCRMain extends _UCRBase {
 		for id, profile in obj.Profiles {
 			this._CreateProfile(profile.Name, id, profile.ParentProfile)
 			this.Profiles[id]._Deserialize(profile)
+			;this._ProfileSettingsCache[id] := profile
 			this.Profiles[id]._Hide()
 		}
 		;this.CurrentProfile := this.Profiles[obj.CurrentProfile]
@@ -967,18 +1027,35 @@ Class UCRMain extends _UCRBase {
 		if (IsObject(obj.CurrentPos))
 			this.CurrentPos := obj.CurrentPos
 	}
-}
-
-Class _UCRBase {
-	; By jNizM - https://autohotkey.com/boards/viewtopic.php?f=6&t=4732&p=87497#p87497
-	CreateGUID(){
-		VarSetCapacity(foo_guid, 16, 0)
-		if !(DllCall("ole32.dll\CoCreateGuid", "Ptr", &foo_guid))
-		{
-			VarSetCapacity(tmp_guid, 38 * 2 + 1)
-			DllCall("ole32.dll\StringFromGUID2", "Ptr", &foo_guid, "Ptr", &tmp_guid, "Int", 38 + 1)
-			fin_guid := StrGet(&tmp_guid, "UTF-16")
+	
+	; Holds Classes for GuiControls and IOControls
+	class Classes {
+		class GuiControls {
+			#Include Classes\GuiControls\GuiControl.ahk
+			#Include Classes\GuiControls\ProfileSelect.ahk
+			#Include Classes\GuiControls\BannerMenu.ahk
+			#Include Classes\GuiControls\IOControl.ahk
+			#Include Classes\GuiControls\InputButton.ahk
+			#Include Classes\GuiControls\InputAxis.ahk
+			#Include Classes\GuiControls\InputDelta.ahk
+			#Include Classes\GuiControls\OutputButton.ahk
+			#Include Classes\GuiControls\OutputAxis.ahk
 		}
-		return SubStr(fin_guid, 2, 36)
+		
+		class IOClasses {
+			#Include Classes\GuiControls\IOClasses\BindObject.ahk
+			#Include Classes\GuiControls\IOClasses\IOClassBase.ahk
+			#Include Classes\GuiControls\IOClasses\AHK.ahk
+			#Include Classes\GuiControls\IOClasses\RawInput_Mouse_Delta.ahk
+			#Include Classes\GuiControls\IOClasses\vGen.ahk
+			#Include Classes\GuiControls\IOClasses\Titan.ahk
+			;#Include Classes\GuiControls\IOClasses\XInput.ahk
+		}
+		
+		#Include Classes\Plugin.ahk
 	}
 }
+
+; Dummy label for hotekys to bind to etc
+UCR_DUMMY_LABEL:
+	return

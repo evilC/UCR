@@ -1,36 +1,45 @@
 ﻿; ======================================================================== INPUT DELTA ===============================================================
 ; An input that reads delta move information from the mouse
-class _InputDelta {
-	__New(parent, name, ChangeStateCallback, aParams*){
-		this._Ptr := &this
-		this.ChangeStateCallback := ChangeStateCallback
-		this.ParentPlugin := parent
-		this.Name := name
-		this.ID := UCR.CreateGUID()
-		this.hwnd := parent.hwnd	; no gui for this input, so use hwnd of parent for unique id
-		this.value := 0
+class InputDelta extends _UCR.Classes.GuiControls.IOControl {
+	static _ControlType := "InputDelta"
+	static _DefaultBanner := "Select a Mouse"
+	static _IOClassNames := ["RawInput_Mouse_Delta"]
+	
+	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
+		base.__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*)
 	}
 	
-	Register(){
-		UCR._InputHandler.SetDeltaBinding(this)
+	_BuildMenu(){
+		for i, cls in this._IOClasses {
+			cls.AddMenuItems()
+		}
+		this.AddMenuItem("Any Mouse", "Any", this._ChangedValue.Bind(this, 1))
+		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
+	}
+
+	; Set the state of the GuiControl (Inc Cue Banner)
+	SetControlState(){
+		if (this.__value.Binding[1] || this.__value.DeviceID){
+			Text := this.__value.BuildHumanReadable()
+		} else {
+			Text := this._DefaultBanner
+		}
+		this.SetCueBanner(Text)
 	}
 	
-	UnRegister(){
-		UCR._InputHandler.SetDeltaBinding(this, 1)
-	}
-	
-	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
-	; ... then it can be re-built by calling this method on each control.
-	_RequestBinding(){
-		this.Register()
-	}
-	
-	_Serialize(){
-		obj := {value: this.value}
-		return obj
-	}
-	
-	_Deserialize(obj){
-		this.value := obj.value
+	_ChangedValue(o){
+		if (o == 1){
+			; Fake dummy BindObject for now
+			bo := {}
+			bo.Binding := [1]
+			bo.DeviceID := 1
+			bo.IOClass := "RawInput_Mouse_Delta"
+			this.SetBinding(bo)
+		} else if (o == 2){
+			bo := this._IOClasses.RawInput_Mouse_Delta
+			bo.Binding := []
+			bo.DeviceID := 0
+			this.SetBinding(bo)
+		}
 	}
 }

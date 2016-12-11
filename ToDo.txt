@@ -1,0 +1,68 @@
+Rename AHKToInternal etc - the -50..+50 range is no longer "internal", 0..100 is
+Use the term "Signed" instead.
+
+Timer state changed in UpdateBinding for AHK Joystick hats in ProfileInputThread
+Should not happen
+
+In UCR.ChangeProfile, at each iteration through new_profile_states, clone it and remove items from list.
+No point in processing each profile more than once
+
+Saw Orphaned profile in Barrie's INI. Not sure how it happened. Investigate
+Mitigation: Add Telemetry to UCR. Number of profiles, active threads, etc. Statusbar?
+This will assist in detecting when a profile has become orphaned etc.
+
+BuildProfilePathName getting called sometimes for a profile when it's parent has not loaded because it cannot get the parent profile.
+Repro:
+Profile 111 is a child of 333
+Profile 222 has a ProfileSwitcher that points to 111
+Profile 111 loads
+Profile 222 loads, ProfileSwitcher points to 111, so it looks up 111 (Loaded)
+It needs to build path to root, so as 111 is a child of 333, it looks up the name of 333 = Boom (333 not loaded).
+Something like this may also be able to cause orphaned profiles?
+Resolution:
+Are likely to always be able to cause problems like this. Will have to load all profiles, then have ProfileSwitchers update path.
+Already mechanism to force path update, UCR.FireProfileTreeChangeCallbacks()
+Also should maybe load profiles top-down by iterating obj.ProfileTree, instead of obj.Profiles?
+
+IOControl DeviceID sometimes seems to get set to 0
+Seen with various output types (vJoy, Titan) - not sure on whether it happens with input types.
+Generally clearing binding and/or restarting UCR works around.
+
+Implement "Pause Button" to DeActivate all profiles.
+Needs to cater for the situation where we are "Paused" and enter Bind Mode.
+Once Bind Mode ends, it needs to know to not re-activate profiles
+Also, some visual / audible feedback should be given to let the user know that UCR is paused
+
+Implement Mouse to Keyboard.
+Extend Mouse To Joystick?
+
+Mitigation for impact of saving has been implemented.
+Currently caching settings for profiles, and have increased save timer from 1s to 30s
+*Investigate effect of saving on performance - esp big pauses.
+*Suspect calling serialize on all objects locks them up and causes problems.
+*Cache values? Move to random access storage? SQLite?
+
+Plugin _OnInactive can no longer release held buttons
+
+Profile Inheritance option not always showing in Profile Toolbox
+Try adding menus to profiles and putting option in there?
+
+Custom Serializers / Deserializers for IOClasses? Would also reduce INI file spam
+
+Joystick button bindings need to be turned off for outputbuttons
+When suspend, off happens, these become active even though they are not wanted.
+Non-fatal as the bind handler does not accept them
+Just add filter? Check if return type is not in mappings, and if so, do not fire callback
+
+Remove _InputHandler?
+
+Take a look at encoding of hat directions.
+ATM, input is AHK Joy only, so only 1 hat, so Binding[1] can hold hat direction
+for multi-hat IOClasses (eg vGen), this is currently encoded as (HatNum * 100) + Dir (eg 101, 201, 301, 401 for North of each 4 hats).
+This requires some processing at run-time that could maybe be avoided by adding an extra property to that IOClass
+Move Hat# to BindOptions?
+
+IsEmptyAssoc in Plugin not working? GuiControls always in INI even if empty
+
+From old ToDo:
+* Sort out _RequestBinding / _RefreshBinding - may already be done?

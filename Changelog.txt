@@ -4,6 +4,109 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.7 - ???
+= Fixed vJoy not acquring sticks until you changed a binding
+
+0.1.6 - 3rd Dec 2016
++ The ButtonsToAxis plugin now has settings for Low / Mid / High
+  This enables remapping buttons to a "split axis" such as an XBox trigger.
+  This change breaks the deflection setting of all existing ButtonsToAxis plugins.
+  (Which is only an issue if you used non-standard settings)
+  To fix this you can do a search and replace in your ini file:
+  Find "Deflection" and replace with "DeflectionHigh"
+= Reverted back to synchronous communication from main thread -> InputThreads
+= When a profile's InputThread receives bindings upon loading, they are all passed in one call
+  This massively reduces the number of inter-thread calls.
+
+0.1.5 - 7th Nov 2016
+! UCR.exe changed in this version.
+  Some autopositioning bugs in AHK_H were found.
+= Removed automatic saving of changes.
+  This is suspected to be a trigger for some crashes or other undesirable behavior.
+  It also meant that if something went wrong, the user had way of backing out of a change.
+  So for now, it is gone. this may change in the future.
++ Added "Save Settings" button and readout to let you know if there are unsaved changes.
+  There is also a warning if you try to exit UCR with unsaved changes.
+= Fixed OutputButton getting stuck (Selecting options had no effect) if saved unbound.
+= Improved code that handles the overall layout of the UCR GUI.
+  Also added "Bottom Panel" to house the new save button.
+  Thanks to HotkeyIt for implementing some fixes to our autopositioning system in AHK_H.
+= Fixed Plugin ChangeValueCallbacks being fired multiple times with same value on start.
+= Fixed Profile InputThreads being stopped then restarted when changing to current profile.
+= Deleted profiles are now properly removed from UCR.ini
+
+0.1.4 - 31st Oct 2016
++ Added "Pause" mode for UCR
+  When UCR is Paused, all profiles (except the SuperGlobal profile) are DeActivated
+  Useful, eg if you blocked Left Mouse Button in a profile and you need to use it.
++ Added new SuperGlobal profile
+  Plugins in this profile will always be active, even when UCR is Paused
++ Added new "PauseButton" plugin
+  Put this in the SuperGlobal profile, and use it to Pause UCR
++ Added "Incremental Mode" to the ButtonsToAxis plugin
+  This adjusts the current axis position by the deflection setting on each press
+  of the buttons. The axis does not center when you release a button in this mode.
+= Titan Buttons now send a value of 100 to the Titan API, instead of 1.
+  This fixes Titan one L2/R2 button mappings only deflecting the analog button 1%
+= Fixed AxisInitializer plugin not working at all
+= Fixed Titan triggers not sending correct values
+= Fixed Titan PS3/4 triggers being absent from InputAxis
+= Fix for GameBind in OutputAxis and OutputButton IOControls
+= Changes to how settings are saved
+  UCR now saves 30s after a change, rather than 1s.
+  Profile's settings are now cached, so less work is done when we save.
+= Re-Work of profile changing code
+  Profile changes should now feel more responsive
+= Profiles linked to by the Global profile are now always PreLoaded
+  ie if you have a ProfileSwitcher plugin in the Global profile
+  then the profile that it points to will always be PreLoaded (in memory)
+= OutputAxis IOControls now clamp values to the 0..00 range
+
+0.1.3 - 16th Oct 2016
++ Added a new AxisSplitter plugin.
+  Useful eg for mapping a normal axis to two xbox triggers.
+= IOControls got a standard width and height.
+  Some plugins may look a little wonky until I can make a layout pass on them.
+= The ButtonToAxis plugin is now called the ButtonsToAxis plugin
+  It now remaps two InputButton controls to one OutputAxis control.
+  It now also has a "Deflection %" setting to control how much it moves the axis
+= The AxisToButton plugin is now called AxisToButtons
+= The AxisMerge plugin is now called AxisMerger
+= The menu entries in the main UCR menu for each IOClass now show properly on first start.
+  You no longer have to add a Plugin to load vJoy / Titan APIs etc.
+= Fixed checking of currently active output type in the Titan One API  
+= Fixed saving of Standard GuiControl (editboxes etc) values
+= XBox button / Playstation button now bindable as an output for Titan IOControls
+= The Invert option in the MouseToJoy plugin now works in Absolute and Relative modes
+
+0.1.2 - 11th Oct 2016
+! Warning! this version is still a little clunky.
+  IOClass options (eg to install SCPVBus) do not appear until you add a remapper plugin.
+= Fix: vXBox Buttons can now be selected in the OutputButton control.
++ ScpVBus (Required for vXBox) now packaged with UCR.
+  I will probably put in a download routine at some point
+  But this will do as a stop-gap
++ ScpVBus can be installed / uninstalled from within UCR via the IOClasses > vJoy menu.
+
+0.1.1 - 9th Oct 2016
++ Re-Added Titan One API
+
+0.1.0 - 2nd Oct 2016
+! WARNING! Lots of files changed, INI (Settings file) format changed!
+  YOU ARE ADVISED TO BACK UP YOUR OLD UCR FOLDER AND MAKE A NEW ONE
+! Major back-end changes. Things that worked before may well not work now.
+  Please report issues on the forums or on the issue tracker on GitHub.com/evilC/UCR
+! The Titan API has not been re-implemented in this release.
+  It will follow. Please continue to use 0.0.x if you need Titan.
++ The vGen API now replaces the old vJoy API and allows vXBox as well as vJoy devices.
+  vJoy 2.1.7 or greater is required, you can get it from here:
+  https://sourceforge.net/projects/vjoystick/files/Beta%202.x/
+! Also required for vGen is the SCPVBus driver, which can be found here:
+  http://evilc.com/files/tmp/ScpVBus-x64.zip
+  Download it, uncompress the ZIP, and open a command prompt as admin
+  Run install.bat to add the driver, remove.bat to remove it
+= Switch Absolute / Relative naming for MouseToJoy
+
 0.0.18 - 16th Sept 2016
 + Added Console output via Titan One GCDAPI
   You can now output to consoles like you would output to vJoy.

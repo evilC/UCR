@@ -9,17 +9,18 @@ class _BindModeHandler {
 	ModifierCount := 0
 	_Callback := 0
 	
-	_Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
-	,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
-	,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
-	,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
-
 	__New(){
-		this._BindModeThread:=AhkThread(A_ScriptDir "\Threads\BindModeThread.ahk",,1) ; Loads the AutoHotkey module and starts the script.
-		While !this._BindModeThread.ahkgetvar.autoexecute_done
+		;this._BindModeThread := new _BindMapper(this.ProcessInput.Bind(this))
+
+		FileRead, Script, % A_ScriptDir "\Threads\BindModeThread.ahk"
+		this.__BindModeThread := AhkThread(UCR._ThreadHeader "`nBindMapper := new _BindMapper(" ObjShare(this.ProcessInput.Bind(this)) ")`n" UCR._ThreadFooter Script)
+		While !this.__BindModeThread.ahkgetvar.autoexecute_done
 			Sleep 50 ; wait until variable has been set.
-		this._BindModeThread.ahkExec["BindMapper := new _BindMapper(" ObjShare(this._ProcessInput.Bind(this)) ")"]
 		
+		; Create object to hold thread-safe boundfunc calls to the thread
+		this._BindModeThread := {}
+		this._BindModeThread.SetDetectionState := ObjShare(this.__BindModeThread.ahkgetvar("InterfaceSetDetectionState"))
+
 		Gui, new, +HwndHwnd
 		Gui +ToolWindow -Border
 		Gui, Font, S15
@@ -28,100 +29,103 @@ class _BindModeHandler {
 		Gui, Add, Text, Center, Press the button(s) you wish to bind to this control.`n`nBind Mode will end when you release a key.
 	}
 	
-	StartBindMode(hk, callback){
+	;IOClassMappings, this._BindModeEnded.Bind(this, callback)
+	StartBindMode(IOClassMappings, callback){
 		this._callback := callback
-		this._OriginalHotkey := hk
 		
-		this.SelectedBinding := 0
+		this.SelectedBinding := {Binding: [], DeviceID: 0, IOClass: 0}
 		this.BindMode := 1
 		this.EndKey := 0
 		this.HeldModifiers := {}
 		this.ModifierCount := 0
-		
-		; When detecting an output, tell the Bind Handler to ignore physical joysticks...
-		; ... as output cannot be "sent" to physical sticks
-		this.SetHotkeyState(1, !hk._IsOutput)
+		; IOClassMappings controls which type each IOClass reports as.
+		; ie we need the AHK_KBM_Input class to report as AHK_KBM_Output when we are binding an output key
+		this.IOClassMappings := IOClassMappings
+		this.SetHotkeyState(1)
 	}
 	
 	; Turns on or off the hotkeys
-	SetHotkeyState(state, enablejoystick := 1){
+	SetHotkeyState(state){
 		if (state){
 			Gui, % this.hBindModePrompt ":Show"
 			UCR.MoveWindowToCenterOfGui(this.hBindModePrompt)
 		} else {
 			Gui, % this.hBindModePrompt ":Hide"
 		}
-		this._BindModeThread.ahkExec["BindMapper.SetHotkeyState(" state "," enablejoystick ")"]
+		; Convert associative array to indexed, as ObjShare breaks associative array enumeration
+		IOClassMappings := this.AssocToIndexed(this.IOClassMappings)
+		this._BindModeThread.SetDetectionState(state, ObjShare(IOClassMappings))
+	}
+	
+	; Converts an associative array to an indexed array of objects
+	; If you pass an associative array via ObjShare, you cannot enumerate it
+	; So each base key/value pair is added to an indexed array
+	; And the thread can re-build the associative array on the other end.
+	AssocToIndexed(arr){
+		ret := []
+		for k, v in arr {
+			ret.push({k: k, v: v})
+		}
+		return ret
 	}
 	
 	; The BindModeThread calls back here
-	_ProcessInput(e, type, code, deviceid){
-		;OutputDebug % "UCR| _ProcessInput: e: " e ", type: " type ", code: " code ", deviceid: " deviceid
-		; Build Key object and pass to ProcessInput
-		i := new _Button({type: type, code: code, deviceid: deviceid})
-		this.ProcessInput(i,e)
+	ProcessInput(e, i, deviceid, IOClass){
+		;ToolTip % "e " e ", i " i ", deviceid " deviceid ", IOClass " IOClass
+		;if (ObjHasKey(this._Modifiers, i))
+		if (this.SelectedBinding.IOClass && (this.SelectedBinding.IOClass != IOClass)){
+			; Changed binding IOCLass part way through.
+			if (e){
+				SoundBeep, 500, 100
+			}
+			return
+		}
+		max := this.SelectedBinding.Binding.length()
+		if (e){
+			for idx, code in  this.SelectedBinding.Binding {
+				if (i == code)
+					return	; filter repeats
+			}
+			this.SelectedBinding.Binding.push(i)
+			this.SelectedBinding.DeviceID := DeviceID
+			if (this.AHK_KBM_Input.IsModifier(i)){
+				if (max > this.ModifierCount){
+					; Modifier pressed after end key
+					SoundBeep, 500, 100
+					return
+				}
+				this.ModifierCount++
+			} else if (max > this.ModifierCount) {
+				; Second End Key pressed after first held
+				SoundBeep, 500, 100
+				return
+			}
+			this.SelectedBinding.IOClass := IOClass
+		} else {
+			this.BindMode := 0
+			this.SetHotkeyState(0, this.IOClassMappings)
+			;ret := {Binding:[i], DeviceID: deviceid, IOClass: this.IOClassMappings[IOClass]}
+			
+			OutputDebug % "UCR| BindModeHandler: Bind Mode Ended. Binding[1]: " this.SelectedBinding.Binding[1] ", DeviceID: " this.SelectedBinding.DeviceID ", IOClass: " this.SelectedBinding.IOClass
+			; Convert IOClass from input type to output type, if needed.
+			; This should be done inside the BindModeThread, but I am currently unable to pass in the IOClassMappings object
+			old_class := this.SelectedBinding.IOClass
+			if (ObjHasKey(this.IOClassMappings, old_class)){
+				this.SelectedBinding.IOClass := this.IOClassMappings[old_class]
+			}
+			this._Callback.Call(this.SelectedBinding)
+		}
 	}
 	
-	; Called when a key was pressed
-	ProcessInput(i, e){
-		if (!this.BindMode)
-			return
-		if (i.type > 1){
-			is_modifier := 0
-		} else {
-			is_modifier := i.IsModifier()
-			; filter repeats
-			;if (e && (is_modifier ? ObjHasKey(HeldModifiers, i.code) : EndKey) )
-			if (e && (is_modifier ? ObjHasKey(this.HeldModifiers, i.code) : i.code = this.EndKey.code) )
-				return
-		}
-
-		;~ ; Are the conditions met for end of Bind Mode? (Up event of non-modifier key)
-		;~ if ((is_modifier ? (!e && ModifierCount = 1) : !e) && (i.type > 1 ? !ModifierCount : 1) ) {
-		; Are the conditions met for end of Bind Mode? (Up event of any key)
-		if (!e){
-			; End Bind Mode
-			this.BindMode := 0
-			this.SetHotkeyState(0)
-			bindObj := this._OriginalHotkey.value.clone()
-			
-			bindObj.Buttons := []
-			for code, key in this.HeldModifiers {
-				bindObj.Buttons.push(key)
-			}
-			
-			bindObj.Buttons.push(this.EndKey)
-			bindObj.Type := this.EndKey.Type
-			this._Callback.(this._OriginalHotkey, bindObj)
-			
-			return
-		} else {
-			; Process Key Up or Down event
-			if (is_modifier){
-				; modifier went up or down
-				if (e){
-					this.HeldModifiers[i.code] := i
-					this.ModifierCount++
-				} else {
-					this.HeldModifiers.Delete(i.code)
-					this.ModifierCount--
-				}
-			} else {
-				; regular key went down or up
-				if (i.type > 1 && this.ModifierCount){
-					; Reject joystick button + modifier - AHK does not support this
-					if (e)
-						SoundBeep
-				} else if (e) {
-					; Down event of non-modifier key - set end key
-					this.EndKey := i
-				}
-			}
-		}
+	; Implements IsModifier to tell the BindMode Handler that this IOClass can be a modifier
+	class AHK_KBM_Input {
+		static _Modifiers := ({91: {s: "#", v: "<"},92: {s: "#", v: ">"}
+			,160: {s: "+", v: "<"},161: {s: "+", v: ">"}
+			,162: {s: "^", v: "<"},163: {s: "^", v: ">"}
+			,164: {s: "!", v: "<"},165: {s: "!", v: ">"}})
 		
-		; Mouse Wheel u/d/l/r has no Up event, so simulate it to trigger it as an EndKey
-		if (e && (i.code >= 156 && i.code <= 159)){
-			this.ProcessInput(i, 0)
+		IsModifier(code){
+			return ObjHasKey(this._Modifiers, code)
 		}
 	}
 }

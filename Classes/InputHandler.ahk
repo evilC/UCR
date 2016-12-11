@@ -9,27 +9,6 @@ Class _InputHandler {
 		
 	}
 	
-	; Set a Button Binding
-	SetButtonBinding(BtnObj, delete := 0){
-		; ToDo: Move building of bindstring inside thread? BuildHotkeyString is AHK input-specific, what about XINPUT?
-		if (delete)
-			bindstring := ""
-		else
-			bindstring := this.BuildHotkeyString(BtnObj.value)
-		; Set binding in Profile's InputThread
-		BtnObj.ParentPlugin.ParentProfile._SetButtonBinding(ObjShare(BtnObj), bindstring )
-		return 1
-	}
-	
-	; Set an Axis Binding
-	SetAxisBinding(AxisObj, delete := 0){
-		AxisObj.ParentPlugin.ParentProfile._SetAxisBinding(ObjShare(AxisObj), delete)
-	}
-	
-	SetDeltaBinding(DeltaObj, delete := 0){
-		DeltaObj.ParentPlugin.ParentProfile._SetDeltaBinding(ObjShare(DeltaObj), delete)
-	}
-	
 	; Check InputButtons for duplicates etc
 	IsBindable(hk, bo){
 		; Do not allow bind of LMB with block enabled
@@ -44,7 +23,7 @@ Class _InputHandler {
 	
 	; Turns on or off Hotkey(s)
 	ChangeHotkeyState(state, hk := 0){
-		hk.ParentPlugin.ParentProfile._SetHotkeyState(state)
+		;hk.ParentPlugin.ParentProfile._SetHotkeyState(state)
 	}
 	
 	; Builds an AHK hotkey string (eg ~^a) from a BindObject
@@ -77,22 +56,17 @@ Class _InputHandler {
 		return str
 	}
 	
-	; An input event (eg key, mouse, joystick) occured for a bound input
-	; This will have come from another thread
-	; ipt will be an object of class _InputButton or _InputAxis
-	; event will be 0 or 1 for a Button type, or the value of the axis for an axis type
-	InputEvent(ipt, state){
-		ipt := Object(ipt)	; Resolve input object back from pointer
-		if (ipt.__value.Suppress && state && ipt.State > 0){
-			; Suppress repeats option
-			return
+	InputEvent(ControlGUID, e){
+		if (ObjHasKey(UCR.BindControlLookup, ControlGUID)){
+			;OutputDebug % "UCR| InputHandler Received event " e " from GuiControl " ControlGUID
+			lu := UCR.BindControlLookup[ControlGUID]
+			;UCR.BindControlLookup[ControlGUID].ChangeStateCallback.Call(e)
+			UCR.BindControlLookup[ControlGUID].OnStateChange(e)
+			UCR._InputEvent(ControlGUID, e)
+		} else {
+			OutputDebug % "UCR| Guid not found in UCR.BindControlLookup"
 		}
-		ipt.State := state
-		if (IsObject(ipt.ChangeStateCallback)){
-			ipt.ChangeStateCallback.Call(state)
-		}
-		; Notify UCR that there was activity.
-		UCR._InputEvent(ipt, state)
+
 	}
 	
 	_DelayCallback(cb, state){

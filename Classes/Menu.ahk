@@ -1,6 +1,7 @@
 ; An OOP wrapper for AHK's menu system
 ; Uses GUIDs to anonymize menus and ensure uniqueness of names
-class _Menu extends _UCRBase {
+
+class _Menu {
 	Parent := 0
 	Enabled := 1
 	ItemsByID := {}
@@ -9,13 +10,13 @@ class _Menu extends _UCRBase {
 	MenusByName := {}
 	
 	__New(text := ""){
-		this.id := this.CreateGUID()
+		this.id := CreateGUID()
 		this.text := text
 		Menu, % this.id, Add
 	}
 	
 	; text = What text will appear as in the parent menu
-	AddMenuItem(text, ItemName, callback := ""){
+	AddMenuItem(text, ItemName, callback := 0){
 		return this._AddItem(text, ItemName, callback)
 	}
 	
@@ -35,7 +36,7 @@ class _Menu extends _UCRBase {
 	}
 	
 	; 
-	_AddItem(text, ItemName, callback){
+	_AddItem(text, ItemName, callback := 0){
 		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
@@ -86,12 +87,12 @@ class _Menu extends _UCRBase {
 		return this
 	}
 	
-	_KillReferences(){
+	OnClose(){
 		for id, menu in this.MenusByID {
-			menu._KillReferences()
+			menu.OnClose()
 		}
 		for id, item in this.ItemsByID {
-			item._KillReferences()
+			item.OnClose()
 		}
 		Menu, % this.id, Delete
 		this.ItemsByID := {}
@@ -104,17 +105,23 @@ class _Menu extends _UCRBase {
 		;OutputDebug % "UCR| Menu " this.text " fired destructor"
 	}
 
-	class MenuItem extends _UCRBase {
+	class MenuItem {
 		parent := 0		; Pointer to parent menu
 		name := ""		; Name that this item is referred to by
 		text := ""		; The text of the menu entry
 		callback := 0		; The BoundFunc to call when the item is selected
-		
 		Checked := 0
-		__New(parent, text, name, callback){
+		
+		__New(parent, text, name, callback := 0){
 			this.parent := parent, this.text := text, this.callback := callback, this.name := name
-			this.id := Menu.CreateGUID()
+			this.id := CreateGUID()
+			if (callback == 0){
+				callback := this.DoNothing.Bind(this)
+			}
 			Menu, % parent.id, Add, % text, % callback
+		}
+		
+		DoNothing(aParams*){
 		}
 		
 		Icon(FileName, IconNumber := "", IconWidth := ""){
@@ -184,8 +191,10 @@ class _Menu extends _UCRBase {
 			return this.parent.AddSubMenu(aParams*)
 		}
 		
-		_KillReferences(){
+		OnClose(){
 			
 		}
 	}
 }
+
+

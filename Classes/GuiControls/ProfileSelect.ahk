@@ -1,5 +1,5 @@
 ﻿; ======================================================================== PROFILE SLECT ===============================================================
-class _ProfileSelect extends _BannerMenu {
+class ProfileSelect extends _UCR.Classes.GuiControls._BannerMenu {
 	; Public vars
 	State := -1			; State of the input. -1 is unset. GET ONLY
 	; Internal vars describing the bindstring
@@ -32,69 +32,56 @@ class _ProfileSelect extends _BannerMenu {
 	SetControlState(){
 		if (this.__value){
 			; Has current binding
-			this.SetOptions(this._Options)
 			this.SetCueBanner(UCR.BuildProfilePathName(this.__value))
 		} else {
-			this.SetOptions([this._Options[1]])
 			this.SetCueBanner(this._DefaultBanner)
 		}
 	}
 	
 	_ChangedValue(o){
 		if (o == 1){
-			;this.value := 1
 			UCR._ProfilePicker.PickProfile(this.ProfileChanged.Bind(this), this.__value)
 		} else {
-			this.value := 0
+			this.Set(0)
 		}
 	}
 
 	; A new selection was made in the Profile Picker
 	ProfileChanged(id){
-		this.value := id
+		this.Set(id)
 	}
 	
-	value[]{
-		get {
-			return this.__value
-		}
-		
-		set {
-			this._value := value	; trigger _value setter to set value and cuebanner etc
-			;OutputDebug % "UCR| "
-			this.ParentPlugin._ControlChanged(this)
-		}
+	Get(){
+		return this.__value
 	}
-	
-	_value[]{
-		get {
-			return this.__value
-		}
-		
-		; Parent class told this hotkey what it's value is. Set value, but do not fire ParentPlugin._ControlChanged
-		set {
-			if (this.__value)
-				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, this.__value, 0)
-			this.__value := value
-			if (value)
-				this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, value, 1)
+
+	Set(value, update_ini := 1, update_guicontrol := 1, fire_callback := 1){
+		if (this.__value)
+			this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, this.__value, 0)
+		this.__value := value
+		if (value)
+			this.ParentPlugin.ParentProfile.UpdateLinkedProfiles(this.ParentPlugin.id, value, 1)
+		if (update_guicontrol)
 			this.SetControlState()
-		}
+		if (update_ini)
+			this.ParentPlugin._ControlChanged(this)
+		if (fire_callback && IsObject(this.ChangeValueCallback))
+			this.ChangeValueCallback.Call(this.__value)
 	}
 	
 	; Kill references so destructor can fire
-	_KillReferences(){
-		base._KillReferences()
+	OnClose(){
+		base.OnClose()
 		this.ChangeValueCallback := ""
 		UCR.UnSubscribeToProfileTreeChange(this.hwnd)
 	}
 	
 	_Serialize(){
-		obj := {value: this._value}
-		return obj
+		return this.__value
 	}
 	
 	_Deserialize(obj){
-		this._value := obj.value
+		; Pass 0 to Set so we don't save while we are loading
+		this.Set(obj, 0)
 	}
 }

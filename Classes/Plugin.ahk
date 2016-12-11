@@ -1,19 +1,17 @@
 ﻿; ======================================================================== PLUGIN ===============================================================
 ; The _Plugin class itself is never instantiated.
 ; Instead, plugins derive from the base _Plugin class.
-Class _Plugin {
+Class Plugin {
 	Type := "_Plugin"			; The class of the plugin
 	ParentProfile := 0			; Will point to the parent profile
 	ID := 0						; Unique ID for the plugin
 	Name := ""					; The name the user chose for the plugin
 	GuiControls := {}			; An associative array, indexed by name, of child GuiControls
-	InputButtons := {}			; An associative array, indexed by name, of child Input Buttons (aka Hotkeys)
-	InputDeltas := {}
-	OutputButtons := {}			; An associative array, indexed by name, of child Output Buttons
-	InputAxes := {}				; An associative array, indexed by name, of child Input Axes
-	OutputAxes := {}			; An associative array, indexed by name, of child Output (virtual) Axes
-	ProfileSelects := {}		; An associative array, indexed by name, of Profile Select GuiControls
-	_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
+	IOControls := {}			; An associative array, indexed by name, of child IOControls
+	
+	;_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
+	static _IOControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1}
+	static _CustomControls := {ProfileSelect: 1}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -22,57 +20,19 @@ Class _Plugin {
 	
 	; === Plugins can call these commands to add various GuiControls to their Gui ===
 	; Adds a GuiControl that allows the end-user to choose a value, often used to configure the script
-	AddControl(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.GuiControls, name)){
-			this.GuiControls[name] := new _GuiControl(this, name, ChangeValueCallback, aParams*)
+	AddControl(type, name, ChangeValueCallback, aParams*){
+		if (ObjHasKey(this._IOControls, type)){
+			call:= _UCR.Classes.GuiControls[type]
+			this.IOControls[name] := new call(this, name, ChangeValueCallback, aParams*)
+			return this.IOControls[name]
+		} else if (ObjHasKey(this._CustomControls, type)){
+			call:= _UCR.Classes.GuiControls[type]
+			this.GuiControls[name] := new call(this, name, ChangeValueCallback, aParams*)
 			return this.GuiControls[name]
-		}
-	}
-	
-	; Adds a GuiControl that allows the end-user to pick Button(s) to use as Input(s)
-	AddInputButton(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.InputButtons, name)){
-			this.InputButtons[name] := new _InputButton(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.InputButtons[name]
-		}
-	}
-	
-	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an input
-	AddInputAxis(name, ChangeValueCallback, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.InputAxes,name)){
-			this.InputAxes[name] := new _InputAxis(this, name, ChangeValueCallback, ChangeStateCallback, aParams*)
-			return this.InputAxes[name]
-		}
-	}
-	
-	AddInputDelta(name, ChangeStateCallback, aParams*){
-		if (!ObjHasKey(this.InputDeltas,name)){
-			this.InputDeltas[name] := new _InputDelta(this, name, ChangeStateCallback, aParams*)
-			return this.InputDeltas[name]
-		}
-	}
-	
-	; Adds a GuiControl that allows the end-user to pick Button(s) to be used as output(s)
-	AddOutputButton(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.OutputButtons, name)){
-			this.OutputButtons[name] := new _OutputButton(this, name, ChangeValueCallback, aParams*)
-			return this.OutputButtons[name]
-		}
-	}
-	
-	; Adds a GuiControl that allows the end-user to pick an Axis to be used as an output
-	AddOutputAxis(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.OutputAxes,name)){
-			this.OutputAxes[name] := new _OutputAxis(this, name, ChangeValueCallback, aParams*)
-			return this.OutputAxes[name]
-		}
-	}
-	
-	; Adds a Profile Select GuiControl
-	AddProfileSelect(name, ChangeValueCallback, aParams*){
-		if (!ObjHasKey(this.ProfileSelects,name)){
-			this.ProfileSelects[name] := new _ProfileSelect(this, name, ChangeValueCallback, aParams*)
-			return this.ProfileSelects[name]
+		} else {
+			call:= _UCR.Classes.GuiControls.GuiControl
+			this.GuiControls[name] := new call(this, type, name, ChangeValueCallback, aParams*)
+			return this.GuiControls[name]
 		}
 	}
 	
@@ -84,6 +44,10 @@ Class _Plugin {
 		this._CreateGui()
 		this.Init()
 		this._ParentGuis()
+	}
+	
+	_Delete(){
+		; delete plugin requested
 	}
 	
 	__Delete(){
@@ -126,6 +90,24 @@ Class _Plugin {
 	; Save plugin to disk
 	_Serialize(){
 		obj := {Type: this.Type, name: this.Name}
+		if (!IsEmptyAssoc(this.GuiControls)){
+			obj.GuiControls := {}
+			for name, ctrl in this.GuiControls {
+				s := ctrl._Serialize()
+				if (s != "")
+					obj.GuiControls[name] := s
+			}
+		}
+		
+		if (!IsEmptyAssoc(this.IOControls)){
+			obj.IOControls := {}
+			for name, ctrl in this.IOControls {
+				s := ctrl._Serialize()
+				if (IsObject(s))
+					obj.IOControls[name] := s
+			}
+		}
+		/*
 		Loop % this._SerializeList.length(){
 			key := this._SerializeList[A_Index]
 			obj[key] := {}
@@ -133,17 +115,18 @@ Class _Plugin {
 				obj[key, name] := ctrl._Serialize()
 			}
 		}
+		*/
 		return obj
 	}
 	
 	; Load plugin from disk
 	_Deserialize(obj){
 		this.Type := obj.Type
-		Loop % this._SerializeList.length(){
-			key := this._SerializeList[A_Index]
-			for name, ctrl in obj[key] {
-				this[key, name]._Deserialize(ctrl)
-			}
+		for name, ctrl in obj.GuiControls {
+			this.GuiControls[name]._Deserialize(ctrl)
+		}
+		for name, ctrl in obj.IOControls {
+			this.IOControls[name]._Deserialize(ctrl)
 		}
 	}
 	
@@ -156,10 +139,14 @@ Class _Plugin {
 	
 	; Called when a plugin becomes inactive (eg profile changed)
 	_OnInActive(){
+		; ToDo: Replace this.
+		/*
+		; Release held buttons on profile inactive
 		for k, v in this.OutputButtons{
 			if (v.State == 1)
 				v.SetState(0)
 		}
+		*/
 		; Call user's OnInactive method (if it exists)
 		if (IsFunc(this["OnInActive"])){
 			this.OnInActive()
@@ -168,56 +155,51 @@ Class _Plugin {
 	
 	; Call _RequestBinding on all child controls
 	_RequestBinding(){
-		Loop % this._SerializeList.length(){
-			key := this._SerializeList[A_Index]
-			for name, ctrl in this[key] {
-				ctrl._RequestBinding()
-			}
+		for name, ctrl in this.IOControls {
+			ctrl._RequestBinding()
 		}
 	}
 	
-	; The plugin was closed (deleted)
-	_Close(){
-		; Call plugin's OnDelete method, if it exists
-		if (IsFunc(this["OnDelete"])){
-			this.OnDelete()
+	; Called so that output methods can be initialized
+	; eg vJoy devices acquired etc
+	_ActivateOutputs(){
+		for name, ctrl in this.IOControls {
+			if (ctrl.GetBinding().IOType == 2)
+				ctrl._RequestBinding()
 		}
-		; Remove input bindings etc here
-		; Some attempt is also made to free resources so destructors fire, though this is a WIP
-		for name, obj in this.InputButtons {
-			UCR._InputHandler.SetButtonBinding(obj, 1)
-			obj._KillReferences()
+	}
+	
+	_DeActivateOutputs(){
+		; ToDo: Implement
+	}
+	
+	; Gather all bindings for this plugin into one array so we can send it to the InputThread all in one go
+	_GetBindings(){
+		Bindings := []
+		for name, ctrl in this.IOControls {
+			Bindings.push({ControlGUID: ctrl.id, BindObject: ctrl.GetBinding()._Serialize()})
 		}
-		this.InputButtons := ""
-		for Name, obj in this.InputAxes {
-			UCR._InputHandler.SetAxisBinding(obj, 1)
-			obj._KillReferences()
-		}
-		this.InputAxes := ""
-		for name, obj in this.InputDeltas {
-			UCR._InputHandler.SetDeltaBinding(obj, 1)
-			obj._KillReferences()
-		}
-		this.InputDeltas := ""
-		for name, obj in this.OutputButtons {
-			obj._KillReferences()
-		}
-		this.OutputButtons := ""
-		for name, obj in this.OutputAxes {
-			obj._KillReferences()
-		}
-		this.OutputAxes := ""
+		return Bindings
+	}
+	
+	; The plugin was closed - the plugin was either removed from the profile...
+	; ... or the parent profile was deleted
+	OnClose(remove_binding := 1){
+		OutputDebug % "UCR| Plugin " this.name " closing"
 		for name, obj in this.GuiControls {
-			obj._KillReferences()
+			obj.OnClose()
 		}
+		
+		for name, obj in this.IOControls {
+			obj.OnClose(remove_binding)
+		}
+		
 		this.GuiControls := ""
-		for name, obj in this.ProfileSelects {
-			obj._KillReferences()
-		}
-		this.ProfileSelects := ""
+		this.IOControls := ""
+	}
+	
+	; The user clicked the close button on the plugin
+	_Close(){
 		this.ParentProfile._RemovePlugin(this)
-		try {
-			this._KillReferences()
-		}
 	}
 }

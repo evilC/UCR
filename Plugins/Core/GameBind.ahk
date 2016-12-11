@@ -1,4 +1,4 @@
-class GameBind extends _Plugin {
+class GameBind extends _UCR.Classes.Plugin {
 	Type := "GameBind Toggler"
 	Description := "Makes binding outputs to game functions easier by introducing a delay"
 	_DelayInGameBindMode := 0
@@ -15,9 +15,9 @@ class GameBind extends _Plugin {
 		)
 		Gui, Add, Text, xm ym, % text
 		Gui, Add, Text, xm, Toggle GameBind
-		this.AddInputButton("GameBind", 0, this.ToggleGameBind.Bind(this), "x+5 yp-3 w200")
+		this.AddControl("InputButton", "GameBind", 0, this.ToggleGameBind.Bind(this), "x+5 yp-3 w200")
 		Gui, Add, Text, x+25 yp+3, GameBind Delay
-		this.AddControl("GameBindDelay", this.DelayChanged.Bind(this), "Edit", "x+5 yp-3 w70", "2000")
+		this.AddControl("Edit", "GameBindDelay", this.DelayChanged.Bind(this), "x+5 yp-3 w70", "2000")
 	}
 	
 	DelayChanged(value){
@@ -31,7 +31,7 @@ class GameBind extends _Plugin {
 		GameBind := !GameBind
 		
 		SoundBeep, 500 + (GameBind * 500)
-		UCR._GameBindDuration := this.GuiControls.GameBindDelay.value
+		UCR._GameBindDuration := this.GuiControls.GameBindDelay.Get()
 		UCR.SetGameBindstate(GameBind)
 	}
 }
