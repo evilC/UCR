@@ -4,8 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.7 - ???
+0.1.7 - 11th Dec 2016
 = Fixed vJoy not acquring sticks until you changed a binding
+* Merged Input-Output-Refactor into Master branch.
 
 0.1.6 - 3rd Dec 2016
 + The ButtonsToAxis plugin now has settings for Low / Mid / High
