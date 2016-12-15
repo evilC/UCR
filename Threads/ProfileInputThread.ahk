@@ -163,7 +163,7 @@ Class _InputThread {
 			; This code is rigged so that either AHK_KBM_Input or AHK_JoyBtn_Input or both will not clash...
 			; ... As long as all are turned on or off together, you won't get weird results.
 			if (A_IsSuspended == state){
-				OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
+				;OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state
@@ -476,7 +476,6 @@ Class _InputThread {
 		}
 		
 		ProcessTimerState(){
-			OutputDebug % "UCR| AHK_JoyHat_Input ProcessTimerState - " this.TimerWanted ", " this.DetectionState ", " this.TimerRunning
 			fn := this.TimerFn
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				SetTimer, % fn, 10
