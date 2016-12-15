@@ -4,6 +4,10 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.8 - ???
+= Fixed Joystick Hat/POV/D-Dpads in InputButtons
+= Harmonized callback method for all input types to pseudo-threads
+
 0.1.7 - 11th Dec 2016
 = Fixed vJoy not acquring sticks until you changed a binding
 * Merged Input-Output-Refactor into Master branch.

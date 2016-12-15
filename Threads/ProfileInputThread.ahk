@@ -184,7 +184,13 @@ Class _InputThread {
 		KeyEvent(ControlGUID, e){
 			;OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
-			this.Callback.Call(ControlGUID, e)
+			;this.Callback.Call(ControlGUID, e)
+			fn := this.InputEvent.Bind(this, ControlGUID, e)
+			SetTimer, % fn, -0
+		}
+		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
 		}
 
 		; Builds an AHK hotkey string (eg ~^a) from a BindObject
@@ -312,7 +318,9 @@ Class _InputThread {
 			; ToDo: Parent will not exist in thread!
 			
 			;OutputDebug % "UCR| AHK_JoyBtn_Input Key event " e " for GuiControl " ControlGUID
-			this.Callback.Call(ControlGUID, e)
+			;this.Callback.Call(ControlGUID, e)
+			fn := this.InputEvent.Bind(this, ControlGUID, e)
+			SetTimer, % fn, -0
 			
 			this.HeldButtons[this._AHKBindings[ControlGUID]] := ControlGUID
 			if (!this.TimerWanted){
@@ -321,12 +329,18 @@ Class _InputThread {
 			}
 		}
 		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
+		}
+
 		ButtonWatcher(){
 			for bindstring, ControlGUID in this.HeldButtons {
 				if (!GetKeyState(bindstring)){
 					this.HeldButtons.Delete(bindstring)
 					;OutputDebug % "UCR| AHK_JoyBtn_Input Key event 0 for GuiControl " ControlGUID
-					this.Callback.Call(ControlGUID, 0)
+					;this.Callback.Call(ControlGUID, 0)
+					fn := this.InputEvent.Bind(this, ControlGUID, 0)
+					SetTimer, % fn, -0
 					if (IsEmptyAssoc(this.HeldButtons)){
 						this.TimerWanted := 0
 						this.ProcessTimerState()
@@ -438,7 +452,10 @@ Class _InputThread {
 		; Which cardinal directions are pressed for each of the 8 compass directions, plus centre
 		; Order is U, R, D, L
 		static PovMap := {-1: [0,0,0,0], 1: [1,0,0,0], 2: [1,1,0,0] , 3: [0,1,0,0], 4: [0,1,1,0], 5: [0,0,1,0], 6: [0,0,1,1], 7: [0,0,0,1], 8: [1,0,0,1]}
-
+		
+		TimerRunning := 0
+		TimerWanted := 0
+		
 		__New(Callback){
 			this.Callback := Callback
 			
@@ -449,17 +466,8 @@ Class _InputThread {
 		UpdateBinding(ControlGUID, bo){
 			;OutputDebug % "UCR| AHK_JoyHat_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 			this._UpdateArrays(ControlGUID, bo)
-			;~ t := this.TimerWanted, k := ObjHasKey(this.ControlMappings, ControlGUID)
-			;~ fn := this.TimerFn
-			;~ if (t && !k){
-				;~ OutputDebug % "UCR| AHK_JoyHat_Input Stopping Hat Watcher"
-				;~ SetTimer, % fn, Off
-				;~ this.TimerWanted := 0
-			;~ } else if (!t && k){
-				;~ OutputDebug % "UCR| AHK_JoyHat_Input Starting Hat Watcher"
-				;~ this.TimerWanted := 1
-				;~ SetTimer, % fn, 10
-			;~ }
+			this.TimerWanted := !IsEmptyAssoc(this.ControlMappings)
+			this.ProcessTimerState()
 		}
 		
 		SetDetectionState(state){
@@ -468,15 +476,16 @@ Class _InputThread {
 		}
 		
 		ProcessTimerState(){
+			OutputDebug % "UCR| AHK_JoyHat_Input ProcessTimerState - " this.TimerWanted ", " this.DetectionState ", " this.TimerRunning
 			fn := this.TimerFn
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Started HatWatcher"
+				;OutputDebug % "UCR| AHK_JoyHat_Input Started HatWatcher"
 			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped HatWatcher"
+				;OutputDebug % "UCR| AHK_JoyHat_Input Stopped HatWatcher"
 			}
 		}
 
@@ -516,9 +525,15 @@ Class _InputThread {
 						;OutputDebug % "UCR| InputThread: AHK_JoyHat_Input Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
 						; Use the thread-safe object to tell the main thread that the hat direction changed state
 						;this.Callback.Call(ControlGUID, new_state)
+						fn := this.InputEvent.Bind(this, ControlGUID, new_state)
+						SetTimer, % fn, -0
 					}
 				}
 			}
+		}
+		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
 		}
 	}
 	
@@ -652,14 +667,20 @@ Class _InputThread {
 			for ControlGuid, obj in this._DeltaBindings {
 				;this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
 				;OutputDebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
-				this.Callback.Call(ControlGuid, state)
+				;this.Callback.Call(ControlGuid, state)
+				fn := this.InputEvent.Bind(this, ControlGUID, state)
+				SetTimer, % fn, -0
 			}
 	 
 			; There is no message for "Stopped", so simulate one
 			;fn := this.MouseTimeoutFn
 			;SetTimer, % fn, % -this.MouseTimeOutDuration
 		}
-		
+
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
+		}
+
 		;OnMouseTimeout(){
 		;	for hwnd, obj in this.MouseDeltaMappings {
 		;		this.InputEvent(obj, {x: 0, y: 0})
