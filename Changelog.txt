@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.8 - ???
+0.1.8 - 16th Dec 2016
 = Fixed Joystick Hat/POV/D-Dpads in InputButtons
 = Harmonized callback method for all input types to pseudo-threads
 
