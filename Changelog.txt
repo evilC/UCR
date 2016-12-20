@@ -5,6 +5,8 @@ Key:
 + : Added feature
 
 0.1.8 - 16th Dec 2016
+= Fix for "invalid Gui Name" error for BindModePrompt
+  Hotkeys for bindmode were being enabled breifly on creation
 = Fixed Joystick Hat/POV/D-Dpads in InputButtons
 = Harmonized callback method for all input types to pseudo-threads
 
