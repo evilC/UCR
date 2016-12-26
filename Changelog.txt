@@ -4,6 +4,13 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.9 - 26th Dec 2016
+= Fix for disconnected sticks causing massive CPU usage
+  When a profile loads, it checks which sticks are connected.
+  Bindings for disconnected sticks will not be activated.
+  If you plug in the stick, try forcing a profile reload.
+  An easy way is by switching to global profile and then back
+ 
 0.1.8 - 16th Dec 2016
 = Fix for "invalid Gui Name" error for BindModePrompt
   Hotkeys for bindmode were being enabled breifly on creation

@@ -272,13 +272,13 @@ Class _InputThread {
 			if (bo.Binding[1]){
 				keyname := this.BuildHotkeyString(bo)
 				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
-				try {
-					hotkey, % keyname, % fn, On
-				}
-				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
-				;hotkey, % keyname " up", % fn, On
+				if (GetKeyState(bo.DeviceID "JoyInfo"))
+					try {
+						hotkey, % keyname, % fn, On
+					}
+				else
+					OutputDebug % "UCR| Warning! AHK_JoyBtn_Input did not declare hotkey " keyname " because the stick is disconnected"
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
-				;this._CurrentBinding := keyname
 				this._AHKBindings[ControlGUID] := keyname
 			}
 		}
@@ -302,12 +302,6 @@ Class _InputThread {
 				}
 				try{
 					hotkey, % keyname, Off
-				}
-				try{
-					hotkey, % keyname " up", UCR_INPUTHREAD_DUMMY_LABEL
-				}
-				try{
-					hotkey, % keyname " up", Off
 				}
 				this._AHKBindings.Delete(ControlGUID)
 			}
@@ -372,6 +366,7 @@ Class _InputThread {
 	class AHK_JoyAxis_Input {
 		StickBindings := {}
 		ControlMappings := {}
+		ConnectedSticks := [0,0,0,0,0,0,0,0]
 		
 		__New(Callback){
 			this.Callback := Callback
@@ -394,7 +389,7 @@ Class _InputThread {
 			}
 			if (dev && axis){
 				str := dev "joy" AHKAxisList[axis]
-				this.StickBindings[str] := {ControlGUID: ControlGUID, state: -1}
+				this.StickBindings[str] := {ControlGUID: ControlGUID, dev: dev, state: -1}
 				this.ControlMappings[ControlGUID] := str
 				this.TimerWanted := 1
 			}
@@ -410,6 +405,10 @@ Class _InputThread {
 		ProcessTimerState(){
 			fn := this.TimerFn
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				; Pre-cache connected sticks, as polling disconnected sticks takes lots of CPU
+				Loop 8 {
+					this.ConnectedSticks[A_Index] := GetKeyState(A_Index "JoyInfo")
+				}
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
 				;OutputDebug % "UCR| AHK_JoyAxis_Input Started AxisWatcher"
@@ -422,6 +421,11 @@ Class _InputThread {
 
 		StickWatcher(){
 			for bindstring, obj in this.StickBindings {
+				if (!this.ConnectedSticks[obj.dev]){
+					; Do not poll unconnected sticks, it consumes a lot of cpu
+					;OutputDebug % "UCR| JI" obj.dev " JoyInfo: " GetKeyState(obj.dev "JoyInfo")
+					continue
+				}
 				state := GetKeyState(bindstring)
 				if (state != obj.state){
 					obj.state := state
@@ -455,6 +459,7 @@ Class _InputThread {
 		
 		TimerRunning := 0
 		TimerWanted := 0
+		ConnectedSticks := [0,0,0,0,0,0,0,0]
 		
 		__New(Callback){
 			this.Callback := Callback
@@ -478,6 +483,10 @@ Class _InputThread {
 		ProcessTimerState(){
 			fn := this.TimerFn
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				; Pre-cache connected sticks, as polling disconnected sticks takes lots of CPU
+				Loop 8 {
+					this.ConnectedSticks[A_Index] := GetKeyState(A_Index "JoyInfo")
+				}
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
 				;OutputDebug % "UCR| AHK_JoyHat_Input Started HatWatcher"
@@ -515,6 +524,10 @@ Class _InputThread {
 		; Called on a timer when we are trying to detect hats
 		HatWatcher(){
 			for bindstring, bindings in this.HatBindings {
+				if (!this.ConnectedSticks[SubStr(bindstring, 1, 1)]){
+					; Do not poll unconnected sticks, it consumes a lot of cpu
+					continue
+				}
 				state := GetKeyState(bindstring)
 				state := (state = -1 ? -1 : round(state / 4500) + 1)
 				for ControlGUID, obj in bindings {
