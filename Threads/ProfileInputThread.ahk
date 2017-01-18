@@ -272,7 +272,7 @@ Class _InputThread {
 			if (bo.Binding[1]){
 				keyname := this.BuildHotkeyString(bo)
 				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
-				if (GetKeyState(bo.DeviceID "JoyInfo"))
+				if (GetKeyState(bo.DeviceID "JoyAxes")) 
 					try {
 						hotkey, % keyname, % fn, On
 					}
@@ -407,7 +407,7 @@ Class _InputThread {
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
 				; Pre-cache connected sticks, as polling disconnected sticks takes lots of CPU
 				Loop 8 {
-					this.ConnectedSticks[A_Index] := GetKeyState(A_Index "JoyInfo")
+					this.ConnectedSticks[A_Index] := (GetKeyState(A_Index "JoyAxes") > 0)
 				}
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
