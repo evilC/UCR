@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.10 - ???
+= Fix for Ultrastik devices, contributed by Snoothy - thankyou!
+
 0.1.9 - 26th Dec 2016
 = Fix for disconnected sticks causing massive CPU usage
   When a profile loads, it checks which sticks are connected.
