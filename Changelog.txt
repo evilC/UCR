@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.10 - ???
+0.1.10 - 4th Feb 2017
 = Ultrastik devices now work with UCR
   Code contributed by Snoothy - thankyou!
 = If vJoy is not installed, on startup you no longer get the error
