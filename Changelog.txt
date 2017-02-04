@@ -5,7 +5,10 @@ Key:
 + : Added feature
 
 0.1.10 - ???
-= Fix for Ultrastik devices, contributed by Snoothy - thankyou!
+= Ultrastik devices now work with UCR
+  Code contributed by Snoothy - thankyou!
+= If vJoy is not installed, on startup you no longer get the error
+  "Error. An item with the name vJoy already exists in this menu"
 
 0.1.9 - 26th Dec 2016
 = Fix for disconnected sticks causing massive CPU usage
