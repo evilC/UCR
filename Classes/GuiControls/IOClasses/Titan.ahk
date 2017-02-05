@@ -83,7 +83,8 @@
 			, {name: "RS", id: 5}
 			, {name: "Share", id: 1}
 			, {name: "Options", id: 2}
-			, {name: "Playstation", id: 0}]
+			, {name: "Playstation", id: 0}
+			, {name: "Touch", id: 27}]
 		
 		this.BaseClass.AxisMappings.XB360 := [{name: "LX", id: 11}
 			,{name: "LY", id: 12, AxisType: 0}
@@ -246,7 +247,7 @@
 ; ======================================== BUTTON ==========================================
 class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Button_Output"
-	static _NumButtons := 13
+	static _NumButtons := 14
 	
 	BuildHumanReadable(){
 		return this._Prefix " Titan One Buttton " this.BuildButtonName(this.Binding[1])
