@@ -86,29 +86,31 @@
 			, {name: "Playstation", id: 0}]
 		
 		this.BaseClass.AxisMappings.XB360 := [{name: "LX", id: 11}
-			,{name: "LY", id: 12, trigger: 0}
-			,{name: "RX", id: 9, trigger: 0}
-			,{name: "RY", id: 10, trigger: 0}
-			,{name: "LT", id: 7, trigger: 1}
-			,{name: "RT", id: 4, trigger: 1}]
+			,{name: "LY", id: 12, AxisType: 0}
+			,{name: "RX", id: 9, AxisType: 0}
+			,{name: "RY", id: 10, AxisType: 0}
+			,{name: "LT", id: 7, AxisType: 1}
+			,{name: "RT", id: 4, AxisType: 1}]
 		this.BaseClass.AxisMappings.XB1 := this.BaseClass.AxisMappings.XB360
 		
 		this.BaseClass.AxisMappings.PS3 := [{name: "LX", id: 11}
-			,{name: "LY", id: 12, trigger: 0}
-			,{name: "RX", id: 9, trigger: 0}
-			,{name: "RY", id: 10, trigger: 0}
-			,{name: "L2", id: 7, trigger: 1}
-			,{name: "R2", id: 4, trigger: 1}]
+			,{name: "LY", id: 12, AxisType: 0}
+			,{name: "RX", id: 9, AxisType: 0}
+			,{name: "RY", id: 10, AxisType: 0}
+			,{name: "L2", id: 7, AxisType: 1}
+			,{name: "R2", id: 4, AxisType: 1}]
 			
 		this.BaseClass.AxisMappings.PS4 := [{name: "LX", id: 11}
-			,{name: "LY", id: 12, trigger: 0}
-			,{name: "RX", id: 9, trigger: 0}
-			,{name: "RY", id: 10, trigger: 0}
-			,{name: "L2", id: 7, trigger: 1}
-			,{name: "R2", id: 4, trigger: 1}
-			,{name: "TOUCHX", id: 28, trigger: 0}
-			,{name: "TOUCHY", id: 29, trigger: 0}]
-		
+			,{name: "LY", id: 12, AxisType: 0}
+			,{name: "RX", id: 9, AxisType: 0}
+			,{name: "RY", id: 10, AxisType: 0}
+			,{name: "L2", id: 7, AxisType: 1}
+			,{name: "R2", id: 4, AxisType: 1}
+			,{name: "ACCX", id: 21, AxisType: 2}
+			,{name: "ACCY", id: 22, AxisType: 2}
+			,{name: "ACCZ", id: 23, AxisType: 2}
+			,{name: "TOUCHX", id: 28, AxisType: 0}
+			,{name: "TOUCHY", id: 29, AxisType: 0}]
 	}
 	
 	; Library loading and logging
@@ -215,13 +217,19 @@
 	
 	SetAxisState(state){
 		if (this.BaseClass.Connections.Output){
-			am := this.BaseClass.AxisMappings[this.BaseClass.Connections.Output, this.Binding[1]]
-			; If this is a half-axis (trigger), then do not stretch to fill full scale
+			; If this is a half-axis (eg trigger), then do not stretch to fill full scale
 			; When UCR passes an axis from one object to another, it is always in the scale 0..100
-			; Titan uses -100..100 for normal axes, and 0..100 for triggers
-			; So we just pass the value straight through for triggers, and stretch / shift the scale for normal axes
-			if (!am.trigger)
-				state := (state * 2) - 100 ; Convert from 0..100 to -100...+100
+			; Titan uses -100..100 for normal axes, 0..100 for triggers and -25...25 for Accelerometer axes
+			; So we just pass the value straight through for triggers, and stretch / shift the scale for other types of axis
+			am := this.BaseClass.AxisMappings[this.BaseClass.Connections.Output, this.Binding[1]]
+			; Input is always 0..100
+			if (!am.AxisType) {
+				; Full Axis: -100...+100
+				state := (state * 2) - 100
+			} else if (am.AxisType == 2){
+				; "Quarter Axis" (eg PS4_ACCX/Y/Z): -25...25
+				state := (state / 2) - 25
+			}
 			this.SetIdentifier(am.id, state)
 		}
 	}
@@ -287,7 +295,7 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 ; ======================================== AXIS ==========================================
 class TitanOne_Axis_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Axis_Output"
-	static _NumAxes := 8
+	static _NumAxes := 11
 	
 	BuildHumanReadable(){
 		return this._Prefix " Titan One Axis " this.BuildAxisName(this.Binding[1])
