@@ -14,6 +14,10 @@ The primary target audience is gamers, UCR is intended to be able to replicate t
 UCR supports profiles. A number of plugins can be grouped together into a Profile.  
 Profiles will be able to be linked to a specific application - when that application gets the focus, the profile becomes active.
 
+###Command line profile switching
+Profiles can be changed through command line parameters when launching UCR and subsequently to change the profile of the running instance. The syntax for profile switching is `UCR.exe UCR.ahk <ParentProfile> <ChildProfile>`. There are three different methods for changing profiles using the syntax. Passing a valid profile GUID as the <ParentProfile> will find and activate the profile. Passing a string, quoted or unquoted, as <ParentProfile> will select the first profile matching <ParentProfile> (all matches are case insensitive). Passing both <ParentProfile> and <ChildProfile> will find and select a profile matching the <ChildProfile> name with a parent profile matching the <ParentProfile> name. The <ParentProfile> will be selected as fallback if no <ChildProfile> is found.
+Example: `UCR.exe UCR.ahk "MAME" "megaman"`
+
 ##Plugins
 At the core of the design of UCR is the idea of an AHK script as a "Plugin".  
 A plugin is simply a text file containing AHK script (Even though the main UCR "app" may be running as an EXE).  
