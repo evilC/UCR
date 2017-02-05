@@ -17,7 +17,7 @@ if remoteUCR
 {
 	; Change profile if script is already running
 	remoteUCR.ChangeProfileByName(parentProfileName, childProfileName, 0)
-	exit
+	ExitApp
 }
 
 #SingleInstance off
