@@ -12,7 +12,9 @@ The primary target audience is gamers, UCR is intended to be able to replicate t
 
 ##Profiles
 UCR supports profiles. A number of plugins can be grouped together into a Profile.  
-Profiles will be able to be linked to a specific application - when that application gets the focus, the profile becomes active.
+Profiles can also have child profiles, and child profiles can "inherit" the plugins of a parent profile.  
+This can be used to create "Shift states" to switch the functionality of inputs.  
+In the future, it is also planned to allow profiles to be linked to a specific application - when that application gets the focus, the profile becomes active.
 
 ###Command line profile switching
 Profiles can be changed through command line parameters when launching UCR and subsequently to change the profile of the running instance. The syntax for profile switching is `UCR.exe UCR.ahk <ParentProfile> <ChildProfile>`. There are three different methods for changing profiles using the syntax. Passing a valid profile GUID as the <ParentProfile> will find and activate the profile. Passing a string, quoted or unquoted, as <ParentProfile> will select the first profile matching <ParentProfile> (all matches are case insensitive). Passing both <ParentProfile> and <ChildProfile> will find and select a profile matching the <ChildProfile> name with a parent profile matching the <ParentProfile> name. The <ParentProfile> will be selected as fallback if no <ChildProfile> is found.
@@ -20,10 +22,13 @@ Example: `UCR.exe UCR.ahk "MAME" "megaman"`
 
 ##Plugins
 At the core of the design of UCR is the idea of an AHK script as a "Plugin".  
-A plugin is simply a text file containing AHK script (Even though the main UCR "app" may be running as an EXE).  
-The plugin is an AHK class that derives from a base class that is part of the UCR source code.  
-Each instance of each plugin gets it's own GUI inside the UCR app when added by a user. You can add anything you like to that Gui.  
-Anything that you could normally put in an AHK class should work inside a plugin.  
+From an end-user's perspective, a plugin is a widget which can perform a small task - eg remap one key to another.  
+From a plugin author's point of view, a plugin is simply a text file containing AHK script.
+The script contains an AHK class that derives from a base class which is part of the UCR source code.  
+Each instance of each plugin gets it's own GUI inside the UCR app when added by a user.
+The GuiControls in the Gui can easily be made persistent across runs and you can add special GuiControls that allow the end-user to select the inputs (eg hotkeys) and outputs to configure your script.
+There are varios provided methods and mechanisms to get notification of events (eg the profile containing the plugin went active or inactive)  
+Pretty much anything that you could normally put in an AHK class should work inside a plugin.  
 
 ##Persistent GuiControls
 Plugins can call UCR methods to add a GuiControl to their Gui whose value will be remembered between runs of UCR.  
@@ -32,10 +37,12 @@ It can be used to allow the end user to tweak the behavior of the plugin that it
 ##Inputs and Outputs
 Plugins may also contain special GuiControls that allow the end user to bind inputs and outputs.  
 Valid inputs are: Keyboard, Mouse, Joystick.  
-Valid outputs are: Keyboard, Mouse, vJoy Virtual Joystick  
+Valid outputs are: Keyboard, Mouse, vJoy Virtual Joystick (Inc virtual XBox), Titan One hardware  
+More inputs and output types can be added through the "IOClass" system - Each IOClass can add items to the UCR Main menu, handles adding of menu items to the Input/Output GuiControls, and handles processing of input and output (eg Calling DLLs).  
+
 
 ##Requirements
-If you are a typical end-user of UCR, you just need to download the installer package, unzip it and double-click UCR.exe. No installation is required, and you do not need to install AutoHotkey.  
+If you are a typical end-user of UCR, you just need to download the zip from the releases page, unzip it and double-click UCR.exe. No installation is required, and you do not need to install AutoHotkey.  
 
 
 In order to run UCR un-compiled:

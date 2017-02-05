@@ -84,6 +84,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 
 		if (!vJoyFolder){
 			this.LoadLibraryLog .= "ERROR: Could not find the vJoy Registry Key.`n`nvJoy does not appear to be installed.`nPlease ensure you have installed vJoy from`n`nhttp://vjoystick.sourceforge.net."
+			this._SetInitState(0)
 			return 0
 		}
 		
@@ -101,6 +102,7 @@ class vGen_Output extends _UCR.Classes.IOClasses.IOClassBase {
 		if (!DllFolder){
 			; Could not find registry entry. Advise vJoy update.
 			this.LoadLibraryLog .= "A vJoy install was found in " vJoyFolder ", but the relevant registry entries were not found.`nPlease update vJoy to the latest version from `n`nhttp://vjoystick.sourceforge.net."
+			this._SetInitState(0)
 			return 0
 		}
 		this.BaseClass.UCRMenuOutput.vJoyInstalled.Check()

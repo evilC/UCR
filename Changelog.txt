@@ -4,6 +4,20 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.11 - ???
++ Added support for the following PS4 outputs on Titan One:
+  TouchPad X+Y
+  Aceelerometer X+Y
+  Touch Button
+= Renamed Playstation LS/RS to L3/R3 in Titan One
+= Fixed bad calculations in ButtonsToAxis plugin for Low/High options
+
+0.1.10 - 4th Feb 2017
+= Ultrastik devices now work with UCR
+  Code contributed by Snoothy - thankyou!
+= If vJoy is not installed, on startup you no longer get the error
+  "Error. An item with the name vJoy already exists in this menu"
+
 0.1.9 - 26th Dec 2016
 = Fix for disconnected sticks causing massive CPU usage
   When a profile loads, it checks which sticks are connected.

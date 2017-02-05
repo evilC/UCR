@@ -46,9 +46,7 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 	DeflectionChanged(dir, pc){
 		static sgn := [-1,1]
 		if (dir){
-			value := 50 * (pc / 100)
-			value *= dir
-			this.DeflectionValues[dir] := value
+			this.DeflectionValues[dir] := pc
 			this.IncrementalDeflectionValues[dir] := pc * sgn[dir]
 		} else {
 			; Set mid-point
