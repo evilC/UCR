@@ -66,8 +66,8 @@
 			, {name: "R1", id: 3}
 			, {name: "L2", id: 7}
 			, {name: "R2", id: 4}
-			, {name: "LS", id: 8}
-			, {name: "RS", id: 5}
+			, {name: "L3", id: 8}
+			, {name: "R3", id: 5}
 			, {name: "Select", id: 1}
 			, {name: "Start", id: 2}
 			, {name: "Playstation", id: 0}]
@@ -79,8 +79,8 @@
 			, {name: "R1", id: 3}
 			, {name: "L2", id: 7}
 			, {name: "R2", id: 4}
-			, {name: "LS", id: 8}
-			, {name: "RS", id: 5}
+			, {name: "L3", id: 8}
+			, {name: "R3", id: 5}
 			, {name: "Share", id: 1}
 			, {name: "Options", id: 2}
 			, {name: "Playstation", id: 0}
