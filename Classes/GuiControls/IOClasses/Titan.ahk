@@ -92,6 +92,7 @@
 			,{name: "LT", id: 7, trigger: 1}
 			,{name: "RT", id: 4, trigger: 1}]
 		this.BaseClass.AxisMappings.XB1 := this.BaseClass.AxisMappings.XB360
+		
 		this.BaseClass.AxisMappings.PS3 := [{name: "LX", id: 11}
 			,{name: "LY", id: 12, trigger: 0}
 			,{name: "RX", id: 9, trigger: 0}
@@ -99,7 +100,15 @@
 			,{name: "L2", id: 7, trigger: 1}
 			,{name: "R2", id: 4, trigger: 1}]
 			
-		this.BaseClass.AxisMappings.PS4 := this.BaseClass.AxisMappings.PS3
+		this.BaseClass.AxisMappings.PS4 := [{name: "LX", id: 11}
+			,{name: "LY", id: 12, trigger: 0}
+			,{name: "RX", id: 9, trigger: 0}
+			,{name: "RY", id: 10, trigger: 0}
+			,{name: "L2", id: 7, trigger: 1}
+			,{name: "R2", id: 4, trigger: 1}
+			,{name: "TOUCHX", id: 28, trigger: 0}
+			,{name: "TOUCHY", id: 29, trigger: 0}]
+		
 	}
 	
 	; Library loading and logging
@@ -278,7 +287,7 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 ; ======================================== AXIS ==========================================
 class TitanOne_Axis_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Axis_Output"
-	static _NumAxes := 6
+	static _NumAxes := 8
 	
 	BuildHumanReadable(){
 		return this._Prefix " Titan One Axis " this.BuildAxisName(this.Binding[1])
