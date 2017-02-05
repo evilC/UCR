@@ -10,6 +10,7 @@ Key:
   Aceelerometer X+Y
   Touch Button
 = Renamed Playstation LS/RS to L3/R3 in Titan One
+= Fixed bad calculations in ButtonsToAxis plugin for Low/High options
 
 0.1.10 - 4th Feb 2017
 = Ultrastik devices now work with UCR
