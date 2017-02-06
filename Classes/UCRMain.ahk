@@ -434,6 +434,47 @@ Class _UCR {
 		}
 		return 1
 	}
+	
+	; Used to switch profile. Parent is the name of a parent profile
+	; child is the name of a profile nested directly under the parent profile
+	; Switches to the child profile if found, alternatively to the parent profile
+	; if no child profile was found.
+	ChangeProfileByName(parent := 0, child := 0, save := 1){
+		; Check if the parent variable contains a valid profile GUID and switch to it if possible
+		if this.ChangeProfile(parent, save)
+			return 1
+		
+		parentProfile := 0
+		childProfile := 0
+		
+		; Find the parent or child profile
+		for guid, profile in this.Profiles {
+			; Find a profile with the parent name
+			if parent && profile.ParentProfile = 0 && profile.Name = parent {
+				parentProfile := guid
+			}
+			
+			; Find a profile nested directly under the parent profile with the child name
+			if child && profile.ParentProfile = parentProfile && profile.Name = child {
+				childProfile := guid
+			}
+		}
+		
+		; Try changing to the child profile
+		if childProfile {
+			this.ChangeProfile(childProfile, save)
+			return 1
+		}
+		
+		; Try changing to the parent profile
+		if parentProfile {
+			this.ChangeProfile(parentProfile, save)
+			return 1
+		}
+		
+		; No matching profile found
+		return 0
+	}
 
 	; These two functions work out, given a profile ID, which profiles need to be loaded and activated.
 	; Takes into account profile inheritance, and "linked" profiles (those pointed to by ProfileSwitcher plugins)
