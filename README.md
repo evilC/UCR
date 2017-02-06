@@ -17,8 +17,8 @@ This can be used to create "Shift states" to switch the functionality of inputs.
 In the future, it is also planned to allow profiles to be linked to a specific application - when that application gets the focus, the profile becomes active.
 
 ###Command line profile switching
-Profiles can be changed through command line parameters when launching UCR and subsequently to change the profile of the running instance. The syntax for profile switching is `UCR.exe UCR.ahk <ParentProfile> <ChildProfile>`. There are three different methods for changing profiles using the syntax. Passing a valid profile GUID as the `<ParentProfile>` will find and activate the profile. Passing a string, quoted or unquoted, as `<ParentProfile>` will select the first profile matching `<ParentProfile>` (all matches are case insensitive). Passing both `<ParentProfile>` and `<ChildProfile>` will find and select a profile matching the `<ChildProfile>` name with a parent profile matching the `<ParentProfile>` name. The `<ParentProfile>` will be selected as fallback if no `<ChildProfile>` is found.
-Example: `UCR.exe UCR.ahk "MAME" "megaman"`
+Profiles can be changed through command line parameters when launching UCR through the CLI tool and subsequently to change the profile of the running instance. The syntax for profile switching is `UCR.exe CLI.ahk <ParentProfile> <ChildProfile>`. There are three different methods for changing profiles using the syntax. Passing a valid profile GUID as the `<ParentProfile>` will find and activate the profile. Passing a string, quoted or unquoted, as `<ParentProfile>` will select the first profile matching `<ParentProfile>` (all matches are case insensitive). Passing both `<ParentProfile>` and `<ChildProfile>` will find and select a profile matching the `<ChildProfile>` name with a parent profile matching the `<ParentProfile>` name. The `<ParentProfile>` will be selected as fallback if no `<ChildProfile>` is found.
+Example: `UCR.exe CLI.ahk "MAME" "megaman"`
 
 ##Plugins
 At the core of the design of UCR is the idea of an AHK script as a "Plugin".  
