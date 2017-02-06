@@ -11,6 +11,8 @@ Key:
   Touch Button
 = Renamed Playstation LS/RS to L3/R3 in Titan One
 = Fixed bad calculations in ButtonsToAxis plugin for Low/High options
++ Added support for Command-Line profile switching via CLI.ahk
+  Code contributed by Snoothy - thankyou!
 
 0.1.10 - 4th Feb 2017
 = Ultrastik devices now work with UCR
