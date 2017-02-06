@@ -18,7 +18,7 @@ if remoteUCR
 	; Change profile if script is already running
 	remoteUCR.ChangeProfileByName(parentProfileName, childProfileName, 0)
 } else {
-	Run UCR.exe UCR.ahk %parentProfileName% %childProfileName%
+	Run UCR.exe UCR.ahk "%parentProfileName%" "%childProfileName%"
 }
 
 ExitApp
