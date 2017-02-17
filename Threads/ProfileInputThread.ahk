@@ -669,7 +669,7 @@ Class _InputThread {
 				VarSetCapacity(uRawInput, iSize)
 			}
 			sz := iSize	; param gets overwritten with # of bytes output, so preserve iSize
-			; Get RawIthinput data
+			; Get RawInput data
 			r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", &uRawInput, "UInt*", sz, "UInt", 8 + (A_PtrSize * 2))
 	        
 			ThisMouse := NumGet(&uRawInput, 8)

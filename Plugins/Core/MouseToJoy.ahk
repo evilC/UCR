@@ -119,13 +119,15 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			; This seems to fix it, but this should probably be properly investigated.
 			return
 		}
+		
+		
 		if (!ObjHasKey(this.SeenMice, MouseID)){
 			GuiControl, , % this.hSelectMouse, % MouseID
 		
 			this.SeenMice[MouseID] := 1
-	        this.IOControls.MD1.AddItem(MouseID, MouseID)			
+			this.IOControls.MD1.AddItem(MouseID, MouseID)			
 		}
-     	ox := this.IOControls.MD1.GetBinding()
+		ox := this.IOControls.MD1.GetBinding()
 		
 		if (ox && ox.DeviceID != value.MouseID)
 			return
