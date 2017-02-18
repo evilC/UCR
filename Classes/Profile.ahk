@@ -309,6 +309,23 @@ Class _Profile {
 		UCR._ProfileChanged(this)
 	}
 	
+	_ReorderPlugin(plugin, dir){
+		i := 0
+		max := this.PluginOrder.length()
+		Loop % max {
+			if (this.PluginOrder[A_Index] == plugin.id){
+				i := A_Index
+				break
+			}
+		}
+		if (i == 0 || (dir == -1 && i == 1) || (dir == 1 && i == max))
+			return
+		id := this.PluginOrder.RemoveAt(i)
+		this.PluginOrder.InsertAt(i + dir, id)
+		this._LayoutPlugins()
+		UCR._ProfileChanged(this)
+	}
+	
 	; Delete a plugin
 	_RemovePlugin(plugin, remove_binding := 1){
 		plugin.OnClose(remove_binding)

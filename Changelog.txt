@@ -6,6 +6,9 @@ Key:
 
 0.1.11 - ???
 + You can now rename plugins
++ You can now re-order plugins
+  This is still a little clunky in that it resets the scroll bar, like adding a plugin does.
+  I will have to look at the layout code at some point.
 + Added support for the following PS4 outputs on Titan One:
   TouchPad X+Y
   Aceelerometer X+Y

@@ -71,15 +71,21 @@ Class Plugin {
 		Gui, Margin, 0, 0
 		Gui -Caption
 		Gui, Color, 7777FF
-		Gui, Add, Button, % "hwndhRename y3 x" UCR.PLUGIN_WIDTH - 83, Rename
-		Gui, Add, Button, % "hwndhClose y3 x" UCR.PLUGIN_WIDTH - 23, X
+		Gui, Add, Button, % "hwndhMvUp y3 x" UCR.PLUGIN_WIDTH - 140, Up
+		Gui, Add, Button, % "hwndhMvDn y3 x+5 yp", Dn
+		Gui, Add, Button, % "hwndhRename y3 x+5 yp", Rename
+		Gui, Add, Button, % "hwndhClose y3 x+5 yp", X
 		Gui, Font, s15, Verdana
-		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 100, % this.Name
+		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 150, % this.Name
 		this._hTitle := hTitle
 		fn := this._Close.Bind(this)
 		GuiControl, +g, % hClose, % fn
 		fn := this._Rename.Bind(this)
 		GuiControl, +g, % hRename, % fn
+		fn := this._Reorder.Bind(this, -1)
+		GuiControl, +g, % hMvUp, % fn
+		fn := this._Reorder.Bind(this, 1)
+		GuiControl, +g, % hMvDn, % fn
 		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH
 		Gui, % this.hFrame ":Add", Gui, x0 y30, % this.hwnd
 		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
@@ -206,6 +212,10 @@ Class Plugin {
 	ChangeName(name){
 		this.Name := name
 		GuiControl, % this.hFrame ":" , % this._hTitle, % name
+	}
+	
+	_Reorder(dir){
+		this.ParentProfile._ReorderPlugin(this, dir)
 	}
 	
 	; The user clicked the rename button on the plugin
