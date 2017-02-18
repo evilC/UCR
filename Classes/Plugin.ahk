@@ -71,12 +71,15 @@ Class Plugin {
 		Gui, Margin, 0, 0
 		Gui -Caption
 		Gui, Color, 7777FF
+		Gui, Add, Button, % "hwndhRename y3 x" UCR.PLUGIN_WIDTH - 83, Rename
 		Gui, Add, Button, % "hwndhClose y3 x" UCR.PLUGIN_WIDTH - 23, X
 		Gui, Font, s15, Verdana
-		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 40, % this.Name
+		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 100, % this.Name
 		this._hTitle := hTitle
 		fn := this._Close.Bind(this)
 		GuiControl, +g, % hClose, % fn
+		fn := this._Rename.Bind(this)
+		GuiControl, +g, % hRename, % fn
 		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH
 		Gui, % this.hFrame ":Add", Gui, x0 y30, % this.hwnd
 		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
@@ -197,6 +200,17 @@ Class Plugin {
 		
 		this.GuiControls := ""
 		this.IOControls := ""
+	}
+	
+	; The profile requested a change of name for the plugin
+	ChangeName(name){
+		this.Name := name
+		GuiControl, % this.hFrame ":" , % this._hTitle, % name
+	}
+	
+	; The user clicked the rename button on the plugin
+	_Rename(){
+		this.ParentProfile._RenamePlugin(this)
 	}
 	
 	; The user clicked the close button on the plugin
