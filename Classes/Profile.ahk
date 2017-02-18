@@ -337,16 +337,24 @@ Class _Profile {
 		}
 		if (i == 0 || (dir == -1 && i == 1) || (dir == 1 && i == max))
 			return
-		id := this.PluginOrder.RemoveAt(i)
 		other_plugin := this.Plugins[this.PluginOrder[i + dir]]
+		id := this.PluginOrder.RemoveAt(i)
 		this.PluginOrder.InsertAt(i + dir, id)
+		
+		if (dir == 1){
+			this.SwapPluginOrder(other_plugin, plugin)
+		} else {
+			this.SwapPluginOrder(plugin, other_plugin)
+		}
+		UCR._ProfileChanged(this)
+	}
+	
+	SwapPluginOrder(plugin, other_plugin){
 		ControlGetPos,, other_y,,,,% "ahk_id " other_plugin.hFrame
 		new_top := this.GetYCoord(other_y)
 		Gui, % plugin.hFrame ":Show", % "x5 y" new_top " w" UCR.PLUGIN_WIDTH
 		ControlGetPos,,plugin_y,,plugin_h,,% "ahk_id " plugin.hFrame
 		Gui, % other_plugin.hFrame ":Show", % "x5 y" this.GetYCoord(plugin_y + plugin_h + 5) " w" UCR.PLUGIN_WIDTH
-
-		UCR._ProfileChanged(this)
 	}
 	
 	GetYCoord(y){
