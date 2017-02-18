@@ -7,6 +7,7 @@ Key:
 0.1.11 - ???
 + You can now rename plugins
 + You can now re-order plugins
++ Plugin close button is now an icon
 + Added support for the following PS4 outputs on Titan One:
   TouchPad X+Y
   Aceelerometer X+Y
