@@ -34,7 +34,6 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	_ChangedValue(o){
-		MsgBox %o%
 		if (o == 1){
 			; Fake dummy BindObject for now
 			bo := {}

@@ -688,7 +688,7 @@ Class _InputThread {
 			state := {axes: xy, MouseID: ThisMouse}
 			for ControlGuid, obj in this._DeltaBindings {
 				;this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
-				;MsgBox % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
+				;Outputdebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
 				;this.Callback.Call(ControlGuid, state)
 				fn := this.InputEvent.Bind(this, ControlGUID, state)
 				SetTimer, % fn, -0
