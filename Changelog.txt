@@ -13,6 +13,8 @@ Key:
 = Fixed bad calculations in ButtonsToAxis plugin for Low/High options
 + Added support for Command-Line profile switching via CLI.ahk
   Code contributed by Snoothy - thankyou!
++ You can now filter for individual mice in the MouseDelta
+  Thanks to David Baldwin for contributing the bulk of the code.
 
 0.1.10 - 4th Feb 2017
 = Ultrastik devices now work with UCR
