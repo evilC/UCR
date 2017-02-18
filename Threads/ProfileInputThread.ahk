@@ -59,6 +59,7 @@ Class _InputThread {
 	UpdateBinding(ControlGUID, boPtr){
 		bo := ObjShare(boPtr).clone()
 		; Direct the request to the appropriate IOClass that handles it
+		
 		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
 		;OutputDebug % "UCR| Input Thread: Added Binding to queue as item# " this.UpdateBindingQueue.length()+1
 		;this.UpdateBindingQueue.push({ControlGuid: ControlGuid, BindObject: bo})
@@ -567,12 +568,16 @@ Class _InputThread {
 		}
 
 		UpdateBinding(ControlGUID, bo){
+
 			;OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
 			this.RemoveBinding(ControlGUID)
+			
 			if (bo.Binding[1]){
 				this._DeltaBindings[ControlGUID] := 1
-				if (!this.Registered)
+				
+				if (!this.Registered){	
 					this.RegisterMouse()
+				}
 			}
 		}
 		
@@ -598,11 +603,12 @@ Class _InputThread {
 		}
 		
 		RegisterMouse(){
+			
 			static RIDEV_INPUTSINK := 0x00000100
 			; Register mouse for WM_INPUT messages.
 			static DevSize := 8 + A_PtrSize
 			static RAWINPUTDEVICE := 0
-			
+				
 			if (this.Registered)
 				return
 			;OutputDebug % "UCR| ProfileInputThread registering for mouse delta"
@@ -638,7 +644,7 @@ Class _InputThread {
 				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
 				NumPut(RIDEV_REMOVE, RAWINPUTDEVICE, 4, "Uint")
 			}
-			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 0, "UInt", DevSize )
+			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
 			OnMessage(0x00FF, this.MouseMoveFn, 0)
 			this.Registered := 0
 		}
@@ -653,8 +659,10 @@ Class _InputThread {
 			VarSetCapacity(raw, 40, 0)
 			If (!DllCall("GetRawInputData",uint,lParam,uint,0x10000003,uint,&raw,"uint*",40,uint, 16) or ErrorLevel)
 				Return 0
-			ThisMouse := NumGet(raw, 8)
-	 
+			
+			
+			
+			
 			; Find size of rawinput data - only needs to be run the first time.
 			if (!iSize){
 				r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", 0, "UInt*", iSize, "UInt", 8 + (A_PtrSize * 2))
@@ -663,7 +671,9 @@ Class _InputThread {
 			sz := iSize	; param gets overwritten with # of bytes output, so preserve iSize
 			; Get RawInput data
 			r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", &uRawInput, "UInt*", sz, "UInt", 8 + (A_PtrSize * 2))
-	 
+	        
+			ThisMouse := NumGet(&uRawInput, 8)
+
 			x := NumGet(&uRawInput, offsets.x, "Int")
 			y := NumGet(&uRawInput, offsets.y, "Int")
 			
@@ -678,7 +688,7 @@ Class _InputThread {
 			state := {axes: xy, MouseID: ThisMouse}
 			for ControlGuid, obj in this._DeltaBindings {
 				;this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
-				;OutputDebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
+				;MsgBox % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
 				;this.Callback.Call(ControlGuid, state)
 				fn := this.InputEvent.Bind(this, ControlGUID, state)
 				SetTimer, % fn, -0

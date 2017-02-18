@@ -5,8 +5,8 @@ class RawInput_Mouse_Delta extends _UCR.Classes.IOClasses.IOClassBase {
 	
 	
 	BuildHumanReadable(){
-		;if (this.DeviceID && this.Binding[1]){
-			return "Any Mouse"
-		;}
+		if (this.DeviceID && this.Binding[1]){
+		return this.DeviceID
+		}
 	}
 }

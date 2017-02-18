@@ -15,8 +15,14 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 		}
 		this.AddMenuItem("Any Mouse", "Any", this._ChangedValue.Bind(this, 1))
 		this.AddMenuItem("Clear", "Clear", this._ChangedValue.Bind(this, 2))
+		
 	}
 
+	AddItem(Name,ID){
+	
+		this.AddMenuItem(Name, ID, this._ChangedValue.Bind(this, ID))
+	}
+	
 	; Set the state of the GuiControl (Inc Cue Banner)
 	SetControlState(){
 		if (this.__value.Binding[1] || this.__value.DeviceID){
@@ -28,6 +34,7 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 	}
 	
 	_ChangedValue(o){
+		MsgBox %o%
 		if (o == 1){
 			; Fake dummy BindObject for now
 			bo := {}
@@ -39,6 +46,14 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 			bo := this._IOClasses.RawInput_Mouse_Delta
 			bo.Binding := []
 			bo.DeviceID := 0
+			this.SetBinding(bo)
+		} else{
+		
+		
+			bo := {}
+			bo.Binding := [o]
+			bo.DeviceID := o
+			bo.IOClass := "RawInput_Mouse_Delta"
 			this.SetBinding(bo)
 		}
 	}

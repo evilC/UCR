@@ -23,6 +23,7 @@ Class Plugin {
 	AddControl(type, name, ChangeValueCallback, aParams*){
 		if (ObjHasKey(this._IOControls, type)){
 			call:= _UCR.Classes.GuiControls[type]
+			
 			this.IOControls[name] := new call(this, name, ChangeValueCallback, aParams*)
 			return this.IOControls[name]
 		} else if (ObjHasKey(this._CustomControls, type)){
