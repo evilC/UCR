@@ -5,6 +5,7 @@ Key:
 + : Added feature
 
 0.1.11 - ???
++ You can now rename plugins
 + Added support for the following PS4 outputs on Titan One:
   TouchPad X+Y
   Aceelerometer X+Y
