@@ -15,7 +15,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	CurrY := 0
 	TimerX := 0
 	TimerY := 0
-	ipd := 0
+	SelectedMouse := -1
 	Init(){
 		title_row := 25
 		x_row := 55
@@ -59,9 +59,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		
 		; Mouse Selection
 		Gui, Add, GroupBox, % "x305 ym w110 Section h" y_row+35, % "Input"
-		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "x310 w100 y" x_row)
-		
-		
+		this.AddControl("InputDelta", "MD1", this.MouseSelectChanged.Bind(this), this.MouseEvent.Bind(this), "x310 w100 y" x_row)
 		
 		; Outputs
 		Gui, Add, GroupBox, % "x420 ym w140 Section h" y_row+35, % "Outputs"
@@ -88,10 +86,9 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.InputDeltas.MouseDelta.UnRegister()
 	}
 	
-	MouseSelectChanged(){
-
-		
-		
+	MouseSelectChanged(value){
+		; Store the selected DeviceID, so we do not have to keep looking it up
+		this.SelectedMouse := this.IOControls.MD1.GetBinding().DeviceID
 	}
 	
 	;~ Calibrate(axis){
@@ -127,9 +124,8 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			this.SeenMice[MouseID] := 1
 			this.IOControls.MD1.AddItem(MouseID, MouseID)			
 		}
-		ox := this.IOControls.MD1.GetBinding()
 		
-		if (ox && ox.DeviceID != value.MouseID)
+		if (this.SelectedMouse != -1 && this.SelectedMouse && this.SelectedMouse != value.MouseID)
 			return
 			
 				

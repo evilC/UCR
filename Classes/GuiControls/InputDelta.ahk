@@ -38,7 +38,7 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 			; Fake dummy BindObject for now
 			bo := {}
 			bo.Binding := [1]
-			bo.DeviceID := 1
+			bo.DeviceID := -1
 			bo.IOClass := "RawInput_Mouse_Delta"
 			this.SetBinding(bo)
 		} else if (o == 2){

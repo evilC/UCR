@@ -573,7 +573,7 @@ Class _InputThread {
 			this.RemoveBinding(ControlGUID)
 			
 			if (bo.Binding[1]){
-				this._DeltaBindings[ControlGUID] := 1
+				this._DeltaBindings[ControlGUID] := bo.DeviceID
 				
 				if (!this.Registered){	
 					this.RegisterMouse()
@@ -686,12 +686,13 @@ Class _InputThread {
 			}
 
 			state := {axes: xy, MouseID: ThisMouse}
-			for ControlGuid, obj in this._DeltaBindings {
-				;this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
-				;Outputdebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
-				;this.Callback.Call(ControlGuid, state)
-				fn := this.InputEvent.Bind(this, ControlGUID, state)
-				SetTimer, % fn, -0
+			for ControlGuid, DeviceID in this._DeltaBindings {
+				if (DeviceID == -1 || DeviceID == ThisMouse){
+					;Outputdebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid ", DeviceID: " ThisMouse
+					;this.Callback.Call(ControlGuid, state)
+					fn := this.InputEvent.Bind(this, ControlGUID, state)
+					SetTimer, % fn, -0
+				}
 			}
 	 
 			; There is no message for "Stopped", so simulate one
