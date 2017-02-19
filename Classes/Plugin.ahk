@@ -75,9 +75,9 @@ Class Plugin {
 		;Gui, Add, Button, % "hwndhMvUp y3 x+5 yp", Up
 		;Gui, Add, Button, % "hwndhMvDn y3 x+5 yp", Dn
 		;Gui, Add, Button, % "hwndhClose y3 x+5 yp", X
-		Gui, Add, Picture, % "hwndhMvUp BackGroundTrans AltSubmit x+4 yp-1", Resources\icons\up.png
-		Gui, Add, Picture, % "hwndhMvDn BackGroundTrans AltSubmit x+4 yp", Resources\icons\down.png
-		Gui, Add, Picture, % "hwndhClose BackGroundTrans AltSubmit x+4 yp", Resources\icons\close.png
+		Gui, Add, Picture, % "hwndhMvUp BackGroundTrans AltSubmit x+4 w25 h25 yp-1", Resources\icons\up.png
+		Gui, Add, Picture, % "hwndhMvDn BackGroundTrans AltSubmit x+4 w25 h25 yp", Resources\icons\down.png
+		Gui, Add, Picture, % "hwndhClose BackGroundTrans AltSubmit x+4 w25 h25 yp", Resources\icons\close.png
 		Gui, Font, s15, Verdana
 		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 150, % this.Name
 		this._hTitle := hTitle
