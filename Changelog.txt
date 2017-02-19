@@ -8,6 +8,12 @@ Key:
 + You can now rename plugins
 + You can now re-order plugins
 + Plugin close button is now an icon
++ There are now preview GuiControls for Buttons and Axes
+  You no longer have to code your own in plugins
+  The Axis preview remains as a slider
+  The Button preview comes in two flavors:
+  A regular 25x25 icon with on/off states
+  A 3x34 icon that sits right next to an IOControl (To save horizontal space)
 + Added support for the following PS4 outputs on Titan One:
   TouchPad X+Y
   Aceelerometer X+Y
