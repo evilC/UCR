@@ -66,11 +66,8 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		this.AddControl("OutputAxis", "OutputAxisX", 0, "x425 w125 y" x_row - 20)
 		this.AddControl("OutputAxis", "OutputAxisY", 0, "x425 w125 y" y_row)
 		
-		Gui, Add, Slider, % "hwndhwnd x560 y" x_row
-		this.hSliderX := hwnd
-		
-		Gui, Add, Slider, % "hwndhwnd x560 y" y_row
-		this.hSliderY := hwnd
+		this.AddControl("AxisPreview", "", 0, this.IOControls.OutputAxisX, "x560 y" x_row, 50)
+		this.AddControl("AxisPreview", "", 0, this.IOControls.OutputAxisY, "x560 y" y_row, 50)
 		
 		this.AddControl("DDL", "ModeSelect", this.ModeSelect.Bind(this), "x575 w100 ym AltSubmit", "Mode: Relative||Mode: Absolute")
 		
@@ -168,7 +165,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			if (ox.DeviceID && ox.Binding[1]){
 				cx := UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
 				this.IOControls.OutputAxisX.Set(cx)
-				GuiControl, , % this.hSliderX, % cx
 			}
 		}
 		
@@ -177,7 +173,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			if (oy.DeviceID && oy.Binding[1]){
 				cy := UCR.Libraries.StickOps.InternalToAHK(this.CurrY)
 				this.IOControls.OutputAxisY.Set(cy)
-				GuiControl, , % this.hSliderY, % cy
 			}
 		}
 	

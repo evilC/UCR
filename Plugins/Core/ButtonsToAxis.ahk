@@ -17,7 +17,9 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 		Gui, Add, Text, % "Center xs+5 yp+30 w" iow, Low
 		Gui, Add, Text, % "Center x+10 w" iow " yp", High
 		this.AddControl("InputButton", "IB1", 0, this.ButtonInput.Bind(this, 1), " xs+5 yp+15")
-		this.AddControl("InputButton", "IB2", 0, this.ButtonInput.Bind(this, 2), "x+10 yp")
+		this.AddControl("ButtonPreviewThin", "", 0, this.IOControls.IB1, "x+0 yp")
+		this.AddControl("InputButton", "IB2", 0, this.ButtonInput.Bind(this, 2), "x+5 yp")
+		this.AddControl("ButtonPreviewThin", "", 0, this.IOControls.IB2, "x+0 yp")
 
 		Gui, Add, GroupBox, Center x285 ym w120 h85 section, Settings
 		Gui, Add, Text, % "Center xs+5 yp+15 w110", Deflection `%
@@ -33,8 +35,7 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 		Gui, Add, Text, % "Center xs+5 yp+30 w" iow, Axis
 		Gui, Add, Text, % "Center x+0 w" iow " yp", Preview
 		this.AddControl("OutputAxis", "OA1", 0, "xs+5 yp+15")
-		Gui, Add, Slider, % "hwndhwnd x+0 yp", 50
-		this.hSlider := hwnd
+		this.AddControl("AxisPreview", "", 0, this.IOControls.OA1, "x+0 yp", 50)
 	}
 	
 	OnActive(){
@@ -88,6 +89,5 @@ class ButtonsToAxis extends _UCR.Classes.Plugin {
 	
 	SetState(out){
 		this.IOControls.OA1.Set(out)
-		GuiControl, , % this.hSlider, % out
 	}
 }

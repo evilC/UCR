@@ -11,7 +11,7 @@ Class Plugin {
 	
 	;_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
 	static _IOControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1}
-	static _CustomControls := {ProfileSelect: 1}
+	static _CustomControls := {ProfileSelect: 1, AxisPreview: 1, ButtonPreview: 1, ButtonPreviewThin: 1}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){

@@ -1081,6 +1081,9 @@ Class _UCR {
 			#Include Classes\GuiControls\InputDelta.ahk
 			#Include Classes\GuiControls\OutputButton.ahk
 			#Include Classes\GuiControls\OutputAxis.ahk
+			#Include Classes\GuiControls\AxisPreview.ahk
+			#Include Classes\GuiControls\ButtonPreview.ahk
+			#Include Classes\GuiControls\ButtonPreviewThin.ahk
 		}
 		
 		class IOClasses {
