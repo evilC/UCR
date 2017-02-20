@@ -1,6 +1,7 @@
 ; ToDo: Split IOClasses out into individual files
 ; ToDo: Rename these type of IOClasses to IOInputClasses?
 #Include Functions\IsEmptyAssoc.ahk
+#MaxThreads 255
 
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {

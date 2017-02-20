@@ -5,6 +5,7 @@
 	https://autohotkey.com/boards/viewtopic.php?t=300
 */
 #SingleInstance force
+#MaxThreads 255
 
 ; GUID used to start RPC for UCR
 UCRguid := "{E97F3D9C-47D5-47EA-92FB-2974647DB131}"
