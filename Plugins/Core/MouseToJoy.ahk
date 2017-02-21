@@ -15,7 +15,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	CurrY := 0
 	TimerX := 0
 	TimerY := 0
-	
+	SelectedMouse := -1
 	Init(){
 		title_row := 25
 		x_row := 55
@@ -59,15 +59,15 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		
 		; Mouse Selection
 		Gui, Add, GroupBox, % "x305 ym w110 Section h" y_row+35, % "Input"
-		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "x310 w100 y" x_row)
+		this.AddControl("InputDelta", "MD1", this.MouseSelectChanged.Bind(this), this.MouseEvent.Bind(this), "x310 w100 y" x_row)
+		
 		; Outputs
 		Gui, Add, GroupBox, % "x420 ym w140 Section h" y_row+35, % "Outputs"
 		this.AddControl("OutputAxis", "OutputAxisX", 0, "x425 w125 y" x_row - 20)
 		this.AddControl("OutputAxis", "OutputAxisY", 0, "x425 w125 y" y_row)
-		Gui, Add, Slider, % "hwndhwnd x560 y" x_row
-		this.hSliderX := hwnd
-		Gui, Add, Slider, % "hwndhwnd x560 y" y_row
-		this.hSliderY := hwnd
+		
+		this.AddControl("AxisPreview", "", 0, this.IOControls.OutputAxisX, "x560 y" x_row, 50)
+		this.AddControl("AxisPreview", "", 0, this.IOControls.OutputAxisY, "x560 y" y_row, 50)
 		
 		this.AddControl("DDL", "ModeSelect", this.ModeSelect.Bind(this), "x575 w100 ym AltSubmit", "Mode: Relative||Mode: Absolute")
 		
@@ -83,13 +83,9 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.InputDeltas.MouseDelta.UnRegister()
 	}
 	
-	MouseSelectChanged(){
-		GuiControlGet, val,, % this.hSelectMouse
-		if (val == "Any" || val == 0){
-			val := ""
-		}
-		this.GuiControls.MouseID.Set(val)
-		GuiControl, , % this.GuiControls.MouseID.hwnd, % val
+	MouseSelectChanged(value){
+		; Store the selected DeviceID, so we do not have to keep looking it up
+		this.SelectedMouse := this.IOControls.MD1.GetBinding().DeviceID
 	}
 	
 	;~ Calibrate(axis){
@@ -105,7 +101,9 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	MouseEvent(value){
 		; The "Range" for a given axis is -50 to +50
 		try {
+
 			x := value.axes.x, y := value.axes.y, ax := Abs(x), ay := Abs(y), MouseID := value.MouseID, dox := (x != ""), doy := (y != "")
+					
 			if (this.GuiControls.InvertX.Get())
 				x *= -1
 			if (this.GuiControls.InvertY.Get())
@@ -115,9 +113,19 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			; This seems to fix it, but this should probably be properly investigated.
 			return
 		}
-		m_id := this.GuiControls.MouseID.Get()
-		if (m_id && m_id != value.MouseID)
+		
+		
+		if (!ObjHasKey(this.SeenMice, MouseID)){
+			GuiControl, , % this.hSelectMouse, % MouseID
+		
+			this.SeenMice[MouseID] := 1
+			this.IOControls.MD1.AddItem(MouseID, MouseID)			
+		}
+		
+		if (this.SelectedMouse != -1 && this.SelectedMouse && this.SelectedMouse != value.MouseID)
 			return
+			
+				
 		if (this.Mode = 1){
 			; Relative
 			threshold := this.GuiControls.RelativeThreshold.Get()
@@ -127,6 +135,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 				doy := 0
 			if (dox){
 				this.CurrX := x * this.RelativeScaleFactor.X
+				
 			}
 			if (doy){
 				this.CurrY := y * this.RelativeScaleFactor.Y
@@ -149,14 +158,13 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 					this.CurrY := -50
 			}
 		}
-
+	
 		if (dox){
 			;OutputDebug, % "UCR| x: " this.CurrX " (" UCR.Libraries.StickOps.InternalToAHK(this.CurrX) "), y: " this.CurrY
 			ox := this.IOControls.OutputAxisX.GetBinding()
 			if (ox.DeviceID && ox.Binding[1]){
 				cx := UCR.Libraries.StickOps.InternalToAHK(this.CurrX)
 				this.IOControls.OutputAxisX.Set(cx)
-				GuiControl, , % this.hSliderX, % cx
 			}
 		}
 		
@@ -165,13 +173,10 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			if (oy.DeviceID && oy.Binding[1]){
 				cy := UCR.Libraries.StickOps.InternalToAHK(this.CurrY)
 				this.IOControls.OutputAxisY.Set(cy)
-				GuiControl, , % this.hSliderY, % cy
 			}
 		}
-		if (!ObjHasKey(this.SeenMice, MouseID)){
-			this.SeenMice[MouseID] := 1
-			GuiControl, , % this.hSelectMouse, % MouseID
-		}
+	
+
 		
 		; In Relative mode, emulate centering with a timeout
 		if (this.Mode = 1){

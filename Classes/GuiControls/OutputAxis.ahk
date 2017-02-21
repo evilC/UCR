@@ -29,5 +29,6 @@ class OutputAxis extends _UCR.Classes.GuiControls.InputAxis {
 			this.__value.Set(state)
 			this.State := State
 		}
+		this.OnStateChange(state)
 	}
 }

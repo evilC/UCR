@@ -41,6 +41,7 @@ class _Menu {
 		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
+
 		item := new this.MenuItem(this, text, ItemName, callback)
 		this.ItemsByID[item.id] := item
 		if (text != "")
@@ -133,6 +134,7 @@ class _Menu {
 			this.parent := parent, this.text := text, this.callback := callback, this.name := name
 			this.id := CreateGUID()
 			if (callback == 0){
+				
 				callback := this.DoNothing.Bind(this)
 			}
 			Menu, % parent.id, Add, % text, % callback

@@ -14,13 +14,15 @@ class ButtonToButton extends _UCR.Classes.Plugin {
 	; The Init() method of a plugin is called when one is added. Use it to create your Gui etc
 	Init(){
 		; Create the GUI
-		Gui, Add, GroupBox, Center xm ym w140 h60 section, Input Button
+		Gui, Add, GroupBox, Center xm ym w170 h60 section, Input Button
 		this.AddControl("InputButton", "IB1", 0, this.MyHkChangedState.Bind(this), "xs+5 ys+20")
+		this.AddControl("ButtonPreview", "", 0, this.IOControls.IB1, "x+5 yp+5")
 		;Gui, Add, Text, y+10, % "Remap"
-		Gui, Add, GroupBox, Center x160 ym w140 h60 section, Output Button
+		Gui, Add, GroupBox, Center x190 ym w170 h60 section, Output Button
 		this.AddControl("OutputButton", "OB1", 0, "xs+5 ys+20")
+		this.AddControl("ButtonPreview", "", 0, this.IOControls.OB1, "x+5 yp+5")
 		
-		Gui, Add, GroupBox, Center x310 ym w100 h60 section, Settings
+		Gui, Add, GroupBox, Center x370 ym w100 h60 section, Settings
 		this.AddControl("Checkbox", "Toggle", 0, "xs+10 yp+30", "Toggle mode")
 	}
 	
