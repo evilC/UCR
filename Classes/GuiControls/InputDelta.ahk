@@ -4,6 +4,7 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "InputDelta"
 	static _DefaultBanner := "Select a Mouse"
 	static _IOClassNames := ["RawInput_Mouse_Delta"]
+	static SeenMice := {}
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		base.__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*)
@@ -19,7 +20,6 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 	}
 
 	AddItem(Name,ID){
-	
 		this.AddMenuItem(Name, ID, this._ChangedValue.Bind(this, ID))
 	}
 	
@@ -47,13 +47,20 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 			bo.DeviceID := 0
 			this.SetBinding(bo)
 		} else{
-		
-		
 			bo := {}
 			bo.Binding := [o]
 			bo.DeviceID := o
 			bo.IOClass := "RawInput_Mouse_Delta"
 			this.SetBinding(bo)
+		}
+	}
+	
+	; Override base OnStateChange, so we can update list of seen mice
+	OnStateChange(e){
+		base.OnStateChange(e)
+		if (!ObjHasKey(this.SeenMice, e.MouseID)){
+			this.SeenMice[e.MouseID] := 1
+			this.AddItem(e.MouseID, e.MouseID)		
 		}
 	}
 }

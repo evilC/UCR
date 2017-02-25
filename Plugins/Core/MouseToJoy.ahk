@@ -10,7 +10,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	AbsoluteTimeout := {x: 10, y: 10}
 	AbsoluteScaleFactor := {x: 1, y: 1}
 	Mode := 2	; 1 = Relative, 2 = Absolute
-	SeenMice := {}
 	CurrX := 0
 	CurrY := 0
 	TimerX := 0
@@ -112,14 +111,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
 			; This seems to fix it, but this should probably be properly investigated.
 			return
-		}
-		
-		
-		if (!ObjHasKey(this.SeenMice, MouseID)){
-			GuiControl, , % this.hSelectMouse, % MouseID
-		
-			this.SeenMice[MouseID] := 1
-			this.IOControls.MD1.AddItem(MouseID, MouseID)			
 		}
 		
 		if (this.SelectedMouse != -1 && this.SelectedMouse && this.SelectedMouse != value.MouseID)
