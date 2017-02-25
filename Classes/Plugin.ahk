@@ -148,6 +148,9 @@ Class Plugin {
 		if (IsFunc(this["OnActive"])){
 			this.OnActive()
 		}
+		for name, control in this.IOControls {
+			control.Activate()
+		}
 	}
 	
 	; Called when a plugin becomes inactive (eg profile changed)
@@ -163,6 +166,9 @@ Class Plugin {
 		; Call user's OnInactive method (if it exists)
 		if (IsFunc(this["OnInActive"])){
 			this.OnInActive()
+		}
+		for name, control in this.IOControls {
+			control.DeActivate()
 		}
 	}
 	

@@ -21,9 +21,15 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			call:= _UCR.Classes.IOClasses[name]
 			this._IOClasses[name] := new call(this)
 		}
-		this._BuildMenu()
-		
 		this.SetControlState()
+	}
+
+	Activate(){
+
+	}
+
+	DeActivate(){
+		this._DestroyBannerMenu()
 	}
 	
 	SetDefaultOptions(optstr){
