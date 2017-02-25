@@ -11,7 +11,7 @@ Key:
   Code contributed by Snoothy - thankyou!
 + MaxThreads setting cranked up to 255
   This seems to alleviate issues with fast, simultaneous input.
-
++ The InputDelta now self-updates Seen Mice
 
 0.1.11 - 19th Feb 2017
 + You can now rename plugins
