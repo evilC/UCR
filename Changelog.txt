@@ -4,6 +4,15 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.12 - ???
++ IOControl menus are now initialized when first opened.
+  This will mainly benefit users with large numbers of profiles.
+  UCR should load quicker, and you should not get a "Too many menus" error.
+  Code contributed by Snoothy - thankyou!
++ MaxThreads setting cranked up to 255
+  This seems to alleviate issues with fast, simultaneous input.
++ The InputDelta now self-updates Seen Mice
+
 0.1.11 - 19th Feb 2017
 + You can now rename plugins
 + You can now re-order plugins
