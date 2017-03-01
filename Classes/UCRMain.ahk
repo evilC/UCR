@@ -679,7 +679,7 @@ Class _UCR {
 		name := this._GetProfileName("Copy Profile", profile.Name " copy")
 
 		if (!name){
-			name := profile.Name " copy"
+			return 0
 		}
 
 		; Create the new profile
@@ -701,6 +701,7 @@ Class _UCR {
 		; Change profile and save
 		this.ChangeProfile(newId, 1)
 		this.UpdateProfileToolbox()
+		return 1
 	}
 	
 	RenameProfile(id){
