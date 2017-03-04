@@ -643,7 +643,7 @@ Class _UCR {
 	
 	; User clicked add new profile button
 	_AddProfile(parent := 0){
-		name := this._GetProfileName()
+		name := this._GetProfileName("Profile")
 		if (name = 0)
 			return
 		id := this._CreateProfile(name, 0, parent)
@@ -653,6 +653,55 @@ Class _UCR {
 		;this._ProfileSettingsCache[id] := this.Profiles[id]._Serialize()
 		this.UpdateProfileToolbox()
 		this.ChangeProfile(id)
+	}
+
+	; Copies profile and adds new GUID's
+	_CopyProfile(id){
+		
+		; Get profile configuration
+		profile := this.Profiles[id]._Serialize()
+
+		newPluginOrder := []
+		newPlugins := {}
+
+		; Generate new GUIDs for plugins
+		Loop % profile.PluginOrder.length() {
+			id := profile.PluginOrder[A_Index]
+			newId := CreateGUID()
+			newPluginOrder[A_Index] := newId
+			newPlugins[newId] := profile.Plugins[id]
+		}
+
+		; Assign the new plugins and order 
+		profile.PluginOrder := newPluginOrder
+		profile.Plugins := newPlugins
+
+		name := this._GetProfileName(profile.Name " Copy", "Copy Profile")
+
+		if (!name){
+			return 0
+		}
+
+		; Create the new profile
+		newPID := this._CreateProfile(name, 0, profile.ParentProfile)
+		
+		; Set the new profile ID
+		profile.id := newPID
+
+		; Load the copied profile
+		this.Profiles[newPID]._Deserialize(profile)
+		
+		this.Profiles[newPID]._Hide()
+
+		; Add the new profile to the profiletree view
+		if (!IsObject(this.ProfileTree[profile.ParentProfile]))
+			this.ProfileTree[profile.ParentProfile] := []
+		this.ProfileTree[profile.ParentProfile].push(newPID)
+		
+		; Change profile and save
+		this.ChangeProfile(newId, 1)
+		this.UpdateProfileToolbox()
+		return 1
 	}
 	
 	RenameProfile(id){
@@ -981,26 +1030,37 @@ Class _UCR {
 	}
 	
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
-	_GetProfileName(){
-		c := 1
-		found := 0
-		while (!found){
-			found := 1
+	_GetProfileName(base_name, title := "Add Profile"){
+		suggestedname := this._GetNextProfile(base_name)
+
+		; Allow user to pick name
+		windowTitle := title
+		prompt := "Enter a name for the Profile"
+		coords := this.GetCenteredCoordinates(375, 130)
+		InputBox, name, % windowTitle, % prompt, ,,130,% coords.x,% coords.y,,, % suggestedname
+		
+		return (ErrorLevel ? 0 : name)
+	}
+	
+	; Works out the next number in order for a profile name
+	_GetNextProfile(name){
+		num := 1
+		Loop {
+			candidate_name := name " " num
+			already_exists := 0
 			for id, profile in this.Profiles {
-				if (profile.Name = "Profile " c){
-					c++
-					found := 0
+				if (profile.Name = candidate_name){
+					already_exists := 1
 					break
 				}
 			}
+			if (already_exists){
+				num++
+			} else {
+				break
+			}
 		}
-		suggestedname := "Profile " c
-		; Allow user to pick name
-		prompt := "Enter a name for the Profile"
-		coords := this.GetCenteredCoordinates(375, 130)
-		InputBox, name, Add Profile, % prompt, ,,130,% coords.x,% coords.y,,, % suggestedname
-		
-		return (ErrorLevel ? 0 : name)
+		return candidate_name
 	}
 	
 	; Positions the specified window in the middle of the UCR GUI

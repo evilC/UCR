@@ -26,6 +26,10 @@ class _ProfileToolbox extends _ProfileTreeBase {
 		fn := this.DeleteProfile.Bind(this)
 		GuiControl +g, % hDelete, % fn
 
+		Gui, Add, Button, % "xm w" half_width " hwndhCopy y+5 aya axr aw1/2", Copy
+		fn := this.CopyProfile.Bind(this)
+		GuiControl +g, % hCopy, % fn
+
 		this.DragMidFn := this.Treeview_Dragging.Bind(this)
 		this.DragEndFn := this.Treeview_EndDrag.Bind(this)
 		this.MsgFn := this.WM_NOTIFY.Bind(this)
@@ -49,6 +53,11 @@ class _ProfileToolbox extends _ProfileTreeBase {
 		else
 			parent := 0
 		UCR._AddProfile(parent)
+	}
+
+	CopyProfile(){
+		id := this.ProfileIDOfSelection()
+		UCR._CopyProfile(id)
 	}
 	
 	DeleteProfile(){
