@@ -5,6 +5,8 @@ Key:
 + : Added feature
 
 0.1.12 - ???
++ You can now duplicate profiles using the "Copy" button in the toolbox.
+  Code contributed by Snoothy - thankyou!
 + IOControl menus are now initialized when first opened.
   This will mainly benefit users with large numbers of profiles.
   UCR should load quicker, and you should not get a "Too many menus" error.
