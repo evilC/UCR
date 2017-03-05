@@ -5,6 +5,11 @@ Key:
 + : Added feature
 
 0.1.12 - ???
++ Added AxisRangeToButtons plugin
+  This allows you to map an axis to up to 10 buttons
+  Each button has a "Low" and "High" value. If the axis is in this range...
+  Then the button is pressed. Else it is released.
+  If you need more buttons, more can be added by editing the source code.
 + You can now duplicate profiles using the "Copy" button in the toolbox.
   Code contributed by Snoothy - thankyou!
 + IOControl menus are now initialized when first opened.
