@@ -8,6 +8,8 @@ class AxisRangeToButtons extends _UCR.Classes.Plugin {
 	
 	NumBands := 10
 	CurrentBand := 0
+	TapModeState := 0
+	TapModeDur := 50
 	
 	BandCache := []
 	
@@ -19,7 +21,10 @@ class AxisRangeToButtons extends _UCR.Classes.Plugin {
 		Gui, Add, Text, % "Center x+5 w100 ys+15", Preview
 		this.AddControl("InputAxis", "InputAxis", 0, this.MyInputChangedState.Bind(this), "xs+5 yp+15")
 		this.AddControl("AxisPreview", "", 0, this.IOControls.InputAxis, "x+5 yp+5 w100", 50)
-
+		this.AddControl("CheckBox", "TapModeState", this.TapModeChanged.Bind(this), "x+20 y40", "Tap Button for ")
+		this.AddControl("Edit", "TapModeDur", this.TapModeChanged.Bind(this), "w30 x+5 yp-3", "50")
+		Gui, Add, Text, % "x+5 yp+3", ms
+		
 		xpos := 5
 		ypos := "ym"
 		col_count := 0
@@ -39,7 +44,7 @@ class AxisRangeToButtons extends _UCR.Classes.Plugin {
 			}
 			
 			pos_str := xpos " " ypos
-			OutputDebug % "UCR| Band " A_Index " pos = " pos_str
+			;OutputDebug % "UCR| Band " A_Index " pos = " pos_str
 			this.BandCache.Push({Low: "", High: ""})
 			Gui, Add, Text, % "w50 " pos_str, % "Band #" A_Index
 			this.AddControl("Edit", "Band" A_Index "Low", this.BandChanged.Bind(this, A_Index, "Low"), "x+5 yp-3 w25")
@@ -52,6 +57,11 @@ class AxisRangeToButtons extends _UCR.Classes.Plugin {
 	
 	BandChanged(band, end, value){
 		this.BandCache[band, end] := value
+	}
+	
+	TapModeChanged(){
+		this.TapModeState := this.GuiControls.TapModeState.Get()
+		this.TapModeDur := this.GuiControls.TapModeDur.Get()
 	}
 	
 	; The user moved the selected input axis. Manipulate the output buttons accordingly
@@ -69,12 +79,22 @@ class AxisRangeToButtons extends _UCR.Classes.Plugin {
 		}
 		
 		if (this.CurrentBand != in_band){
-			this.IOControls["OB" this.CurrentBand].Set(0)
+			if (!this.TapModeState){
+				this.IOControls["OB" this.CurrentBand].Set(0)
+			}
 			if (in_band){
 				this.IOControls["OB" in_band].Set(1)
+				if (this.TapModeState){
+					fn := this.ReleaseButton.Bind(this, "OB" in_band)
+					SetTimer, % fn, % "-" this.TapModeDur
+				}
 			}
 		}
 		
 		this.CurrentBand := in_band
+	}
+	
+	ReleaseButton(btn){
+		this.IOControls[btn].Set(0)
 	}
 }
