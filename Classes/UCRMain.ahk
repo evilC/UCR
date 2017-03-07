@@ -707,7 +707,7 @@ Class _UCR {
 	RenameProfile(id){
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
-		name := this._GetProfileName()
+		name := this._PromptForProfileName(this.Profiles[id].Name, "Rename Profile")
 		if (name = 0)
 			return 0
 		this.Profiles[id].Name := name
@@ -1032,7 +1032,10 @@ Class _UCR {
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
 	_GetProfileName(base_name, title := "Add Profile"){
 		suggestedname := this._GetNextProfile(base_name)
-
+		return this._PromptForProfileName(suggestedname, title)
+	}
+	
+	_PromptForProfileName(suggestedname, title){
 		; Allow user to pick name
 		windowTitle := title
 		prompt := "Enter a name for the Profile"
