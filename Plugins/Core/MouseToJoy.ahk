@@ -58,7 +58,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		
 		; Mouse Selection
 		Gui, Add, GroupBox, % "x305 ym w110 Section h" y_row+35, % "Input"
-		this.AddControl("InputDelta", "MD1", this.MouseSelectChanged.Bind(this), this.MouseEvent.Bind(this), "x310 w100 y" x_row)
+		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "x310 w100 y" x_row)
 		
 		; Outputs
 		Gui, Add, GroupBox, % "x420 ym w140 Section h" y_row+35, % "Outputs"
@@ -82,20 +82,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.InputDeltas.MouseDelta.UnRegister()
 	}
 	
-	MouseSelectChanged(value){
-		; Store the selected DeviceID, so we do not have to keep looking it up
-		this.SelectedMouse := this.IOControls.MD1.GetBinding().DeviceID
-	}
-	
-	;~ Calibrate(axis){
-		;~ static state := 0
-		;~ if (axis = "x"){
-			
-		;~ } else {
-			
-		;~ }
-	;~ }
-	
 	;MouseEvent(x := 0, y := 0){
 	MouseEvent(value){
 		; The "Range" for a given axis is -50 to +50
@@ -113,10 +99,6 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 			return
 		}
 		
-		if (this.SelectedMouse != -1 && this.SelectedMouse && this.SelectedMouse != value.MouseID)
-			return
-			
-				
 		if (this.Mode = 1){
 			; Relative
 			threshold := this.GuiControls.RelativeThreshold.Get()
@@ -178,7 +160,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 				}
 				fn := this.MouseEvent.Bind(this, {axes: {x: 0}, MouseID: MouseID})
 				this.TimerX := fn
-				SetTimer, % fn, % "-" this.GuiControls.RelativeTimeout.Get()
+				SetTimer, % fn, % "-" this.RelativeTimeout.x
 			}
 			if (doy && y != 0){
 				if (this.TimerY != 0){
@@ -187,7 +169,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 				}
 				fn := this.MouseEvent.Bind(this, {axes: {y: 0}, MouseID: MouseID})
 				this.TimerY := fn
-				SetTimer, % fn, % "-" this.GuiControls.RelativeTimeout.Get()
+				SetTimer, % fn, % "-" this.RelativeTimeout.y
 			}
 		}
 	}
