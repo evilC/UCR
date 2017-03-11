@@ -6,6 +6,7 @@ Key:
 
 0.1.13 - ???
 + Fixed suggested name for new plugins
++ Multiple InputAxis controls can now be bound to the same axis
 
 0.1.12 - 7th Mar 2017
 + Added AxisRangeToButtons plugin
