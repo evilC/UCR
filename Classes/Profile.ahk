@@ -319,7 +319,7 @@ Class _Profile {
 	
 	; Rename a plugin
 	_RenamePlugin(plugin){
-		name := this._GetUniqueName(plugin, 0)
+		name := this._GetUniqueName(plugin.Name, 0)
 		if (name = 0)
 			return
 		plugin.ChangeName(name)
@@ -387,8 +387,7 @@ Class _Profile {
 	; Obtain a profile-unique name for the plugin, with a suggestion
 	; Name param is the base from which suggestions are generated
 	; eg passing "MyPlugin" would suggest "MyPlugin 1"
-	_GetUniqueName(plugin, build_name := 1){
-		name := plugin.name
+	_GetUniqueName(name, build_name := 1){
 		if (build_name){
 			name .= " "
 			num := 1
@@ -406,7 +405,7 @@ Class _Profile {
 			coords := UCR.GetCenteredCoordinates(375, 130)
 			InputBox, name, Add Plugin, % prompt, ,,130,% coords.x,% coords.y,,, % name
 			if (!ErrorLevel){
-				if (!this._IsNameUnique(name) && (name != plugin.Name)){
+				if (!this._IsNameUnique(name) && (name != name)){
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {

@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.13 - ???
++ Fixed suggested name for new plugins
+
 0.1.12 - 7th Mar 2017
 + Added AxisRangeToButtons plugin
   This allows you to map an axis to up to 10 buttons
