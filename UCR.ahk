@@ -7,6 +7,8 @@
 #SingleInstance force
 #MaxThreads 255
 
+SetKeyDelay, 0, 0   ; Default to no delay, as UCR does not send presses, it holds or releases
+
 ; GUID used to start RPC for UCR
 UCRguid := "{E97F3D9C-47D5-47EA-92FB-2974647DB131}"
 
