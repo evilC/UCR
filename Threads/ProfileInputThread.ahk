@@ -367,7 +367,20 @@ Class _InputThread {
 	; Listens for Joystick Axis input using AHK's GetKeyState() function
 	class AHK_JoyAxis_Input {
 		StickBindings := {}
-		ControlMappings := {}
+		/*
+		StickBindings structure:
+		{
+			<Stick ID>: {
+				<BindString (eg "2JoyX")>: {
+					State: <current state>
+					Subscriptions: {
+						<guid>: 1,
+						<guid>: 1,
+					}
+				}
+			}
+		}
+		*/
 		ConnectedSticks := [0,0,0,0,0,0,0,0]
 		
 		__New(Callback){
@@ -379,20 +392,27 @@ Class _InputThread {
 		UpdateBinding(ControlGUID, bo){
 			static AHKAxisList := ["X","Y","Z","R","U","V"]
 			dev := bo.DeviceID, axis := bo.Binding[1]
-			;OutputDebug % "UCR| AHK_JoyAxis_Input Update Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
-			if (ObjHasKey(this.ControlMappings, ControlGUID)){
-				;OutputDebug % "UCR| AHK_JoyAxis_Input removing binding"
-				str := this.ControlMappings[ControlGUID]
-				this.StickBindings.Delete(str)
-				this.ControlMappings.Delete(ControlGUID)
-				if (IsEmptyAssoc(this.StickBindings)){
-					this.TimerWanted := 0
+			; Remove old binding
+			for id, inputs in this.StickBindings {
+				for bindstring, input_info in inputs {
+					for cguid, unused in input_info.Subscriptions {
+						if (cguid == ControlGuid){
+							input_info.Subscriptions.Delete(cguid)
+							;OutputDebug % "UCR| Removing Binding for ControlGUID " cguid
+							break
+						}
+					}
 				}
 			}
 			if (dev && axis){
 				str := dev "joy" AHKAxisList[axis]
-				this.StickBindings[str] := {ControlGUID: ControlGUID, dev: dev, state: -1}
-				this.ControlMappings[ControlGUID] := str
+				if (!ObjHasKey(this.StickBindings, dev))
+					this.StickBindings[dev] := {}
+				if (!ObjHasKey(this.StickBindings[dev], str))
+					this.StickBindings[dev, str] := {State: 0, Subscriptions: {}}
+								
+				this.StickBindings[dev, str, "Subscriptions", ControlGuid] := 1
+				;OutputDebug % "UCR| SubCount: " this.StickBindings[dev, str, "Subscriptions", ControlGuid]
 				this.TimerWanted := 1
 			}
 			this.ProcessTimerState()
@@ -422,19 +442,22 @@ Class _InputThread {
 		}
 
 		StickWatcher(){
-			for bindstring, obj in this.StickBindings {
-				if (!this.ConnectedSticks[obj.dev]){
+			for dev, inputs in this.StickBindings {
+				if (!this.ConnectedSticks[dev]){
 					; Do not poll unconnected sticks, it consumes a lot of cpu
 					;OutputDebug % "UCR| JI" obj.dev " JoyInfo: " GetKeyState(obj.dev "JoyInfo")
 					continue
 				}
-				state := GetKeyState(bindstring)
-				if (state != obj.state){
-					obj.state := state
-					;this.Callback.Call(obj.ControlGUID, state)
-					;OutputDebug % "UCR| Firing Axis Callback - " state
-					fn := this.InputEvent.Bind(this, obj.ControlGUID, state)
-					SetTimer, % fn, -0
+				for bindstring, input_info in inputs {
+					state := GetKeyState(bindstring)
+					if (state != input_info.state){
+						input_info.state := state
+						;OutputDebug % "UCR| Firing Axis Callback - " state
+						for ControlGUID, unused in input_info.Subscriptions {
+							fn := this.InputEvent.Bind(this, ControlGUID, state)
+							SetTimer, % fn, -0
+						}
+					}
 				}
 			}
 		}
