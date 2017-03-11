@@ -8,6 +8,9 @@ Key:
 + Added Mouse Delta to Buttons plugin
 + Fixed suggested name for new plugins
 + Multiple InputAxis controls can now be bound to the same axis
++ Set default SetKeyDelay value to 0, 0
+  UCR does not send keypresses, it maps down events to down events etc
+  So this would likely only slow the code down
 
 0.1.12 - 7th Mar 2017
 + Added AxisRangeToButtons plugin
