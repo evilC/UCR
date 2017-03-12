@@ -708,6 +708,8 @@ Class _InputThread {
 			if (y){
 				xy.y := y
 			}
+			if (!ObjHasKey(xy, "x") && !ObjHasKey(xy, "y"))
+				return
 
 			state := {axes: xy, MouseID: ThisMouse}
 			for ControlGuid, DeviceID in this._DeltaBindings {
