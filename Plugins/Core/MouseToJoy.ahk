@@ -6,7 +6,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	Type := "Remapper (Mouse Axis To Joystick Axis)"
 	Description := "Converts mouse input delta information into two joystick axes"
 	RelativeScaleFactor := {x: 10, y: 10}
-	RelativeTimeout := {x: 10, y: 10}
+	RelativeTimeout := 10
 	AbsoluteTimeout := {x: 10, y: 10}
 	AbsoluteScaleFactor := {x: 1, y: 1}
 	Mode := 2	; 1 = Relative, 2 = Absolute
@@ -26,20 +26,13 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		Gui, Add, GroupBox, % "Center x50 ym w125 Section h" y_row+35, % "Relative"
 		Gui, Add, Text, % "xs+5 y" title_row, Scale Factor
 		this.AddControl("Edit", "RelativeScaleX", this.RelativeScaleChanged.Bind(this, "X"), "x70 w30 y" x_row, 10)
-		;~ Gui, Add, Button, % "x+5 yp hwndhwnd", Calibrate
-		;~ fn := this.Calibrate.Bind(this, "X")
-		;~ GuiControl +g, % hwnd, % fn
 		Gui, Add, Text, % "x120 w40 center y" title_row, Timeout
-		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this, "X"), "x120 w40 y" x_row - 10, 50)
+		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this), "x120 w40 y" x_row - 10, 50)
 		
 		Gui, Add, Text, % "x120 w40 center y" y_row - 10, Threshold
 		this.AddControl("Edit", "RelativeThreshold", this.TimeoutChanged.Bind(this, "X"), "x120 w40 y" y_row + 5, 2)
 		
 		this.AddControl("Edit", "RelativeScaleY", this.RelativeScaleChanged.Bind(this, "Y"), "x70 w30 y" y_row, 10)
-		;~ Gui, Add, Button, % "x+5 yp hwndhwnd", Calibrate
-		;~ fn := this.Calibrate.Bind(this, "Y")
-		;~ GuiControl +g, % hwnd, % fn
-		;this.AddControl("RelativeTimeoutY", this.TimeoutChanged.Bind(this, "Y"), "x120 w40 y" y_row, 50)
 		
 		; Absolute Mode
 		Gui, Add, GroupBox, % "Center x185 ym w55 Section h" y_row+35, % "Absolute"
@@ -160,7 +153,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 				}
 				fn := this.MouseEvent.Bind(this, {axes: {x: 0}, MouseID: MouseID})
 				this.TimerX := fn
-				SetTimer, % fn, % "-" this.RelativeTimeout.x
+				SetTimer, % fn, % "-" this.RelativeTimeout
 			}
 			if (doy && y != 0){
 				if (this.TimerY != 0){
@@ -169,7 +162,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 				}
 				fn := this.MouseEvent.Bind(this, {axes: {y: 0}, MouseID: MouseID})
 				this.TimerY := fn
-				SetTimer, % fn, % "-" this.RelativeTimeout.y
+				SetTimer, % fn, % "-" this.RelativeTimeout
 			}
 		}
 	}
@@ -188,8 +181,8 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		this.RelativeScaleFactor[axis] := value
 	}
 	
-	TimeoutChanged(axis, value){
-		this.RelativeTimeout[axis] := value
+	TimeoutChanged(value){
+		this.RelativeTimeout := value
 		;this.MouseDelta.SetTimeOut(value)
 	}
 	
