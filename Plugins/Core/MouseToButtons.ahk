@@ -5,7 +5,8 @@ Features Absolute and Relative modes
 class MouseToButtons extends _UCR.Classes.Plugin {
 	Type := "Remapper (Mouse Axis To Buttons)"
 	Description := "Converts mouse input delta information into button presses"
-	RelativeTimeout := {x: 10, y: 10}
+	RelativeTimeout := 10
+	StateChangeTime := 50
 	Timers := {x: 0, y: 0}
 	LowButtonStates := {x: 0, y: 0}
 	HighButtonStates := {x: 0, y: 0}
@@ -19,11 +20,16 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		x_row := 35
 		y_row := x_row + 40
 		mid_point:= (x_row + (y_row - x_row))
-		Gui, Add, GroupBox, % "Center xm ym w60 Section h" y_row+35, % "Centering"
-		Gui, Add, Text, % "xs+5 w40 center y" title_row, Timeout
-		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this, "X"), "xs+5 w40 y" x_row + 10, 300)
+		Gui, Add, GroupBox, % "Center xm ym w90 Section h" y_row+35, % "Timing"
+		Gui, Add, Text, % "xs+5 center y" title_row, Center Timeout
+		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this), "xs+5 w40 y" x_row + 10, 300)
+		Gui, Add, Text, % "x+5 yp+5 ", ms
 		
-		Gui, Add, GroupBox, % "Center x80 ym w60 Section h" y_row+35, % "Limits"
+		Gui, Add, Text, % "xs+5 center y+5", State Change
+		this.AddControl("Edit", "StateChangeTime", this.StateChangeTimeChanged.Bind(this), "xs+5 w40 y+5", 300)
+		Gui, Add, Text, % "x+5 yp+5 ", ms
+		
+		Gui, Add, GroupBox, % "Center x110 ym w60 Section h" y_row+35, % "Limits"
 		Gui, Add, Text, % "xs+5 w40 center y" title_row, Min
 		this.AddControl("Edit", "MinDelta", this.MinChanged.Bind(this), "xs+5 w40 y" x_row + 10, 2)
 		
@@ -31,7 +37,7 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		this.AddControl("Edit", "MaxDelta", this.MaxChanged.Bind(this), "xs+5 w40 y" y_row + 15, "")
 		
 		; Mouse Selection
-		Gui, Add, GroupBox, % "x150 ym w110 Section h" y_row+35, % "Input"
+		Gui, Add, GroupBox, % "x180 ym w110 Section h" y_row+35, % "Input"
 		this.AddControl("InputDelta", "MD1", 0, this.MouseEvent.Bind(this), "xs+5 w100 y" mid_point - 18 )
 		
 		; Outputs
@@ -48,10 +54,10 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		this.AddControl("OutputButton", "OutputButtonYHigh", 0, "x+5 w125 yp")
 		this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonYHigh, "x+5 y" y_row + 5, 50)
 		
-		this.OutputButtons["x", "Low"] := this.IOControls.OutputButtonXLow
-		this.OutputButtons["x", "High"] := this.IOControls.OutputButtonXHigh
-		this.OutputButtons["y", "Low"] := this.IOControls.OutputButtonYLow
-		this.OutputButtons["y", "High"] := this.IOControls.OutputButtonYHigh
+		this.OutputButtons["x", "Low"] := new this.StateChangeSlower(0, this.StateChangeTime, this.SetButtonState.Bind(this, "OutputButtonXLow"))
+		this.OutputButtons["x", "High"] := new this.StateChangeSlower(0, this.StateChangeTime, this.SetButtonState.Bind(this, "OutputButtonXHigh"))
+		this.OutputButtons["y", "Low"] := new this.StateChangeSlower(0, this.StateChangeTime, this.SetButtonState.Bind(this, "OutputButtonYLow"))
+		this.OutputButtons["y", "High"] := new this.StateChangeSlower(0, this.StateChangeTime, this.SetButtonState.Bind(this, "OutputButtonYHigh"))
 	}
 	
 	OnActive(){
@@ -70,9 +76,19 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		this.Max := Value
 	}
 	
+	StateChangeTimeChanged(value){
+		static Axes := {x: 1, y: 1}
+		this.StateChangeTime := value
+		for axis in axes {
+			this.OutputButtons[axis].Low.SetDuration(value)
+			this.OutputButtons[axis].High.SetDuration(value)
+		}
+	}
+	
 	MouseEvent(value){
 		static Axes := {x: 1, y: 1}
 		;~ static Axes := {x: 1}
+		;~ static Axes := {y: 1}
 
 		str := ""
 
@@ -82,29 +98,29 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 				continue
 			MouseID := value.MouseID
 			
-			str .= axis ": " axis_val ", "
+			;~ str .= axis ": " axis_val ", "
 
 			is_in_range := this.IsWithinRange(axis_val, this.Min, this.Max)
 			;OutputDebug % "UCR| " axis " value: " axis_val ", in range: " is_in_range ", current Low: " this.LowButtonStates[axis] ", current High: " this.HighButtonStates[axis]
 			if (axis_val <= 0){
 				if (this.LowButtonStates[axis] && !is_in_range){
 					this.LowButtonStates[axis] := 0
-					this.OutputButtons[axis, "Low"].Set(0)
+					this.OutputButtons[axis, "Low"].ChangeState(0)
 					;~ str .= ", Releasing Low " axis
 				} else if (!this.LowButtonStates[axis] && is_in_range){
 					this.LowButtonStates[axis] := 1
-					this.OutputButtons[axis, "Low"].Set(1)
+					this.OutputButtons[axis, "Low"].ChangeState(1)
 					;~ str .= ", Pressing Low " axis
 				}
 			}
 			if (axis_val >= 0) {
 				if (this.HighButtonStates[axis] && !is_in_range){
 					this.HighButtonStates[axis] := 0
-					this.OutputButtons[axis, "High"].Set(0)
-					;~ str .= ", UCR| Releasing High " axis
+					this.OutputButtons[axis, "High"].ChangeState(0)
+					;~ str .= ", Releasing High " axis
 				} else if (!this.HighButtonStates[axis] && is_in_range){
 					this.HighButtonStates[axis] := 1
-					this.OutputButtons[axis, "High"].Set(1)
+					this.OutputButtons[axis, "High"].ChangeState(1)
 					;~ str .= ", Pressing High " axis
 				}
 			}
@@ -118,15 +134,60 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 			
 			;~ ; emulate centering with a timeout
 			if (axis_val && this.Timers[axis] == 0){
-				;~ str .= ", Starting " axis " Timer"
+				;~ str .= ", Starting " axis " Timer - " this.RelativeTimeout
 				axobj := {}
 				axobj[axis] := 0
 				fn := this.MouseEvent.Bind(this, {axes: axobj, MouseID: MouseID})
 				this.Timers[axis] := fn
-				SetTimer, % fn, % "-" this.RelativeTimeout[axis]
+				SetTimer, % fn, % "-" this.RelativeTimeout
 			}
 		}
 		;~ OutputDebug % "UCR| Packet: " str
+	}
+
+	SetButtonState(ob, value){
+		this.IOControls[ob].Set(value)
+	}
+	
+	Class StateChangeSlower{
+		__New(state, dur, callback){
+			this.TimerRunning := 0
+			this.ChangeStateFn := this._ChangeState.Bind(this)
+			this.Callback := callback
+			this.State := state
+			this.SetDuration(dur)
+		}
+		
+		SetDuration(dur){
+			this.DurStr := "-" dur
+		}
+		
+		; Change of state requested
+		ChangeState(state){
+			fn := this.ChangeStateFn
+			if (this.State == state){
+				; Requested change to current state
+				if (this.TimerRunning){
+					; We are currently trying to change out of this state, so cancel request
+					SetTimer, % fn, Off
+					this.TimerRunning := 0
+				}
+				return
+			} else if (this.TimerRunning){
+				; We are already tring to change to this state, do nothing
+				return
+			}
+			; If we managed to get this far, we want to change to a different state, and the timer is not running
+			this.TimerRunning := 1
+			SetTimer, % fn, % this.DurStr
+		}
+		
+		; Actually changes state
+		_ChangeState(){
+			this.TimerRunning := 0
+			this.State := !this.State
+			this.Callback.Call(this.state)
+		}
 	}
 	
 	IsWithinRange(value, Min := "", Max := ""){
@@ -150,8 +211,8 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		this.RelativeScaleFactor[axis] := value
 	}
 	
-	TimeoutChanged(axis, value){
-		this.RelativeTimeout[axis] := value
+	TimeoutChanged(value){
+		this.RelativeTimeout := value
 		;this.MouseDelta.SetTimeOut(value)
 	}
 	
