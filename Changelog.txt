@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.13 - ???
+0.1.13 - 12th Mar 2017
 + Added Mouse Delta to Buttons plugin
 + Fixed suggested name for new plugins
 + Multiple InputAxis controls can now be bound to the same axis
