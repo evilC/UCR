@@ -7,6 +7,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	Description := "Converts mouse input delta information into two joystick axes"
 	RelativeScaleFactor := {x: 10, y: 10}
 	RelativeTimeout := 10
+	RelativeThreshold := 2
 	AbsoluteTimeout := {x: 10, y: 10}
 	AbsoluteScaleFactor := {x: 1, y: 1}
 	Mode := 2	; 1 = Relative, 2 = Absolute
@@ -30,7 +31,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this), "x120 w40 y" x_row - 10, 50)
 		
 		Gui, Add, Text, % "x120 w40 center y" y_row - 10, Threshold
-		this.AddControl("Edit", "RelativeThreshold", this.TimeoutChanged.Bind(this, "X"), "x120 w40 y" y_row + 5, 2)
+		this.AddControl("Edit", "RelativeThreshold", this.RelativeThresholdChanged.Bind(this), "x120 w40 y" y_row + 5, 2)
 		
 		this.AddControl("Edit", "RelativeScaleY", this.RelativeScaleChanged.Bind(this, "Y"), "x70 w30 y" y_row, 10)
 		
@@ -94,7 +95,7 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		
 		if (this.Mode = 1){
 			; Relative
-			threshold := this.GuiControls.RelativeThreshold.Get()
+			threshold := this.RelativeThreshold
 			if (dox && ax && ax <= threshold)
 				dox := 0
 			if (doy && ay && ay <= threshold)
@@ -179,6 +180,10 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 	RelativeScaleChanged(axis, value){
 		;this.RelativeScaleFactor[axis] := 100 / value
 		this.RelativeScaleFactor[axis] := value
+	}
+	
+	RelativeThresholdChanged(value){
+		this.RelativeThreshold := value
 	}
 	
 	TimeoutChanged(value){
