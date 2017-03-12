@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.14 - ??
+0.1.14 - 12th Mar 2017
 = Massive changes to the MouseToButtons plugin
   Is now a lot less "flickery"
   There is now a "State Change" timeout value
