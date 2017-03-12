@@ -1,6 +1,6 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
 Class _UCR {
-	Version := "0.1.13"				; The version of the main application
+	Version := "0.1.14"				; The version of the main application
 	SettingsVersion := "0.0.7"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}

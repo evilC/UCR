@@ -4,6 +4,13 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.14 - ??
+= Massive changes to the MouseToButtons plugin
+  Is now a lot less "flickery"
+  There is now a "State Change" timeout value
+  This controls how long it takes to change state (reduce flicker)
+= The MouseToJoy relative mode timeout value now works for the y axis
+
 0.1.13 - 12th Mar 2017
 + Added Mouse Delta to Buttons plugin
 + Fixed suggested name for new plugins
