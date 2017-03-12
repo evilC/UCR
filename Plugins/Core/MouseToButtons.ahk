@@ -6,11 +6,7 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 	Type := "Remapper (Mouse Axis To Buttons)"
 	Description := "Converts mouse input delta information into button presses"
 	RelativeTimeout := {x: 10, y: 10}
-	CurrX := 0
-	CurrY := 0
-	TimerX := 0
-	TimerY := 0
-	
+	Timers := {x: 0, y: 0}
 	LowButtonStates := {x: 0, y: 0}
 	HighButtonStates := {x: 0, y: 0}
 	Min := ""
@@ -25,14 +21,11 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		mid_point:= (x_row + (y_row - x_row))
 		Gui, Add, GroupBox, % "Center xm ym w60 Section h" y_row+35, % "Centering"
 		Gui, Add, Text, % "xs+5 w40 center y" title_row, Timeout
-		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this, "X"), "xs+5 w40 y" x_row + 10, 50)
-		
-		Gui, Add, Text, % "xs+5 w40 center y" y_row, Threshold
-		this.AddControl("Edit", "RelativeThreshold", this.TimeoutChanged.Bind(this, "X"), "xs+5 w40 y" y_row + 15, 2)
+		this.AddControl("Edit", "RelativeTimeout", this.TimeoutChanged.Bind(this, "X"), "xs+5 w40 y" x_row + 10, 300)
 		
 		Gui, Add, GroupBox, % "Center x80 ym w60 Section h" y_row+35, % "Limits"
 		Gui, Add, Text, % "xs+5 w40 center y" title_row, Min
-		this.AddControl("Edit", "MinDelta", this.MinChanged.Bind(this), "xs+5 w40 y" x_row + 10, "")
+		this.AddControl("Edit", "MinDelta", this.MinChanged.Bind(this), "xs+5 w40 y" x_row + 10, 2)
 		
 		Gui, Add, Text, % "xs+5 w40 center y" y_row, Max
 		this.AddControl("Edit", "MaxDelta", this.MaxChanged.Bind(this), "xs+5 w40 y" y_row + 15, "")
@@ -46,14 +39,14 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		Gui, Add, Text, % "xp y" y_row+12, Y AXIS
 		Gui, Add, GroupBox, % "x+5 ym w330 Section h" y_row+35, % "Outputs"
 		this.AddControl("OutputButton", "OutputButtonXLow", 0, "xs+5 w125 y" x_row)
-		;this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonXLow, "x+5 y" x_row + 5, 50)
+		this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonXLow, "x+5 y" x_row + 5, 50)
 		this.AddControl("OutputButton", "OutputButtonXHigh", 0, "x+5 y" x_row)
-		;this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonXHigh, "x+5 y" x_row + 5, 50)
+		this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonXHigh, "x+5 y" x_row + 5, 50)
 
 		this.AddControl("OutputButton", "OutputButtonYLow", 0, "xs+5 w125 y" y_row)
-		;this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonYLow, "x+5 y" y_row + 5, 50)
+		this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonYLow, "x+5 y" y_row + 5, 50)
 		this.AddControl("OutputButton", "OutputButtonYHigh", 0, "x+5 w125 yp")
-		;this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonYHigh, "x+5 y" y_row + 5, 50)
+		this.AddControl("ButtonPreview", "", 0, this.IOControls.OutputButtonYHigh, "x+5 y" y_row + 5, 50)
 		
 		this.OutputButtons["x", "Low"] := this.IOControls.OutputButtonXLow
 		this.OutputButtons["x", "High"] := this.IOControls.OutputButtonXHigh
@@ -77,86 +70,63 @@ class MouseToButtons extends _UCR.Classes.Plugin {
 		this.Max := Value
 	}
 	
-	;MouseEvent(x := 0, y := 0){
 	MouseEvent(value){
 		static Axes := {x: 1, y: 1}
-		old_delay := A_KeyDelay
-		old_dur := A_KeyDuration 
-		SetKeyDelay, 0, 0
-		; The "Range" for a given axis is -50 to +50
-		try {
+		;~ static Axes := {x: 1}
 
-			x := value.axes.x, y := value.axes.y, ax := Abs(x), ay := Abs(y), MouseID := value.MouseID
-		} catch {
-			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
-			; This seems to fix it, but this should probably be properly investigated.
-			return
-		}
-		
-		if (x != "")
-			this.CurrX := x
-		if (y != "")
-			this.CurrY := y
-		
-		;~ if (x != 0){
-		for axis in axes{
-			is_in_range := this.IsWithinRange(%axis%, this.Min, this.Max)
-			axis_val := %axis%
+		str := ""
+
+		for axis, unused in Axes {
+			axis_val := value.axes[axis]
+			if (axis_val == "")
+				continue
+			MouseID := value.MouseID
+			
+			str .= axis ": " axis_val ", "
+
+			is_in_range := this.IsWithinRange(axis_val, this.Min, this.Max)
 			;OutputDebug % "UCR| " axis " value: " axis_val ", in range: " is_in_range ", current Low: " this.LowButtonStates[axis] ", current High: " this.HighButtonStates[axis]
 			if (axis_val <= 0){
 				if (this.LowButtonStates[axis] && !is_in_range){
 					this.LowButtonStates[axis] := 0
-					;this.IOControls.OutputButtonXLow.Set(0)
 					this.OutputButtons[axis, "Low"].Set(0)
-					;OutputDebug % "UCR| Releasing Low " axis
+					;~ str .= ", Releasing Low " axis
 				} else if (!this.LowButtonStates[axis] && is_in_range){
 					this.LowButtonStates[axis] := 1
-					;this.IOControls.OutputButtonXLow.Set(1)
 					this.OutputButtons[axis, "Low"].Set(1)
-					;OutputDebug % "UCR| Pressing Low " axis
+					;~ str .= ", Pressing Low " axis
 				}
 			}
 			if (axis_val >= 0) {
 				if (this.HighButtonStates[axis] && !is_in_range){
 					this.HighButtonStates[axis] := 0
-					;this.IOControls.OutputButtonXHigh.Set(0)
 					this.OutputButtons[axis, "High"].Set(0)
-					;OutputDebug % "UCR| Releasing High " axis
+					;~ str .= ", UCR| Releasing High " axis
 				} else if (!this.HighButtonStates[axis] && is_in_range){
 					this.HighButtonStates[axis] := 1
-					;this.IOControls.OutputButtonXHigh.Set(1)
 					this.OutputButtons[axis, "High"].Set(1)
-					;OutputDebug % "UCR| Pressing High " axis
+					;~ str .= ", Pressing High " axis
 				}
 			}
+			
+			if (axis_val == 0 && this.Timers[axis] != 0){
+				fn := this.Timers[axis]
+				SetTimer, % fn, Off
+				this.Timers[axis] := 0
+				;~ str .= ", Stopping " axis " Timer"
+			}
+			
+			;~ ; emulate centering with a timeout
+			if (axis_val && this.Timers[axis] == 0){
+				;~ str .= ", Starting " axis " Timer"
+				axobj := {}
+				axobj[axis] := 0
+				fn := this.MouseEvent.Bind(this, {axes: axobj, MouseID: MouseID})
+				this.Timers[axis] := fn
+				SetTimer, % fn, % "-" this.RelativeTimeout[axis]
+			}
 		}
-	
-		if (this.CurrX == 0 && this.TimerX != 0){
-			fn := this.TimerX
-			SetTimer, % fn, Off
-			this.TimerX := 0
-			;OutputDebug % "UCR| Stopping X Timer"
-		}
-		if (this.CurrY == 0 && this.TimerY != 0){
-			fn := this.TimerY
-			SetTimer, % fn, Off
-			this.TimerY := 0
-			;OutputDebug % "UCR| Stopping Y Timer"
-		}
-		; emulate centering with a timeout
-		if (this.CurrX && this.Timerx == 0){
-			;OutputDebug % "UCR| Starting X Timer"
-			fn := this.MouseEvent.Bind(this, {axes: {x: 0}, MouseID: MouseID})
-			this.TimerX := fn
-			SetTimer, % fn, % "-" this.RelativeTimeout.x
-		}
-		if (this.CurrY && this.TimerY == 0){
-			;OutputDebug % "UCR| Starting Y Timer"
-			fn := this.MouseEvent.Bind(this, {axes: {y: 0}, MouseID: MouseID})
-			this.TimerY := fn
-			SetTimer, % fn, % "-" this.RelativeTimeout.y
-		}
-		SetKeyDelay, % old_delay, % old_duration
+		;~ OutputDebug % "UCR| Packet: " str
 	}
 	
 	IsWithinRange(value, Min := "", Max := ""){
