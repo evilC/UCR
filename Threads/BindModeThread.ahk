@@ -69,7 +69,7 @@ class _BindMapper {
 		}
 		
 		SetDetectionState(state, ReturnIOClass){
-			OutputDebug % "Turning Hotkeys " (state ? "On" : "Off")
+			;OutputDebug % "UCR| Turning Hotkeys " (state ? "On" : "Off")
 			Suspend, % (state ? "Off", "On")
 		}
 	}
@@ -141,7 +141,7 @@ class _BindMapper {
 		}
 		
 		InputEvent(e, i){
-			;tooltip % "code: " i ", e: " e
+			;OutputDebug % "UCR| BindMode KBM IO Event: " e ", Code: " i ", IOClass: " this.ReturnIOClass
 			this.Callback.Call(e, i, 0, this.ReturnIOClass)
 		}
 	}

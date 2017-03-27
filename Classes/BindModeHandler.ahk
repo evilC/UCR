@@ -71,7 +71,7 @@ class _BindModeHandler {
 	
 	; The BindModeThread calls back here
 	ProcessInput(e, i, deviceid, IOClass){
-		;ToolTip % "e " e ", i " i ", deviceid " deviceid ", IOClass " IOClass
+		;OutputDebug % "UCR| BindModeHandler saw input: e " e ", i " i ", deviceid " deviceid ", IOClass " IOClass
 		;if (ObjHasKey(this._Modifiers, i))
 		if (this.SelectedBinding.IOClass && (this.SelectedBinding.IOClass != IOClass)){
 			; Changed binding IOCLass part way through.
