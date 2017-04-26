@@ -11,7 +11,7 @@ Class Plugin {
 	
 	;_SerializeList := ["GuiControls", "InputButtons", "InputDeltas", "OutputButtons", "InputAxes", "OutputAxes", "ProfileSelects"]
 	static _IOControls := {InputButton: 1, InputDelta: 1, OutputButton: 1, InputAxis: 1, OutputAxis: 1}
-	static _CustomControls := {ProfileSelect: 1}
+	static _CustomControls := {ProfileSelect: 1, AxisPreview: 1, ButtonPreview: 1, ButtonPreviewThin: 1}
 	
 	; Override this class in your derived class and put your Gui creation etc in here
 	Init(){
@@ -23,6 +23,7 @@ Class Plugin {
 	AddControl(type, name, ChangeValueCallback, aParams*){
 		if (ObjHasKey(this._IOControls, type)){
 			call:= _UCR.Classes.GuiControls[type]
+			
 			this.IOControls[name] := new call(this, name, ChangeValueCallback, aParams*)
 			return this.IOControls[name]
 		} else if (ObjHasKey(this._CustomControls, type)){
@@ -70,12 +71,24 @@ Class Plugin {
 		Gui, Margin, 0, 0
 		Gui -Caption
 		Gui, Color, 7777FF
-		Gui, Add, Button, % "hwndhClose y3 x" UCR.PLUGIN_WIDTH - 23, X
+		Gui, Add, Button, % "hwndhRename y3 x" UCR.PLUGIN_WIDTH - 145, Rename
+		;Gui, Add, Button, % "hwndhMvUp y3 x+5 yp", Up
+		;Gui, Add, Button, % "hwndhMvDn y3 x+5 yp", Dn
+		;Gui, Add, Button, % "hwndhClose y3 x+5 yp", X
+		Gui, Add, Picture, % "hwndhMvUp BackGroundTrans AltSubmit x+4 w25 h25 yp-1", Resources\icons\up.png
+		Gui, Add, Picture, % "hwndhMvDn BackGroundTrans AltSubmit x+4 w25 h25 yp", Resources\icons\down.png
+		Gui, Add, Picture, % "hwndhClose BackGroundTrans AltSubmit x+4 w25 h25 yp", Resources\icons\close.png
 		Gui, Font, s15, Verdana
-		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 40, % this.Name
+		Gui, Add, Text, % "hwndhTitle x5 y3 w" UCR.PLUGIN_WIDTH - 150, % this.Name
 		this._hTitle := hTitle
 		fn := this._Close.Bind(this)
 		GuiControl, +g, % hClose, % fn
+		fn := this._Rename.Bind(this)
+		GuiControl, +g, % hRename, % fn
+		fn := this._Reorder.Bind(this, -1)
+		GuiControl, +g, % hMvUp, % fn
+		fn := this._Reorder.Bind(this, 1)
+		GuiControl, +g, % hMvDn, % fn
 		Gui, % this.hwnd ":Show", % "w" UCR.PLUGIN_WIDTH
 		Gui, % this.hFrame ":Add", Gui, x0 y30, % this.hwnd
 		Gui, % this.hFrame ":+Parent" this.ParentProfile.hwnd
@@ -135,6 +148,9 @@ Class Plugin {
 		if (IsFunc(this["OnActive"])){
 			this.OnActive()
 		}
+		for name, control in this.IOControls {
+			control.Activate()
+		}
 	}
 	
 	; Called when a plugin becomes inactive (eg profile changed)
@@ -150,6 +166,9 @@ Class Plugin {
 		; Call user's OnInactive method (if it exists)
 		if (IsFunc(this["OnInActive"])){
 			this.OnInActive()
+		}
+		for name, control in this.IOControls {
+			control.DeActivate()
 		}
 	}
 	
@@ -196,6 +215,21 @@ Class Plugin {
 		
 		this.GuiControls := ""
 		this.IOControls := ""
+	}
+	
+	; The profile requested a change of name for the plugin
+	ChangeName(name){
+		this.Name := name
+		GuiControl, % this.hFrame ":" , % this._hTitle, % name
+	}
+	
+	_Reorder(dir){
+		this.ParentProfile._ReorderPlugin(this, dir)
+	}
+	
+	; The user clicked the rename button on the plugin
+	_Rename(){
+		this.ParentProfile._RenamePlugin(this)
 	}
 	
 	; The user clicked the close button on the plugin

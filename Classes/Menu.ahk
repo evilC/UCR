@@ -2,6 +2,7 @@
 ; Uses GUIDs to anonymize menus and ensure uniqueness of names
 
 class _Menu {
+	id := 0
 	Parent := 0
 	Enabled := 1
 	ItemsByID := {}
@@ -14,7 +15,7 @@ class _Menu {
 		this.text := text
 		Menu, % this.id, Add
 	}
-	
+
 	; text = What text will appear as in the parent menu
 	AddMenuItem(text, ItemName, callback := 0){
 		return this._AddItem(text, ItemName, callback)
@@ -40,6 +41,7 @@ class _Menu {
 		if (text != "" && this.CheckForDuplicateItemName(text)){
 			return 0
 		}
+
 		item := new this.MenuItem(this, text, ItemName, callback)
 		this.ItemsByID[item.id] := item
 		if (text != "")
@@ -64,6 +66,22 @@ class _Menu {
 		}
 		return 0
 	}
+
+	DestroyMenu(){
+		for id, item in this.ItemsByID {
+			item.OnClose()
+		}
+		for id, menu in this.MenusByID {
+			menu.DestroyMenu()
+		}
+		
+		this.ItemsByID := {}
+		this.ItemsByName := {}
+		this.MenusByID := {}
+		this.MenusByName := {}
+		this.Enabled := 0
+		try Menu, % this.id, Delete
+	}
 	
 	SetEnableState(state){
 		if (state)
@@ -83,18 +101,18 @@ class _Menu {
 	Disable(){
 		this.Enabled := 0
 		if (this.Parent != 0)
-			Menu, % this.parent.id, Disable, % this.text
+			try Menu, % this.parent.id, Disable, % this.text
 		return this
 	}
 	
 	OnClose(){
-		for id, menu in this.MenusByID {
-			menu.OnClose()
-		}
 		for id, item in this.ItemsByID {
 			item.OnClose()
 		}
-		Menu, % this.id, Delete
+		for id, menu in this.MenusByID {
+			menu.OnClose()
+		}
+		try Menu, % this.id, Delete
 		this.ItemsByID := {}
 		this.ItemsByName := {}
 		this.MenusByID := {}
@@ -116,6 +134,7 @@ class _Menu {
 			this.parent := parent, this.text := text, this.callback := callback, this.name := name
 			this.id := CreateGUID()
 			if (callback == 0){
+				
 				callback := this.DoNothing.Bind(this)
 			}
 			Menu, % parent.id, Add, % text, % callback
@@ -131,19 +150,19 @@ class _Menu {
 		
 		Check(){
 			this.Checked := 1
-			Menu, % this.parent.id, Check, % this.text
+			try Menu, % this.parent.id, Check, % this.text
 			return this
 		}
 		
 		UnCheck(){
 			this.Checked := 0
-			Menu, % this.parent.id, UnCheck, % this.text
+			try Menu, % this.parent.id, UnCheck, % this.text
 			return this
 		}
 		
 		ToggleCheck(){
 			this.Checked := !this.Checked
-			Menu, % this.parent.id, ToggleCheck, % this.text
+			try Menu, % this.parent.id, ToggleCheck, % this.text
 			return this
 		}
 		
@@ -165,19 +184,19 @@ class _Menu {
 		
 		Enable(){
 			this.Enabled := 1
-			Menu, % this.parent.id, Enable, % this.text
+			try Menu, % this.parent.id, Enable, % this.text
 			return this
 		}
 		
 		Disable(){
 			this.Enabled := 0
-			Menu, % this.parent.id, Disable, % this.text
+			try Menu, % this.parent.id, Disable, % this.text
 			return this
 		}
 		
 		ToggleEnable(){
 			this.Enabled := !this.Enabled
-			Menu, % this.parent.id, ToggleEnable, % this.text
+			try Menu, % this.parent.id, ToggleEnable, % this.text
 			return this
 		}
 		
@@ -192,7 +211,7 @@ class _Menu {
 		}
 		
 		OnClose(){
-			
+			try Menu, % parent.id, Delete, % this.id
 		}
 	}
 }

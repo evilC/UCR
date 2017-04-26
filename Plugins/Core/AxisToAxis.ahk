@@ -20,8 +20,7 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 		
 		;this.AddInputAxis("InputAxis", 0, this.MyInputChangedState.Bind(this), "xm w125")
 		this.AddControl("InputAxis", "IA1", 0, this.MyInputChangedState.Bind(this), "xm w125")
-		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
-		this.hSliderIn := hwnd
+		this.AddControl("AxisPreview", "", 0, this.IOControls.IA1, "x+5 yp w100", 50)
 		;this.AddControl("Invert", 0, "CheckBox", "x+20 yp+3 w30")
 		this.AddControl("CheckBox", "Invert", 0, "x+20 yp+3 w30")
 		;this.AddControl("Deadzone", 0, "Edit", "x+10 yp-3 w30", "0")
@@ -34,8 +33,7 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 		this.AddControl("Checkbox", "Linear", 0, "x+18 yp w30")
 		;this.AddOutputAxis("OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
 		this.AddControl("OutputAxis", "OA1", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
-		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
-		this.hSliderOut := hwnd
+		this.AddControl("AxisPreview", "", 0, this.IOControls.OA1, "x+5 yp w100", 50)
 	}
 	
 	; The user changed options - store stick and axis selected for fast retreival
@@ -47,7 +45,6 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 	
 	; The user moved the selected input axis. Manipulate the output axis accordingly
 	MyInputChangedState(value){
-		GuiControl, , % this.hSliderIn, % value
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		if (this.OutputBound){
 			if (this.GuiControls.Deadzone.Get()){
@@ -64,7 +61,6 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 				value := UCR.Libraries.StickOps.Invert(value)
 			}
 			value := UCR.Libraries.StickOps.InternalToAHK(value)
-			GuiControl, , % this.hSliderOut, % value
 			this.IOControls.OA1.Set(value)
 		}
 	}

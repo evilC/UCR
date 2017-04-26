@@ -1,6 +1,6 @@
 ﻿; ======================================================================== MAIN CLASS ===============================================================
 Class _UCR {
-	Version := "0.1.7"				; The version of the main application
+	Version := "0.1.14"				; The version of the main application
 	SettingsVersion := "0.0.7"		; The version of the settings file format
 	_StateNames := {0: "Normal", 1: "InputBind", 2: "GameBind"}
 	_State := {Normal: 0, InputBind: 1, GameBind: 2}
@@ -434,6 +434,47 @@ Class _UCR {
 		}
 		return 1
 	}
+	
+	; Used to switch profile. Parent is the name of a parent profile
+	; child is the name of a profile nested directly under the parent profile
+	; Switches to the child profile if found, alternatively to the parent profile
+	; if no child profile was found.
+	ChangeProfileByName(parent := 0, child := 0, save := 1){
+		; Check if the parent variable contains a valid profile GUID and switch to it if possible
+		if this.ChangeProfile(parent, save)
+			return 1
+		
+		parentProfile := 0
+		childProfile := 0
+		
+		; Find the parent or child profile
+		for guid, profile in this.Profiles {
+			; Find a profile with the parent name
+			if parent && profile.ParentProfile = 0 && profile.Name = parent {
+				parentProfile := guid
+			}
+			
+			; Find a profile nested directly under the parent profile with the child name
+			if child && profile.ParentProfile = parentProfile && profile.Name = child {
+				childProfile := guid
+			}
+		}
+		
+		; Try changing to the child profile
+		if childProfile {
+			this.ChangeProfile(childProfile, save)
+			return 1
+		}
+		
+		; Try changing to the parent profile
+		if parentProfile {
+			this.ChangeProfile(parentProfile, save)
+			return 1
+		}
+		
+		; No matching profile found
+		return 0
+	}
 
 	; These two functions work out, given a profile ID, which profiles need to be loaded and activated.
 	; Takes into account profile inheritance, and "linked" profiles (those pointed to by ProfileSwitcher plugins)
@@ -602,7 +643,7 @@ Class _UCR {
 	
 	; User clicked add new profile button
 	_AddProfile(parent := 0){
-		name := this._GetProfileName()
+		name := this._GetProfileName("Profile")
 		if (name = 0)
 			return
 		id := this._CreateProfile(name, 0, parent)
@@ -613,11 +654,60 @@ Class _UCR {
 		this.UpdateProfileToolbox()
 		this.ChangeProfile(id)
 	}
+
+	; Copies profile and adds new GUID's
+	_CopyProfile(id){
+		
+		; Get profile configuration
+		profile := this.Profiles[id]._Serialize()
+
+		newPluginOrder := []
+		newPlugins := {}
+
+		; Generate new GUIDs for plugins
+		Loop % profile.PluginOrder.length() {
+			id := profile.PluginOrder[A_Index]
+			newId := CreateGUID()
+			newPluginOrder[A_Index] := newId
+			newPlugins[newId] := profile.Plugins[id]
+		}
+
+		; Assign the new plugins and order 
+		profile.PluginOrder := newPluginOrder
+		profile.Plugins := newPlugins
+
+		name := this._GetProfileName(profile.Name " Copy", "Copy Profile")
+
+		if (!name){
+			return 0
+		}
+
+		; Create the new profile
+		newPID := this._CreateProfile(name, 0, profile.ParentProfile)
+		
+		; Set the new profile ID
+		profile.id := newPID
+
+		; Load the copied profile
+		this.Profiles[newPID]._Deserialize(profile)
+		
+		this.Profiles[newPID]._Hide()
+
+		; Add the new profile to the profiletree view
+		if (!IsObject(this.ProfileTree[profile.ParentProfile]))
+			this.ProfileTree[profile.ParentProfile] := []
+		this.ProfileTree[profile.ParentProfile].push(newPID)
+		
+		; Change profile and save
+		this.ChangeProfile(newId, 1)
+		this.UpdateProfileToolbox()
+		return 1
+	}
 	
 	RenameProfile(id){
 		if (!ObjHasKey(this.Profiles, id))
 			return 0
-		name := this._GetProfileName()
+		name := this._PromptForProfileName(this.Profiles[id].Name, "Rename Profile")
 		if (name = 0)
 			return 0
 		this.Profiles[id].Name := name
@@ -896,7 +986,7 @@ Class _UCR {
 	
 	; Bind Mode ended. Pass the Primitive BindObject and it's IOClass back to the GuiControl that requested the binding
 	_BindModeEnded(callback, primitive){
-		;OutputDebug % "UCR| UCR: Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
+		OutputDebug % "UCR| Bind Mode Ended. Binding[1]: " primitive.Binding[1] ", DeviceID: " primitive.DeviceID ", IOClass: " this.SelectedBinding.IOClass
 		this.ChangeProfile(this.CurrentPID, 0)	; Do not save on change profile, bind mode will already cause a save
 		this._CurrentState := this._State.Normal
 		callback.Call(primitive)
@@ -940,26 +1030,40 @@ Class _UCR {
 	}
 	
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
-	_GetProfileName(){
-		c := 1
-		found := 0
-		while (!found){
-			found := 1
+	_GetProfileName(base_name, title := "Add Profile"){
+		suggestedname := this._GetNextProfile(base_name)
+		return this._PromptForProfileName(suggestedname, title)
+	}
+	
+	_PromptForProfileName(suggestedname, title){
+		; Allow user to pick name
+		windowTitle := title
+		prompt := "Enter a name for the Profile"
+		coords := this.GetCenteredCoordinates(375, 130)
+		InputBox, name, % windowTitle, % prompt, ,,130,% coords.x,% coords.y,,, % suggestedname
+		
+		return (ErrorLevel ? 0 : name)
+	}
+	
+	; Works out the next number in order for a profile name
+	_GetNextProfile(name){
+		num := 1
+		Loop {
+			candidate_name := name " " num
+			already_exists := 0
 			for id, profile in this.Profiles {
-				if (profile.Name = "Profile " c){
-					c++
-					found := 0
+				if (profile.Name = candidate_name){
+					already_exists := 1
 					break
 				}
 			}
+			if (already_exists){
+				num++
+			} else {
+				break
+			}
 		}
-		suggestedname := "Profile " c
-		; Allow user to pick name
-		prompt := "Enter a name for the Profile"
-		coords := this.GetCenteredCoordinates(375, 130)
-		InputBox, name, Add Profile, % prompt, ,,130,% coords.x,% coords.y,,, % suggestedname
-		
-		return (ErrorLevel ? 0 : name)
+		return candidate_name
 	}
 	
 	; Positions the specified window in the middle of the UCR GUI
@@ -1040,6 +1144,9 @@ Class _UCR {
 			#Include Classes\GuiControls\InputDelta.ahk
 			#Include Classes\GuiControls\OutputButton.ahk
 			#Include Classes\GuiControls\OutputAxis.ahk
+			#Include Classes\GuiControls\AxisPreview.ahk
+			#Include Classes\GuiControls\ButtonPreview.ahk
+			#Include Classes\GuiControls\ButtonPreviewThin.ahk
 		}
 		
 		class IOClasses {

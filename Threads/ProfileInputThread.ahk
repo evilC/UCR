@@ -1,6 +1,7 @@
 ; ToDo: Split IOClasses out into individual files
 ; ToDo: Rename these type of IOClasses to IOInputClasses?
 #Include Functions\IsEmptyAssoc.ahk
+#MaxThreads 255
 
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
@@ -59,6 +60,7 @@ Class _InputThread {
 	UpdateBinding(ControlGUID, boPtr){
 		bo := ObjShare(boPtr).clone()
 		; Direct the request to the appropriate IOClass that handles it
+		
 		this.IOClasses[bo.IOClass].UpdateBinding(ControlGUID, bo)
 		;OutputDebug % "UCR| Input Thread: Added Binding to queue as item# " this.UpdateBindingQueue.length()+1
 		;this.UpdateBindingQueue.push({ControlGuid: ControlGuid, BindObject: bo})
@@ -163,7 +165,7 @@ Class _InputThread {
 			; This code is rigged so that either AHK_KBM_Input or AHK_JoyBtn_Input or both will not clash...
 			; ... As long as all are turned on or off together, you won't get weird results.
 			if (A_IsSuspended == state){
-				OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
+				;OutputDebug % "UCR| Thread: AHK_KBM_Input IOClass turning Hotkey detection " (state ? "On" : "Off")
 				Suspend, % (state ? "Off" : "On")
 			}
 			this.DetectionState := state
@@ -184,7 +186,13 @@ Class _InputThread {
 		KeyEvent(ControlGUID, e){
 			;OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
-			this.Callback.Call(ControlGUID, e)
+			;this.Callback.Call(ControlGUID, e)
+			fn := this.InputEvent.Bind(this, ControlGUID, e)
+			SetTimer, % fn, -0
+		}
+		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
 		}
 
 		; Builds an AHK hotkey string (eg ~^a) from a BindObject
@@ -266,13 +274,13 @@ Class _InputThread {
 			if (bo.Binding[1]){
 				keyname := this.BuildHotkeyString(bo)
 				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
-				try {
-					hotkey, % keyname, % fn, On
-				}
-				;fn := this.KeyEvent.Bind(this, ControlGUID, 0)
-				;hotkey, % keyname " up", % fn, On
+				if (GetKeyState(bo.DeviceID "JoyAxes")) 
+					try {
+						hotkey, % keyname, % fn, On
+					}
+				else
+					OutputDebug % "UCR| Warning! AHK_JoyBtn_Input did not declare hotkey " keyname " because the stick is disconnected"
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
-				;this._CurrentBinding := keyname
 				this._AHKBindings[ControlGUID] := keyname
 			}
 		}
@@ -297,12 +305,6 @@ Class _InputThread {
 				try{
 					hotkey, % keyname, Off
 				}
-				try{
-					hotkey, % keyname " up", UCR_INPUTHREAD_DUMMY_LABEL
-				}
-				try{
-					hotkey, % keyname " up", Off
-				}
 				this._AHKBindings.Delete(ControlGUID)
 			}
 			;this._CurrentBinding := 0
@@ -312,7 +314,9 @@ Class _InputThread {
 			; ToDo: Parent will not exist in thread!
 			
 			;OutputDebug % "UCR| AHK_JoyBtn_Input Key event " e " for GuiControl " ControlGUID
-			this.Callback.Call(ControlGUID, e)
+			;this.Callback.Call(ControlGUID, e)
+			fn := this.InputEvent.Bind(this, ControlGUID, e)
+			SetTimer, % fn, -0
 			
 			this.HeldButtons[this._AHKBindings[ControlGUID]] := ControlGUID
 			if (!this.TimerWanted){
@@ -321,12 +325,18 @@ Class _InputThread {
 			}
 		}
 		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
+		}
+
 		ButtonWatcher(){
 			for bindstring, ControlGUID in this.HeldButtons {
 				if (!GetKeyState(bindstring)){
 					this.HeldButtons.Delete(bindstring)
 					;OutputDebug % "UCR| AHK_JoyBtn_Input Key event 0 for GuiControl " ControlGUID
-					this.Callback.Call(ControlGUID, 0)
+					;this.Callback.Call(ControlGUID, 0)
+					fn := this.InputEvent.Bind(this, ControlGUID, 0)
+					SetTimer, % fn, -0
 					if (IsEmptyAssoc(this.HeldButtons)){
 						this.TimerWanted := 0
 						this.ProcessTimerState()
@@ -357,7 +367,21 @@ Class _InputThread {
 	; Listens for Joystick Axis input using AHK's GetKeyState() function
 	class AHK_JoyAxis_Input {
 		StickBindings := {}
-		ControlMappings := {}
+		/*
+		StickBindings structure:
+		{
+			<Stick ID>: {
+				<BindString (eg "2JoyX")>: {
+					State: <current state>
+					Subscriptions: {
+						<guid>: 1,
+						<guid>: 1,
+					}
+				}
+			}
+		}
+		*/
+		ConnectedSticks := [0,0,0,0,0,0,0,0]
 		
 		__New(Callback){
 			this.Callback := Callback
@@ -368,20 +392,27 @@ Class _InputThread {
 		UpdateBinding(ControlGUID, bo){
 			static AHKAxisList := ["X","Y","Z","R","U","V"]
 			dev := bo.DeviceID, axis := bo.Binding[1]
-			;OutputDebug % "UCR| AHK_JoyAxis_Input Update Axis Binding - Device: " bo.DeviceID ", Axis: " bo.Binding[1]
-			if (ObjHasKey(this.ControlMappings, ControlGUID)){
-				;OutputDebug % "UCR| AHK_JoyAxis_Input removing binding"
-				str := this.ControlMappings[ControlGUID]
-				this.StickBindings.Delete(str)
-				this.ControlMappings.Delete(ControlGUID)
-				if (IsEmptyAssoc(this.StickBindings)){
-					this.TimerWanted := 0
+			; Remove old binding
+			for id, inputs in this.StickBindings {
+				for bindstring, input_info in inputs {
+					for cguid, unused in input_info.Subscriptions {
+						if (cguid == ControlGuid){
+							input_info.Subscriptions.Delete(cguid)
+							;OutputDebug % "UCR| Removing Binding for ControlGUID " cguid
+							break
+						}
+					}
 				}
 			}
 			if (dev && axis){
 				str := dev "joy" AHKAxisList[axis]
-				this.StickBindings[str] := {ControlGUID: ControlGUID, state: -1}
-				this.ControlMappings[ControlGUID] := str
+				if (!ObjHasKey(this.StickBindings, dev))
+					this.StickBindings[dev] := {}
+				if (!ObjHasKey(this.StickBindings[dev], str))
+					this.StickBindings[dev, str] := {State: 0, Subscriptions: {}}
+								
+				this.StickBindings[dev, str, "Subscriptions", ControlGuid] := 1
+				;OutputDebug % "UCR| SubCount: " this.StickBindings[dev, str, "Subscriptions", ControlGuid]
 				this.TimerWanted := 1
 			}
 			this.ProcessTimerState()
@@ -396,6 +427,10 @@ Class _InputThread {
 		ProcessTimerState(){
 			fn := this.TimerFn
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				; Pre-cache connected sticks, as polling disconnected sticks takes lots of CPU
+				Loop 8 {
+					this.ConnectedSticks[A_Index] := (GetKeyState(A_Index "JoyAxes") > 0)
+				}
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
 				;OutputDebug % "UCR| AHK_JoyAxis_Input Started AxisWatcher"
@@ -407,14 +442,22 @@ Class _InputThread {
 		}
 
 		StickWatcher(){
-			for bindstring, obj in this.StickBindings {
-				state := GetKeyState(bindstring)
-				if (state != obj.state){
-					obj.state := state
-					;this.Callback.Call(obj.ControlGUID, state)
-					;OutputDebug % "UCR| Firing Axis Callback - " state
-					fn := this.InputEvent.Bind(this, obj.ControlGUID, state)
-					SetTimer, % fn, -0
+			for dev, inputs in this.StickBindings {
+				if (!this.ConnectedSticks[dev]){
+					; Do not poll unconnected sticks, it consumes a lot of cpu
+					;OutputDebug % "UCR| JI" obj.dev " JoyInfo: " GetKeyState(obj.dev "JoyInfo")
+					continue
+				}
+				for bindstring, input_info in inputs {
+					state := GetKeyState(bindstring)
+					if (state != input_info.state){
+						input_info.state := state
+						;OutputDebug % "UCR| Firing Axis Callback - " state
+						for ControlGUID, unused in input_info.Subscriptions {
+							fn := this.InputEvent.Bind(this, ControlGUID, state)
+							SetTimer, % fn, -0
+						}
+					}
 				}
 			}
 		}
@@ -438,7 +481,11 @@ Class _InputThread {
 		; Which cardinal directions are pressed for each of the 8 compass directions, plus centre
 		; Order is U, R, D, L
 		static PovMap := {-1: [0,0,0,0], 1: [1,0,0,0], 2: [1,1,0,0] , 3: [0,1,0,0], 4: [0,1,1,0], 5: [0,0,1,0], 6: [0,0,1,1], 7: [0,0,0,1], 8: [1,0,0,1]}
-
+		
+		TimerRunning := 0
+		TimerWanted := 0
+		ConnectedSticks := [0,0,0,0,0,0,0,0]
+		
 		__New(Callback){
 			this.Callback := Callback
 			
@@ -449,17 +496,8 @@ Class _InputThread {
 		UpdateBinding(ControlGUID, bo){
 			;OutputDebug % "UCR| AHK_JoyHat_Input " (bo.Binding[1] ? "Update" : "Remove" ) " Hat Binding - Device: " bo.DeviceID ", Direction: " bo.Binding[1]
 			this._UpdateArrays(ControlGUID, bo)
-			;~ t := this.TimerWanted, k := ObjHasKey(this.ControlMappings, ControlGUID)
-			;~ fn := this.TimerFn
-			;~ if (t && !k){
-				;~ OutputDebug % "UCR| AHK_JoyHat_Input Stopping Hat Watcher"
-				;~ SetTimer, % fn, Off
-				;~ this.TimerWanted := 0
-			;~ } else if (!t && k){
-				;~ OutputDebug % "UCR| AHK_JoyHat_Input Starting Hat Watcher"
-				;~ this.TimerWanted := 1
-				;~ SetTimer, % fn, 10
-			;~ }
+			this.TimerWanted := !IsEmptyAssoc(this.ControlMappings)
+			this.ProcessTimerState()
 		}
 		
 		SetDetectionState(state){
@@ -470,13 +508,17 @@ Class _InputThread {
 		ProcessTimerState(){
 			fn := this.TimerFn
 			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				; Pre-cache connected sticks, as polling disconnected sticks takes lots of CPU
+				Loop 8 {
+					this.ConnectedSticks[A_Index] := GetKeyState(A_Index "JoyInfo")
+				}
 				SetTimer, % fn, 10
 				this.TimerRunning := 1
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Started HatWatcher"
+				;OutputDebug % "UCR| AHK_JoyHat_Input Started HatWatcher"
 			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
 				SetTimer, % fn, Off
 				this.TimerRunning := 0
-				;OutputDebug % "UCR| AHK_JoyBtn_Input Stopped HatWatcher"
+				;OutputDebug % "UCR| AHK_JoyHat_Input Stopped HatWatcher"
 			}
 		}
 
@@ -507,6 +549,10 @@ Class _InputThread {
 		; Called on a timer when we are trying to detect hats
 		HatWatcher(){
 			for bindstring, bindings in this.HatBindings {
+				if (!this.ConnectedSticks[SubStr(bindstring, 1, 1)]){
+					; Do not poll unconnected sticks, it consumes a lot of cpu
+					continue
+				}
 				state := GetKeyState(bindstring)
 				state := (state = -1 ? -1 : round(state / 4500) + 1)
 				for ControlGUID, obj in bindings {
@@ -516,9 +562,15 @@ Class _InputThread {
 						;OutputDebug % "UCR| InputThread: AHK_JoyHat_Input Direction " obj.dir " state " new_state " calling ControlGUID " ControlGUID
 						; Use the thread-safe object to tell the main thread that the hat direction changed state
 						;this.Callback.Call(ControlGUID, new_state)
+						fn := this.InputEvent.Bind(this, ControlGUID, new_state)
+						SetTimer, % fn, -0
 					}
 				}
 			}
+		}
+		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
 		}
 	}
 	
@@ -540,12 +592,16 @@ Class _InputThread {
 		}
 
 		UpdateBinding(ControlGUID, bo){
+
 			;OutputDebug % "UCR| InputDelta UpdateBinding for GUID " ControlGUID " binding: " bo.Binding[1]
 			this.RemoveBinding(ControlGUID)
+			
 			if (bo.Binding[1]){
-				this._DeltaBindings[ControlGUID] := 1
-				if (!this.Registered)
+				this._DeltaBindings[ControlGUID] := bo.DeviceID
+				
+				if (!this.Registered){	
 					this.RegisterMouse()
+				}
 			}
 		}
 		
@@ -571,11 +627,12 @@ Class _InputThread {
 		}
 		
 		RegisterMouse(){
+			
 			static RIDEV_INPUTSINK := 0x00000100
 			; Register mouse for WM_INPUT messages.
 			static DevSize := 8 + A_PtrSize
 			static RAWINPUTDEVICE := 0
-			
+				
 			if (this.Registered)
 				return
 			;OutputDebug % "UCR| ProfileInputThread registering for mouse delta"
@@ -611,7 +668,7 @@ Class _InputThread {
 				NumPut(2, RAWINPUTDEVICE, 2, "UShort")
 				NumPut(RIDEV_REMOVE, RAWINPUTDEVICE, 4, "Uint")
 			}
-			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 0, "UInt", DevSize )
+			DllCall("RegisterRawInputDevices", "Ptr", &RAWINPUTDEVICE, "UInt", 1, "UInt", DevSize )
 			OnMessage(0x00FF, this.MouseMoveFn, 0)
 			this.Registered := 0
 		}
@@ -626,8 +683,10 @@ Class _InputThread {
 			VarSetCapacity(raw, 40, 0)
 			If (!DllCall("GetRawInputData",uint,lParam,uint,0x10000003,uint,&raw,"uint*",40,uint, 16) or ErrorLevel)
 				Return 0
-			ThisMouse := NumGet(raw, 8)
-	 
+			
+			
+			
+			
 			; Find size of rawinput data - only needs to be run the first time.
 			if (!iSize){
 				r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", 0, "UInt*", iSize, "UInt", 8 + (A_PtrSize * 2))
@@ -636,7 +695,9 @@ Class _InputThread {
 			sz := iSize	; param gets overwritten with # of bytes output, so preserve iSize
 			; Get RawInput data
 			r := DllCall("GetRawInputData", "UInt", lParam, "UInt", 0x10000003, "Ptr", &uRawInput, "UInt*", sz, "UInt", 8 + (A_PtrSize * 2))
-	 
+	        
+			ThisMouse := NumGet(&uRawInput, 8)
+
 			x := NumGet(&uRawInput, offsets.x, "Int")
 			y := NumGet(&uRawInput, offsets.y, "Int")
 			
@@ -647,19 +708,28 @@ Class _InputThread {
 			if (y){
 				xy.y := y
 			}
+			if (!ObjHasKey(xy, "x") && !ObjHasKey(xy, "y"))
+				return
 
 			state := {axes: xy, MouseID: ThisMouse}
-			for ControlGuid, obj in this._DeltaBindings {
-				;this.InputEvent(obj, {axes: xy, MouseID: ThisMouse})	; ToDo: This should be a proper I/O object type, like Buttons or Axes
-				;OutputDebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid
-				this.Callback.Call(ControlGuid, state)
+			for ControlGuid, DeviceID in this._DeltaBindings {
+				if (DeviceID == -1 || DeviceID == ThisMouse){
+					;Outputdebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid ", DeviceID: " ThisMouse
+					;this.Callback.Call(ControlGuid, state)
+					fn := this.InputEvent.Bind(this, ControlGUID, state)
+					SetTimer, % fn, -0
+				}
 			}
 	 
 			; There is no message for "Stopped", so simulate one
 			;fn := this.MouseTimeoutFn
 			;SetTimer, % fn, % -this.MouseTimeOutDuration
 		}
-		
+
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
+		}
+
 		;OnMouseTimeout(){
 		;	for hwnd, obj in this.MouseDeltaMappings {
 		;		this.InputEvent(obj, {x: 0, y: 0})

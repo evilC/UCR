@@ -201,7 +201,7 @@ class AHK_JoyAxis_Input extends _UCR.Classes.IOClasses.IOClassBase {
 		}
 		Loop 8 {
 			stick := A_Index
-			ji := (GetKeyState(stick "JoyInfo"))
+			ji := (GetKeyState(stick "JoyAxes"))
 			this._StickMenus[A_Index].SetEnableState(ji)
 			;if (UCR.UserSettings.GuiControls.ShowJoystickNames){
 			;	name := " (" DllCall("JoystickOEMName\joystick_OEM_name", double,A_Index, "CDECL AStr") ")"

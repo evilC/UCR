@@ -15,6 +15,8 @@ class _BindMapper {
 	__New(CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		;this.Callback := CallbackPtr
+		; Disable hotkeys before declaring any...
+		Suspend, On
 		; Instantiate each of the IOClasses specified in the IOClasses array
 		for name, state in this.IOClasses {
 			; Instantiate an instance of a class that is a child class of this one. Thanks to HotkeyIt for this code!
@@ -32,7 +34,6 @@ class _BindMapper {
 		} else {
 			OutputDebug % "UCR| Bind Mode Thread WARNING! Loaded No IOClasses!"
 		}
-		Suspend, On
 		global InterfaceSetDetectionState := ObjShare(this.SetDetectionState.Bind(this))
 	}
 	
@@ -68,7 +69,7 @@ class _BindMapper {
 		}
 		
 		SetDetectionState(state, ReturnIOClass){
-			OutputDebug % "Turning Hotkeys " (state ? "On" : "Off")
+			;OutputDebug % "UCR| Turning Hotkeys " (state ? "On" : "Off")
 			Suspend, % (state ? "Off", "On")
 		}
 	}
@@ -140,7 +141,7 @@ class _BindMapper {
 		}
 		
 		InputEvent(e, i){
-			;tooltip % "code: " i ", e: " e
+			;OutputDebug % "UCR| BindMode KBM IO Event: " e ", Code: " i ", IOClass: " this.ReturnIOClass
 			this.Callback.Call(e, i, 0, this.ReturnIOClass)
 		}
 	}

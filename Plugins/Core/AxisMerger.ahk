@@ -16,10 +16,8 @@ class AxisMerger extends _UCR.Classes.Plugin {
 		
 		Gui, Add, Text, % "xm w125 Center", Input 1 Preview
 		Gui, Add, Text, % "x+5 yp w125 Center", Input 2 Preview
-		Gui, Add, Slider, % "hwndhwnd xm w125"
-		this.hSliderIn1 := hwnd
-		Gui, Add, Slider, % "hwndhwnd x+5 yp w125"
-		this.hSliderIn2 := hwnd
+		this.AddControl("AxisPreview", "", 0, this.IOControls.InputAxis1, "xm w125", 50)
+		this.AddControl("AxisPreview", "", 0, this.IOControls.InputAxis2, "x+5 yp w125", 50)
 		Gui, Add, Text, % "x50", Invert
 		this.AddControl("CheckBox", "Invert1", this.MyEditChanged.Bind(this), "x+5 yp")
 		
@@ -38,8 +36,7 @@ class AxisMerger extends _UCR.Classes.Plugin {
 		this.AddControl("Edit", "Sensitivity", this.MyEditChanged.Bind(this), "x+15 yp-3 w30", "100")
 		Gui, Add, Text, % "x+0 yp+3", `%
 		this.AddControl("OutputAxis", "OutputAxis", this.MyOutputChangedValue.Bind(this), "x+5 yp-3 w125")
-		Gui, Add, Slider, % "hwndhwnd x+5 yp w100"
-		this.hSliderOut := hwnd
+		this.AddControl("AxisPreview", "", 0, this.IOControls.OutputAxis, " x+5 yp w100", 50)
 	}
 	
 	; The user changed options - store stick and axis selected for fast retreival
@@ -85,10 +82,7 @@ class AxisMerger extends _UCR.Classes.Plugin {
 			if (this.GuiControls.Sensitivity.Get())
 				outval := UCR.Libraries.StickOps.Sensitivity(outval, this.GuiControls.Sensitivity.Get())
 			outval := UCR.Libraries.StickOps.InternalToAHK(outval)
-			GuiControl, , % this.hSliderOut, % outval
 			this.IOControls.OutputAxis.Set(outval)
 		}
-		GuiControl, , % this.hSliderIn1, % UCR.Libraries.StickOps.InternalToAHK(value1)
-		GuiControl, , % this.hSliderIn2, % UCR.Libraries.StickOps.InternalToAHK(value2)
 	}
 }

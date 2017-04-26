@@ -96,14 +96,26 @@ class OneSwitchPulse extends _UCR.Classes.Plugin {
 		if (ControlGuid == this.GuiControls.Toggle.id)
 			return	; ignore input from the Toggle Button
 		bo := UCR.BindControlLookup[ControlGUID].GetBinding()
+		if (bo.IOClass == "AHK_JoyBtn_Input"){
+			if (bo.Binding[1] < 1 && bo.Binding[1] > 4)
+				return
+		} else if (bo.IOClass == "RawInput_Mouse_Delta"){
+			if (state){
+				fn := this.InputActivity.Bind(this, ControlGuid, 0)
+				SetTimer, % fn, -100
+			}
+		} else {
+			return
+		}
+
 		if (bo.IsAnalog){
-			OutputDebug % "UCR| InputActivity (Axis)"
+			;OutputDebug % "UCR| InputActivity (Axis)"
 			;this.DelayTimers()
 			this.SetTimerState(0)
 			this.ScheduleTimers()
 		} else {
 			; Button type input - stop timers while button is down, call DelayTimers() on up
-			OutputDebug % "UCR| InputActivity (Button) - state: " state
+			;OutputDebug % "UCR| InputActivity (Button) - state: " state ", IOClass: " bo.IOClass ", Device: " bo.DeviceId ", Button: " bo.Binding[1]
 			if (state){
 				this.HeldButtons[ControlGUID] := 1
 				this.SetTimerState(0)
@@ -119,7 +131,7 @@ class OneSwitchPulse extends _UCR.Classes.Plugin {
 			}
 		}
 	}
-
+	
 	HoldButtonChanged(e){
 		if (e){
 			if (this.TimerRunning)
@@ -185,7 +197,7 @@ class OneSwitchPulse extends _UCR.Classes.Plugin {
 	
 	; Turns on or off the timers
 	SetTimerState(state){
-		OutputDebug % "UCR| Changing Timer state to: " state
+		;OutputDebug % "UCR| Changing Timer state to: " state
 		pfn := this.PulseFn
 		tfn := this.TimeoutFn
 		wfn := this.TimeoutWarningFn

@@ -3,7 +3,7 @@
 *.zip
 *.lnk
 *.scc
-*.png
+*.db
 *.bak
 *.tmp.*
 _Ignore
@@ -12,4 +12,5 @@ msvcr100.dll
 /Plugins/*
 !.gitignore
 !/Plugins/Core
+!devcon.exe
 backup

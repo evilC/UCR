@@ -1,6 +1,9 @@
 ; ======================================================================== BANNER MENU ===============================================================
 ; A compound GuiControl with a Readout (Shows current state) and a menu
 class _BannerMenu extends _Menu {
+
+	_MenuBuilt := 0
+
 	__New(ParentHwnd, aParams*){
 		this._ParentHwnd := ParentHwnd
 		this._Ptr := &this
@@ -17,6 +20,11 @@ class _BannerMenu extends _Menu {
 	
 	; Shows the menu
 	OpenMenu(){
+		if (!this._MenuBuilt){
+			this._BuildMenu()
+			this._MenuBuilt := 1
+		}
+		this.SetControlState()
 		ControlGetPos, cX, cY, cW, cH,, % "ahk_id " this.hReadout
 		Menu, % this.id, Show, % cX+1, % cY + cH
 	}
@@ -31,6 +39,11 @@ class _BannerMenu extends _Menu {
 		
 	}
 	
+	_DestroyBannerMenu(){
+		this._MenuBuilt := 0
+		this.DestroyMenu()
+	}
+
 	; All Input controls should implement this function, so that if the Input Thread for the profile is terminated...
 	; ... then it can be re-built by calling this method on each control.
 	_RequestBinding(){

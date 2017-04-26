@@ -4,8 +4,81 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.7 - ???
+0.1.14 - 12th Mar 2017
+= Massive changes to the MouseToButtons plugin
+  Is now a lot less "flickery"
+  There is now a "State Change" timeout value
+  This controls how long it takes to change state (reduce flicker)
+= The MouseToJoy relative mode timeout value now works for the y axis
+
+0.1.13 - 12th Mar 2017
++ Added Mouse Delta to Buttons plugin
++ Fixed suggested name for new plugins
++ Multiple InputAxis controls can now be bound to the same axis
++ Set default SetKeyDelay value to 0, 0
+  UCR does not send keypresses, it maps down events to down events etc
+  So this would likely only slow the code down
+
+0.1.12 - 7th Mar 2017
++ Added AxisRangeToButtons plugin
+  This allows you to map an axis to up to 10 buttons
+  Each button has a "Low" and "High" value. If the axis is in this range...
+  Then the button is pressed. Else it is released.
+  If you need more buttons, more can be added by editing the source code.
++ You can now duplicate profiles using the "Copy" button in the toolbox.
+  Code contributed by Snoothy - thankyou!
++ You can now rename plugins to the same name but with different case
++ IOControl menus are now initialized when first opened.
+  This will mainly benefit users with large numbers of profiles.
+  UCR should load quicker, and you should not get a "Too many menus" error.
+  Code contributed by Snoothy - thankyou!
++ MaxThreads setting cranked up to 255
+  This seems to alleviate issues with fast, simultaneous input.
++ The InputDelta now self-updates Seen Mice
+
+0.1.11 - 19th Feb 2017
++ You can now rename plugins
++ You can now re-order plugins
++ Plugin close button is now an icon
++ There are now preview GuiControls for Buttons and Axes
+  You no longer have to code your own in plugins
+  The Axis preview remains as a slider
+  The Button preview comes in two flavors:
+  A regular 25x25 icon with on/off states
+  A 3x34 icon that sits right next to an IOControl (To save horizontal space)
++ Added support for the following PS4 outputs on Titan One:
+  TouchPad X+Y
+  Aceelerometer X+Y
+  Touch Button
+= Renamed Playstation LS/RS to L3/R3 in Titan One
+= Fixed bad calculations in ButtonsToAxis plugin for Low/High options
++ Added support for Command-Line profile switching via CLI.ahk
+  Code contributed by Snoothy - thankyou!
++ You can now filter for individual mice in the MouseDelta
+  Thanks to David Baldwin for contributing the bulk of the code.
+
+0.1.10 - 4th Feb 2017
+= Ultrastik devices now work with UCR
+  Code contributed by Snoothy - thankyou!
+= If vJoy is not installed, on startup you no longer get the error
+  "Error. An item with the name vJoy already exists in this menu"
+
+0.1.9 - 26th Dec 2016
+= Fix for disconnected sticks causing massive CPU usage
+  When a profile loads, it checks which sticks are connected.
+  Bindings for disconnected sticks will not be activated.
+  If you plug in the stick, try forcing a profile reload.
+  An easy way is by switching to global profile and then back
+ 
+0.1.8 - 16th Dec 2016
+= Fix for "invalid Gui Name" error for BindModePrompt
+  Hotkeys for bindmode were being enabled breifly on creation
+= Fixed Joystick Hat/POV/D-Dpads in InputButtons
+= Harmonized callback method for all input types to pseudo-threads
+
+0.1.7 - 11th Dec 2016
 = Fixed vJoy not acquring sticks until you changed a binding
+* Merged Input-Output-Refactor into Master branch.
 
 0.1.6 - 3rd Dec 2016
 + The ButtonsToAxis plugin now has settings for Low / Mid / High

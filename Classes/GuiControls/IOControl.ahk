@@ -6,6 +6,7 @@
 class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 	State := -1		; Holds current state of Input
 	_IOClasses := {}
+	PreviewControl := 0
 	
 	__New(parent, name, ChangeValueCallback, ChangeStateCallback, aParams*){
 		aParams[1] := this.SetDefaultOptions(aParams[1])
@@ -20,9 +21,15 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			call:= _UCR.Classes.IOClasses[name]
 			this._IOClasses[name] := new call(this)
 		}
-		this._BuildMenu()
-		
 		this.SetControlState()
+	}
+
+	Activate(){
+
+	}
+
+	DeActivate(){
+		this._DestroyBannerMenu()
 	}
 	
 	SetDefaultOptions(optstr){
@@ -143,6 +150,9 @@ class IOControl extends _UCR.Classes.GuiControls._BannerMenu {
 			;OutputDebug % "UCR| IOControl class firing state change callback"
 			this.State := e
 			this.ChangeStateCallback.Call(e)
+		}
+		if (this.PreviewControl != 0){
+			this.PreviewControl.SetState(e)
 		}
 	}
 	

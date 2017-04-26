@@ -32,6 +32,7 @@ Class OutputButton extends _UCR.Classes.GuiControls.InputButton {
 			this.__value.Set(state)
 			this.State := state
 		}
+		this.OnStateChange(state)
 	}
 	
 	; An option was selected from one of the Menus that this class controls

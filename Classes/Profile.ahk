@@ -264,20 +264,37 @@ Class _Profile {
 	_LayoutPlugin(index := -1){
 		static SCROLLINFO:="UINT cbSize;UINT fMask;int  nMin;int  nMax;UINT nPage;int  nPos;int  nTrackPos"
 				,scroll:=Struct(SCROLLINFO,{cbSize:sizeof(SCROLLINFO),fMask:4})
+		; Find scrollbar position
 		GetScrollInfo(this.hwnd,true,scroll[])
-		i := (index = -1 ? this.PluginOrder.length() : index)
-		id := this.PluginOrder[i]
-		y := 0
-		if (i > 1){
-			ControlGetPos,,wy,,,,% "ahk_id " this.hwnd
-			prev := this.PluginOrder[i-1]
-			ControlGetPos,,y,,h,,% "ahk_id " this.Plugins[prev].hFrame
-			y += h - wy
+		scroll_pos := scroll.nPos
+
+		; Get index of plugin
+		plugin_index := (index = -1 ? this.PluginOrder.length() : index)
+		; Get reference to plugin
+		plugin := this.Plugins[this.PluginOrder[plugin_index]]
+
+		; Calculate y coord for plugin
+		new_y := 0
+		; Find y coord of previous plugin, if it exists
+		if (plugin_index > 1){
+			ControlGetPos,,window_y,,,,% "ahk_id " this.hwnd
+			ControlGetPos,,new_y,,h,,% "ahk_id " this.Plugins[this.PluginOrder[plugin_index-1]].hFrame
+			new_y += h - window_y
 		}
-		y += 5 - (index=-1 ? 0 : scroll.nPos)
-		Gui, % this.Plugins[id].hFrame ":Show", % "x5 y" y " w" UCR.PLUGIN_WIDTH
-		ControlGetPos, , , , h, , % "ahk_id " this.Plugins[id].hFrame
-		GuiControl, Move, % this.hSpacer, % "h" y + h + scroll.nPos
+		
+		; Add gap
+		new_y += 5 - (index=-1 ? 0 : scroll_pos)
+		
+		; Move the plugin
+		Gui, % plugin.hFrame ":Show", % "x5 y" new_y " w" UCR.PLUGIN_WIDTH
+		
+		; Resize the spacer
+		ControlGetPos, , , , h, , % "ahk_id " plugin.hFrame
+		spacer_height := new_y + h + scroll_pos
+		GuiControl, Move, % this.hSpacer, % "h" spacer_height
+		
+		;OutputDebug % "UCR| Moved plugin " plugin.Name " to y " new_y " and set spacer to height " spacer_height ". Scroll pos is: " scroll_pos " and window_y was " window_y
+
 	}
 	
 	; Lays out all plugins
@@ -298,6 +315,51 @@ Class _Profile {
 		} else {
 			GuiControl, Move, % this.hSpacer, % "h10"
 		}
+	}
+	
+	; Rename a plugin
+	_RenamePlugin(plugin){
+		name := this._GetUniqueName(plugin.Name, 0)
+		if (name = 0)
+			return
+		plugin.ChangeName(name)
+		UCR._ProfileChanged(this)
+	}
+	
+	_ReorderPlugin(plugin, dir){
+		i := 0
+		max := this.PluginOrder.length()
+		Loop % max {
+			if (this.PluginOrder[A_Index] == plugin.id){
+				i := A_Index
+				break
+			}
+		}
+		if (i == 0 || (dir == -1 && i == 1) || (dir == 1 && i == max))
+			return
+		other_plugin := this.Plugins[this.PluginOrder[i + dir]]
+		id := this.PluginOrder.RemoveAt(i)
+		this.PluginOrder.InsertAt(i + dir, id)
+		
+		if (dir == 1){
+			this.SwapPluginOrder(other_plugin, plugin)
+		} else {
+			this.SwapPluginOrder(plugin, other_plugin)
+		}
+		UCR._ProfileChanged(this)
+	}
+	
+	SwapPluginOrder(plugin, other_plugin){
+		ControlGetPos,, other_y,,,,% "ahk_id " other_plugin.hFrame
+		new_top := this.GetYCoord(other_y)
+		Gui, % plugin.hFrame ":Show", % "x5 y" new_top " w" UCR.PLUGIN_WIDTH
+		ControlGetPos,,plugin_y,,plugin_h,,% "ahk_id " plugin.hFrame
+		Gui, % other_plugin.hFrame ":Show", % "x5 y" this.GetYCoord(plugin_y + plugin_h + 5) " w" UCR.PLUGIN_WIDTH
+	}
+	
+	GetYCoord(y){
+		ControlGetPos,,window_y,,,,% "ahk_id " this.hwnd
+		return y - window_y
 	}
 	
 	; Delete a plugin
@@ -325,23 +387,25 @@ Class _Profile {
 	; Obtain a profile-unique name for the plugin, with a suggestion
 	; Name param is the base from which suggestions are generated
 	; eg passing "MyPlugin" would suggest "MyPlugin 1"
-	_GetUniqueName(name){
-		name .= " "
-		num := 1
-		Loop {
-			this_name := name num
-			if (this._IsNameUnique(this_name))
-				break
-			else
-				num++
+	_GetUniqueName(name, build_name := 1){
+		if (build_name){
+			name .= " "
+			num := 1
+			Loop {
+				this_name := name num
+				if (this._IsNameUnique(this_name))
+					break
+				else
+					num++
+			}
+			name := this_name
 		}
-		name := this_name
 		prompt := "Enter a name for the Plugin"
 		Loop {
 			coords := UCR.GetCenteredCoordinates(375, 130)
 			InputBox, name, Add Plugin, % prompt, ,,130,% coords.x,% coords.y,,, % name
 			if (!ErrorLevel){
-				if (!this._IsNameUnique(name)){
+				if (!this._IsNameUnique(name) && (name != name)){
 					prompt := "Duplicate name chosen, please enter a unique name"
 					name := suggestedname
 				} else {
@@ -353,7 +417,7 @@ Class _Profile {
 		}
 	}
 	
-	; Returns true if no profile has the name that was passed
+	; Returns true if no profile has a plugin with the same name
 	_IsNameUnique(name){
 		for id, plugin in this.Plugins {
 			if (plugin.Name = name){
