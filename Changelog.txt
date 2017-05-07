@@ -13,6 +13,7 @@ Key:
 + Fixes warning in ProfileSwitcher plugin
   When you first tried to select a target profile, you would get a warning
   that the clear item already existed.
++ Added ButtonInitializer plugin
 
 0.1.14 - 12th Mar 2017
 = Massive changes to the MouseToButtons plugin
