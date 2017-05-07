@@ -294,6 +294,10 @@ Class _UCR {
 			.AddMenuItem("&Start Minimized", "StartMinimized", this._MenuHandler.Bind(this, "StartMinimized"))
 			.parent.AddMenuItem("&Minimize to Tray", "MinimizeToTray", this._MenuHandler.Bind(this, "MinimizeToTray"))
 		this.IOClassMenu := this.MainMenu.AddSubMenu("&IOClasses", "IOClasses")
+		this.MainMenu.AddSubMenu("&Links", "Links")
+			.AddMenuItem("&Github Page", "GithubPage", this._MenuHandler.Bind(this, "GithubPage"))
+			.parent.AddMenuItem("&Forum Thread", "ForumThread", this._MenuHandler.Bind(this, "ForumThread"))
+			.parent.AddMenuItem("&OneSwitch.org.uk (Accessible Gaming)", "OneSwitch", this._MenuHandler.Bind(this, "OneSwitch"))
 		Gui, % this.hwnd ":Menu", % this.MainMenu.id
 	}
 	
@@ -314,6 +318,18 @@ Class _UCR {
 		if (name = "MinimizeToTray" || name = "StartMinimized"){
 			this.UserSettings.MinimizeOptions[name] := !this.UserSettings.MinimizeOptions[name]
 			this.MainMenu.MenusByName["View"].ItemsByName[name].ToggleCheck()
+		}
+
+		if (name = "GithubPage"){
+			run, https://github.com/evilC/UCR
+		}
+
+		if (name = "ForumThread"){
+			run, https://autohotkey.com/boards/viewtopic.php?f=19&t=12249
+		}
+
+		if (name = "OneSwitch"){
+			run, http://oneswitch.org.uk/
 		}
 
 		/*
