@@ -9,8 +9,7 @@ Key:
 = Crash fix in InputDelta plugin
 + Adds Loading splash screen
 + Adds Notes plugin
-  Useful if you export a profile and send it to someone
-  Allows you to put instructions inside the profile!
+  Useful if you send someone an INI - you can write instructions in here.
 
 0.1.14 - 12th Mar 2017
 = Massive changes to the MouseToButtons plugin
