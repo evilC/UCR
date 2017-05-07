@@ -8,6 +8,9 @@ Key:
 = Fixed previews in AxisMerger plugin
 = Crash fix in InputDelta plugin
 + Adds Loading splash screen
++ Adds Notes plugin
+  Useful if you export a profile and send it to someone
+  Allows you to put instructions inside the profile!
 
 0.1.14 - 12th Mar 2017
 = Massive changes to the MouseToButtons plugin
