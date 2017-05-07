@@ -45,6 +45,7 @@ Class _UCR {
 		Gui +HwndHwnd
 		this.hwnd := hwnd
 		
+		this.SplashScreen(1)
 		; We need this on so we can work out the size of the various panes before they are shown.
 		DetectHiddenWindows, On
 
@@ -145,6 +146,7 @@ Class _UCR {
 		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnSize.Bind(this)) "," &matchobj "," &filterobj ")"]
 		matchobj.msg := 0x3
 		this._MessageFilterThread.ahkExec["new MessageFilter(" ObjShare(this._OnMove.Bind(this)) "," &matchobj "," &filterobj ")"]
+		this.SplashScreen(0)
 	}
 	
 	GuiClose(hwnd){
@@ -266,6 +268,23 @@ Class _UCR {
 		WinGetPos , , , w, h, % "ahk_id " this.hwnd
 		rect := this.GetClientRect(this.hwnd)
 		Gui, % this.hwnd ":+Minsize" rect.w "x" rect.h
+	}
+	
+	SplashScreen(state){
+		static SplashHwnd := 0
+		if (state){
+			if (!SplashHwnd){
+				Gui, new, +HwndHwnd
+				Gui, Font, s40, Verdana
+				Gui, -Caption
+				Gui, Add, Text, Center, UCR is Loading
+				Gui, Show
+				SplashHwnd := hwnd
+			}
+		} else {
+			Gui, % SplashHwnd ":Destroy"
+			SplashHwnd := 0
+		}
 	}
 	
 	; Creates the objects for the Main Menu

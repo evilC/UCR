@@ -7,6 +7,7 @@ Key:
 0.1.15 - ???
 = Fixed previews in AxisMerger plugin
 = Crash fix in InputDelta plugin
++ Adds Loading splash screen
 
 0.1.14 - 12th Mar 2017
 = Massive changes to the MouseToButtons plugin
