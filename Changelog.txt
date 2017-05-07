@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.15 - ???
+= Fixed previews in AxisMerger plugin
+
 0.1.14 - 12th Mar 2017
 = Massive changes to the MouseToButtons plugin
   Is now a lot less "flickery"

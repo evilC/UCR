@@ -57,10 +57,12 @@ class InputDelta extends _UCR.Classes.GuiControls.IOControl {
 	
 	; Override base OnStateChange, so we can update list of seen mice
 	OnStateChange(e){
-		base.OnStateChange(e)
-		if (!ObjHasKey(this.SeenMice, e.MouseID)){
-			this.SeenMice[e.MouseID] := 1
-			this.AddItem(e.MouseID, e.MouseID)		
+		try {
+			base.OnStateChange(e)
+			if (!ObjHasKey(this.SeenMice, e.MouseID)){
+				this.SeenMice[e.MouseID] := 1
+				this.AddItem(e.MouseID, e.MouseID)		
+			}
 		}
 	}
 }
