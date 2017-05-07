@@ -38,7 +38,10 @@ class _Menu {
 	
 	; 
 	_AddItem(text, ItemName, callback := 0){
-		if (text != "" && this.CheckForDuplicateItemName(text)){
+		; ToDo: Something seems to have changed ?when lazy loading menus got implemented?...
+		; ... I now need to pass 0 to CheckForDuplicateItemName to suppress dupe message warning
+		; Else the ProfileSwitcher plugin throws a warning the first time you try to select a profile.
+		if (text != "" && this.CheckForDuplicateItemName(text, 0)){
 			return 0
 		}
 
