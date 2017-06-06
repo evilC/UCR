@@ -1,8 +1,8 @@
 /*
 	UCR Main bootstrap file
 	
-	The recommended editor for UCR is AHK Studio
-	https://autohotkey.com/boards/viewtopic.php?t=300
+	The recommended editor for UCR is Scite4AutoHotkey
+	https://autohotkey.com/boards/viewtopic.php?t=62
 */
 #SingleInstance force
 #MaxThreads 255
