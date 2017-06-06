@@ -1,4 +1,5 @@
 ; Is an associative array empty?
 IsEmptyAssoc(assoc){
-	return !assoc._NewEnum()[k, v]
+return assoc.SetCapacity(0) == 0
+	;return !assoc._NewEnum()[k, v]
 }
