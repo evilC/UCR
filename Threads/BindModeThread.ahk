@@ -9,6 +9,7 @@ so that bind mode keys can be turned on and off quickly with Suspend
 #MaxHotkeysPerInterval 9999
 autoexecute_done := 1
 */
+#NoEnv
 class _BindMapper {
 	DetectionState := 0
 	static IOClasses := {AHK_Common: 0, AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0}

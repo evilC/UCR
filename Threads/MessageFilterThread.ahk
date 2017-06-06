@@ -23,6 +23,7 @@ filterobj: 		A pointer to an object that defines the parameters to match in the 
 */
 #Persistent
 #NoTrayIcon
+#NoEnv
 SetBatchLines,-1
 autoexecute_done := 1
 return
