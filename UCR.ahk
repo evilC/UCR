@@ -6,6 +6,7 @@
 */
 #SingleInstance force
 #MaxThreads 255
+#NoEnv
 
 SetKeyDelay, 0, 0   ; Default to no delay, as UCR does not send presses, it holds or releases
 
