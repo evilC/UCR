@@ -4,16 +4,23 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.15 - ???
+0.1.15 - 6th Jun 2017
++ Added AxisRangeToButtons plugin
+  This can be used to map an axis to up to 10 buttons.
+  eg for throttle operated by up to 10 keyboard keys
++ Added AxesToMouse plugin
+  Joystick to mouse
++ Added ButtonInitializer plugin
++ Adds Notes plugin
+  Useful if you send someone an INI - you can write instructions in here.
 = Fixed previews in AxisMerger plugin
 = Crash fix in InputDelta plugin
 + Adds Loading splash screen
-+ Adds Notes plugin
-  Useful if you send someone an INI - you can write instructions in here.
-+ Fixes warning in ProfileSwitcher plugin
++ Fixed warning in ProfileSwitcher plugin
   When you first tried to select a target profile, you would get a warning
   that the clear item already existed.
-+ Added ButtonInitializer plugin
+= Added #NoEnv to all threads for performance
+= Changed Associative array empty detection technique to Lexikos' one
 
 0.1.14 - 12th Mar 2017
 = Massive changes to the MouseToButtons plugin
