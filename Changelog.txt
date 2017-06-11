@@ -4,6 +4,10 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.16 - 11th Jun 2017
+= Revert out: Changed Associative array empty detection technique to Lexikos' one
+  Seems to break vJoy bindings on reload.
+
 0.1.15 - 6th Jun 2017
 + Added AxisRangeToButtons plugin
   This can be used to map an axis to up to 10 buttons.
