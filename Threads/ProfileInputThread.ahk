@@ -10,6 +10,7 @@ Class _InputThread {
 	DetectionState := 0
 	UpdateBindingQueue := []	; An array of bindings waiting to be updated.
 	UpdatingBindings := 0
+	
 	__New(ProfileID, CallbackPtr){
 		this.Callback := ObjShare(CallbackPtr)
 		;this.Callback := CallbackPtr
@@ -157,7 +158,7 @@ Class _InputThread {
 				fn := this.KeyEvent.Bind(this, ControlGUID, 0)
 				hotkey, % keyname " up", % fn, On
 				;OutputDebug % "UCR| AHK_KBM_Input Added hotkey " keyname " for ControlGUID " ControlGUID
-				this._AHKBindings[ControlGUID] := keyname
+				this._AHKBindings[ControlGUID] := {KeyName: keyname, HasNoRelease: this.HasNoReleaseEvent(bo)}
 			}
 		}
 		
@@ -173,7 +174,7 @@ Class _InputThread {
 		}
 		
 		RemoveBinding(ControlGUID){
-			keyname := this._AHKBindings[ControlGUID]
+			keyname := this._AHKBindings[ControlGUID].KeyName
 			if (keyname){
 				;OutputDebug % "UCR| AHK_KBM_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
 				hotkey, % keyname, UCR_INPUTHREAD_DUMMY_LABEL
@@ -190,10 +191,16 @@ Class _InputThread {
 			;this.Callback.Call(ControlGUID, e)
 			fn := this.InputEvent.Bind(this, ControlGUID, e)
 			SetTimer, % fn, -0
+			if (e && this._AHKBindings[ControlGUID].HasNoRelease){
+				; Mouse wheel only has a down event, simulate an up event so that bind mode properly ends
+				fn := this.InputEvent.Bind(this, ControlGUID, 0)
+				SetTimer, % fn, -50
+			}
 		}
 		
 		InputEvent(ControlGUID, state){
 			this.Callback.Call(ControlGUID, state)
+			;~ OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID " key: " this._AHKBindings[ControlGUID].KeyName
 		}
 
 		; Builds an AHK hotkey string (eg ~^a) from a BindObject
@@ -222,6 +229,18 @@ Class _InputThread {
 				}
 			}
 			return str
+		}
+		
+		HasNoReleaseEvent(bo){
+			max := bo.Binding.Length()
+			Loop % max {
+				key := bo.Binding[A_Index]
+				if (key == 158 || key == 159){
+					; Mouse Wheel
+					return true
+				}
+			}
+			return false
 		}
 		
 		; === COMMON WITH IOCLASS. MOVE TO INCLUDE =====
@@ -282,7 +301,7 @@ Class _InputThread {
 				else
 					OutputDebug % "UCR| Warning! AHK_JoyBtn_Input did not declare hotkey " keyname " because the stick is disconnected"
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
-				this._AHKBindings[ControlGUID] := keyname
+				this._AHKBindings[ControlGUID] := {KeyName: keyname, HasNoRelease: 0}
 			}
 		}
 		
@@ -297,7 +316,7 @@ Class _InputThread {
 		}
 		
 		RemoveBinding(ControlGUID){
-			keyname := this._AHKBindings[ControlGUID]
+			keyname := this._AHKBindings[ControlGUID].KeyName
 			if (keyname){
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Removing hotkey " keyname " for ControlGUID " ControlGUID
 				try{
@@ -319,7 +338,7 @@ Class _InputThread {
 			fn := this.InputEvent.Bind(this, ControlGUID, e)
 			SetTimer, % fn, -0
 			
-			this.HeldButtons[this._AHKBindings[ControlGUID]] := ControlGUID
+			this.HeldButtons[this._AHKBindings[ControlGUID].KeyName] := ControlGUID
 			if (!this.TimerWanted){
 				this.TimerWanted := 1
 				this.ProcessTimerState()
