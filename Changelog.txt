@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.17 - ???
+= You can now properly bind Mouse Wheel
+
 0.1.16 - 11th Jun 2017
 = Revert out: Changed Associative array empty detection technique to Lexikos' one
   Seems to break vJoy bindings on reload.
