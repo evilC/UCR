@@ -6,6 +6,7 @@ Key:
 
 0.1.17 - ???
 = You can now properly bind Mouse Wheel
++ Scale added to AxisToMouse, as sensitivity is a curve
 
 0.1.16 - 11th Jun 2017
 = Revert out: Changed Associative array empty detection technique to Lexikos' one

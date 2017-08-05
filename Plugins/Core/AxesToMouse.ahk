@@ -21,17 +21,21 @@ class AxesToMouse extends _UCR.Classes.Plugin {
 		this.AddControl("AxisPreview", "", 0, this.IOControls.InputAxis1, "xm w125", 50)
 		this.AddControl("AxisPreview", "", 0, this.IOControls.InputAxis2, "x+5 yp w125", 50)
 		Gui, Add, Text, % "x50", Invert
-		this.AddControl("CheckBox", "Invert1", this.MyEditChanged.Bind(this), "x+5 yp")
+		this.AddControl("CheckBox", "Invert1", 0, "x+5 yp")
 		
 		Gui, Add, Text, % "x180 yp", Invert
-		this.AddControl("CheckBox", "Invert2", this.MyEditChanged.Bind(this), "x+5 yp")
+		this.AddControl("CheckBox", "Invert2", 0, "x+5 yp")
 		
-		Gui, Add, Text, % "x270 y40 w50 Center", Deadzone
+		Gui, Add, Text, % "x285 y40 w50 Center", Deadzone
 		Gui, Add, Text, % "x+5 yp w50 Center", Sensitivity
+		Gui, Add, Text, % "x+5 yp w50 Center", Scale
 		
-		this.AddControl("Edit", "Deadzone", this.MyEditChanged.Bind(this), "x270 yp+20 w30", "15")
-		Gui, Add, Text, % "x+0 yp+3", `%
-		this.AddControl("Edit", "Sensitivity", this.MyEditChanged.Bind(this), "x+15 yp-3 w30", "100")
+		this.AddControl("Edit", "Deadzone", 0, "x285 yp+20 w35", "15")
+		Gui, Add, Text, % "x+0 yp+3 w10", `%
+		this.AddControl("Edit", "Sensitivity", 0, "x+15 yp-3 w35", "100")
+		Gui, Add, Text, % "x+0 yp+3 w10", `%
+		
+		this.AddControl("Edit", "MouseScale", 0, "x+15 yp-3 w35", "100")
 		Gui, Add, Text, % "x+0 yp+3", `%
 		
 		this.MoveMouseFn := this.MoveMouse.Bind(this)
@@ -54,6 +58,11 @@ class AxesToMouse extends _UCR.Classes.Plugin {
 		; Adjust sensitivity
 		if (dz := this.GuiControls.Sensitivity.Get()){
 			value := UCR.Libraries.StickOps.Sensitivity(value, dz)
+		}
+		
+		; Adjust scale
+		if (scale := this.GuiControls.MouseScale.Get()){
+			value := round(value * (scale / 100))
 		}
 		
 		; Store new value for the changed axis in array
