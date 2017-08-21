@@ -239,7 +239,7 @@
 		id := this.HatMappings[this.Binding[1]]
 		OutputDebug % "UCR| SetHatState - output type=" this.BaseClass.Connections.Output ", Binding=" this.Binding[1] ", id=" id
 		if (this.BaseClass.Connections.Output){
-			this.SetIdentifier(id, state)
+			this.SetIdentifier(id, state * 100)
 		}
 	}
 }
