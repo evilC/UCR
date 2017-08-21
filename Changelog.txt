@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.17 - ???
+0.1.17 - 21st Aug 2017
 = You can now properly bind Mouse Wheel
 = "Profile Inherits from Parent" checkbox now correctly updates when switching profile
 + Scale added to AxisToMouse, as sensitivity is a curve
