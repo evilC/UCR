@@ -12,6 +12,14 @@ class PauseButton extends _UCR.Classes.Plugin {
 	MyHkChangedState(e){
 		if (!e)
 			return
-		UCR.TogglePauseState()
+		new_state := UCR.TogglePauseState()
+		fn := this.AsynchBeep.Bind(this, new_state)
+		SetTimer, % fn, -0
+	}
+	
+	AsynchBeep(new_state){
+		if (new_state){
+		} else {
+		}
 	}
 }

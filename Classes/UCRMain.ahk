@@ -1061,7 +1061,9 @@ Class _UCR {
 	}
 	
 	TogglePauseState(){
-		this.SetPauseState(!this._Paused)
+		new_state := !this._Paused
+		this.SetPauseState(new_state)
+		return new_state
 	}
 	
 	; Picks a suggested name for a new profile, and presents user with a dialog box to set the name of a profile
