@@ -414,6 +414,7 @@ Class _UCR {
 		
 		; Reset the highlights in the ProfileToolbox
 		this._ProfileToolbox.ResetProfileColors()
+		this._ProfileToolbox.SetProfileInherit(new_profile.InheritsFromParent)
 
 		; Change current profile to new profile
 		this.CurrentProfile := new_profile
