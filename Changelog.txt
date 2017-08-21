@@ -7,6 +7,10 @@ Key:
 0.1.17 - ???
 = You can now properly bind Mouse Wheel
 + Scale added to AxisToMouse, as sensitivity is a curve
++ The PauseButton plugin now beeps when you pause / unpause
++ Titan One D-Pad now correctly set
++ Titan One PS3 controllers now support accelerometer
++ Titan One PS4 controllers now support gyros
 
 0.1.16 - 11th Jun 2017
 = Revert out: Changed Associative array empty detection technique to Lexikos' one
