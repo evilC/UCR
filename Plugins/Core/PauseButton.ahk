@@ -19,7 +19,9 @@ class PauseButton extends _UCR.Classes.Plugin {
 	
 	AsynchBeep(new_state){
 		if (new_state){
+			SoundBeep, 500, 200
 		} else {
+			SoundBeep, 1000, 200
 		}
 	}
 }
