@@ -99,7 +99,10 @@
 			,{name: "RX", id: 9, AxisType: 0}
 			,{name: "RY", id: 10, AxisType: 0}
 			,{name: "L2", id: 7, AxisType: 1}
-			,{name: "R2", id: 4, AxisType: 1}]
+			,{name: "R2", id: 4, AxisType: 1}
+			,{name: "ACCX", id: 21, AxisType: 2}
+			,{name: "ACCY", id: 22, AxisType: 2}
+			,{name: "ACCZ", id: 23, AxisType: 2}]
 			
 		this.BaseClass.AxisMappings.PS4 := [{name: "LX", id: 11}
 			,{name: "LY", id: 12, AxisType: 0}
@@ -110,6 +113,8 @@
 			,{name: "ACCX", id: 21, AxisType: 2}
 			,{name: "ACCY", id: 22, AxisType: 2}
 			,{name: "ACCZ", id: 23, AxisType: 2}
+			,{name: "GYROX", id: 24, AxisType: 0}
+			,{name: "GYROY", id: 25, AxisType: 0}
 			,{name: "TOUCHX", id: 28, AxisType: 0}
 			,{name: "TOUCHY", id: 29, AxisType: 0}]
 	}
