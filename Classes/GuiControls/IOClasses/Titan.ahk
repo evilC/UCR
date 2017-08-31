@@ -301,7 +301,7 @@ class TitanOne_Button_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 ; ======================================== AXIS ==========================================
 class TitanOne_Axis_Output extends _UCR.Classes.IOClasses.TitanOne_Output {
 	static IOClass := "TitanOne_Axis_Output"
-	static _NumAxes := 11
+	static _NumAxes := 13
 	
 	BuildHumanReadable(){
 		return this._Prefix " Titan One Axis " this.BuildAxisName(this.Binding[1])
