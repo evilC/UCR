@@ -4,7 +4,7 @@ Key:
 = : Change / Fix
 + : Added feature
 
-0.1.18 - ???
+0.1.18 - 27th Oct 2017
 = Increased number of Titan One axes to 13
   TouchX and TouchY are now selectable.
 + Axis Splitter now has invert options for output axes
