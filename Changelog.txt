@@ -8,6 +8,7 @@ Key:
 = Increased number of Titan One axes to 13
   TouchX and TouchY are now selectable.
 + Axis Splitter now has invert options for output axes
++ Added second editbox to CodeRunner plugin for code to run on button release
 
 0.1.17 - 21st Aug 2017
 = You can now properly bind Mouse Wheel
