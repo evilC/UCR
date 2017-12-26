@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.19 26th Dec 2017
++ Added Deadzone option to axis splitter
+
 0.1.18 - 27th Oct 2017
 = Increased number of Titan One axes to 13
   TouchX and TouchY are now selectable.

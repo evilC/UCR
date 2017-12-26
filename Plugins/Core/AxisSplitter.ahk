@@ -4,12 +4,15 @@ class AxisSplitter extends _UCR.Classes.Plugin {
 
 	Init(){
 		iow := 125
-		Gui, Add, GroupBox, Center xm ym w160 h140 section, Input Axis
+		Gui, Add, GroupBox, Center xm ym w320 h140 section, Input Axis
 		Gui, Add, Text, % "Center Section xs+5 ys+15 w" iow, Axis
+		Gui, Add, Text, % "x+55 yp w40 Center", Deadzone
+
 		this.AddControl("InputAxis", "IA1", 0, this.InputChangedState.Bind(this), "xs ys+15")
 		this.AddControl("AxisPreview", "", 0, this.IOControls.IA1, "xp y+10 w" iow, 50)
+		this.AddControl("Edit", "Deadzone", 0, "x+60 ys+15 w30", "0")
 		
-		Gui, Add, GroupBox, Center x180 ym w270 h140 section, Output Axes
+		Gui, Add, GroupBox, Center x360 ym w270 h140 section, Output Axes
 		Gui, Add, Text, % "Center Section xs+5 ys+15 w" iow, Low
 		Gui, Add, Text, % "Center x+10 yp w" iow, High
 		
@@ -32,6 +35,9 @@ class AxisSplitter extends _UCR.Classes.Plugin {
 	InputChangedState(value){
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		values := [0,0]
+		if (this.GuiControls.Deadzone.Get()){
+			value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.Get())
+		}
 		if (value < 0){
 			thisAxis := 1
 			otherAxis := 2
