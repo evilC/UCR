@@ -52,7 +52,7 @@ class AxesToMouse extends _UCR.Classes.Plugin {
 		
 		; Apply deadzone
 		if (dz := this.GuiControls.Deadzone.Get()){
-			value := UCR.Libraries.StickOps.Deadzone(value, dz)
+			value := UCR.Libraries.StickOps.Deadzone(value, dz, 0, 0)
 		}
 		
 		; Adjust sensitivity

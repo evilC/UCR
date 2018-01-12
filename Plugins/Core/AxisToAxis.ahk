@@ -48,7 +48,7 @@ class AxisToAxis extends _UCR.Classes.Plugin {
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		if (this.OutputBound){
 			if (this.GuiControls.Deadzone.Get()){
-				value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.Get())
+				value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.Get(), 0, 0)
 			}
 			if (this.GuiControls.Sensitivity.Get()){
 				if (this.GuiControls.Linear.Get())
