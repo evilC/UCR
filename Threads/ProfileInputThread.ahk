@@ -735,9 +735,10 @@ Class _InputThread {
 			for ControlGuid, DeviceID in this._DeltaBindings {
 				if (DeviceID == -1 || DeviceID == ThisMouse){
 					;Outputdebug % "UCR| ProfileInputThread Firing callback for MouseDelta ControlGUID " ControlGuid ", DeviceID: " ThisMouse
-					;this.Callback.Call(ControlGuid, state)
-					fn := this.InputEvent.Bind(this, ControlGUID, state)
-					SetTimer, % fn, -0
+					this.Callback.Call(ControlGuid, state)
+					; Using SetTimer -0 seems to utterly hammer performance, so don't do it for mouse delta
+					;~ fn := this.InputEvent.Bind(this, ControlGUID, state)
+					;~ SetTimer, % fn, -0
 				}
 			}
 	 
