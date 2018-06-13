@@ -47,8 +47,9 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		; Tweaks
 		Gui, Add, GroupBox, % "Center x245 ym w55 Section h" y_row+35, % "Common"
 		Gui, Add, Text, % "xs+15 w20 center y" title_row+10, Invert
-		this.AddControl("CheckBox", "InvertX", 0, "xp+5 y" x_row+3, "", 0)
-		this.AddControl("CheckBox", "InvertY", 0, "xp y" y_row+3, "", 0)
+		this.AddControl("CheckBox", "InvertX", this.InvertChanged.Bind(this, "x"), "xp+5 y" x_row+3, "", 0)
+		this.AddControl("CheckBox", "InvertY", this.InvertChanged.Bind(this, "y"), "xp y" y_row+3, "", 0)
+		this.invertState := {x: 0, y: 0}
 		
 		; Mouse Selection
 		Gui, Add, GroupBox, % "x305 ym w110 Section h" y_row+35, % "Input"
@@ -76,6 +77,10 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 		;this.InputDeltas.MouseDelta.UnRegister()
 	}
 	
+	InvertChanged(axis, state){
+		this.invertState[axis] := state
+	}
+	
 	;MouseEvent(x := 0, y := 0){
 	MouseEvent(value){
 		; The "Range" for a given axis is -50 to +50
@@ -83,9 +88,9 @@ class MouseToJoy extends _UCR.Classes.Plugin {
 
 			x := value.axes.x, y := value.axes.y, ax := Abs(x), ay := Abs(y), MouseID := value.MouseID, dox := (x != ""), doy := (y != "")
 					
-			if (this.GuiControls.InvertX.Get())
+			if (this.invertState.x)
 				x *= -1
-			if (this.GuiControls.InvertY.Get())
+			if (this.invertState.y)
 				y *= -1
 		} catch {
 			; M2J sometimes seems to crash eg when switching from a profile with M2J to a profile without
