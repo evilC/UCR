@@ -5,10 +5,10 @@
 	static _hModule := 0
 	
 	static InputCodes := {PS3: 0x10, XB360: 0x20, Wii: 0x30, PS4: 0x40, XB1: 0x50}
-	static InputNames := {0x10: "PS3", 0x20: "XB360", 0x30: "Wii", 0x40: "PS4", 0x50: "XB1"}
-	static OutputCodes := {PS3: 0x1, XB360: 0x2, PS4: 0x3, XB1: 0x4}
-	static OutputNames := {0x1: "PS3", 0x2: "XB360", 0x3: "PS4", 0x4: "XB1"}
-	static OutputOrder := ["XB360", "XB1", "PS3", "PS4"]
+	static InputNames := {0x10: "PS3", 0x20: "XB360", 0x30: "Wii", 0x40: "PS4", 0x50: "XB1", 0x60: "Switch"}
+	static OutputCodes := {PS3: 0x1, XB360: 0x2, PS4: 0x3, XB1: 0x4, Switch: 0x5}
+	static OutputNames := {0x1: "PS3", 0x2: "XB360", 0x3: "PS4", 0x4: "XB1", 0x5: "Switch"}
+	static OutputOrder := ["XB360", "XB1", "PS3", "PS4", "Switch"]
 	
 	static ButtonMappings := {}
 	static AxisMappings := {}
@@ -85,6 +85,28 @@
 			, {name: "Options", id: 2}
 			, {name: "Playstation", id: 0}
 			, {name: "Touch", id: 27}]
+		
+		; Nintendo Switch Start
+		this.BaseClass.ButtonMappings.Switch := [{name: "A", id: 19}
+			, {name: "B", id: 18}
+			, {name: "X", id: 20}
+			, {name: "Y", id: 17}
+			, {name: "LB", id: 6}
+			, {name: "RB", id: 3}
+			, {}, {}
+			, {name: "LS", id: 8}
+			, {name: "RS", id: 5}
+			, {name: "Minus", id: 1}
+			, {name: "Plus", id: 2}
+			, {name: "Home", id: 0}]
+		
+		this.BaseClass.AxisMappings.Switch := [{name: "LX", id: 11}
+			,{name: "LY", id: 12, AxisType: 0}
+			,{name: "RX", id: 9, AxisType: 0}
+			,{name: "RY", id: 10, AxisType: 0}
+			,{name: "LT", id: 7, AxisType: 1}
+			,{name: "RT", id: 4, AxisType: 1}]
+		; Nintendo Switch End
 		
 		this.BaseClass.AxisMappings.XB360 := [{name: "LX", id: 11}
 			,{name: "LY", id: 12, AxisType: 0}
