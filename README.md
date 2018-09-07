@@ -1,7 +1,6 @@
 # UCR - Universal Control Remapper
 
-# THIS AHK VERSION OF UCR IS BEING PHASED OUT! PLEASE START TO MIGRATE TO THE NEW C# VERSION  
-## [UCR C#](https://github.com/Snoothy/UCR) 
+# THIS AHK VERSION OF UCR IS BEING PHASED OUT! PLEASE START TO MIGRATE TO THE [NEW C# VERSION](https://github.com/Snoothy/UCR) 
 
 ![ScreenShot](http://i.imgur.com/pSBxCbc.png)
 # [MAIN UCR DOWNLOAD LINK](http://evilc.com/files/ahk/ucr/UCR.zip)
