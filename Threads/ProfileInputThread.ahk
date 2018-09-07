@@ -323,7 +323,7 @@ Class _InputThread {
 		
 		UpdateBinding(ControlGUID, bo){
 			dev := bo.DeviceID, btn := bo.Binding[1]
-			;~ OutputDebug % "UCR| XInput subscribe button " btn
+			;~ OutputDebug % "UCR| XInput Update subscription device " dev ", button " btn
 			; Remove old binding
 			for id, inputs in this.StickBindings {
 				for bindstring, input_info in inputs {
@@ -332,6 +332,7 @@ Class _InputThread {
 							input_info.Subscriptions.Delete(cguid)
 							;OutputDebug % "UCR| Removing Binding for ControlGUID " cguid
 							break
+							; ToDo: Should prune StickBindings array and stop watcher if needed
 						}
 					}
 				}
@@ -352,7 +353,7 @@ Class _InputThread {
 		}
 		
 		SetDetectionState(state){
-			OutputDebug % "UCR| XInput_Button SetDetectionState = " state
+			;~ OutputDebug % "UCR| XInput_Button SetDetectionState = " state
 			this.DetectionState := state
 			this.ProcessTimerState()
 		}
