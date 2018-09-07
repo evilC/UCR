@@ -1,12 +1,14 @@
 ; ToDo: Split IOClasses out into individual files
 ; ToDo: Rename these type of IOClasses to IOInputClasses?
 #Include Functions\IsEmptyAssoc.ahk
+#Include Libraries\XInput.ahk
+
 #MaxThreads 255
 #Noenv
 
 ; Can use  #Include %A_LineFile%\..\other.ahk to include in same folder
 Class _InputThread {
-	static IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0, AHK_JoyAxis_Input: 0, RawInput_Mouse_Delta: 0}
+	static IOClasses := {AHK_KBM_Input: 0, AHK_JoyBtn_Input: 0, AHK_JoyHat_Input: 0, AHK_JoyAxis_Input: 0, RawInput_Mouse_Delta: 0, XInput_Axis: 0, XInput_Button: 0}
 	DetectionState := 0
 	UpdateBindingQueue := []	; An array of bindings waiting to be updated.
 	UpdatingBindings := 0
@@ -30,7 +32,7 @@ Class _InputThread {
 			i++
 		}
 		if (i){
-			; OutputDebug % "UCR| Input Thread loaded IOClasses: " names
+			OutputDebug % "UCR| Input Thread loaded IOClasses: " names
 		} else {
 			OutputDebug % "UCR| Input Thread WARNING! Loaded No IOClasses!"
 		}
@@ -42,6 +44,8 @@ Class _InputThread {
 		
 		; Get a boundfunc for the method that processes binding updates
 		;this.BindingQueueFn := this._ProcessBindingQueue.Bind(this)
+		
+		XInput_Init()
 		
 		; Unreachable dummy label for hotkeys to bind to to clear binding
 		if(0){
@@ -272,6 +276,206 @@ Class _InputThread {
 			return this._Modifiers[code].s
 		}
 		; ================= END MOVE TO INCLUDE ======================
+	}
+	
+	class XInput_Button {
+		; static buttonNames := ["A", "B", "X", "Y", "LB", "RB", "LS", "RS", "Back", "Start", "Up", "Right", "Down", "Left"]
+		buttonFlags := [ 0x1000, 0x2000, 0x4000, 0x8000, 0x0100, 0x0200, 0x0040, 0x0080, 0x0020, 0x0010, 0x0001, 0x0002, 0x0003, 0x0004 ]
+	
+		StickBindings := {}
+		/*
+		StickBindings structure:
+		{
+			<Stick ID>: (eg 1) {
+				<BindString (eg "1")>: {
+					State: <current state>
+					Subscriptions: {
+						<guid>: 1,
+						<guid>: 1,
+					}
+				}
+			}
+		}
+		*/
+	
+		__New(Callback){
+			this.Callback := Callback
+			this.TimerFn := this.StickWatcher.Bind(this)
+		}
+		
+		StickWatcher(){
+			for dev, inputs in this.StickBindings {
+				deviceState := XInput_GetState(dev-1)
+				for flag, input_info in inputs {
+					state := ((deviceState.Buttons & flag) == flag)
+					
+					if (state != input_info.state){
+						input_info.state := state
+						;~ OutputDebug % "UCR| XInput Firing Button " bindstring " Callback - " state
+						for ControlGUID, unused in input_info.Subscriptions {
+							fn := this.InputEvent.Bind(this, ControlGUID, state)
+							SetTimer, % fn, -0
+						}
+					}
+				}
+			}
+		}
+		
+		UpdateBinding(ControlGUID, bo){
+			dev := bo.DeviceID, btn := bo.Binding[1]
+			;~ OutputDebug % "UCR| XInput subscribe button " btn
+			; Remove old binding
+			for id, inputs in this.StickBindings {
+				for bindstring, input_info in inputs {
+					for cguid, unused in input_info.Subscriptions {
+						if (cguid == ControlGuid){
+							input_info.Subscriptions.Delete(cguid)
+							;OutputDebug % "UCR| Removing Binding for ControlGUID " cguid
+							break
+						}
+					}
+				}
+			}
+			if (dev && btn){
+				;~ str := this.axisNames[axis]
+				str := this.buttonFlags[btn]
+				if (!ObjHasKey(this.StickBindings, dev))
+					this.StickBindings[dev] := {}
+				if (!ObjHasKey(this.StickBindings[dev], str))
+					this.StickBindings[dev, str] := {State: 0, Subscriptions: {}}
+								
+				this.StickBindings[dev, str, "Subscriptions", ControlGuid] := 1
+				;OutputDebug % "UCR| SubCount: " this.StickBindings[dev, str, "Subscriptions", ControlGuid]
+				this.TimerWanted := 1
+			}
+			this.ProcessTimerState()
+		}
+		
+		SetDetectionState(state){
+			OutputDebug % "UCR| XInput_Button SetDetectionState = " state
+			this.DetectionState := state
+			this.ProcessTimerState()
+		}
+		
+		ProcessTimerState(){
+			fn := this.TimerFn
+			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				SetTimer, % fn, 10
+				this.TimerRunning := 1
+				OutputDebug % "UCR| XInput_Button Started ButtonWatcher"
+			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
+				SetTimer, % fn, Off
+				this.TimerRunning := 0
+				OutputDebug % "UCR| XInput_Button Stopped ButtonWatcher"
+			}
+		}
+		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
+		}
+	}
+	
+	class XInput_Axis {
+		static axisNames := ["ThumbLX", "ThumbLY", "ThumbRX", "ThumbRY", "LeftTrigger", "RightTrigger"]
+
+		StickBindings := {}
+		/*
+		StickBindings structure:
+		{
+			<Stick ID>: (eg 1) {
+				<BindString (eg "LeftTrigger")>: {
+					State: <current state>
+					Subscriptions: {
+						<guid>: 1,
+						<guid>: 1,
+					}
+				}
+			}
+		}
+		*/
+		ConnectedSticks := [0,0,0,0]
+		
+		__New(Callback){
+			this.Callback := Callback
+			this.TimerFn := this.StickWatcher.Bind(this)
+		}
+		
+		UpdateBinding(ControlGUID, bo){
+			dev := bo.DeviceID, axis := bo.Binding[1]
+			; Remove old binding
+			for id, inputs in this.StickBindings {
+				for bindstring, input_info in inputs {
+					for cguid, unused in input_info.Subscriptions {
+						if (cguid == ControlGuid){
+							input_info.Subscriptions.Delete(cguid)
+							;OutputDebug % "UCR| Removing Binding for ControlGUID " cguid
+							break
+						}
+					}
+				}
+			}
+			if (dev && axis){
+				;~ str := this.axisNames[axis]
+				str := axis
+				if (!ObjHasKey(this.StickBindings, dev))
+					this.StickBindings[dev] := {}
+				if (!ObjHasKey(this.StickBindings[dev], str))
+					this.StickBindings[dev, str] := {State: 0, Subscriptions: {}}
+								
+				this.StickBindings[dev, str, "Subscriptions", ControlGuid] := 1
+				;OutputDebug % "UCR| SubCount: " this.StickBindings[dev, str, "Subscriptions", ControlGuid]
+				this.TimerWanted := 1
+			}
+			this.ProcessTimerState()
+		}
+		
+		SetDetectionState(state){
+			OutputDebug % "UCR| XInput_Axis SetDetectionState = " state
+			this.DetectionState := state
+			this.ProcessTimerState()
+		}
+		
+		ProcessTimerState(){
+			fn := this.TimerFn
+			if (this.TimerWanted && this.DetectionState && !this.TimerRunning){
+				SetTimer, % fn, 10
+				this.TimerRunning := 1
+				OutputDebug % "UCR| XInput_Axis Started AxisWatcher"
+			} else if ((!this.TimerWanted || !this.DetectionState) && this.TimerRunning){
+				SetTimer, % fn, Off
+				this.TimerRunning := 0
+				OutputDebug % "UCR| XInput_Axis Stopped AxisWatcher"
+			}
+		}
+
+		StickWatcher(){
+			for dev, inputs in this.StickBindings {
+				deviceState := XInput_GetState(dev-1)
+				for axisIndex, input_info in inputs {
+					;~ OutputDebug % "UCR| HERE - " axisIndex
+					bindstring := this.axisNames[axisIndex]
+					state := deviceState[bindstring]
+					if (axisIndex == 5 || axisIndex == 6){
+						; Triggers
+						state := state / 2.55
+					} else {
+						state := (state + 32768) / 655.35
+					}
+					if (state != input_info.state){
+						input_info.state := state
+						;~ OutputDebug % "UCR| XInput Firing Axis " bindstring " Callback - " state
+						for ControlGUID, unused in input_info.Subscriptions {
+							fn := this.InputEvent.Bind(this, ControlGUID, state)
+							SetTimer, % fn, -0
+						}
+					}
+				}
+			}
+		}
+		
+		InputEvent(ControlGUID, state){
+			this.Callback.Call(ControlGUID, state)
+		}
 	}
 	
 	; Listens for Joystick Button input using AHK's Hotkey command

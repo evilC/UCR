@@ -1194,7 +1194,7 @@ Class _UCR {
 			#Include Classes\GuiControls\IOClasses\RawInput_Mouse_Delta.ahk
 			#Include Classes\GuiControls\IOClasses\vGen.ahk
 			#Include Classes\GuiControls\IOClasses\Titan.ahk
-			;#Include Classes\GuiControls\IOClasses\XInput.ahk
+			#Include Classes\GuiControls\IOClasses\XInput.ahk
 		}
 		
 		#Include Classes\Plugin.ahk

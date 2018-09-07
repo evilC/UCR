@@ -3,7 +3,7 @@
 class InputButton extends _UCR.Classes.GuiControls.IOControl {
 	static _ControlType := "InputButton"
 	static _BindModeMappings := {AHK_Common: 0, AHK_KBM_Input: "AHK_KBM_Input", AHK_JoyBtn_Input: "AHK_JoyBtn_Input", AHK_JoyHat_Input: "AHK_JoyHat_Input"}
-	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input"]
+	static _IOClassNames := ["AHK_KBM_Input", "AHK_JoyBtn_Input", "AHK_JoyHat_Input", "XInput_Button"]
 	static _DefaultBanner := "Select an Input Button"
 	
 	
