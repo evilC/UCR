@@ -1,9 +1,31 @@
 # UCR - Universal Control Remapper
 
+# THIS AHK VERSION OF UCR IS BEING PHASED OUT! PLEASE START TO MIGRATE TO THE [NEW C# VERSION](https://github.com/Snoothy/UCR) 
+
 ![ScreenShot](http://i.imgur.com/pSBxCbc.png)
-#[MAIN UCR DOWNLOAD LINK](http://evilc.com/files/ahk/ucr/UCR.zip)
-#[Forum thread for news and discussion](https://autohotkey.com/boards/viewtopic.php?t=12249)
-##[Historical releases](https://github.com/evilC/UCR/releases)
+# [MAIN UCR DOWNLOAD LINK](http://evilc.com/files/ahk/ucr/UCR.zip)
+# [Forum thread for news and discussion](https://autohotkey.com/boards/viewtopic.php?t=12249)
+## [Historical releases](https://github.com/evilC/UCR/releases)
+
+# IMPORTANT NOTES ON XBOX CONTROLLERS!
+## GENERAL
+UCR does **not** currently support remapping of a physical Xbox controller.  
+That is to say, if you wish to alter how a game sees a physical Xbox controller, you cannot currently do this.  
+This *may* be possible in the future via Nefarius' HidGuardian project.  
+Reading input from an Xbox controller and sending output to vJoy etc is fine.  
+Reading input from a non-Xbox stick and emulating an Xbox controlelr is fine.  
+## Input (Reading state of your XBox controller)  
+1) There is no "Bind Mode" for Xbox controllers, you must select from the menu to enable XInput support.  
+2) Some Xbox controller variants (One, Elite, Accessibility) will only work in Xinput mode.  
+**If Xbox controllers stop working while UCR is not active, then you are not using XInput mode! Select from the menu, don't use Bind Mode!**  
+## Output (Emulating Xbox controllers)
+For Virtual XBox controllers to work, you must:  
+1) Install the latest version of vJoy from http://vjoystick.sourceforge.net/  
+2) On first run of UCR, check the vJoy log to make sure vJoy loaded OK  
+From the UCR main menu: IOClasses -> vJoy -> Show vJoy log  
+3) If all went well, install the SCPVBus:  
+From the UCR main menu: IOClasses -> vJoy -> Install SCPVBus  
+If this step fails, open an admin command prompt and navigate to UCR's resources folder, there are .bat files in there  
 
 ## About
 The aim of UCR is to allow end-users to easily leverage the power of AHK without having to learn to code.  
