@@ -4,6 +4,15 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.20 7th Sep 2018
++ Added XInput support
+  Does not have Bind Mode, as normal AHK hotkeys would see the input too
++ Added Support for Nintendo Switch to Titan
++ Performance increases for Mouse Delta input:
+  Cache state of Invert checkboxes in MouseToJoy plugin 
+  Disable pseudo-thread callback for mouse delta
++ Replaced CreateGUID  with Lexikos' ANSI compatible version
+
 0.1.19 26th Dec 2017
 + Added Deadzone option to axis splitter
 
