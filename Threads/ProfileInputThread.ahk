@@ -331,8 +331,8 @@ Class _InputThread {
 						if (cguid == ControlGuid){
 							input_info.Subscriptions.Delete(cguid)
 							;OutputDebug % "UCR| Removing Binding for ControlGUID " cguid
-							break
 							; ToDo: Should prune StickBindings array and stop watcher if needed
+							break 3
 						}
 					}
 				}
@@ -410,7 +410,7 @@ Class _InputThread {
 						if (cguid == ControlGuid){
 							input_info.Subscriptions.Delete(cguid)
 							;OutputDebug % "UCR| Removing Binding for ControlGUID " cguid
-							break
+							break 3
 						}
 					}
 				}
