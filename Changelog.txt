@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.21 2nd Oct 2018
+= Fixed XInput Dpad right / down swapped
+
 0.1.20 7th Sep 2018
 + Added XInput support
   Does not have Bind Mode, as normal AHK hotkeys would see the input too
