@@ -144,7 +144,7 @@ class _BindMapper {
 		InputEvent(e, i){
 			;~ OutputDebug % "UCR| BindMode KBM IO Event: " e ", Code: " i ", IOClass: " this.ReturnIOClass
 			this.Callback.Call(e, i, 0, this.ReturnIOClass)
-			if (i == 158 || i == 159){
+			if (i >= 156 && i <= 159){
 				; Mouse wheel only has a down event, simulate an up event so that bind mode properly ends
 				this.Callback.Call(0, i, 0, this.ReturnIOClass)
 			}

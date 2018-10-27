@@ -190,7 +190,7 @@ Class _InputThread {
 		}
 		
 		KeyEvent(ControlGUID, e){
-			;OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID
+			;~ OutputDebug % "UCR| AHK_KBM_Input Key event for GuiControl " ControlGUID ", state " e
 			;msgbox % "Hotkey pressed - " this.ParentControl.Parentplugin.id
 			;this.Callback.Call(ControlGUID, e)
 			fn := this.InputEvent.Bind(this, ControlGUID, e)
@@ -239,7 +239,7 @@ Class _InputThread {
 			max := bo.Binding.Length()
 			Loop % max {
 				key := bo.Binding[A_Index]
-				if (key == 158 || key == 159){
+				if (key >= 156 && key <= 159){
 					; Mouse Wheel
 					return true
 				}
