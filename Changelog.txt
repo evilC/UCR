@@ -4,6 +4,9 @@ Key:
 = : Change / Fix
 + : Added feature
 
+0.1.22 28th Oct 2018
++ Added support for MouseWheel Left / Right
+
 0.1.21 2nd Oct 2018
 = Fixed XInput Dpad right / down swapped
 
