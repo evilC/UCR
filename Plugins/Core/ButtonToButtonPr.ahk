@@ -1,13 +1,3 @@
-/*
-A sample plugin to map a digital input to a digital output
-When UCR is finished, valid inputs will be:
-Keyboard*, Mouse Buttons/Wheel*, Joystick Buttons, Joystick Hat directions
-Modes supported (Key / Mouse only): Block, Wild, Repeat Supression
-Valid outputs will be:
-Keyboard, Mouse Buttons/Wheel, Virtual Joystick Buttons / Hat directions
-*/
-
-; All plugins must derive from the _Plugin class
 class ButtonToButtonPr extends _UCR.Classes.Plugin {
 	Type := "Remapper (Button To Button - Press / Release)"
 	Description := "Remap press or release of input to press and release of output"
