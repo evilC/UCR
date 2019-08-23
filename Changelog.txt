@@ -6,6 +6,7 @@ Key:
 
 0.1.23 - ???
 + Added ButtonToButtonPr plugin
++ Added ButtonsToMouse plugin
 
 0.1.22 28th Oct 2018
 + Added support for MouseWheel Left / Right
