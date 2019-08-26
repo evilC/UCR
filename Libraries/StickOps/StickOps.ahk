@@ -42,7 +42,22 @@ class StickOps {
 	
 	; Adjust axis for deadzone
 	; dzp: Deadzone percent. 0% is "normal"
-	Deadzone(value, dzp){
+	; ldzp: Low extent deadzone percent
+	; hdzp; High extent deadzone percent
+	Deadzone(value, dzp, ldzp, hdzp){
+	
+		;Apply extent deadzones
+		if (value <= ldzp - 50) {
+			value := -50
+		} else if (value >= 50 - hdzp) {
+			value := 50
+		} else {
+			;Scale remaining value to full range
+			value += ldzp * (value - 50 + hdzp) / (100 - ldzp - hdzp)
+			value += hdzp * (value +50 - ldzp) / (100 - ldzp - hdzp)
+		}
+		
+		;Apply center deadzone
 		dzp := dzp/2
 		if (abs(value) <= dzp){
 			return 0

@@ -78,7 +78,7 @@ class AxisMerger extends _UCR.Classes.Plugin {
 		if (this.vAxis && this.vDevice){
 			; Apply Deadzone / Sensitivity
 			if (this.GuiControls.Deadzone.Get())
-				outval := UCR.Libraries.StickOps.Deadzone(outval, this.GuiControls.Deadzone.Get())
+				outval := UCR.Libraries.StickOps.Deadzone(outval, this.GuiControls.Deadzone.Get(), 0, 0)
 			if (this.GuiControls.Sensitivity.Get())
 				outval := UCR.Libraries.StickOps.Sensitivity(outval, this.GuiControls.Sensitivity.Get())
 			outval := UCR.Libraries.StickOps.InternalToAHK(outval)

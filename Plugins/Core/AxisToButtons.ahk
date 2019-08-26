@@ -35,7 +35,7 @@ class AxisToButtons extends _UCR.Classes.Plugin {
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		dz := this.GuiControls.Deadzone.Get()
 		if (dz){
-			value := UCR.Libraries.StickOps.Deadzone(value, dz)
+			value := UCR.Libraries.StickOps.Deadzone(value, dz, 0, 0)
 		}
 		if (this.GuiControls.Invert.Get()){
 			value := UCR.Libraries.StickOps.Invert(value)
