@@ -3,7 +3,8 @@
 # THIS AHK VERSION OF UCR IS BEING PHASED OUT! PLEASE START TO MIGRATE TO THE [NEW C# VERSION](https://github.com/Snoothy/UCR) 
 
 ![ScreenShot](http://i.imgur.com/pSBxCbc.png)
-# [MAIN UCR DOWNLOAD LINK](http://evilc.com/files/ahk/ucr/UCR.zip)
+# [DOWNLOAD HERE](https://github.com/evilC/UCR/releases)  
+**DO NOT** Use the green "Download" button at the top of this page  
 # [Forum thread for news and discussion](https://autohotkey.com/boards/viewtopic.php?t=12249)
 ## [Historical releases](https://github.com/evilC/UCR/releases)
 
