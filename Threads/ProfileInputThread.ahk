@@ -499,12 +499,12 @@ Class _InputThread {
 			if (bo.Binding[1]){
 				keyname := this.BuildHotkeyString(bo)
 				fn := this.KeyEvent.Bind(this, ControlGUID, 1)
-				if (GetKeyState(bo.DeviceID "JoyAxes")) 
 					try {
 						hotkey, % keyname, % fn, On
 					}
-				else
-					OutputDebug % "UCR| Warning! AHK_JoyBtn_Input did not declare hotkey " keyname " because the stick is disconnected"
+					catch e {
+						OutputDebug % "UCR| Warning! AHK_JoyBtn_Input encountered an exception when trying to hotkey " keyname " - " e
+					}
 				;OutputDebug % "UCR| AHK_JoyBtn_Input Added hotkey " keyname " for ControlGUID " ControlGUID
 				this._AHKBindings[ControlGUID] := {KeyName: keyname, HasNoRelease: 0}
 			}

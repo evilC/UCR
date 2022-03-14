@@ -5,6 +5,7 @@ Key:
 + : Added feature
 
 0.1.23 - ???
++ Fixed issue with binding buttons to DirectInput stick which has no axes
 + Added ButtonToButtonPr plugin
 + Added ButtonsToMouse plugin
 
