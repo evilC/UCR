@@ -36,7 +36,7 @@ class AxisSplitter extends _UCR.Classes.Plugin {
 		value := UCR.Libraries.StickOps.AHKToInternal(value)
 		values := [0,0]
 		if (this.GuiControls.Deadzone.Get()){
-			value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.Get())
+			value := UCR.Libraries.StickOps.Deadzone(value, this.GuiControls.Deadzone.Get(), 0, 0)
 		}
 		if (value < 0){
 			thisAxis := 1
